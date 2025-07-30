@@ -1,0 +1,15 @@
+{
+  "module_name": "alu",
+  "description": "\n设计一个32位ALU（算术逻辑单元），支持以下操作：\n- 加法 (ADD)\n- 减法 (SUB) \n- 按位与 (AND)\n- 按位或 (OR)\n- 按位异或 (XOR)\n- 按位非 (NOT)\n- 左移 (SHL)\n- 右移 (SHR)\n\n要求：\n- 32位数据位宽\n- 4位操作码\n- 包含零标志和溢出标志输出\n- 同步复位设计\n",
+  "bit_width": 32,
+  "input_ports": [
+    "clk",
+    "rst",
+    "data_in[31:0]"
+  ],
+  "output_ports": [
+    "data_out[31:0]"
+  ],
+  "complexity": 5,
+  "design_type": "sequential"
+}
