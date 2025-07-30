@@ -1,84 +1,86 @@
 ```verilog
 /*
  * Module: counter_8bit
- * Description: 8位可向上/向下计数的计数器，支持使能信号和异步复位
  *
- * Features:
- * - 8位计数器
- * - 支持方向控制（up_down）
- * - 支持使能信号（en）
- * - 异步复位（rst_n）
- * - 时钟域为单一时钟
- * - 适用于FPGA和ASIC设计
+ * Description:
+ * 8位可向上或向下计数的计数器，支持使能信号和异步复位。
+ * 当使能为高时，根据方向控制信号进行加法或减法计数；
+ * 当使能为低时，计数器保持当前状态。
  *
  * Parameters:
- * - COUNTER_WIDTH: 计数器位宽（默认8位）
+ *   WIDTH - 计数器位宽（默认8位）
  *
  * Input Ports:
- * - clk: 时钟输入
- * - en: 使能信号，高电平有效
- * - up_down: 方向控制信号，1表示向上计数，0表示向下计数
- * - rst_n: 异步复位信号，低电平有效
+ *   clk        - 时钟输入 (1-bit)
+ *   rst_n      - 异步复位信号 (1-bit, 低电平有效)
+ *   en         - 使能信号 (1-bit, 高电平有效)
+ *   up_down    - 方向控制信号 (1-bit, 1为向上计数，0为向下计数)
  *
  * Output Ports:
- * - count: 当前计数值输出（8位）
+ *   count      - 8位计数值输出 (8-bit)
+ *
+ * Special Features:
+ *   - 异步复位功能
+ *   - 方向控制
+ *   - 使能控制
+ *
+ * Timing Constraints:
+ *   - 时钟频率需满足设计要求（如50MHz或更高）
+ *
+ * Area Constraints:
+ *   - 尽量优化逻辑门数量以减少面积
+ *
+ * Power Considerations:
+ *   - 在静态状态下应尽可能降低功耗
  *
  * Design Notes:
- * - 使用标准Verilog-2001语法
- * - 采用清晰的模块化架构
- * - 包含详细的注释和文档
- * - 优化逻辑门数量以减少面积
- * - 考虑时序约束和性能优化
+ *   - 使用标准Verilog-2001/SystemVerilog语法
+ *   - 采用清晰的模块化架构
+ *   - 包含详细的注释和模块文档
+ *   - 添加适当的断言和检查
  */
 
 `timescale 1ns / 1ps
 
 module counter_8bit #(
-    parameter COUNTER_WIDTH = 8
-) (
-    input      clk,
-    input      en,
-    input      up_down,
-    input      rst_n,
-    output reg [COUNTER_WIDTH-1:0] count
+    parameter int WIDTH = 8  // 计数器位宽
+)(
+    input  logic clk,
+    input  logic rst_n,
+    input  logic en,
+    input  logic up_down,
+    output logic [WIDTH-1:0] count
 );
 
     // 内部信号声明
-    reg [COUNTER_WIDTH-1:0] next_count;
+    logic [WIDTH-1:0] count_reg;
 
-    // 主要逻辑实现
+    // 模块功能描述
+    // 该计数器在时钟上升沿触发，根据使能信号和方向控制信号进行计数
+    // 当复位信号有效时，计数器被清零
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             // 异步复位：将计数器清零
-            count <= {COUNTER_WIDTH{1'b0}};
+            count_reg <= '0;
         end else if (en) begin
-            // 使能有效时根据方向进行计数
+            // 使能有效时，根据方向控制信号进行加法或减法计数
             if (up_down) begin
                 // 向上计数
-                next_count <= count + 1;
+                count_reg <= count_reg + 1;
             end else begin
                 // 向下计数
-                next_count <= count - 1;
+                count_reg <= count_reg - 1;
             end
-            // 更新当前计数值
-            count <= next_count;
         end
     end
 
-    // 边界检查：确保计数器不会溢出或下溢
-    // 这里使用断言来验证计数器的值是否在合法范围内
-    // 注意：在综合时这些断言可能被忽略，仅用于仿真验证
-    `ifdef SIMULATION
-    always @(posedge clk) begin
-        if (en && !rst_n) begin
-            assert (count == 0) else $error("Counter reset failed");
-        end else if (en) begin
-            if (up_down) begin
-                assert (count < (1 << COUNTER_WIDTH) - 1) else $error("Counter overflow detected");
-            end else begin
-                assert (count > 0) else $error("Counter underflow detected");
-            end
-        end
+    // 输出计数值
+    assign count = count_reg;
+
+    // 断言检查：确保计数器位宽为正整数
+    `ifndef SYNTHESIS
+    initial begin
+        assert(WIDTH > 0) else $fatal("Counter width must be greater than 0");
     end
     `endif
 

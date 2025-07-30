@@ -419,3 +419,191 @@ Your selection:
 2025-07-30 16:51:01,310 - ToolRegistry - INFO - Tool call: database_search_modules by real_verilog_design_agent - SUCCESS (0.001s)
 2025-07-30 16:51:01,310 - Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
 2025-07-30 16:51:20,239 - Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 4171 字符
+2025-07-30 16:51:31,680 - Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+2025-07-30 16:51:31,680 - Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: output/counter_32bit.v
+2025-07-30 16:51:31,681 - Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: output/counter_32bit_doc.md
+2025-07-30 16:51:31,681 - Agent.real_verilog_design_agent - INFO - 💾 文件保存完成: 2 个文件
+2025-07-30 16:51:31,682 - Agent.centralized_coordinator - INFO - ✅ 成功解析标准化响应: real_verilog_design_agent
+2025-07-30 16:51:31,682 - Agent.centralized_coordinator - INFO - ✅ 任务完成: real_verilog_design_agent
+2025-07-30 16:51:31,682 - __main__ - INFO - ✅ 改进设计完成
+2025-07-30 16:51:31,682 - __main__ - INFO - 🔍 最终审查: 对改进后的计数器设计进行最终审查，确保符合工业标准
+2025-07-30 16:51:31,682 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1753865491
+2025-07-30 16:51:33,285 - Agent.centralized_coordinator - INFO - 🔧 规范化任务分析: {"task_type": "review", "complexity": 7, "required_capabilities": ["code_review", "module_design", "industry_standard_compliance"], "estimated_hours": 12, "priority": "high", "dependencies": []}
+2025-07-30 16:51:33,285 - Agent.centralized_coordinator - INFO - 📊 任务分析完成: 复杂度=7
+2025-07-30 16:51:33,285 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent Selection Process Started
+2025-07-30 16:51:33,285 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Total registered agents: 2
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Excluded agents: set()
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents after filtering: 2
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agent details:
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - real_verilog_design_agent: status=idle, capabilities=['code_generation', 'module_design', 'specification_analysis']
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - real_code_review_agent: status=idle, capabilities=['quality_analysis', 'code_review', 'specification_analysis']
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: LLM client available: True
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Using LLM agent selection strategy
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: LLM Agent Selection Details
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents count: 2
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agent IDs: ['real_verilog_design_agent', 'real_code_review_agent']
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent real_verilog_design_agent:
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - Role: verilog_designer
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - Capabilities: ['code_generation', 'module_design', 'specification_analysis']
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - Status: idle
+2025-07-30 16:51:33,286 - Agent.centralized_coordinator - INFO -   - Specialty: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Success Rate: 1.00
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent real_code_review_agent:
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Role: code_reviewer
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Capabilities: ['quality_analysis', 'code_review', 'specification_analysis']
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Status: idle
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Specialty: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO -   - Success Rate: 1.00
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task Analysis: {
+  "task_type": "review",
+  "complexity": 7,
+  "required_capabilities": [
+    "code_review",
+    "module_design",
+    "industry_standard_compliance"
+  ],
+  "estimated_hours": 12,
+  "priority": "high",
+  "dependencies": []
+}
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agents Info String:
+- real_verilog_design_agent: verilog_designer | 能力: ['code_generation', 'module_design', 'specification_analysis'] | 专长: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务 | 成功率: 1.00
+- real_code_review_agent: code_reviewer | 能力: ['quality_analysis', 'code_review', 'specification_analysis'] | 专长: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议 | 成功率: 1.00
+2025-07-30 16:51:33,287 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Full Selection Prompt:
+
+You are a task coordinator selecting the best agent for a specific task. 
+
+TASK ANALYSIS:
+- Task Type: review
+- Complexity: 7/10
+- Required Capabilities: ['code_review', 'module_design', 'industry_standard_compliance']
+
+AVAILABLE AGENTS:
+- real_verilog_design_agent: verilog_designer | 能力: ['code_generation', 'module_design', 'specification_analysis'] | 专长: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务 | 成功率: 1.00
+- real_code_review_agent: code_reviewer | 能力: ['quality_analysis', 'code_review', 'specification_analysis'] | 专长: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议 | 成功率: 1.00
+
+SELECTION RULES:
+1. For "design" tasks: Select agents with "code_generation" or "module_design" capabilities
+2. For "testing" tasks: Select agents with "test_generation" or "verification" capabilities  
+3. For "review" tasks: Select agents with "code_review" or "quality_analysis" capabilities
+4. For "optimization" tasks: Select agents with "performance_optimization" capabilities
+5. Consider agent success rate (higher is better)
+6. Match capabilities to task requirements as closely as possible
+
+RESPONSE FORMAT:
+Return ONLY the exact agent_id (case-sensitive) from the available agents list above.
+If no agent is suitable, return exactly "none".
+
+Examples:
+- If real_verilog_design_agent is available for a design task: real_verilog_design_agent
+- If no suitable agent exists: none
+
+Your selection:
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Raw LLM response: 'real_code_review_agent'
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Response length: 22
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Response type: <class 'str'>
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Processed response: 'real_code_review_agent'
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Checking 'real_code_review_agent' == 'real_verilog_design_agent': False
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Checking 'real_code_review_agent' == 'real_code_review_agent': True
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🎯 LLM选择智能体: real_code_review_agent
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1753865491
+2025-07-30 16:51:33,672 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: real_code_review_agent 发言
+2025-07-30 16:51:33,672 - Agent.real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+2025-07-30 16:51:33,672 - Agent.real_code_review_agent - INFO - 🔍 开始执行代码审查任务: conv_1753865491
+2025-07-30 16:51:33,673 - Agent.centralized_coordinator - INFO - ✅ 成功解析标准化响应: real_code_review_agent
+2025-07-30 16:51:33,673 - Agent.centralized_coordinator - INFO - ✅ 任务完成: real_code_review_agent
+2025-07-30 16:51:33,673 - __main__ - INFO - ✅ 最终审查完成
+2025-07-30 16:51:33,673 - __main__ - INFO - ✅ 测试2完成 - 用时: 71.74秒
+2025-07-30 16:51:33,673 - __main__ - INFO - 
+============================================================
+2025-07-30 16:51:33,673 - __main__ - INFO - 🧪 测试3: 复杂多轮协作
+2025-07-30 16:51:33,673 - __main__ - INFO - ============================================================
+2025-07-30 16:51:33,673 - __main__ - INFO - 📝 复杂设计任务: 设计UART通信模块
+2025-07-30 16:51:33,673 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1753865493
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔧 规范化任务分析: {"task_type": "design", "complexity": 7, "required_capabilities": ["code_generation", "module_design", "protocol_compliance"], "estimated_hours": 12, "priority": "high", "dependencies": []}
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 📊 任务分析完成: 复杂度=7
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent Selection Process Started
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Total registered agents: 2
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Excluded agents: set()
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents after filtering: 2
+2025-07-30 16:51:35,013 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agent details:
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - real_verilog_design_agent: status=idle, capabilities=['code_generation', 'module_design', 'specification_analysis']
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - real_code_review_agent: status=idle, capabilities=['quality_analysis', 'code_review', 'specification_analysis']
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: LLM client available: True
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Using LLM agent selection strategy
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: LLM Agent Selection Details
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents count: 2
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agent IDs: ['real_verilog_design_agent', 'real_code_review_agent']
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent real_verilog_design_agent:
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - Role: verilog_designer
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - Capabilities: ['code_generation', 'module_design', 'specification_analysis']
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - Status: idle
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - Specialty: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务
+2025-07-30 16:51:35,014 - Agent.centralized_coordinator - INFO -   - Success Rate: 1.00
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent real_code_review_agent:
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO -   - Role: code_reviewer
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO -   - Capabilities: ['quality_analysis', 'code_review', 'specification_analysis']
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO -   - Status: idle
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO -   - Specialty: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO -   - Success Rate: 1.00
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task Analysis: {
+  "task_type": "design",
+  "complexity": 7,
+  "required_capabilities": [
+    "code_generation",
+    "module_design",
+    "protocol_compliance"
+  ],
+  "estimated_hours": 12,
+  "priority": "high",
+  "dependencies": []
+}
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agents Info String:
+- real_verilog_design_agent: verilog_designer | 能力: ['code_generation', 'module_design', 'specification_analysis'] | 专长: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务 | 成功率: 1.00
+- real_code_review_agent: code_reviewer | 能力: ['quality_analysis', 'code_review', 'specification_analysis'] | 专长: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议 | 成功率: 1.00
+2025-07-30 16:51:35,015 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Full Selection Prompt:
+
+You are a task coordinator selecting the best agent for a specific task. 
+
+TASK ANALYSIS:
+- Task Type: design
+- Complexity: 7/10
+- Required Capabilities: ['code_generation', 'module_design', 'protocol_compliance']
+
+AVAILABLE AGENTS:
+- real_verilog_design_agent: verilog_designer | 能力: ['code_generation', 'module_design', 'specification_analysis'] | 专长: 真实LLM驱动的Verilog HDL设计智能体，提供专业的数字电路设计和代码生成服务 | 成功率: 1.00
+- real_code_review_agent: code_reviewer | 能力: ['quality_analysis', 'code_review', 'specification_analysis'] | 专长: 真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议 | 成功率: 1.00
+
+SELECTION RULES:
+1. For "design" tasks: Select agents with "code_generation" or "module_design" capabilities
+2. For "testing" tasks: Select agents with "test_generation" or "verification" capabilities  
+3. For "review" tasks: Select agents with "code_review" or "quality_analysis" capabilities
+4. For "optimization" tasks: Select agents with "performance_optimization" capabilities
+5. Consider agent success rate (higher is better)
+6. Match capabilities to task requirements as closely as possible
+
+RESPONSE FORMAT:
+Return ONLY the exact agent_id (case-sensitive) from the available agents list above.
+If no agent is suitable, return exactly "none".
+
+Examples:
+- If real_verilog_design_agent is available for a design task: real_verilog_design_agent
+- If no suitable agent exists: none
+
+Your selection:
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Raw LLM response: 'real_verilog_design_agent'
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Response length: 25
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Response type: <class 'str'>
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Processed response: 'real_verilog_design_agent'
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Checking 'real_verilog_design_agent' == 'real_verilog_design_agent': True
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Checking 'real_verilog_design_agent' == 'real_code_review_agent': False
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🎯 LLM选择智能体: real_verilog_design_agent
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1753865493
+2025-07-30 16:51:35,397 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: real_verilog_design_agent 发言
+2025-07-30 16:51:35,397 - Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+2025-07-30 16:51:35,397 - Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1753865493
+2025-07-30 16:51:46,554 - Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: uart - 复杂度8
+2025-07-30 16:51:46,554 - Agent.real_verilog_design_agent - INFO - 📊 任务分析: uart
+2025-07-30 16:51:46,555 - DatabaseConnector.SQLiteConnector - INFO - 🗄️ 查询执行成功: 0 行, 0.000s
+2025-07-30 16:51:46,555 - ToolRegistry - INFO - Tool call: database_search_modules by real_verilog_design_agent - SUCCESS (0.001s)
+2025-07-30 16:51:46,555 - Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
