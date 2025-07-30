@@ -1,88 +1,94 @@
 ```verilog
 /*
- * Module: counter_8bit
+ * Module: counter_8bit_up_down
  *
  * Description:
- * 8位可向上或向下计数的计数器，支持使能信号和异步复位。
- * 当使能为高时，根据方向控制信号进行加法或减法计数；
- * 当使能为低时，计数器保持当前状态。
+ * 8位可向上/向下计数的计数器，支持使能信号和异步复位。
+ * 当使能信号有效时，根据方向控制信号进行加法或减法计数；
+ * 复位信号异步清除计数值为0。
  *
  * Parameters:
- *   WIDTH - 计数器位宽（默认8位）
+ *   WIDTH - 计数器位宽 (默认为8)
  *
  * Input Ports:
- *   clk        - 时钟输入 (1-bit)
- *   rst_n      - 异步复位信号 (1-bit, 低电平有效)
- *   en         - 使能信号 (1-bit, 高电平有效)
- *   up_down    - 方向控制信号 (1-bit, 1为向上计数，0为向下计数)
+ *   clk       - 时钟输入
+ *   en        - 使能信号，控制计数是否生效
+ *   up_down   - 方向控制信号，1表示向上计数，0表示向下计数
+ *   rst_n     - 异步复位信号，低电平有效
  *
  * Output Ports:
- *   count      - 8位计数值输出 (8-bit)
+ *   count     - 当前计数值输出 (8位)
  *
  * Special Features:
  *   - 异步复位功能
- *   - 方向控制
- *   - 使能控制
+ *   - 方向可控计数
  *
  * Timing Constraints:
- *   - 时钟频率需满足设计要求（如50MHz或更高）
+ *   目标频率通常为50MHz至100MHz
  *
  * Area Constraints:
- *   - 尽量优化逻辑门数量以减少面积
+ *   尽量优化逻辑门数量以减少面积
  *
  * Power Considerations:
- *   - 在静态状态下应尽可能降低功耗
- *
- * Design Notes:
- *   - 使用标准Verilog-2001/SystemVerilog语法
- *   - 采用清晰的模块化架构
- *   - 包含详细的注释和模块文档
- *   - 添加适当的断言和检查
+ *   在静态条件下功耗较低，动态功耗取决于时钟频率和计数器活动性
  */
 
 `timescale 1ns / 1ps
 
-module counter_8bit #(
-    parameter int WIDTH = 8  // 计数器位宽
-)(
-    input  logic clk,
-    input  logic rst_n,
-    input  logic en,
-    input  logic up_down,
-    output logic [WIDTH-1:0] count
+module counter_8bit_up_down #(
+    parameter int WIDTH = 8
+) (
+    input      clk,
+    input      en,
+    input      up_down,
+    input      rst_n,
+    output reg [WIDTH-1:0] count
 );
 
-    // 内部信号声明
-    logic [WIDTH-1:0] count_reg;
+// Internal signals
+reg [WIDTH-1:0] next_count;
 
-    // 模块功能描述
-    // 该计数器在时钟上升沿触发，根据使能信号和方向控制信号进行计数
-    // 当复位信号有效时，计数器被清零
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            // 异步复位：将计数器清零
-            count_reg <= '0;
-        end else if (en) begin
-            // 使能有效时，根据方向控制信号进行加法或减法计数
-            if (up_down) begin
-                // 向上计数
-                count_reg <= count_reg + 1;
-            end else begin
-                // 向下计数
-                count_reg <= count_reg - 1;
-            end
+// Module documentation
+// This is a 8-bit up/down counter with enable and asynchronous reset.
+// It increments or decrements based on the up_down signal when enabled.
+
+// Main logic
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        // Asynchronous reset: set count to 0
+        count <= {WIDTH{1'b0}};
+    end else if (en) begin
+        // Only update count when enabled
+        if (up_down) begin
+            // Up counting
+            next_count <= count + 1;
+        end else begin
+            // Down counting
+            next_count <= count - 1;
+        end
+        count <= next_count;
+    end
+end
+
+// Boundary check for overflow/underflow (optional, can be removed for area optimization)
+// This is a simple check that can be used for debugging or verification
+// In industrial designs, this may be omitted for performance reasons
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        // Reset condition
+    end else if (en) begin
+        // Check for overflow (max value)
+        if (up_down && (count == {WIDTH{1'b1}})) begin
+            // Overflow detected
+            // Can add alert or logging here if needed
+        end
+        // Check for underflow (min value)
+        if (!up_down && (count == {WIDTH{1'b0}})) begin
+            // Underflow detected
+            // Can add alert or logging here if needed
         end
     end
-
-    // 输出计数值
-    assign count = count_reg;
-
-    // 断言检查：确保计数器位宽为正整数
-    `ifndef SYNTHESIS
-    initial begin
-        assert(WIDTH > 0) else $fatal("Counter width must be greater than 0");
-    end
-    `endif
+end
 
 endmodule
 ```

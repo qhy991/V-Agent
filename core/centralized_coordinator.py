@@ -231,6 +231,10 @@ Task to analyze: {task_description}
             # 规范化分析结果，处理可能的中文字段名
             normalized_analysis = self._normalize_task_analysis(analysis)
             
+            # 包含原始上下文
+            if context:
+                normalized_analysis['context'] = context
+            
             self.logger.info(f"📊 任务分析完成: 复杂度={normalized_analysis.get('complexity', 'N/A')}")
             return normalized_analysis
             
@@ -577,6 +581,21 @@ Your selection:"""
         iteration_count = 0
         all_file_references = []
         task_completed = False
+        
+        # 从task_analysis中提取初始文件引用
+        initial_files = task_analysis.get('context', {}).get('file_references', [])
+        if initial_files:
+            from core.base_agent import FileReference
+            for file_data in initial_files:
+                if isinstance(file_data, dict):
+                    file_ref = FileReference(
+                        file_path=file_data.get('file_path', ''),
+                        file_type=file_data.get('file_type', 'unknown'),
+                        description=file_data.get('description', ''),
+                        metadata=file_data.get('metadata', {})
+                    )
+                    all_file_references.append(file_ref)
+            self.logger.info(f"📁 初始化文件引用: {len(all_file_references)} 个文件")
         
         # 初始化循环检测
         self.repetition_tracker[conversation_id] = []

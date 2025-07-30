@@ -1,231 +1,362 @@
 ```verilog
+// ============================================================================
+// Module: uart_core
+// Description: UART communication module with configurable baud rate, parity,
+//              FIFO buffers, and status indicators. Implements industrial standard
+//              UART protocol.
+//
+// Parameters:
+//   CLK_FREQ - System clock frequency in Hz (e.g., 10_000_000 for 10MHz)
+//   DATA_WIDTH - Data width (8 bits for standard UART)
+//   FIFO_DEPTH - Depth of FIFO buffer (minimum 16 bytes)
+//
+// Inputs:
+//   clk        - System clock input
+//   rst_n      - Asynchronous active-low reset
+//   tx_data    - 8-bit data to be transmitted
+//   tx_en      - Transmit enable signal
+//   rx_data    - Serial data input from receiver
+//   parity_sel - Parity selection (00: no parity, 01: even, 10: odd)
+//   baud_rate_sel - Baud rate selection (00:9600, 01:19200, 10:38400, 11:115200)
+//
+// Outputs:
+//   tx_out     - Serial data output
+//   rx_data_out - 8-bit received data output
+//   tx_busy    - Transmit busy indicator
+//   tx_done    - Transmit complete flag
+//   rx_ready   - Receive data ready indicator
+//   rx_error   - Receive error flag (frame or parity error)
+//
+// Features:
+//   - Configurable baud rate (9600, 19200, 38400, 115200)
+//   - Parity generation/checking (even, odd, none)
+//   - 16-byte FIFO for both transmit and receive
+//   - Status signals for transmission and reception
+//   - Industrial standard UART protocol compliance
+//
+// Clock Domain: Single
+// Reset Type: Asynchronous
+// ============================================================================
 `timescale 1ns / 1ps
 
-/**
- * @brief UART通信模块，支持发送和接收数据，具有可配置波特率、奇偶校验、FIFO缓冲区以及状态指示信号。
- *
- * @details 该模块实现符合工业标准的UART协议，支持以下功能：
- * - 可配置波特率（9600, 19200, 38400, 115200）
- * - 发送器与接收器独立实现
- * - 奇偶校验（奇/偶/无）
- * - 16字节深度FIFO缓冲区
- * - 状态指示信号（忙碌、发送完成、接收完成、错误等）
- * - 符合工业标准的UART协议
- *
- * @param CLK_FREQ 系统时钟频率（单位：Hz），用于计算波特率分频系数
- * @param DATA_WIDTH 数据宽度（固定为8位）
- * @param FIFO_DEPTH FIFO深度（固定为16字节）
- */
-module uart (
-    // 输入端口
-    input      clk,                  // 系统时钟输入
-    input      rst_n,                // 异步复位信号（低电平有效）
-    input      tx_data,              // 待发送的数据输入（8位）
-    input      tx_en,                // 发送使能信号
-    input      rx_data,              // 接收数据输入（1位）
-    input      baud_rate_sel,        // 波特率选择（2位）
-    input      parity_sel,           // 奇偶校验选择（2位）
+module uart_core #(
+    parameter CLK_FREQ = 10_000_000,       // System clock frequency in Hz
+    parameter DATA_WIDTH = 8,              // Data width (8 bits for UART)
+    parameter FIFO_DEPTH = 16              // FIFO depth (minimum 16 bytes)
+) (
+    // Inputs
+    input wire clk,
+    input wire rst_n,
+    input wire [DATA_WIDTH-1:0] tx_data,
+    input wire tx_en,
+    input wire rx_data,
+    input wire [1:0] parity_sel,
+    input wire [1:0] baud_rate_sel,
 
-    // 输出端口
-    output     tx_out,               // 发送数据输出（UART TX）
-    output     rx_out,               // 接收数据输出（8位）
-    output     tx_full,              // 发送FIFO满标志
-    output     tx_empty,             // 发送FIFO空标志
-    output     rx_full,              // 接收FIFO满标志
-    output     rx_empty,             // 接收FIFO空标志
-    output     tx_done,              // 发送完成标志
-    output     rx_done,              // 接收完成标志
-    output     rx_error              // 接收错误标志（如帧错误或校验错误）
+    // Outputs
+    output reg tx_out,
+    output reg [DATA_WIDTH-1:0] rx_data_out,
+    output reg tx_busy,
+    output reg tx_done,
+    output reg rx_ready,
+    output reg rx_error
 );
 
-// 参数定义
-parameter CLK_FREQ = 50_000_000;   // 系统时钟频率（Hz）
-parameter DATA_WIDTH = 8;          // 数据宽度（固定为8位）
-parameter FIFO_DEPTH = 16;         // FIFO深度（16字节）
+    // ============================================================================
+    // Parameter Definitions
+    // ============================================================================
+    localparam BAUD_RATE_TABLE = 4'b0000; // Placeholder for baud rate table
+    localparam BAUD_RATE_9600 = 9600;
+    localparam BAUD_RATE_19200 = 19200;
+    localparam BAUD_RATE_38400 = 38400;
+    localparam BAUD_RATE_115200 = 115200;
 
-// 波特率相关参数
-localparam BAUD_RATE_9600 = 9600;
-localparam BAUD_RATE_19200 = 19200;
-localparam BAUD_RATE_38400 = 38400;
-localparam BAUD_RATE_115200 = 115200;
+    // Calculate the number of clock cycles per bit
+    localparam BAUD_RATE = (baud_rate_sel == 2'b00) ? BAUD_RATE_9600 :
+                           (baud_rate_sel == 2'b01) ? BAUD_RATE_19200 :
+                           (baud_rate_sel == 2'b10) ? BAUD_RATE_38400 :
+                                                      BAUD_RATE_115200;
 
-// 计算波特率分频系数
-localparam BAUD_RATE_SEL_WIDTH = 2;
-localparam [BAUD_RATE_SEL_WIDTH-1:0] BAUD_RATE_SEL_9600 = 2'b00;
-localparam [BAUD_RATE_SEL_WIDTH-1:0] BAUD_RATE_SEL_19200 = 2'b01;
-localparam [BAUD_RATE_SEL_WIDTH-1:0] BAUD_RATE_SEL_38400 = 2'b10;
-localparam [BAUD_RATE_SEL_WIDTH-1:0] BAUD_RATE_SEL_115200 = 2'b11;
+    localparam BIT_PERIOD = CLK_FREQ / BAUD_RATE;
 
-localparam [DATA_WIDTH-1:0] PARITY_SEL_NONE = 2'b00;
-localparam [DATA_WIDTH-1:0] PARITY_SEL_ODD = 2'b01;
-localparam [DATA_WIDTH-1:0] PARITY_SEL_EVEN = 2'b10;
+    // ============================================================================
+    // Internal Signals
+    // ============================================================================
+    reg [DATA_WIDTH-1:0] tx_fifo [0:FIFO_DEPTH-1];  // Transmit FIFO
+    reg [DATA_WIDTH-1:0] rx_fifo [0:FIFO_DEPTH-1];  // Receive FIFO
 
-// 内部信号声明
-reg [DATA_WIDTH-1:0] tx_fifo [FIFO_DEPTH-1:0];  // 发送FIFO
-reg [DATA_WIDTH-1:0] rx_fifo [FIFO_DEPTH-1:0];  // 接收FIFO
+    reg [7:0] tx_fifo_ptr;           // Transmit FIFO pointer
+    reg [7:0] rx_fifo_ptr;           // Receive FIFO pointer
 
-reg [DATA_WIDTH-1:0] tx_data_reg;               // 当前待发送数据
-reg [DATA_WIDTH-1:0] rx_data_reg;               // 当前接收到的数据
+    reg [DATA_WIDTH-1:0] tx_shift_reg;  // Transmit shift register
+    reg [DATA_WIDTH-1:0] rx_shift_reg;  // Receive shift register
 
-reg [7:0] tx_bit_count;                         // 发送位计数器
-reg [7:0] rx_bit_count;                         // 接收位计数器
+    reg [7:0] tx_bit_count;           // Transmit bit counter
+    reg [7:0] rx_bit_count;           // Receive bit counter
 
-reg tx_bit_flag;                                // 发送位标志
-reg rx_bit_flag;                                // 接收位标志
+    reg tx_state;                     // Transmit state machine state
+    reg rx_state;                     // Receive state machine state
 
-reg tx_state;                                   // 发送状态机状态
-reg rx_state;                                   // 接收状态机状态
+    reg tx_parity;                    // Transmit parity bit
+    reg rx_parity;                    // Receive parity bit
 
-reg [DATA_WIDTH-1:0] tx_parity;                // 发送奇偶校验位
-reg [DATA_WIDTH-1:0] rx_parity;                // 接收奇偶校验位
+    reg [7:0] tx_bit_counter;         // Transmit bit counter
+    reg [7:0] rx_bit_counter;         // Receive bit counter
 
-reg [DATA_WIDTH-1:0] tx_parity_bit;            // 发送奇偶校验位
-reg [DATA_WIDTH-1:0] rx_parity_bit;            // 接收奇偶校验位
+    reg tx_start_flag;                // Transmit start flag
+    reg rx_start_flag;                // Receive start flag
 
-reg tx_done_flag;                               // 发送完成标志
-reg rx_done_flag;                               // 接收完成标志
-reg rx_error_flag;                              // 接收错误标志
+    reg tx_bit_valid;                 // Transmit bit valid flag
+    reg rx_bit_valid;                 // Receive bit valid flag
 
-reg [DATA_WIDTH-1:0] tx_fifo_head;              // 发送FIFO头部指针
-reg [DATA_WIDTH-1:0] tx_fifo_tail;              // 发送FIFO尾部指针
-reg [DATA_WIDTH-1:0] rx_fifo_head;              // 接收FIFO头部指针
-reg [DATA_WIDTH-1:0] rx_fifo_tail;              // 接收FIFO尾部指针
+    reg rx_frame_error;               // Receive frame error flag
+    reg rx_parity_error;              // Receive parity error flag
 
-reg [DATA_WIDTH-1:0] tx_fifo_count;             // 发送FIFO计数
-reg [DATA_WIDTH-1:0] rx_fifo_count;             // 接收FIFO计数
+    // ============================================================================
+    // Local Parameters
+    // ============================================================================
+    localparam TX_IDLE = 1'b0;
+    localparam TX_START = 1'b1;
+    localparam TX_DATA = 2'b10;
+    localparam TX_PARITY = 2'b11;
+    localparam TX_STOP = 3'b100;
 
-reg [DATA_WIDTH-1:0] tx_fifo_full;              // 发送FIFO满标志
-reg [DATA_WIDTH-1:0] tx_fifo_empty;             // 发送FIFO空标志
-reg [DATA_WIDTH-1:0] rx_fifo_full;              // 接收FIFO满标志
-reg [DATA_WIDTH-1:0] rx_fifo_empty;             // 接收FIFO空标志
+    localparam RX_IDLE = 1'b0;
+    localparam RX_START = 1'b1;
+    localparam RX_DATA = 2'b10;
+    localparam RX_PARITY = 2'b11;
+    localparam RX_STOP = 3'b100;
 
-reg [DATA_WIDTH-1:0] tx_fifo_wr_en;             // 发送FIFO写使能
-reg [DATA_WIDTH-1:0] tx_fifo_rd_en;             // 发送FIFO读使能
-reg [DATA_WIDTH-1:0] rx_fifo_wr_en;             // 接收FIFO写使能
-reg [DATA_WIDTH-1:0] rx_fifo_rd_en;             // 接收FIFO读使能
+    // ============================================================================
+    // FIFO Control Logic
+    // ============================================================================
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tx_fifo_ptr <= 0;
+            rx_fifo_ptr <= 0;
+            tx_busy <= 1'b0;
+            tx_done <= 1'b0;
+            rx_ready <= 1'b0;
+            rx_error <= 1'b0;
+        end else begin
+            // Transmit FIFO control
+            if (tx_en && !tx_busy && tx_fifo_ptr < FIFO_DEPTH - 1) begin
+                tx_fifo[tx_fifo_ptr] <= tx_data;
+                tx_fifo_ptr <= tx_fifo_ptr + 1;
+            end
 
-reg [DATA_WIDTH-1:0] tx_fifo_data_in;           // 发送FIFO数据输入
-reg [DATA_WIDTH-1:0] rx_fifo_data_out;          // 接收FIFO数据输出
+            // Receive FIFO control
+            if (rx_ready && rx_fifo_ptr < FIFO_DEPTH - 1) begin
+                rx_fifo[rx_fifo_ptr] <= rx_data_out;
+                rx_fifo_ptr <= rx_fifo_ptr + 1;
+            end
 
-reg [DATA_WIDTH-1:0] tx_fifo_data_out;          // 发送FIFO数据输出
-reg [DATA_WIDTH-1:0] rx_fifo_data_in;           // 接收FIFO数据输入
+            // Update status signals
+            tx_busy <= (tx_state != TX_IDLE);
+            tx_done <= (tx_state == TX_STOP && tx_bit_count == 0);
+            rx_ready <= (rx_state == RX_IDLE && rx_fifo_ptr > 0);
+            rx_error <= rx_frame_error || rx_parity_error;
+        end
+    end
 
-reg [DATA_WIDTH-1:0] tx_data_out;               // 发送数据输出
-reg [DATA_WIDTH-1:0] rx_data_out;               // 接收数据输出
+    // ============================================================================
+    // Baud Rate Generator
+    // ============================================================================
+    reg [7:0] baud_counter;
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            baud_counter <= 0;
+            tx_out <= 1'b1;
+        end else begin
+            if (baud_counter == BIT_PERIOD - 1) begin
+                baud_counter <= 0;
+                tx_out <= ~tx_out;
+            end else begin
+                baud_counter <= baud_counter + 1;
+            end
+        end
+    end
 
-reg [DATA_WIDTH-1:0] tx_parity_out;             // 发送奇偶校验位输出
-reg [DATA_WIDTH-1:0] rx_parity_out;             // 接收奇偶校验位输出
+    // ============================================================================
+    // Transmit State Machine
+    // ============================================================================
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            tx_state <= TX_IDLE;
+            tx_bit_count <= 0;
+            tx_shift_reg <= 0;
+            tx_parity <= 1'b0;
+            tx_start_flag <= 1'b0;
+            tx_bit_valid <= 1'b0;
+        end else begin
+            case (tx_state)
+                TX_IDLE: begin
+                    if (tx_en && tx_fifo_ptr > 0) begin
+                        tx_state <= TX_START;
+                        tx_bit_count <= 0;
+                        tx_shift_reg <= tx_fifo[0];
+                        tx_fifo_ptr <= tx_fifo_ptr - 1;
+                        tx_start_flag <= 1'b1;
+                        tx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_parity_check;           // 发送奇偶校验检查
-reg [DATA_WIDTH-1:0] rx_parity_check;           // 接收奇偶校验检查
+                TX_START: begin
+                    if (tx_bit_count == 0) begin
+                        tx_out <= 1'b0;
+                        tx_bit_count <= tx_bit_count + 1;
+                    end else if (tx_bit_count == BIT_PERIOD - 1) begin
+                        tx_state <= TX_DATA;
+                        tx_bit_count <= 0;
+                        tx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_parity_valid;           // 发送奇偶校验有效
-reg [DATA_WIDTH-1:0] rx_parity_valid;           // 接收奇偶校验有效
+                TX_DATA: begin
+                    if (tx_bit_valid) begin
+                        tx_out <= tx_shift_reg[0];
+                        tx_shift_reg <= tx_shift_reg >> 1;
+                        tx_bit_count <= tx_bit_count + 1;
+                        tx_bit_valid <= 1'b0;
+                    end else if (tx_bit_count == BIT_PERIOD - 1) begin
+                        tx_bit_count <= 0;
+                        tx_bit_valid <= 1'b1;
+                        if (tx_shift_reg == 0) begin
+                            tx_state <= TX_PARITY;
+                        end
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_parity_error;           // 发送奇偶校验错误
-reg [DATA_WIDTH-1:0] rx_parity_error;           // 接收奇偶校验错误
+                TX_PARITY: begin
+                    if (parity_sel != 2'b00) begin
+                        // Calculate parity
+                        tx_parity <= ^tx_shift_reg;
+                        if (parity_sel == 2'b01) begin
+                            tx_parity <= ~tx_parity; // Even parity
+                        end
+                        tx_out <= tx_parity;
+                        tx_bit_count <= tx_bit_count + 1;
+                    end
+                    if (tx_bit_count == BIT_PERIOD - 1) begin
+                        tx_state <= TX_STOP;
+                        tx_bit_count <= 0;
+                        tx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_frame_error;            // 发送帧错误
-reg [DATA_WIDTH-1:0] rx_frame_error;            // 接收帧错误
+                TX_STOP: begin
+                    if (tx_bit_count == 0) begin
+                        tx_out <= 1'b1;
+                        tx_bit_count <= tx_bit_count + 1;
+                    end else if (tx_bit_count == BIT_PERIOD - 1) begin
+                        tx_state <= TX_IDLE;
+                        tx_bit_count <= 0;
+                        tx_done <= 1'b1;
+                    end
+                end
+            endcase
+        end
+    end
 
-reg [DATA_WIDTH-1:0] tx_baud_div;               // 发送波特率分频器
-reg [DATA_WIDTH-1:0] rx_baud_div;               // 接收波特率分频器
+    // ============================================================================
+    // Receive State Machine
+    // ============================================================================
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rx_state <= RX_IDLE;
+            rx_bit_count <= 0;
+            rx_shift_reg <= 0;
+            rx_parity <= 1'b0;
+            rx_start_flag <= 1'b0;
+            rx_bit_valid <= 1'b0;
+            rx_frame_error <= 1'b0;
+            rx_parity_error <= 1'b0;
+        end else begin
+            case (rx_state)
+                RX_IDLE: begin
+                    if (rx_data == 1'b0) begin
+                        rx_state <= RX_START;
+                        rx_bit_count <= 0;
+                        rx_start_flag <= 1'b1;
+                        rx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_baud_counter;           // 发送波特率计数器
-reg [DATA_WIDTH-1:0] rx_baud_counter;           // 接收波特率计数器
+                RX_START: begin
+                    if (rx_bit_count == 0) begin
+                        rx_bit_count <= rx_bit_count + 1;
+                    end else if (rx_bit_count == BIT_PERIOD - 1) begin
+                        rx_state <= RX_DATA;
+                        rx_bit_count <= 0;
+                        rx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_baud_reload;            // 发送波特率重载值
-reg [DATA_WIDTH-1:0] rx_baud_reload;            // 接收波特率重载值
+                RX_DATA: begin
+                    if (rx_bit_valid) begin
+                        rx_shift_reg <= {rx_shift_reg[DATA_WIDTH-2:0], rx_data};
+                        rx_bit_count <= rx_bit_count + 1;
+                        rx_bit_valid <= 1'b0;
+                    end else if (rx_bit_count == BIT_PERIOD - 1) begin
+                        rx_bit_count <= 0;
+                        rx_bit_valid <= 1'b1;
+                        if (rx_shift_reg[DATA_WIDTH-1] == 1'b1) begin
+                            rx_state <= RX_PARITY;
+                        end
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_baud_tick;              // 发送波特率时钟周期
-reg [DATA_WIDTH-1:0] rx_baud_tick;              // 接收波特率时钟周期
+                RX_PARITY: begin
+                    if (parity_sel != 2'b00) begin
+                        // Calculate parity
+                        rx_parity <= ^rx_shift_reg;
+                        if (parity_sel == 2'b01) begin
+                            rx_parity <= ~rx_parity; // Even parity
+                        end
+                        if (rx_parity != rx_data) begin
+                            rx_parity_error <= 1'b1;
+                        end
+                        rx_bit_count <= rx_bit_count + 1;
+                    end
+                    if (rx_bit_count == BIT_PERIOD - 1) begin
+                        rx_state <= RX_STOP;
+                        rx_bit_count <= 0;
+                        rx_bit_valid <= 1'b1;
+                    end
+                end
 
-reg [DATA_WIDTH-1:0] tx_baud_tick_flag;         // 发送波特率时钟周期标志
-reg [DATA_WIDTH-1:0] rx_baud_tick_flag;         // 接收波特率时钟周期标志
+                RX_STOP: begin
+                    if (rx_bit_count == 0) begin
+                        rx_bit_count <= rx_bit_count + 1;
+                    end else if (rx_bit_count == BIT_PERIOD - 1) begin
+                        rx_state <= RX_IDLE;
+                        rx_bit_count <= 0;
+                        rx_data_out <= rx_shift_reg;
+                        rx_ready <= 1'b1;
+                        rx_error <= rx_frame_error || rx_parity_error;
+                    end
+                end
+            endcase
+        end
+    end
 
-reg [DATA_WIDTH-1:0] tx_baud_tick_count;        // 发送波特率时钟周期计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count;        // 接收波特率时钟周期计数
+    // ============================================================================
+    // Additional Checks and Assertions
+    // ============================================================================
+    // Check that the selected baud rate is valid
+    assert property (@(posedge clk) disable iff (!rst_n) 
+        (baud_rate_sel inside {2'b00, 2'b01, 2'b10, 2'b11})) 
+        else $error("Invalid baud rate selection");
 
-reg [DATA_WIDTH-1:0] tx_baud_tick_max;          // 发送波特率最大时钟周期
-reg [DATA_WIDTH-1:0] rx_baud_tick_max;          // 接收波特率最大时钟周期
+    // Check that the selected parity is valid
+    assert property (@(posedge clk) disable iff (!rst_n) 
+        (parity_sel inside {2'b00, 2'b01, 2'b10})) 
+        else $error("Invalid parity selection");
 
-reg [DATA_WIDTH-1:0] tx_baud_tick_min;          // 发送波特率最小时钟周期
-reg [DATA_WIDTH-1:0] rx_baud_tick_min;          // 接收波特率最小时钟周期
+    // Check that the FIFO depth is at least 16
+    assert property (@(posedge clk) disable iff (!rst_n) 
+        (FIFO_DEPTH >= 16)) 
+        else $error("FIFO depth must be at least 16");
 
-reg [DATA_WIDTH-1:0] tx_baud_tick_avg;          // 发送波特率平均时钟周期
-reg [DATA_WIDTH-1:0] rx_baud_tick_avg;          // 接收波特率平均时钟周期
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_diff;         // 发送波特率时钟周期差
-reg [DATA_WIDTH-1:0] rx_baud_tick_diff;         // 接收波特率时钟周期差
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_sum;          // 发送波特率时钟周期总和
-reg [DATA_WIDTH-1:0] rx_baud_tick_sum;          // 接收波特率时钟周期总和
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_max;    // 发送波特率最大计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_max;    // 接收波特率最大计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_min;    // 发送波特率最小计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_min;    // 接收波特率最小计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_avg;    // 发送波特率平均计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_avg;    // 接收波特率平均计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_diff;   // 发送波特率计数差
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_diff;   // 接收波特率计数差
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_sum;    // 发送波特率计数总和
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_sum;    // 接收波特率计数总和
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_total;  // 发送波特率计数总和
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_total;  // 接收波特率计数总和
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_current; // 发送波特率当前计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_current; // 接收波特率当前计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_previous; // 发送波特率上一个计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_previous; // 接收波特率上一个计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next;   // 发送波特率下一个计数
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next;   // 接收波特率下一个计数
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_prev; // 发送波特率下一个计数前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_prev; // 接收波特率下一个计数前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next; // 发送波特率下一个计数下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next; // 接收波特率下一个计数下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_prev; // 发送波特率下一个计数下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_prev; // 接收波特率下一个计数下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next; // 发送波特率下一个计数下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next; // 接收波特率下一个计数下一个值下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_prev; // 发送波特率下一个计数下一个值下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_prev; // 接收波特率下一个计数下一个值下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next; // 发送波特率下一个计数下一个值下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next; // 接收波特率下一个计数下一个值下一个值下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_prev; // 发送波特率下一个计数下一个值下一个值下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_prev; // 接收波特率下一个计数下一个值下一个值下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next; // 发送波特率下一个计数下一个值下一个值下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next; // 接收波特率下一个计数下一个值下一个值下一个值下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_prev; // 发送波特率下一个计数下一个值下一个值下一个值下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_prev; // 接收波特率下一个计数下一个值下一个值下一个值下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_next; // 发送波特率下一个计数下一个值下一个值下一个值下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_next; // 接收波特率下一个计数下一个值下一个值下一个值下一个值下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_next_prev; // 发送波特率下一个计数下一个值下一个值下一个值下一个值下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_next_prev; // 接收波特率下一个计数下一个值下一个值下一个值下一个值下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_next_next; // 发送波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_next_next; // 接收波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_next_next_prev; // 发送波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值前一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_next_next_prev; // 接收波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值前一个值
-
-reg [DATA_WIDTH-1:0] tx_baud_tick_count_next_next_next_next_next_next_next_next; // 发送波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值下一个值
-reg [DATA_WIDTH-1:0] rx_baud_tick_count_next_next_next_next_next_next_next_next; // 接收波特率下一个计数下一个值下一个值下一个值下一个值下一个值下一个值
+endmodule
+```

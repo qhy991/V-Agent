@@ -124,19 +124,22 @@ class MultiAgentCollaborationTest:
                 raise Exception("设计任务未生成任何文件")
             
             logger.info(f"📁 设计生成文件: {len(design_files)} 个")
+            for i, file_ref in enumerate(design_files, 1):
+                logger.info(f"  文件{i}: {file_ref.get('file_path', 'unknown')} ({file_ref.get('file_type', 'unknown')})")
             
-            # 准备审查任务
+            # 准备审查任务 - 明确包含文件引用
             review_task = f"请对刚才设计的ALU模块进行全面的代码审查，重点关注语法正确性、设计质量、时序考虑和最佳实践"
             
             logger.info(f"🔍 审查任务: {review_task}")
             
-            # 执行审查任务
+            # 执行审查任务 - 将文件引用作为file_references传递
             review_result = await self.coordinator.coordinate_task_execution(
                 initial_task=review_task,
                 context={
                     "task_type": "code_review",
                     "expected_agent": "real_code_review_agent",
-                    "design_files": design_files
+                    "design_files": design_files,
+                    "file_references": design_files  # 明确传递文件引用
                 }
             )
             
