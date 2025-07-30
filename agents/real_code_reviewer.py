@@ -532,7 +532,7 @@ class RealCodeReviewAgent(BaseAgent):
         builder.add_metadata("review_type", "comprehensive")
         builder.add_metadata("llm_powered", True)
         
-        # 构建响应
+        # 构建响应 - 代码审查任务总是100%完成
         status = TaskStatus.SUCCESS
         completion = 100.0
         

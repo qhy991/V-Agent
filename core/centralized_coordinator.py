@@ -111,6 +111,10 @@ class CentralizedCoordinator(BaseAgent):
         self.max_conversation_iterations = self.coordinator_config.max_conversation_iterations
         self.conversation_timeout = self.coordinator_config.conversation_timeout
         
+        # 循环检测
+        self.repetition_tracker: Dict[str, List[str]] = {}  # 跟踪对话重复模式
+        self.last_agent_messages: Dict[str, str] = {}  # 跟踪上一条消息
+        
         # 响应解析器
         self.response_parser = ResponseParser()
         self.preferred_response_format = ResponseFormat.JSON
@@ -574,6 +578,9 @@ Your selection:"""
         all_file_references = []
         task_completed = False
         
+        # 初始化循环检测
+        self.repetition_tracker[conversation_id] = []
+        
         self.logger.info(f"💬 启动多轮对话: {conversation_id}")
         
         while (iteration_count < self.max_conversation_iterations and 
@@ -590,9 +597,13 @@ Your selection:"""
                     sender_id=self.agent_id,
                     receiver_id=current_speaker,
                     message_type="task_execution",
-                    content=initial_task if iteration_count == 1 else "继续处理任务",
-                    file_references=all_file_references[-5:] if all_file_references else None,  # 最近5个文件
-                    metadata={"iteration": iteration_count, "task_analysis": task_analysis}
+                    content=initial_task if iteration_count == 1 else self._get_next_prompt(current_speaker, iteration_count),
+                    file_references=all_file_references[-5:] if all_file_references else None,
+                    metadata={
+                        "iteration": iteration_count, 
+                        "task_analysis": task_analysis,
+                        "is_final_iteration": iteration_count >= self.max_conversation_iterations - 2
+                    }
                 )
                 
                 # 2. 智能体执行任务
@@ -606,7 +617,12 @@ Your selection:"""
                     task_id=conversation_id
                 )
                 
-                # 4. 记录对话
+                # 4. 循环检测
+                if self._detect_loop(conversation_id, current_speaker, parsed_response):
+                    self.logger.warning(f"⚠️ 检测到循环，强制终止对话: {conversation_id}")
+                    break
+                
+                # 5. 记录对话
                 conversation_record = ConversationRecord(
                     conversation_id=conversation_id,
                     timestamp=time.time(),
@@ -618,26 +634,37 @@ Your selection:"""
                 )
                 self.conversation_history.append(conversation_record)
                 
-                # 5. 收集文件引用
+                # 6. 收集文件引用
                 if parsed_response.get("file_references"):
                     all_file_references.extend(parsed_response["file_references"])
                 
-                # 6. 检查任务是否完成
-                if parsed_response.get("success", False) and parsed_response.get("task_completed", False):
-                    task_completed = True
+                # 7. 智能任务完成检测
+                task_completed = self._check_task_completion(parsed_response, iteration_count)
+                if task_completed:
                     self.logger.info(f"✅ 任务完成: {current_speaker}")
                     break
                 
-                # 7. 决定下一个发言者
+                # 8. 接近最大轮次时的强制完成
+                if iteration_count >= self.max_conversation_iterations - 1:
+                    self.logger.warning(f"⚠️ 接近最大轮次限制，强制完成任务")
+                    task_completed = True
+                    break
+                
+                # 9. 决定下一个发言者
                 next_speaker = await self._decide_next_speaker(
                     current_result=parsed_response,
-                    conversation_history=self.conversation_history[-3:],  # 最近3轮
+                    conversation_history=self.conversation_history[-3:],
                     task_analysis=task_analysis
                 )
                 
                 if next_speaker == current_speaker or not next_speaker:
-                    # 没有更好的选择，继续当前智能体
-                    self.logger.info(f"📍 继续使用当前智能体: {current_speaker}")
+                    # 检查是否应该继续当前智能体
+                    if self._should_continue_current_agent(parsed_response, iteration_count):
+                        self.logger.info(f"📍 继续使用当前智能体: {current_speaker}")
+                    else:
+                        self.logger.info(f"⏹️ 当前智能体已完成工作，任务结束")
+                        task_completed = True
+                        break
                 else:
                     current_speaker = next_speaker
                     self.logger.info(f"🔄 切换到智能体: {current_speaker}")
@@ -645,6 +672,10 @@ Your selection:"""
             except Exception as e:
                 self.logger.error(f"❌ 对话轮次 {iteration_count} 失败: {str(e)}")
                 break
+        
+        # 清理循环检测数据
+        if conversation_id in self.repetition_tracker:
+            del self.repetition_tracker[conversation_id]
         
         # 生成最终结果
         total_duration = time.time() - conversation_start
@@ -656,7 +687,8 @@ Your selection:"""
             "file_references": all_file_references,
             "conversation_history": [record.to_dict() for record in self.conversation_history[-iteration_count:]],
             "final_speaker": current_speaker,
-            "task_analysis": task_analysis
+            "task_analysis": task_analysis,
+            "force_completed": iteration_count >= self.max_conversation_iterations - 1
         }
     
     async def _decide_next_speaker(self, current_result: Dict[str, Any],
@@ -961,6 +993,102 @@ Your main response message here
                     return agent_id
         
         return None  # 继续当前智能体
+
+    def _detect_loop(self, conversation_id: str, agent_id: str, response: Dict[str, Any]) -> bool:
+        """检测循环模式"""
+        if conversation_id not in self.repetition_tracker:
+            self.repetition_tracker[conversation_id] = []
+        
+        # 记录当前轮次信息
+        message_key = f"{agent_id}:{response.get('message', '')[:100]}"
+        self.repetition_tracker[conversation_id].append(message_key)
+        
+        # 只保留最近10轮记录
+        if len(self.repetition_tracker[conversation_id]) > 10:
+            self.repetition_tracker[conversation_id] = self.repetition_tracker[conversation_id][-10:]
+        
+        # 检测重复模式
+        recent_history = self.repetition_tracker[conversation_id]
+        if len(recent_history) < 3:
+            return False
+        
+        # 检查最近3轮是否相同
+        last_3 = recent_history[-3:]
+        if len(set(last_3)) == 1:
+            self.logger.warning(f"🔄 检测到3轮重复: {last_3[0]}")
+            return True
+        
+        # 检查整体重复率
+        if len(recent_history) >= 5:
+            unique_messages = set(recent_history)
+            repetition_rate = 1 - (len(unique_messages) / len(recent_history))
+            if repetition_rate > 0.7:  # 70%以上的内容重复
+                self.logger.warning(f"🔄 检测到高重复率: {repetition_rate:.2f}")
+                return True
+        
+        return False
+
+    def _check_task_completion(self, response: Dict[str, Any], iteration_count: int) -> bool:
+        """智能检查任务是否完成"""
+        # 1. 直接检查任务完成标志
+        if response.get("task_completed", False):
+            return True
+        
+        # 2. 检查完成百分比
+        completion = response.get("completion_percentage", 0)
+        if completion >= 100:
+            return True
+        
+        # 3. 检查成功状态且没有下一步
+        if response.get("success", False) and not response.get("next_steps"):
+            return True
+        
+        # 4. 检查是否生成最终交付物
+        file_refs = response.get("file_references", [])
+        for file_ref in file_refs:
+            if any(keyword in str(file_ref).lower() for keyword in ["final", "complete", "report", "summary"]):
+                return True
+        
+        # 5. 检查错误状态
+        if response.get("error") and not response.get("success", True):
+            return True  # 错误状态下认为任务结束
+        
+        return False
+
+    def _should_continue_current_agent(self, response: Dict[str, Any], iteration_count: int) -> bool:
+        """判断是否应该继续当前智能体"""
+        # 检查是否有明确的继续指示
+        next_steps = response.get("next_steps", [])
+        if any("continue" in str(step).lower() for step in next_steps):
+            return True
+        
+        # 检查是否有未解决的问题
+        issues = response.get("issues", [])
+        high_severity_issues = [issue for issue in issues if str(issue.get("severity", "")).lower() in ["high", "critical"]]
+        if high_severity_issues:
+            return True
+        
+        # 检查是否有未完成的子任务
+        if iteration_count < 5 and response.get("success", False):
+            return True  # 早期阶段允许继续
+        
+        return False
+
+    def _get_next_prompt(self, agent_id: str, iteration_count: int) -> str:
+        """获取下一轮次的提示"""
+        base_prompts = [
+            "继续处理任务，请确保提供明确的完成状态",
+            "继续当前任务，如果已完成请设置task_completed=true",
+            "检查任务状态，如已完成请明确标记完成",
+        ]
+        
+        # 根据迭代次数调整提示
+        if iteration_count > 15:
+            return "这是接近最后几轮，请确保任务完成或报告未完成的原因"
+        elif iteration_count > 10:
+            return "请评估当前进度，如果任务基本完成请标记为完成"
+        else:
+            return base_prompts[min(iteration_count - 1, len(base_prompts) - 1)]
     
     # ==========================================================================
     # 📊 状态和统计
