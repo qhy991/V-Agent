@@ -182,9 +182,12 @@ class BaseAgent(ABC):
             # 确保目录存在
             Path(file_path).parent.mkdir(parents=True, exist_ok=True)
             
+            # 清理内容：移除markdown格式标记
+            cleaned_content = self._clean_file_content(content, file_type)
+            
             # 写入文件
             with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
+                f.write(cleaned_content)
             
             # 创建文件引用
             file_ref = FileReference(
@@ -204,6 +207,44 @@ class BaseAgent(ABC):
         except Exception as e:
             self.logger.error(f"❌ 保存文件失败 {file_path}: {str(e)}")
             raise
+    
+    def _clean_file_content(self, content: str, file_type: str) -> str:
+        """清理文件内容，移除不必要的格式标记"""
+        cleaned_content = content.strip()
+        
+        # 对于代码文件，移除markdown代码块标记
+        if file_type in ["verilog", "systemverilog", "python", "cpp", "c"]:
+            lines = cleaned_content.split('\n')
+            
+            # 移除开头的```标记
+            if lines and lines[0].strip().startswith('```'):
+                lines = lines[1:]
+                self.logger.debug(f"🧹 移除开头的markdown标记")
+            
+            # 移除结尾的```标记
+            if lines and lines[-1].strip() == '```':
+                lines = lines[:-1]
+                self.logger.debug(f"🧹 移除结尾的markdown标记")
+            
+            cleaned_content = '\n'.join(lines)
+        
+        # 移除多余的空行（保留文件结构）
+        lines = cleaned_content.split('\n')
+        cleaned_lines = []
+        prev_empty = False
+        
+        for line in lines:
+            is_empty = not line.strip()
+            if not (is_empty and prev_empty):  # 避免连续空行
+                cleaned_lines.append(line)
+            prev_empty = is_empty
+        
+        result = '\n'.join(cleaned_lines).strip()
+        
+        if result != content.strip():
+            self.logger.info(f"🧹 内容已清理：{len(content)} -> {len(result)} 字符")
+        
+        return result
     
     # ==========================================================================
     # 🎯 任务处理方法

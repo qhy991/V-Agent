@@ -125,12 +125,40 @@ class MultiAgentCollaborationTest:
             
             logger.info(f"📁 设计生成文件: {len(design_files)} 个")
             for i, file_ref in enumerate(design_files, 1):
-                logger.info(f"  文件{i}: {file_ref.get('file_path', 'unknown')} ({file_ref.get('file_type', 'unknown')})")
+                # Handle both dict and FileReference object
+                if hasattr(file_ref, 'get'):
+                    # Dictionary format
+                    file_path = file_ref.get('file_path', 'unknown')
+                    file_type = file_ref.get('file_type', 'unknown')
+                else:
+                    # FileReference object format
+                    file_path = getattr(file_ref, 'path', getattr(file_ref, 'file_path', 'unknown'))
+                    file_type = getattr(file_ref, 'file_type', 'unknown')
+                logger.info(f"  文件{i}: {file_path} ({file_type})")
             
             # 准备审查任务 - 明确包含文件引用
             review_task = f"请对刚才设计的ALU模块进行全面的代码审查，重点关注语法正确性、设计质量、时序考虑和最佳实践"
             
             logger.info(f"🔍 审查任务: {review_task}")
+            
+            # 转换文件引用为字典格式以避免序列化问题
+            design_files_dict = []
+            for file_ref in design_files:
+                if hasattr(file_ref, 'to_dict'):
+                    # FileReference对象
+                    design_files_dict.append(file_ref.to_dict())
+                elif isinstance(file_ref, dict):
+                    # 已经是字典格式
+                    design_files_dict.append(file_ref)
+                else:
+                    # 其他格式，尝试转换为字典
+                    design_files_dict.append({
+                        'file_path': getattr(file_ref, 'path', getattr(file_ref, 'file_path', str(file_ref))),
+                        'file_type': getattr(file_ref, 'file_type', 'unknown'),
+                        'description': getattr(file_ref, 'description', ''),
+                        'size_bytes': getattr(file_ref, 'size_bytes', None),
+                        'created_at': getattr(file_ref, 'created_at', None)
+                    })
             
             # 执行审查任务 - 将文件引用作为file_references传递
             review_result = await self.coordinator.coordinate_task_execution(
@@ -138,8 +166,8 @@ class MultiAgentCollaborationTest:
                 context={
                     "task_type": "code_review",
                     "expected_agent": "real_code_review_agent",
-                    "design_files": design_files,
-                    "file_references": design_files  # 明确传递文件引用
+                    "design_files": design_files_dict,
+                    "file_references": design_files_dict  # 使用字典格式
                 }
             )
             
@@ -214,13 +242,16 @@ class MultiAgentCollaborationTest:
             
             logger.info(f"🔄 改进任务: {improvement_task}")
             
+            # 转换第一轮结果中的文件引用为可序列化格式
+            design_result_1_serializable = self._make_result_serializable(design_result_1)
+            
             # 执行改进设计
             design_result_2 = await self.coordinator.coordinate_task_execution(
                 initial_task=improvement_task,
                 context={
                     "task_type": "verilog_design", 
                     "iteration": 2,
-                    "previous_design": design_result_1
+                    "previous_design": design_result_1_serializable
                 }
             )
             
@@ -234,12 +265,16 @@ class MultiAgentCollaborationTest:
             
             logger.info(f"🔍 最终审查: {final_review_task}")
             
+            # 转换所有设计结果为可序列化格式
+            design_result_1_serializable = self._make_result_serializable(design_result_1)
+            design_result_2_serializable = self._make_result_serializable(design_result_2) if design_result_2.get("success") else None
+            
             review_result = await self.coordinator.coordinate_task_execution(
                 initial_task=final_review_task,
                 context={
                     "task_type": "code_review",
                     "iteration": 3,
-                    "previous_designs": [design_result_1, design_result_2]
+                    "previous_designs": [design_result_1_serializable, design_result_2_serializable] if design_result_2_serializable else [design_result_1_serializable]
                 }
             )
             
@@ -419,6 +454,34 @@ class MultiAgentCollaborationTest:
         analysis["standardized_responses"] = analysis["response_formats"].count("standardized")
         
         return analysis
+    
+    def _make_result_serializable(self, result: dict) -> dict:
+        """确保结果字典中的所有对象都是可JSON序列化的"""
+        if not isinstance(result, dict):
+            return result
+        
+        serializable_result = {}
+        for key, value in result.items():
+            if isinstance(value, dict):
+                serializable_result[key] = self._make_result_serializable(value)
+            elif isinstance(value, list):
+                serializable_result[key] = [
+                    self._make_result_serializable(item) if isinstance(item, dict)
+                    else item.to_dict() if hasattr(item, 'to_dict')
+                    else str(item) if not isinstance(item, (str, int, float, bool, type(None)))
+                    else item
+                    for item in value
+                ]
+            elif hasattr(value, 'to_dict'):
+                # 处理有to_dict方法的对象（如FileReference）
+                serializable_result[key] = value.to_dict()
+            elif not isinstance(value, (str, int, float, bool, type(None))):
+                # 其他不可序列化的对象转换为字符串
+                serializable_result[key] = str(value)
+            else:
+                serializable_result[key] = value
+        
+        return serializable_result
     
     async def generate_comprehensive_report(self):
         """生成综合测试报告"""

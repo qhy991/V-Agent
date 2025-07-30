@@ -262,7 +262,7 @@ async def test_coordinator_integration():
                 "issues": [],
                 "next_steps": [],
                 "metadata": {}
-            })
+            }, ensure_ascii=False)
         }
         
         std_processed = await coordinator._process_agent_response(

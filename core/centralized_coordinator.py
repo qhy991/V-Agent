@@ -355,7 +355,7 @@ Task to analyze: {task_description}
             "dependencies": []
         }
         
-        self.logger.info(f"🔍 DEBUG: Final task analysis: {json.dumps(result, indent=2)}")
+        self.logger.info(f"🔍 DEBUG: Final task analysis: {json.dumps(result, indent=2, ensure_ascii=False)}")
         return result
     
     async def select_best_agent(self, task_analysis: Dict[str, Any], 
@@ -480,7 +480,7 @@ Your selection:"""
             self.logger.info(f"  - Specialty: {info.specialty_description}")
             self.logger.info(f"  - Success Rate: {info.success_rate:.2f}")
         
-        self.logger.info(f"🔍 DEBUG: Task Analysis: {json.dumps(task_analysis, indent=2)}")
+        self.logger.info(f"🔍 DEBUG: Task Analysis: {json.dumps(task_analysis, indent=2, ensure_ascii=False)}")
         self.logger.info(f"🔍 DEBUG: Agents Info String:\n{agents_info}")
         self.logger.info(f"🔍 DEBUG: Full Selection Prompt:\n{selection_prompt}")
         
@@ -611,6 +611,9 @@ Your selection:"""
             
             try:
                 # 1. 构建任务消息
+                # 确保task_analysis中的对象都是可序列化的
+                serializable_task_analysis = self._make_task_analysis_serializable(task_analysis)
+                
                 task_message = TaskMessage(
                     task_id=conversation_id,
                     sender_id=self.agent_id,
@@ -620,7 +623,7 @@ Your selection:"""
                     file_references=all_file_references[-5:] if all_file_references else None,
                     metadata={
                         "iteration": iteration_count, 
-                        "task_analysis": task_analysis,
+                        "task_analysis": serializable_task_analysis,
                         "is_final_iteration": iteration_count >= self.max_conversation_iterations - 2
                     }
                 )
@@ -952,17 +955,45 @@ Your selection:"""
     def _detect_file_type(self, file_path: str) -> str:
         """检测文件类型"""
         if file_path.endswith('.v'):
-            return 'verilog'
-        elif file_path.endswith('_tb.v') or 'testbench' in file_path.lower():
-            return 'testbench'
-        elif file_path.endswith('.json'):
-            return 'json'
+            return "verilog"
+        elif file_path.endswith('.sv'):
+            return "systemverilog"
+        elif file_path.endswith('.tb.v') or file_path.endswith('_tb.v'):
+            return "testbench"
         elif file_path.endswith('.md'):
-            return 'documentation'
+            return "documentation"
         elif file_path.endswith('.txt'):
-            return 'text'
+            return "text"
         else:
-            return 'unknown'
+            return "unknown"
+    
+    def _make_task_analysis_serializable(self, task_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """确保task_analysis中的所有对象都是可JSON序列化的"""
+        if not isinstance(task_analysis, dict):
+            return task_analysis
+        
+        serializable_analysis = {}
+        for key, value in task_analysis.items():
+            if isinstance(value, dict):
+                serializable_analysis[key] = self._make_task_analysis_serializable(value)
+            elif isinstance(value, list):
+                serializable_analysis[key] = [
+                    self._make_task_analysis_serializable(item) if isinstance(item, dict)
+                    else item.to_dict() if hasattr(item, 'to_dict')
+                    else str(item) if not isinstance(item, (str, int, float, bool, type(None)))
+                    else item
+                    for item in value
+                ]
+            elif hasattr(value, 'to_dict'):
+                # 处理有to_dict方法的对象（如FileReference）
+                serializable_analysis[key] = value.to_dict()
+            elif not isinstance(value, (str, int, float, bool, type(None))):
+                # 其他不可序列化的对象转换为字符串
+                serializable_analysis[key] = str(value)
+            else:
+                serializable_analysis[key] = value
+        
+        return serializable_analysis
     
     def set_preferred_response_format(self, format_type: ResponseFormat):
         """设置首选响应格式"""

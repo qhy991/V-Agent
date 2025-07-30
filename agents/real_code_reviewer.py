@@ -7,45 +7,354 @@ Real LLM-powered Code Review Agent
 
 import json
 import asyncio
-from typing import Dict, Any, Set
+import subprocess
+import tempfile
+import os
+import re
+from typing import Dict, Any, Set, List, Tuple
 from pathlib import Path
 
 from core.base_agent import BaseAgent, TaskMessage
 from core.enums import AgentCapability
 from core.response_format import ResponseFormat, TaskStatus, ResponseType, QualityMetrics
+from core.function_calling import FunctionCallingAgent, ToolCall, ToolResult
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
 
 
-class RealCodeReviewAgent(BaseAgent):
+class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
     """真实LLM驱动的代码审查智能体"""
     
     def __init__(self, config: FrameworkConfig = None):
-        super().__init__(
+        # Initialize BaseAgent first
+        BaseAgent.__init__(self, 
             agent_id="real_code_review_agent",
             role="code_reviewer",
             capabilities={
                 AgentCapability.CODE_REVIEW,
                 AgentCapability.QUALITY_ANALYSIS,
-                AgentCapability.SPECIFICATION_ANALYSIS
+                AgentCapability.SPECIFICATION_ANALYSIS,
+                AgentCapability.TEST_GENERATION,
+                AgentCapability.VERIFICATION
             }
         )
+        
+        # Initialize FunctionCallingAgent
+        FunctionCallingAgent.__init__(self)
         
         # 初始化LLM客户端
         self.config = config or FrameworkConfig.from_env()
         self.llm_client = EnhancedLLMClient(self.config.llm)
         
-        self.logger.info(f"🔍 真实代码审查智能体初始化完成")
+        self.logger.info(f"🔍 真实代码审查智能体(支持Function Calling)初始化完成")
+    
+    def _register_tools(self):
+        """注册可用的工具"""
+        # 1. 测试台生成工具
+        self.tool_registry.register_tool(
+            name="generate_testbench",
+            func=self._tool_generate_testbench,
+            description="为Verilog模块生成测试台(testbench)",
+            parameters={
+                "module_code": {
+                    "type": "string",
+                    "description": "完整的Verilog模块代码",
+                    "required": True
+                },
+                "code": {
+                    "type": "string", 
+                    "description": "完整的Verilog模块代码（兼容参数）",
+                    "required": False
+                },
+                "module_name": {
+                    "type": "string",
+                    "description": "模块名称（当不提供完整代码时使用）",
+                    "required": False
+                },
+                "test_cases": {
+                    "type": "array",
+                    "description": "测试用例列表",
+                    "required": False
+                }
+            }
+        )
+        
+        # 2. 仿真执行工具
+        self.tool_registry.register_tool(
+            name="run_simulation",
+            func=self._tool_run_simulation,
+            description="使用iverilog运行Verilog仿真",
+            parameters={
+                "module_file": {
+                    "type": "string",
+                    "description": "模块文件路径",
+                    "required": False
+                },
+                "testbench_file": {
+                    "type": "string", 
+                    "description": "测试台文件路径",
+                    "required": False
+                },
+                "module_code": {
+                    "type": "string",
+                    "description": "模块代码内容（必须包含完整代码）",
+                    "required": True
+                },
+                "testbench_code": {
+                    "type": "string",
+                    "description": "测试台代码内容（必须包含完整代码）",
+                    "required": True
+                }
+            }
+        )
+        
+        # 3. 代码分析工具
+        self.tool_registry.register_tool(
+            name="analyze_code_quality",
+            func=self._tool_analyze_code_quality,
+            description="分析Verilog代码质量",
+            parameters={
+                "code": {
+                    "type": "string",
+                    "description": "要分析的Verilog代码（必须包含完整代码）",
+                    "required": True
+                },
+                "module_code": {
+                    "type": "string", 
+                    "description": "要分析的Verilog代码（兼容参数）",
+                    "required": False
+                }
+            }
+        )
+        
+        # 4. 文件写入工具
+        self.tool_registry.register_tool(
+            name="write_code_file",
+            func=self._tool_write_code_file,
+            description="将代码写入到文件",
+            parameters={
+                "filename": {
+                    "type": "string",
+                    "description": "要写入的文件名（包含.v扩展名）",
+                    "required": True
+                },
+                "content": {
+                    "type": "string",
+                    "description": "要写入的完整代码内容",
+                    "required": True
+                },
+                "directory": {
+                    "type": "string",
+                    "description": "输出目录（默认为./output）",
+                    "required": False
+                }
+            }
+        )
+    
+    def _get_base_system_prompt(self) -> str:
+        """获取基础system prompt"""
+        return f"""你是一位资深的Verilog/SystemVerilog代码审查专家，拥有20年的FPGA和ASIC设计经验。
+
+你的主要职责：
+1. 代码审查和质量分析
+2. 测试台生成和功能验证
+3. 设计问题识别和改进建议
+4. 工具调用决策和执行
+
+专业能力：
+- 深度理解Verilog/SystemVerilog语法和最佳实践
+- 熟悉数字电路设计原理和验证方法
+- 精通testbench编写和仿真调试
+- 具备丰富的代码质量评估经验
+
+可用工具：
+1. write_code_file - 将代码写入到文件
+2. generate_testbench - 为Verilog模块生成测试台
+3. run_simulation - 使用iverilog运行Verilog仿真（支持文件路径）
+4. analyze_code_quality - 分析Verilog代码质量
+
+**推荐工作流程**：
+1. 首先使用write_code_file将模块代码保存到文件
+2. 使用generate_testbench基于文件生成测试台
+3. 使用write_code_file保存测试台到文件
+4. 使用run_simulation基于文件路径运行仿真
+
+**重要：避免代码截断**
+- 对于长代码，优先使用write_code_file保存到文件
+- 然后使用文件路径而非完整代码内容调用工具
+- 确保所有代码内容完整无截断
+
+工具调用格式：
+当你需要调用工具时，请使用以下JSON格式：
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "write_code_file",
+            "parameters": {{
+                "filename": "模块文件名.v",
+                "content": "完整的Verilog代码"
+            }}
+        }},
+        {{
+            "tool_name": "generate_testbench",
+            "parameters": {{
+                "module_code": "完整的模块代码"
+            }}
+        }},
+        {{
+            "tool_name": "run_simulation",
+            "parameters": {{
+                "module_file": "./output/模块文件名.v",
+                "testbench_file": "./output/模块名_tb.v"
+            }}
+        }}
+    ]
+}}
+
+工作流程：
+1. 分析用户提供的代码和需求
+2. 使用write_code_file保存模块代码到文件
+3. 使用generate_testbench生成测试台
+4. 使用write_code_file保存测试台到文件
+5. 使用run_simulation基于文件路径运行仿真
+6. 分析工具执行结果，提供完整报告
+
+**工具调用最佳实践**：
+- 优先使用文件路径而非完整代码内容
+- 确保所有代码内容完整无截断
+- 在调用run_simulation前确保文件已保存
+- 使用相对路径./output/作为标准目录
+
+请根据用户的具体需求，智能地选择和调用合适的工具来完成任务。"""
+    def _parse_tool_calls(self, response: str) -> List[ToolCall]:
+        """解析LLM响应中的工具调用"""
+        tool_calls = []
+        
+        try:
+            # 尝试解析JSON格式的工具调用
+            if response.strip().startswith('{'):
+                data = json.loads(response)
+                if 'tool_calls' in data:
+                    for tool_call_data in data['tool_calls']:
+                        tool_call = ToolCall(
+                            tool_name=tool_call_data.get('tool_name', ''),
+                            parameters=tool_call_data.get('parameters', {})
+                        )
+                        tool_calls.append(tool_call)
+                        self.logger.info(f"🔧 解析到工具调用: {tool_call.tool_name}")
+            
+            # 如果没有找到工具调用，尝试从文本中提取
+            if not tool_calls:
+                # 查找可能的工具调用模式
+                tool_patterns = [
+                    r'调用工具\s*[：:]\s*(\w+)',
+                    r'使用工具\s*[：:]\s*(\w+)',
+                    r'tool[：:]\s*(\w+)',
+                    r'function[：:]\s*(\w+)'
+                ]
+                
+                for pattern in tool_patterns:
+                    matches = re.findall(pattern, response, re.IGNORECASE)
+                    for match in matches:
+                        tool_call = ToolCall(
+                            tool_name=match,
+                            parameters={}
+                        )
+                        tool_calls.append(tool_call)
+                        self.logger.info(f"🔧 从文本中解析到工具调用: {tool_call.tool_name}")
+            
+            return tool_calls
+            
+        except json.JSONDecodeError as e:
+            self.logger.warning(f"⚠️ JSON解析失败: {str(e)}")
+            return []
+        except Exception as e:
+            self.logger.error(f"❌ 工具调用解析失败: {str(e)}")
+            return []
+    
+    async def _execute_tool_call(self, tool_call: ToolCall) -> ToolResult:
+        """执行工具调用"""
+        try:
+            self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name}")
+            
+            # 检查工具是否存在
+            if tool_call.tool_name not in self.tool_registry.list_tools():
+                return ToolResult(
+                    call_id=tool_call.call_id or "unknown",
+                    success=False,
+                    result=None,
+                    error=f"工具 '{tool_call.tool_name}' 不存在"
+                )
+            
+            # 获取工具函数
+            tool_func = self.tool_registry.get_tool(tool_call.tool_name)
+            if not tool_func:
+                return ToolResult(
+                    call_id=tool_call.call_id or "unknown",
+                    success=False,
+                    result=None,
+                    error=f"无法获取工具函数: {tool_call.tool_name}"
+                )
+            
+            # 执行工具函数
+            if asyncio.iscoroutinefunction(tool_func):
+                result = await tool_func(**tool_call.parameters)
+            else:
+                result = tool_func(**tool_call.parameters)
+            
+            self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
+            return ToolResult(
+                call_id=tool_call.call_id or "unknown",
+                success=True,
+                result=result,
+                error=None
+            )
+            
+        except Exception as e:
+            self.logger.error(f"❌ 工具执行失败 {tool_call.tool_name}: {str(e)}")
+            return ToolResult(
+                call_id=tool_call.call_id or "unknown",
+                success=False,
+                result=None,
+                error=str(e)
+            )
+    async def _call_llm(self, conversation: List[Dict[str, str]]) -> str:
+        """调用LLM"""
+        # 构建完整的prompt
+        full_prompt = ""
+        system_prompt = None
+        
+        for msg in conversation:
+            if msg["role"] == "system":
+                system_prompt = msg["content"]
+            elif msg["role"] == "user":
+                full_prompt += f"User: {msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                full_prompt += f"Assistant: {msg['content']}\n\n"
+        
+        try:
+            response = await self.llm_client.send_prompt(
+                prompt=full_prompt.strip(),
+                system_prompt=system_prompt,
+                temperature=0.3,
+                max_tokens=3000
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ LLM调用失败: {str(e)}")
+            raise
     
     def get_capabilities(self) -> Set[AgentCapability]:
         return {
             AgentCapability.CODE_REVIEW,
             AgentCapability.QUALITY_ANALYSIS,
-            AgentCapability.SPECIFICATION_ANALYSIS
+            AgentCapability.SPECIFICATION_ANALYSIS,
+            AgentCapability.TEST_GENERATION,
+            AgentCapability.VERIFICATION
         }
     
     def get_specialty_description(self) -> str:
-        return "真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析和改进建议"
+        return "真实LLM驱动的代码审查智能体，提供专业的Verilog/SystemVerilog代码质量分析、测试台生成和功能验证"
     
     async def execute_enhanced_task(self, enhanced_prompt: str,
                                   original_message: TaskMessage,
@@ -79,17 +388,28 @@ class RealCodeReviewAgent(BaseAgent):
             # 3. 生成综合审查报告
             comprehensive_report = await self._generate_comprehensive_report(review_results)
             
-            # 4. 计算整体质量指标
-            overall_quality = self._calculate_overall_quality(review_results)
+            # 4. 执行功能测试验证
+            test_results = []
+            if self._should_perform_testing(enhanced_prompt, code_to_review):
+                self.logger.info("🧪 开始执行功能测试验证")
+                for file_path, code_content in code_to_review.items():
+                    if self._is_testable_module(code_content):
+                        test_result = await self._perform_functional_testing(
+                            file_path, code_content, enhanced_prompt
+                        )
+                        test_results.append(test_result)
             
-            # 5. 保存审查报告
+            # 5. 计算整体质量指标（包含测试结果）
+            overall_quality = self._calculate_overall_quality(review_results, test_results)
+            
+            # 6. 保存审查报告和测试结果
             output_files = await self._save_review_files(
-                comprehensive_report, review_results, task_id
+                comprehensive_report, review_results, test_results, task_id
             )
             
-            # 6. 创建标准化响应
+            # 7. 创建标准化响应
             response = await self._create_review_response(
-                task_id, review_results, overall_quality, output_files, comprehensive_report
+                task_id, review_results, test_results, overall_quality, output_files, comprehensive_report
             )
             
             return {"formatted_response": response}
@@ -380,7 +700,7 @@ class RealCodeReviewAgent(BaseAgent):
         
         return report
     
-    def _calculate_overall_quality(self, review_results: list) -> QualityMetrics:
+    def _calculate_overall_quality(self, review_results: list, test_results: list = None) -> QualityMetrics:
         """计算整体质量指标"""
         if not review_results:
             return QualityMetrics(0.5, 0.5, 0.5, 0.0, 0.5, 0.5)
@@ -420,17 +740,28 @@ class RealCodeReviewAgent(BaseAgent):
         avg_maintainability = sum(maintainability_scores) / len(maintainability_scores)
         avg_performance = sum(performance_scores) / len(performance_scores)
         
+        # 计算测试覆盖率（如果有测试结果）
+        test_coverage = 0.0
+        if test_results:
+            total_tests = len(test_results)
+            successful_tests = sum(1 for test in test_results if test.get('test_success', False))
+            if total_tests > 0:
+                test_coverage = successful_tests / total_tests
+                # 根据测试通过率调整整体分数
+                avg_pass_rate = sum(test.get('pass_rate', 0.0) for test in test_results) / total_tests
+                overall_score = (overall_score + avg_pass_rate) / 2
+        
         return QualityMetrics(
             overall_score=overall_score,
             syntax_score=avg_syntax,
             functionality_score=avg_design,
-            test_coverage=0.0,  # 审查阶段无测试覆盖率
+            test_coverage=test_coverage,
             documentation_quality=avg_maintainability,
             performance_score=avg_performance
         )
     
     async def _save_review_files(self, comprehensive_report: str, review_results: list,
-                               task_id: str) -> list:
+                               test_results: list, task_id: str) -> list:
         """保存审查报告文件"""
         output_files = []
         
@@ -453,7 +784,9 @@ class RealCodeReviewAgent(BaseAgent):
                 "task_id": task_id,
                 "review_timestamp": task_id,
                 "total_files_reviewed": len(review_results),
-                "detailed_results": review_results
+                "detailed_results": review_results,
+                "test_results": test_results if test_results else [],
+                "testing_performed": bool(test_results)
             }
             
             details_path = output_dir / f"review_details_{task_id}.json"
@@ -464,7 +797,20 @@ class RealCodeReviewAgent(BaseAgent):
             )
             output_files.append(details_ref)
             
-            self.logger.info(f"💾 审查报告保存完成: {len(output_files)} 个文件")
+            # 保存测试台文件引用（如果有）
+            if test_results:
+                for test_result in test_results:
+                    testbench_file = test_result.get('testbench_file')
+                    if testbench_file and Path(testbench_file).exists():
+                        testbench_ref = await self.save_result_to_file(
+                            content=Path(testbench_file).read_text(encoding='utf-8'),
+                            file_path=testbench_file,
+                            file_type="testbench",
+                            description=f"Generated testbench for {test_result.get('file_path', 'unknown')}"
+                        )
+                        output_files.append(testbench_ref)
+            
+            self.logger.info(f"💾 审查和测试报告保存完成: {len(output_files)} 个文件")
             return output_files
             
         except Exception as e:
@@ -472,8 +818,8 @@ class RealCodeReviewAgent(BaseAgent):
             return []
     
     async def _create_review_response(self, task_id: str, review_results: list,
-                                    overall_quality: QualityMetrics, output_files: list,
-                                    comprehensive_report: str) -> str:
+                                    test_results: list, overall_quality: QualityMetrics, 
+                                    output_files: list, comprehensive_report: str) -> str:
         """创建标准化审查响应"""
         
         builder = self.create_response_builder(task_id)
@@ -489,6 +835,17 @@ class RealCodeReviewAgent(BaseAgent):
         # 统计问题数量
         total_critical = sum(len(result.get('critical_issues', [])) for result in review_results)
         total_warnings = sum(len(result.get('warnings', [])) for result in review_results)
+        
+        # 统计测试结果
+        total_tests = len(test_results) if test_results else 0
+        successful_tests = sum(1 for test in (test_results or []) if test.get('test_success', False))
+        failed_tests = total_tests - successful_tests
+        
+        # 统计失败的测试用例
+        total_failed_cases = 0
+        if test_results:
+            for test in test_results:
+                total_failed_cases += len(test.get('failed_cases', []))
         
         # 根据审查结果添加问题
         if total_critical > 0:
@@ -512,8 +869,27 @@ class RealCodeReviewAgent(BaseAgent):
                 solution="建议进行全面的代码重构"
             )
         
+        # 添加测试相关问题
+        if failed_tests > 0:
+            builder.add_issue(
+                "error", "high",
+                f"功能测试失败: {failed_tests}/{total_tests} 个模块测试未通过",
+                solution="检查测试失败的模块并修复功能错误"
+            )
+        
+        if total_failed_cases > 0:
+            builder.add_issue(
+                "warning", "medium",
+                f"测试用例失败: 共 {total_failed_cases} 个测试用例未通过",
+                solution="查看测试报告详情，修复失败的功能点"
+            )
+        
         # 添加下一步建议
         builder.add_next_step("仔细阅读综合审查报告")
+        
+        if total_tests > 0:
+            builder.add_next_step("查看功能测试结果和生成的测试台")
+        
         builder.add_next_step("优先修复所有关键问题")
         
         if total_warnings > 0:
@@ -521,6 +897,9 @@ class RealCodeReviewAgent(BaseAgent):
         
         if overall_quality.performance_score < 0.7:
             builder.add_next_step("考虑性能优化")
+        
+        if failed_tests > 0:
+            builder.add_next_step("修复测试失败的功能后重新运行测试")
         
         builder.add_next_step("在修复后重新进行代码审查")
         
@@ -531,6 +910,13 @@ class RealCodeReviewAgent(BaseAgent):
         builder.add_metadata("overall_quality_score", overall_quality.overall_score)
         builder.add_metadata("review_type", "comprehensive")
         builder.add_metadata("llm_powered", True)
+        builder.add_metadata("testing_performed", total_tests > 0)
+        builder.add_metadata("total_tests", total_tests)
+        builder.add_metadata("successful_tests", successful_tests)
+        builder.add_metadata("test_coverage", overall_quality.test_coverage)
+        if test_results:
+            avg_pass_rate = sum(test.get('pass_rate', 0.0) for test in test_results) / len(test_results)
+            builder.add_metadata("average_test_pass_rate", avg_pass_rate)
         
         # 构建响应 - 代码审查任务总是100%完成
         status = TaskStatus.SUCCESS
@@ -541,12 +927,22 @@ class RealCodeReviewAgent(BaseAgent):
             f"代码审查完成，共审查 {len(review_results)} 个文件"
         ]
         
+        if total_tests > 0:
+            message_parts.append(f"执行了 {total_tests} 个模块的功能测试")
+            if failed_tests > 0:
+                message_parts.append(f"{failed_tests} 个测试失败")
+            if total_failed_cases > 0:
+                message_parts.append(f"{total_failed_cases} 个测试用例失败")
+        
         if total_critical > 0:
             message_parts.append(f"发现 {total_critical} 个关键问题")
         if total_warnings > 0:
             message_parts.append(f"{total_warnings} 个警告")
             
         message_parts.append(f"整体质量分数: {overall_quality.overall_score:.2f}")
+        
+        if total_tests > 0:
+            message_parts.append(f"测试覆盖率: {overall_quality.test_coverage:.1%}")
         
         response = builder.build(
             response_type=ResponseType.QUALITY_REPORT,
@@ -557,3 +953,793 @@ class RealCodeReviewAgent(BaseAgent):
         )
         
         return response.format_response(ResponseFormat.JSON)
+    
+    # ==========================================================================
+    # 🧪 功能测试验证
+    # ==========================================================================
+    
+    def _should_perform_testing(self, prompt: str, code_files: Dict[str, str]) -> bool:
+        """判断是否应该执行功能测试"""
+        # 检查是否明确要求测试
+        test_keywords = ['测试', '验证', 'test', 'verify', 'simulation', 'testbench']
+        if any(keyword in prompt.lower() for keyword in test_keywords):
+            self.logger.info(f"🧪 检测到测试关键词，启用功能测试")
+            return True
+        
+        # 检查代码规模和复杂度，决定是否需要测试
+        total_lines = sum(len(content.split('\n')) for content in code_files.values())
+        if total_lines > 50:  # 超过50行代码建议测试
+            self.logger.info(f"🧪 代码规模({total_lines}行)超过阈值，启用功能测试")
+            return True
+        
+        # 检查是否有复杂逻辑需要测试
+        for file_path, content in code_files.items():
+            complex_keywords = ['always', 'case', 'if', 'for', 'while', 'assign']
+            keyword_count = sum(1 for keyword in complex_keywords if keyword in content.lower())
+            if keyword_count >= 3:  # 降低阈值，包含3个以上复杂逻辑关键词就测试
+                self.logger.info(f"🧪 检测到复杂逻辑({keyword_count}个关键词)，启用功能测试")
+                return True
+        
+        # 默认为ALU、计数器、存储器等常见模块启用测试
+        for content in code_files.values():
+            common_modules = ['alu', 'counter', 'memory', 'fifo', 'uart', 'spi', 'processor']
+            if any(module_type in content.lower() for module_type in common_modules):
+                self.logger.info(f"🧪 检测到常见设计模块，启用功能测试")
+                return True
+        
+        self.logger.info(f"🚫 未满足测试触发条件，跳过功能测试")
+        return False
+    
+    def _is_testable_module(self, code_content: str) -> bool:
+        """判断模块是否可测试"""
+        # 清理文件内容，移除markdown格式标记
+        cleaned_content = code_content
+        if cleaned_content.startswith('```'):
+            lines = cleaned_content.split('\n')
+            # 移除开头的```verilog行
+            if lines[0].startswith('```'):
+                lines = lines[1:]
+            # 移除结尾的```行
+            if lines and lines[-1].strip() == '```':
+                lines = lines[:-1]
+            cleaned_content = '\n'.join(lines)
+        
+        self.logger.debug(f"🔍 检查模块可测试性，内容长度: {len(cleaned_content)}")
+        
+        # 检查是否是完整的模块
+        if 'module' not in cleaned_content or 'endmodule' not in cleaned_content:
+            self.logger.debug(f"🚫 未找到完整的module定义")
+            return False
+        
+        # 检查是否有端口定义 - 使用更宽松的正则表达式
+        module_pattern = r'module\s+\w+\s*(?:\#\([^)]*\))?\s*\([^)]*\)'
+        if not re.search(module_pattern, cleaned_content, re.DOTALL):
+            self.logger.debug(f"🚫 未找到模块端口定义")
+            return False
+        
+        # 排除过于简单的模块
+        non_empty_lines = [line.strip() for line in cleaned_content.split('\n') 
+                          if line.strip() and not line.strip().startswith('//')]
+        if len(non_empty_lines) < 10:
+            self.logger.debug(f"🚫 模块过于简单({len(non_empty_lines)}行)")
+            return False
+        
+        self.logger.info(f"✅ 模块可测试，有效代码行数: {len(non_empty_lines)}")
+        return True
+    
+    async def _perform_functional_testing(self, file_path: str, code_content: str, 
+                                        task_context: str) -> Dict[str, Any]:
+        """执行功能测试"""
+        try:
+            # 1. 生成测试台
+            testbench_result = await self._generate_testbench(file_path, code_content, task_context)
+            
+            if not testbench_result['success']:
+                return {
+                    'file_path': file_path,
+                    'test_success': False,
+                    'error': f"测试台生成失败: {testbench_result['error']}",
+                    'testbench_generated': False
+                }
+            
+            # 2. 执行iverilog仿真
+            simulation_result = await self._run_iverilog_simulation(
+                file_path, code_content, testbench_result['testbench_code']
+            )
+            
+            # 3. 分析测试结果
+            test_analysis = await self._analyze_test_results(
+                file_path, simulation_result, testbench_result.get('expected_results', [])
+            )
+            
+            return {
+                'file_path': file_path,
+                'test_success': simulation_result['success'],
+                'testbench_generated': True,
+                'testbench_file': testbench_result.get('testbench_file'),
+                'simulation_output': simulation_result.get('output', ''),
+                'compilation_success': simulation_result.get('compilation_success', False),
+                'execution_success': simulation_result.get('execution_success', False),
+                'test_cases': test_analysis.get('test_cases', []),
+                'failed_cases': test_analysis.get('failed_cases', []),
+                'pass_rate': test_analysis.get('pass_rate', 0.0),
+                'error_details': simulation_result.get('error', ''),
+                'recommendations': test_analysis.get('recommendations', [])
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 功能测试失败 {file_path}: {str(e)}")
+            return {
+                'file_path': file_path,
+                'test_success': False,
+                'error': f"测试执行异常: {str(e)}",
+                'testbench_generated': False
+            }
+    
+    async def _generate_testbench(self, file_path: str, code_content: str, 
+                                task_context: str) -> Dict[str, Any]:
+        """生成测试台"""
+        try:
+            # 分析模块信息
+            module_info = self._parse_module_info(code_content)
+            
+            testbench_prompt = f"""
+你是一位资深的Verilog验证工程师。请为以下模块生成一个完整的、全面的测试台。
+
+模块文件: {file_path}
+任务上下文: {task_context}
+
+模块信息:
+- 模块名: {module_info['module_name']}
+- 输入端口: {module_info['inputs']}
+- 输出端口: {module_info['outputs']}
+
+模块代码:
+```verilog
+{code_content}
+```
+
+请生成一个comprehensive testbench，要求：
+
+1. **测试覆盖性**：
+   - 覆盖所有输入组合（合理范围内）
+   - 测试边界条件和极值
+   - 测试正常功能和异常情况
+
+2. **测试台结构**：
+   - 包含时钟生成（如需要）
+   - 复位序列
+   - 测试向量生成
+   - 结果检查和对比
+
+3. **预期结果**：
+   - 为每个测试用例定义预期输出
+   - 实现自动对比检查
+   - 输出详细的测试结果
+
+4. **测试用例设计**：
+   - 基本功能测试
+   - 边界值测试
+   - 随机测试（适量）
+   - 性能测试（如适用）
+
+请以JSON格式返回：
+{{
+    "testbench_code": "完整的testbench Verilog代码",
+    "expected_results": [
+        {{
+            "test_case": "测试用例描述",
+            "inputs": {{"input_name": "value"}},
+            "expected_outputs": {{"output_name": "expected_value"}},
+            "test_type": "basic|boundary|random|performance"
+        }}
+    ],
+    "test_summary": "测试计划总结",
+    "coverage_description": "测试覆盖率说明"
+}}
+
+testbench应该：
+- 模块名为 `{module_info['module_name']}_tb`
+- 包含完整的仿真控制（$dumpfile, $dumpvars, $finish）
+- 具有清晰的测试报告输出
+- 能够在iverilog中正确编译和运行
+"""
+            
+            response = await self.llm_client.send_prompt(
+                prompt=testbench_prompt,
+                temperature=0.4,
+                max_tokens=4000,
+                json_mode=True
+            )
+            
+            # 清理响应中的转义字符
+            cleaned_response = response.strip()
+            if cleaned_response.startswith('```json'):
+                cleaned_response = cleaned_response[7:]
+            if cleaned_response.endswith('```'):
+                cleaned_response = cleaned_response[:-3]
+            cleaned_response = cleaned_response.strip()
+            
+            testbench_data = json.loads(cleaned_response)
+            
+            # 保存测试台到文件
+            testbench_file = await self._save_testbench_file(
+                module_info['module_name'], testbench_data['testbench_code']
+            )
+            
+            return {
+                'success': True,
+                'testbench_code': testbench_data['testbench_code'],
+                'testbench_file': testbench_file,
+                'expected_results': testbench_data.get('expected_results', []),
+                'test_summary': testbench_data.get('test_summary', ''),
+                'coverage_description': testbench_data.get('coverage_description', '')
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 测试台生成失败: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def _parse_module_info(self, code_content: str) -> Dict[str, Any]:
+        """解析模块信息"""
+        # 清理文件内容，移除markdown格式标记
+        cleaned_content = code_content
+        if cleaned_content.startswith('```'):
+            lines = cleaned_content.split('\n')
+            if lines[0].startswith('```'):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == '```':
+                lines = lines[:-1]
+            cleaned_content = '\n'.join(lines)
+        
+        module_info = {
+            'module_name': 'unknown_module',
+            'inputs': [],
+            'outputs': [],
+            'parameters': []
+        }
+        
+        # 提取模块名
+        module_match = re.search(r'module\s+(\w+)', cleaned_content)
+        if module_match:
+            module_info['module_name'] = module_match.group(1)
+        
+        # 提取端口信息 - 更精确的正则表达式
+        input_matches = re.findall(r'input\s+(?:(?:reg|wire)\s+)?(?:\[[^\]]+\]\s+)?(\w+)', cleaned_content)
+        output_matches = re.findall(r'output\s+(?:(?:reg|wire)\s+)?(?:\[[^\]]+\]\s+)?(\w+)', cleaned_content)
+        
+        module_info['inputs'] = input_matches
+        module_info['outputs'] = output_matches
+        
+        # 提取参数信息
+        param_matches = re.findall(r'parameter\s+(\w+)\s*=\s*([^;,\s]+)', cleaned_content)
+        module_info['parameters'] = param_matches
+        
+        self.logger.info(f"📊 解析模块信息: {module_info['module_name']}, "
+                        f"输入: {len(module_info['inputs'])}, "
+                        f"输出: {len(module_info['outputs'])}")
+        
+        return module_info
+    
+    async def _save_testbench_file(self, module_name: str, testbench_code: str) -> str:
+        """保存测试台文件"""
+        output_dir = Path("./output")
+        output_dir.mkdir(exist_ok=True)
+        
+        testbench_file = output_dir / f"{module_name}_tb.v"
+        
+        with open(testbench_file, 'w', encoding='utf-8') as f:
+            f.write(testbench_code)
+        
+        self.logger.info(f"💾 测试台已保存: {testbench_file}")
+        return str(testbench_file)
+    
+    async def _run_iverilog_simulation(self, module_file: str, module_code: str, 
+                                     testbench_code: str) -> Dict[str, Any]:
+        """运行iverilog仿真"""
+        result = {
+            'success': False,
+            'compilation_success': False,
+            'execution_success': False,
+            'output': '',
+            'error': ''
+        }
+        
+        # 创建临时目录
+        with tempfile.TemporaryDirectory() as temp_dir:
+            try:
+                temp_path = Path(temp_dir)
+                
+                # 保存模块文件
+                module_path = temp_path / "module.v"
+                with open(module_path, 'w', encoding='utf-8') as f:
+                    f.write(module_code)
+                
+                # 保存测试台文件
+                testbench_path = temp_path / "testbench.v"
+                with open(testbench_path, 'w', encoding='utf-8') as f:
+                    f.write(testbench_code)
+                
+                # 1. 编译
+                compile_cmd = [
+                    'iverilog', 
+                    '-o', str(temp_path / 'simulation'),
+                    str(module_path),
+                    str(testbench_path)
+                ]
+                
+                self.logger.info(f"🔨 编译命令: {' '.join(compile_cmd)}")
+                
+                compile_process = subprocess.run(
+                    compile_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    cwd=temp_dir
+                )
+                
+                if compile_process.returncode != 0:
+                    result['error'] = f"编译失败: {compile_process.stderr}"
+                    self.logger.error(f"❌ iverilog编译失败: {compile_process.stderr}")
+                    return result
+                
+                result['compilation_success'] = True
+                self.logger.info("✅ iverilog编译成功")
+                
+                # 2. 运行仿真
+                sim_cmd = ['vvp', str(temp_path / 'simulation')]
+                
+                self.logger.info(f"▶️ 仿真命令: {' '.join(sim_cmd)}")
+                
+                sim_process = subprocess.run(
+                    sim_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                    cwd=temp_dir
+                )
+                
+                result['output'] = sim_process.stdout
+                result['execution_success'] = sim_process.returncode == 0
+                
+                if sim_process.returncode != 0:
+                    result['error'] += f" | 仿真失败: {sim_process.stderr}"
+                    self.logger.error(f"❌ 仿真执行失败: {sim_process.stderr}")
+                else:
+                    self.logger.info("✅ 仿真执行成功")
+                
+                result['success'] = result['compilation_success'] and result['execution_success']
+                
+                return result
+                
+            except subprocess.TimeoutExpired:
+                result['error'] = "仿真超时"
+                self.logger.error("❌ 仿真执行超时")
+                return result
+            except FileNotFoundError:
+                result['error'] = "iverilog未安装或不在PATH中"
+                self.logger.error("❌ iverilog未找到，请确保已安装iverilog")
+                return result
+            except Exception as e:
+                result['error'] = f"仿真执行异常: {str(e)}"
+                self.logger.error(f"❌ 仿真异常: {str(e)}")
+                return result
+    
+    async def _analyze_test_results(self, file_path: str, simulation_result: Dict[str, Any],
+                                  expected_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """分析测试结果"""
+        analysis = {
+            'test_cases': [],
+            'failed_cases': [],
+            'pass_rate': 0.0,
+            'recommendations': []
+        }
+        
+        if not simulation_result['success']:
+            analysis['recommendations'].append({
+                'type': 'critical',
+                'description': '仿真未能成功执行，需要修复编译或运行时错误',
+                'action': '检查代码语法和逻辑错误'
+            })
+            return analysis
+        
+        simulation_output = simulation_result.get('output', '')
+        
+        # 使用LLM分析仿真输出
+        if self.llm_client and simulation_output.strip():
+            try:
+                analysis_result = await self._llm_analyze_simulation_output(
+                    file_path, simulation_output, expected_results
+                )
+                analysis.update(analysis_result)
+            except Exception as e:
+                self.logger.warning(f"⚠️ LLM结果分析失败: {str(e)}")
+        
+        # 基础分析（备用方案）
+        if not analysis['test_cases']:
+            analysis = self._basic_test_analysis(simulation_output, expected_results)
+        
+        return analysis
+    
+    async def _llm_analyze_simulation_output(self, file_path: str, simulation_output: str,
+                                           expected_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """使用LLM分析仿真输出"""
+        analysis_prompt = f"""
+作为验证工程师，请分析以下Verilog仿真的输出结果。
+
+文件: {file_path}
+仿真输出:
+```
+{simulation_output}
+```
+
+预期结果（如果有）:
+{json.dumps(expected_results, indent=2, ensure_ascii=False) if expected_results else "无预期结果数据"}
+
+请分析：
+1. 识别所有测试用例的执行情况
+2. 确定哪些测试用例通过/失败
+3. 分析失败原因
+4. 提供改进建议
+
+返回JSON格式：
+{{
+    "test_cases": [
+        {{
+            "case_name": "测试用例名称",
+            "status": "PASS|FAIL|ERROR",
+            "description": "测试用例描述",
+            "expected": "预期结果",
+            "actual": "实际结果",
+            "failure_reason": "失败原因（如果失败）"
+        }}
+    ],
+    "failed_cases": [
+        {{
+            "case_name": "失败的测试用例名",
+            "failure_type": "功能错误|时序错误|逻辑错误",
+            "description": "失败详情",
+            "impact": "影响评估"
+        }}
+    ],
+    "pass_rate": 0.85,
+    "recommendations": [
+        {{
+            "type": "critical|important|suggestion",
+            "description": "建议描述",
+            "action": "具体行动"
+        }}
+    ],
+    "summary": "整体测试结果总结"
+}}
+"""
+        
+        response = await self.llm_client.send_prompt(
+            prompt=analysis_prompt,
+            temperature=0.3,
+            max_tokens=2000,
+            json_mode=True
+        )
+        
+        return json.loads(response)
+    
+    def _basic_test_analysis(self, simulation_output: str, 
+                           expected_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """基础测试结果分析"""
+        lines = simulation_output.split('\n')
+        
+        # 查找测试相关的输出
+        test_lines = [line for line in lines if any(keyword in line.lower() 
+                     for keyword in ['test', 'pass', 'fail', 'error', 'case'])]
+        
+        analysis = {
+            'test_cases': [],
+            'failed_cases': [],
+            'pass_rate': 0.0,
+            'recommendations': []
+        }
+        
+        # 简单的通过/失败检测
+        pass_count = sum(1 for line in test_lines if 'pass' in line.lower())
+        fail_count = sum(1 for line in test_lines if 'fail' in line.lower())
+        error_count = sum(1 for line in test_lines if 'error' in line.lower())
+        
+        total_tests = max(pass_count + fail_count + error_count, 1)
+        analysis['pass_rate'] = pass_count / total_tests
+        
+        # 生成基本测试用例记录
+        for i in range(pass_count):
+            analysis['test_cases'].append({
+                'case_name': f'Test Case {i+1}',
+                'status': 'PASS',
+                'description': '基础功能测试',
+                'expected': 'Unknown',
+                'actual': 'Unknown'
+            })
+        
+        for i in range(fail_count):
+            failed_case = {
+                'case_name': f'Failed Case {i+1}',
+                'failure_type': '未知错误',
+                'description': '检测到测试失败',
+                'impact': '需要进一步分析'
+            }
+            analysis['failed_cases'].append(failed_case)
+        
+        # 生成建议
+        if fail_count > 0:
+            analysis['recommendations'].append({
+                'type': 'critical',
+                'description': f'发现 {fail_count} 个失败的测试用例',
+                'action': '检查代码逻辑和测试台设计'
+            })
+        
+        if error_count > 0:
+            analysis['recommendations'].append({
+                'type': 'critical',
+                'description': f'发现 {error_count} 个错误',
+                'action': '修复代码语法和运行时错误'
+            })
+        
+        if analysis['pass_rate'] < 0.8:
+            analysis['recommendations'].append({
+                'type': 'important',
+                'description': f'测试通过率较低 ({analysis["pass_rate"]:.1%})',
+                'action': '需要改进代码质量'
+            })
+        
+        return analysis
+
+    # ==================== 工具实现方法 ====================
+    
+    async def _tool_write_code_file(self, filename: str, content: str, directory: str = "./output", **kwargs) -> Dict[str, Any]:
+        """工具：将代码写入到文件"""
+        try:
+            self.logger.info(f"🔧 工具调用: 写入文件 {filename}")
+            
+            # 确保目录存在
+            output_dir = Path(directory)
+            output_dir.mkdir(exist_ok=True)
+            
+            # 构建完整文件路径
+            file_path = output_dir / filename
+            
+            # 写入文件
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            self.logger.info(f"✅ 文件写入成功: {file_path}")
+            
+            return {
+                "success": True,
+                "file_path": str(file_path),
+                "filename": filename,
+                "directory": str(output_dir),
+                "content_length": len(content),
+                "message": f"成功写入文件: {file_path}"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 文件写入失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"文件写入异常: {str(e)}",
+                "file_path": None
+            }
+    
+    async def _tool_generate_testbench(self, module_code: str = None, module_name: str = None, code: str = None, test_cases: List[Dict] = None, **kwargs) -> Dict[str, Any]:
+        """工具：生成测试台"""
+        try:
+            self.logger.info("🔧 工具调用: 生成测试台")
+            
+            # 处理参数兼容性
+            actual_module_code = module_code or code
+            if actual_module_code is None:
+                # 从模块名生成示例代码
+                if module_name:
+                    actual_module_code = f"""
+module {module_name}(
+    input wire clk,
+    input wire rst_n,
+    output reg [7:0] data
+);
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) data <= 8'b0;
+    else data <= data + 1;
+end
+endmodule
+"""
+                else:
+                    return {
+                        "success": False,
+                        "error": "需要提供module_code参数",
+                        "testbench_code": None
+                    }
+            
+            # 解析模块信息
+            module_info = self._parse_module_info(actual_module_code)
+            if not module_info:
+                return {
+                    "success": False,
+                    "error": "无法解析模块信息",
+                    "testbench_code": None
+                }
+            
+            # 生成测试台代码
+            testbench_result = await self._generate_testbench(
+                file_path="generated_module.v",
+                code_content=actual_module_code,
+                task_context="工具调用生成的测试台"
+            )
+            
+            if testbench_result.get("success"):
+                return {
+                    "success": True,
+                    "testbench_code": testbench_result.get("testbench_code"),
+                    "testbench_file": testbench_result.get("testbench_file"),
+                    "module_info": module_info,
+                    "message": "测试台生成成功"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": testbench_result.get("error", "测试台生成失败"),
+                    "testbench_code": None
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ 测试台生成工具失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"工具执行异常: {str(e)}",
+                "testbench_code": None
+            }
+    
+    async def _tool_run_simulation(self, module_file: str = None, testbench_file: str = None, module_code: str = None, testbench_code: str = None, **kwargs) -> Dict[str, Any]:
+        """工具：运行仿真"""
+        try:
+            self.logger.info("🔧 工具调用: 运行仿真")
+            
+            # 优先使用文件路径
+            if module_file and not module_code:
+                # 从文件读取模块代码
+                try:
+                    module_path = Path(module_file)
+                    if not module_path.is_absolute():
+                        module_path = Path("./output") / module_path
+                    
+                    with open(module_path, 'r', encoding='utf-8') as f:
+                        module_code = f.read()
+                    self.logger.info(f"📄 从文件读取模块: {module_path}")
+                    
+                except FileNotFoundError:
+                    # 尝试其他路径
+                    alt_path = Path(module_file)
+                    if alt_path.exists():
+                        with open(alt_path, 'r', encoding='utf-8') as f:
+                            module_code = f.read()
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"模块文件不存在: {module_file}",
+                            "simulation_output": None
+                        }
+            elif not module_code:
+                return {
+                    "success": False,
+                    "error": "需要提供module_code或module_file参数",
+                    "simulation_output": None
+                }
+            
+            if testbench_file and not testbench_code:
+                # 从文件读取测试台代码
+                try:
+                    testbench_path = Path(testbench_file)
+                    if not testbench_path.is_absolute():
+                        testbench_path = Path("./output") / testbench_path
+                    
+                    with open(testbench_path, 'r', encoding='utf-8') as f:
+                        testbench_code = f.read()
+                    self.logger.info(f"📄 从文件读取测试台: {testbench_path}")
+                    
+                except FileNotFoundError:
+                    # 尝试其他路径
+                    alt_path = Path(testbench_file)
+                    if alt_path.exists():
+                        with open(alt_path, 'r', encoding='utf-8') as f:
+                            testbench_code = f.read()
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"测试台文件不存在: {testbench_file}",
+                            "simulation_output": None
+                        }
+            elif not testbench_code:
+                return {
+                    "success": False,
+                    "error": "需要提供testbench_code或testbench_file参数",
+                    "simulation_output": None
+                }
+            
+            # 运行仿真
+            simulation_result = await self._run_iverilog_simulation(
+                module_file=module_file,
+                module_code=module_code,
+                testbench_code=testbench_code
+            )
+            
+            if simulation_result.get("success"):
+                return {
+                    "success": True,
+                    "simulation_output": simulation_result.get("output"),
+                    "simulation_log": simulation_result.get("log"),
+                    "execution_time": simulation_result.get("execution_time"),
+                    "message": "仿真执行成功"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": simulation_result.get("error", "仿真执行失败"),
+                    "simulation_output": simulation_result.get("output"),
+                    "simulation_log": simulation_result.get("log")
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ 仿真执行工具失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"工具执行异常: {str(e)}",
+                "simulation_output": None
+            }
+    
+    async def _tool_analyze_code_quality(self, code: str = None, module_code: str = None, **kwargs) -> Dict[str, Any]:
+        """工具：分析代码质量"""
+        try:
+            self.logger.info("🔧 工具调用: 分析代码质量")
+            
+            # 处理参数兼容性
+            actual_code = code or module_code
+            if actual_code is None:
+                return {
+                    "success": False,
+                    "error": "需要提供code或module_code参数",
+                    "code_quality": None
+                }
+            
+            # 执行基础代码审查
+            review_result = self._basic_code_review(
+                file_path="analyzed_code.v",
+                code_content=actual_code
+            )
+            
+            # 提取质量指标
+            quality_metrics = review_result.get("quality_scores", {})
+            
+            # 生成详细分析
+            analysis = {
+                "success": True,
+                "code_quality": {
+                    "syntax_score": quality_metrics.get("syntax_correctness", 0.0),
+                    "design_score": quality_metrics.get("design_quality", 0.0),
+                    "readability_score": quality_metrics.get("maintainability", 0.0), # Assuming readability maps to maintainability
+                    "overall_score": quality_metrics.get("overall_score", 0.0)
+                },
+                "issues": review_result.get("critical_issues", []) + review_result.get("warnings", []), # Combine issues
+                "suggestions": review_result.get("suggestions", []),
+                "strengths": review_result.get("positive_aspects", []),
+                "module_info": review_result.get("module_info", {}),
+                "message": "代码质量分析完成"
+            }
+            
+            return analysis
+            
+        except Exception as e:
+            self.logger.error(f"❌ 代码质量分析工具失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"工具执行异常: {str(e)}",
+                "code_quality": None
+            }
