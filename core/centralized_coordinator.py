@@ -15,6 +15,8 @@ from pathlib import Path
 
 from .base_agent import BaseAgent, TaskMessage, FileReference
 from .enums import AgentCapability, AgentStatus, ConversationState
+from .response_format import ResponseFormat, StandardizedResponse
+from .response_parser import ResponseParser, ResponseParseError
 from config.config import FrameworkConfig, CoordinatorConfig
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 
@@ -109,6 +111,10 @@ class CentralizedCoordinator(BaseAgent):
         self.max_conversation_iterations = self.coordinator_config.max_conversation_iterations
         self.conversation_timeout = self.coordinator_config.conversation_timeout
         
+        # 响应解析器
+        self.response_parser = ResponseParser()
+        self.preferred_response_format = ResponseFormat.JSON
+        
         self.logger.info("🧠 中心化协调智能体初始化完成")
     
     def get_capabilities(self) -> Set[AgentCapability]:
@@ -183,19 +189,29 @@ class CentralizedCoordinator(BaseAgent):
         
         # 使用LLM进行深度分析
         analysis_prompt = f"""
-请分析以下任务的详细需求：
+Analyze the following task requirements and return a detailed analysis in JSON format.
 
-任务描述: {task_description}
+Task Description: {task_description}
 
-请从以下维度分析任务：
-1. 任务类型 (设计/测试/审查/优化等)
-2. 复杂度等级 (1-10)
-3. 需要的能力 (代码生成/测试生成/代码审查等)
-4. 预估工作量 (小时)
-5. 优先级 (高/中/低)
-6. 依赖关系
+Please analyze the task from the following dimensions:
+1. task_type: Type of task (design/testing/review/optimization)
+2. complexity: Complexity level (1-10)
+3. required_capabilities: Required capabilities (code_generation, test_generation, code_review, etc.)
+4. estimated_hours: Estimated work hours
+5. priority: Priority level (high/medium/low)
+6. dependencies: Task dependencies
 
-请以JSON格式返回分析结果。
+Return the analysis in this exact JSON format:
+{{
+    "task_type": "design",
+    "complexity": 7,
+    "required_capabilities": ["code_generation", "module_design"],
+    "estimated_hours": 12,
+    "priority": "high",
+    "dependencies": []
+}}
+
+Task to analyze: {task_description}
 """
         
         try:
@@ -207,62 +223,165 @@ class CentralizedCoordinator(BaseAgent):
             )
             
             analysis = json.loads(response)
-            self.logger.info(f"📊 任务分析完成: 复杂度={analysis.get('complexity', 'N/A')}")
-            return analysis
+            
+            # 规范化分析结果，处理可能的中文字段名
+            normalized_analysis = self._normalize_task_analysis(analysis)
+            
+            self.logger.info(f"📊 任务分析完成: 复杂度={normalized_analysis.get('complexity', 'N/A')}")
+            return normalized_analysis
             
         except Exception as e:
             self.logger.warning(f"⚠️ LLM任务分析失败，使用简单分析: {str(e)}")
             return self._simple_task_analysis(task_description)
     
+    def _normalize_task_analysis(self, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """规范化任务分析结果，处理中英文字段名"""
+        # 中英文字段名映射
+        field_mapping = {
+            "任务类型": "task_type",
+            "复杂度等级": "complexity", 
+            "复杂度": "complexity",
+            "需要的能力": "required_capabilities",
+            "所需能力": "required_capabilities",
+            "预估工作量": "estimated_hours",
+            "工作量": "estimated_hours",
+            "优先级": "priority",
+            "依赖关系": "dependencies"
+        }
+        
+        # 创建规范化的结果
+        normalized = {}
+        
+        for key, value in analysis.items():
+            # 检查是否需要映射
+            if key in field_mapping:
+                normalized[field_mapping[key]] = value
+                self.logger.debug(f"🔄 映射字段: {key} -> {field_mapping[key]}")
+            else:
+                normalized[key] = value
+        
+        # 确保必需字段存在
+        if "task_type" not in normalized:
+            normalized["task_type"] = "unknown"
+        if "complexity" not in normalized:
+            normalized["complexity"] = 5
+        if "required_capabilities" not in normalized:
+            # 根据任务类型推断能力
+            task_type = normalized.get("task_type", "unknown")
+            if task_type == "design" or "设计" in str(analysis):
+                normalized["required_capabilities"] = ["code_generation", "module_design"]
+            elif task_type == "review" or "审查" in str(analysis):
+                normalized["required_capabilities"] = ["code_review", "quality_analysis"]
+            elif task_type == "testing" or "测试" in str(analysis):
+                normalized["required_capabilities"] = ["test_generation", "verification"]
+            else:
+                normalized["required_capabilities"] = ["code_generation"]
+        
+        self.logger.info(f"🔧 规范化任务分析: {json.dumps(normalized, ensure_ascii=False)}")
+        return normalized
+    
     def _simple_task_analysis(self, task_description: str) -> Dict[str, Any]:
         """简单的任务分析（备用方案）"""
         description_lower = task_description.lower()
         
-        # 基本分类
+        # DEBUG: Log task description analysis
+        self.logger.info(f"🔍 DEBUG: Simple Task Analysis")
+        self.logger.info(f"🔍 DEBUG: Task description: '{task_description}'")
+        self.logger.info(f"🔍 DEBUG: Description (lowercase): '{description_lower}'")
+        
+        # 基本分类 - 更精确的任务类型检测，优先级顺序很重要
         task_type = "unknown"
-        if any(word in description_lower for word in ["设计", "实现", "编写", "生成"]):
-            task_type = "design"
-        elif any(word in description_lower for word in ["测试", "验证", "testbench"]):
-            task_type = "testing"
-        elif any(word in description_lower for word in ["审查", "检查", "review"]):
+        
+        # 审查类关键词优先 - 避免被设计类关键词误识别
+        review_keywords = ["审查", "检查", "review", "check", "analyze", "inspect", "examine"]
+        testing_keywords = ["测试", "验证", "testbench", "test", "verify", "validation", "simulation"]
+        opt_keywords = ["优化", "改进", "提升", "optimize", "improve", "enhance", "refactor"]
+        design_keywords = ["设计", "实现", "编写", "生成", "design", "implement", "write", "generate", "create", "build"]
+        
+        # 优先检测更具体的任务类型
+        if any(word in description_lower for word in review_keywords):
             task_type = "review"
-        elif any(word in description_lower for word in ["优化", "改进", "提升"]):
+            self.logger.info(f"🔍 DEBUG: Detected review keywords: {[w for w in review_keywords if w in description_lower]}")
+        elif any(word in description_lower for word in testing_keywords):
+            task_type = "testing"
+            self.logger.info(f"🔍 DEBUG: Detected testing keywords: {[w for w in testing_keywords if w in description_lower]}")
+        elif any(word in description_lower for word in opt_keywords):
             task_type = "optimization"
+            self.logger.info(f"🔍 DEBUG: Detected optimization keywords: {[w for w in opt_keywords if w in description_lower]}")
+        elif any(word in description_lower for word in design_keywords):
+            task_type = "design"
+            self.logger.info(f"🔍 DEBUG: Detected design keywords: {[w for w in design_keywords if w in description_lower]}")
+        
+        self.logger.info(f"🔍 DEBUG: Determined task type: {task_type}")
         
         # 复杂度评估
         complexity = 5  # 默认中等复杂度
         if len(task_description) > 200:
             complexity += 2
-        if any(word in description_lower for word in ["32位", "复杂", "多功能"]):
+        if any(word in description_lower for word in ["32位", "复杂", "多功能", "32bit", "complex", "multi"]):
             complexity += 2
+        
+        self.logger.info(f"🔍 DEBUG: Calculated complexity: {complexity}")
+        
+        # 能力需求推断 - 匹配实际存在的能力枚举
+        required_capabilities = []
+        if task_type == "design":
+            required_capabilities = ["code_generation", "module_design"]
+        elif task_type == "testing":
+            required_capabilities = ["test_generation", "verification"]
+        elif task_type == "review":
+            required_capabilities = ["code_review", "quality_analysis"]
+        elif task_type == "optimization":
+            required_capabilities = ["performance_optimization"]
+        else:
+            required_capabilities = ["code_generation"]  # Default fallback
+        
+        self.logger.info(f"🔍 DEBUG: Required capabilities: {required_capabilities}")
             
-        return {
+        result = {
             "task_type": task_type,
             "complexity": min(complexity, 10),
-            "required_capabilities": ["code_generation"],
+            "required_capabilities": required_capabilities,
             "estimated_hours": complexity * 0.5,
             "priority": "medium",
             "dependencies": []
         }
+        
+        self.logger.info(f"🔍 DEBUG: Final task analysis: {json.dumps(result, indent=2)}")
+        return result
     
     async def select_best_agent(self, task_analysis: Dict[str, Any], 
                               exclude_agents: Set[str] = None) -> Optional[str]:
         """选择最适合的智能体"""
         exclude_agents = exclude_agents or set()
+        
+        self.logger.info(f"🔍 DEBUG: Agent Selection Process Started")
+        self.logger.info(f"🔍 DEBUG: Total registered agents: {len(self.registered_agents)}")
+        self.logger.info(f"🔍 DEBUG: Excluded agents: {exclude_agents}")
+        
         available_agents = {
             agent_id: info for agent_id, info in self.registered_agents.items()
             if agent_id not in exclude_agents and info.status != AgentStatus.FAILED
         }
         
+        self.logger.info(f"🔍 DEBUG: Available agents after filtering: {len(available_agents)}")
+        self.logger.info(f"🔍 DEBUG: Available agent details:")
+        for agent_id, info in available_agents.items():
+            self.logger.info(f"  - {agent_id}: status={info.status.value}, capabilities={[cap.value for cap in info.capabilities]}")
+        
         if not available_agents:
             self.logger.warning("⚠️ 没有可用的智能体")
             return None
         
+        self.logger.info(f"🔍 DEBUG: LLM client available: {self.llm_client is not None}")
+        
         if not self.llm_client:
             # 简单选择策略
+            self.logger.info(f"🔍 DEBUG: Using simple agent selection strategy")
             return self._simple_agent_selection(task_analysis, available_agents)
         
         # 使用LLM进行智能选择
+        self.logger.info(f"🔍 DEBUG: Using LLM agent selection strategy")
         return await self._llm_agent_selection(task_analysis, available_agents)
     
     def _simple_agent_selection(self, task_analysis: Dict[str, Any], 
@@ -270,22 +389,37 @@ class CentralizedCoordinator(BaseAgent):
         """简单的智能体选择策略"""
         task_type = task_analysis.get("task_type", "unknown")
         
+        self.logger.info(f"🔍 DEBUG: Simple Agent Selection")
+        self.logger.info(f"🔍 DEBUG: Task type: {task_type}")
+        self.logger.info(f"🔍 DEBUG: Available agents: {list(available_agents.keys())}")
+        
         # 按任务类型选择
         if task_type == "design":
+            self.logger.info(f"🔍 DEBUG: Looking for agents with CODE_GENERATION capability")
             for agent_id, info in available_agents.items():
+                self.logger.info(f"🔍 DEBUG: Checking {agent_id}: {[cap.value for cap in info.capabilities]}")
                 if AgentCapability.CODE_GENERATION in info.capabilities:
+                    self.logger.info(f"🔍 DEBUG: Selected {agent_id} for design task")
                     return agent_id
         elif task_type == "testing":
+            self.logger.info(f"🔍 DEBUG: Looking for agents with TEST_GENERATION capability")
             for agent_id, info in available_agents.items():
+                self.logger.info(f"🔍 DEBUG: Checking {agent_id}: {[cap.value for cap in info.capabilities]}")
                 if AgentCapability.TEST_GENERATION in info.capabilities:
+                    self.logger.info(f"🔍 DEBUG: Selected {agent_id} for testing task")
                     return agent_id
         elif task_type == "review":
+            self.logger.info(f"🔍 DEBUG: Looking for agents with CODE_REVIEW capability")
             for agent_id, info in available_agents.items():
+                self.logger.info(f"🔍 DEBUG: Checking {agent_id}: {[cap.value for cap in info.capabilities]}")
                 if AgentCapability.CODE_REVIEW in info.capabilities:
+                    self.logger.info(f"🔍 DEBUG: Selected {agent_id} for review task")
                     return agent_id
         
         # 默认选择第一个可用智能体
-        return list(available_agents.keys())[0]
+        first_agent = list(available_agents.keys())[0]
+        self.logger.info(f"🔍 DEBUG: No specific match found, selecting first available agent: {first_agent}")
+        return first_agent
     
     async def _llm_agent_selection(self, task_analysis: Dict[str, Any], 
                                  available_agents: Dict[str, AgentInfo]) -> Optional[str]:
@@ -297,19 +431,50 @@ class CentralizedCoordinator(BaseAgent):
         ])
         
         selection_prompt = f"""
-根据任务分析结果，从可用智能体中选择最适合的一个：
+You are a task coordinator selecting the best agent for a specific task. 
 
-任务分析:
-- 类型: {task_analysis.get('task_type', 'unknown')}
-- 复杂度: {task_analysis.get('complexity', 5)}
-- 需要能力: {task_analysis.get('required_capabilities', [])}
+TASK ANALYSIS:
+- Task Type: {task_analysis.get('task_type', 'unknown')}
+- Complexity: {task_analysis.get('complexity', 5)}/10
+- Required Capabilities: {task_analysis.get('required_capabilities', [])}
 
-可用智能体:
+AVAILABLE AGENTS:
 {agents_info}
 
-请选择最适合的智能体ID，只返回agent_id，不要其他内容。
-如果没有合适的智能体，返回"none"。
-"""
+SELECTION RULES:
+1. For "design" tasks: Select agents with "code_generation" or "module_design" capabilities
+2. For "testing" tasks: Select agents with "test_generation" or "verification" capabilities  
+3. For "review" tasks: Select agents with "code_review" or "quality_analysis" capabilities
+4. For "optimization" tasks: Select agents with "performance_optimization" capabilities
+5. Consider agent success rate (higher is better)
+6. Match capabilities to task requirements as closely as possible
+
+RESPONSE FORMAT:
+Return ONLY the exact agent_id (case-sensitive) from the available agents list above.
+If no agent is suitable, return exactly "none".
+
+Examples:
+- If real_verilog_design_agent is available for a design task: real_verilog_design_agent
+- If no suitable agent exists: none
+
+Your selection:"""
+        
+        # DEBUG: Log detailed information before LLM call
+        self.logger.info("🔍 DEBUG: LLM Agent Selection Details")
+        self.logger.info(f"🔍 DEBUG: Available agents count: {len(available_agents)}")
+        self.logger.info(f"🔍 DEBUG: Available agent IDs: {list(available_agents.keys())}")
+        
+        for agent_id, info in available_agents.items():
+            self.logger.info(f"🔍 DEBUG: Agent {agent_id}:")
+            self.logger.info(f"  - Role: {info.role}")
+            self.logger.info(f"  - Capabilities: {[cap.value for cap in info.capabilities]}")
+            self.logger.info(f"  - Status: {info.status.value}")
+            self.logger.info(f"  - Specialty: {info.specialty_description}")
+            self.logger.info(f"  - Success Rate: {info.success_rate:.2f}")
+        
+        self.logger.info(f"🔍 DEBUG: Task Analysis: {json.dumps(task_analysis, indent=2)}")
+        self.logger.info(f"🔍 DEBUG: Agents Info String:\n{agents_info}")
+        self.logger.info(f"🔍 DEBUG: Full Selection Prompt:\n{selection_prompt}")
         
         try:
             response = await self.llm_client.send_prompt(
@@ -318,17 +483,35 @@ class CentralizedCoordinator(BaseAgent):
                 max_tokens=100
             )
             
+            # DEBUG: Log raw LLM response
+            self.logger.info(f"🔍 DEBUG: Raw LLM response: '{response}'")
+            self.logger.info(f"🔍 DEBUG: Response length: {len(response)}")
+            self.logger.info(f"🔍 DEBUG: Response type: {type(response)}")
+            
             selected_agent = response.strip().lower()
+            self.logger.info(f"🔍 DEBUG: Processed response: '{selected_agent}'")
+            
+            # DEBUG: Check each available agent ID against the response
+            for agent_id in available_agents.keys():
+                self.logger.info(f"🔍 DEBUG: Checking '{selected_agent}' == '{agent_id.lower()}': {selected_agent == agent_id.lower()}")
             
             # 验证选择结果
             if selected_agent in available_agents:
                 self.logger.info(f"🎯 LLM选择智能体: {selected_agent}")
                 return selected_agent
+            elif any(selected_agent == agent_id.lower() for agent_id in available_agents.keys()):
+                # Handle case-insensitive matching
+                for agent_id in available_agents.keys():
+                    if selected_agent == agent_id.lower():
+                        self.logger.info(f"🎯 LLM选择智能体 (case-insensitive match): {agent_id}")
+                        return agent_id
             elif selected_agent == "none":
                 self.logger.warning("⚠️ LLM认为没有合适的智能体")
+                self.logger.info(f"🔍 DEBUG: This indicates the LLM doesn't think any available agents are suitable for the task")
                 return None
             else:
-                self.logger.warning(f"⚠️ LLM选择了无效智能体: {selected_agent}，使用简单策略")
+                self.logger.warning(f"⚠️ LLM选择了无效智能体: '{selected_agent}' (Available: {list(available_agents.keys())})")
+                self.logger.info(f"🔍 DEBUG: Falling back to simple agent selection")
                 return self._simple_agent_selection(task_analysis, available_agents)
                 
         except Exception as e:
@@ -416,31 +599,38 @@ class CentralizedCoordinator(BaseAgent):
                 agent_instance = self.agent_instances[current_speaker]
                 task_result = await agent_instance.process_task_with_file_references(task_message)
                 
-                # 3. 记录对话
+                # 3. 解析和处理标准化响应
+                parsed_response = await self._process_agent_response(
+                    agent_id=current_speaker,
+                    raw_response=task_result,
+                    task_id=conversation_id
+                )
+                
+                # 4. 记录对话
                 conversation_record = ConversationRecord(
                     conversation_id=conversation_id,
                     timestamp=time.time(),
                     speaker_id=current_speaker,
                     receiver_id=self.agent_id,
                     message_content=task_message.content,
-                    task_result=task_result,
-                    file_references=task_result.get("file_references", [])
+                    task_result=parsed_response,
+                    file_references=parsed_response.get("file_references", [])
                 )
                 self.conversation_history.append(conversation_record)
                 
-                # 4. 收集文件引用
-                if task_result.get("file_references"):
-                    all_file_references.extend(task_result["file_references"])
+                # 5. 收集文件引用
+                if parsed_response.get("file_references"):
+                    all_file_references.extend(parsed_response["file_references"])
                 
-                # 5. 检查任务是否完成
-                if task_result.get("success", False) and task_result.get("task_completed", False):
+                # 6. 检查任务是否完成
+                if parsed_response.get("success", False) and parsed_response.get("task_completed", False):
                     task_completed = True
                     self.logger.info(f"✅ 任务完成: {current_speaker}")
                     break
                 
-                # 6. 决定下一个发言者
+                # 7. 决定下一个发言者
                 next_speaker = await self._decide_next_speaker(
-                    current_result=task_result,
+                    current_result=parsed_response,
                     conversation_history=self.conversation_history[-3:],  # 最近3轮
                     task_analysis=task_analysis
                 )
@@ -534,6 +724,232 @@ class CentralizedCoordinator(BaseAgent):
         except Exception as e:
             self.logger.warning(f"⚠️ NextSpeaker决策失败: {str(e)}")
             return self._simple_next_speaker_decision(current_result)
+    
+    # ==========================================================================
+    # 📝 标准化响应处理
+    # ==========================================================================
+    
+    async def _process_agent_response(self, agent_id: str, raw_response: Dict[str, Any], 
+                                    task_id: str) -> Dict[str, Any]:
+        """处理智能体响应"""
+        try:
+            # 1. 检查是否包含标准化响应格式
+            standardized_response = None
+            response_content = None
+            
+            # 尝试从响应中提取标准化格式内容
+            if "standardized_response" in raw_response:
+                response_content = raw_response["standardized_response"]
+            elif "formatted_response" in raw_response:
+                response_content = raw_response["formatted_response"]
+            elif isinstance(raw_response.get("response"), str):
+                # 检查响应字符串是否是标准化格式
+                response_str = raw_response["response"]
+                if self._is_standardized_format(response_str):
+                    response_content = response_str
+            
+            # 2. 解析标准化响应
+            if response_content:
+                try:
+                    standardized_response = self.response_parser.parse_response(response_content)
+                    self.logger.info(f"✅ 成功解析标准化响应: {agent_id}")
+                except ResponseParseError as e:
+                    self.logger.warning(f"⚠️ 标准化响应解析失败 {agent_id}: {str(e)}")
+                    standardized_response = None
+            
+            # 3. 转换为统一格式
+            if standardized_response:
+                return self._convert_standardized_to_internal(standardized_response, raw_response)
+            else:
+                return self._convert_legacy_to_internal(raw_response, agent_id, task_id)
+                
+        except Exception as e:
+            self.logger.error(f"❌ 响应处理失败 {agent_id}: {str(e)}")
+            return self._create_error_response(raw_response, str(e))
+    
+    def _is_standardized_format(self, content: str) -> bool:
+        """检查内容是否是标准化格式"""
+        content_stripped = content.strip()
+        
+        # 检查JSON格式
+        if content_stripped.startswith('{') and '"agent_name"' in content:
+            return True
+        
+        # 检查XML格式
+        if content_stripped.startswith('<agent_response>'):
+            return True
+        
+        # 检查Markdown格式
+        if '# Agent Response:' in content:
+            return True
+        
+        return False
+    
+    def _convert_standardized_to_internal(self, standardized_response: StandardizedResponse, 
+                                        raw_response: Dict[str, Any]) -> Dict[str, Any]:
+        """将标准化响应转换为内部格式"""
+        # 转换文件引用
+        file_references = []
+        for file_ref in (standardized_response.generated_files + 
+                        standardized_response.modified_files + 
+                        standardized_response.reference_files):
+            file_references.append(FileReference(
+                file_path=file_ref.path,
+                file_type=file_ref.file_type,
+                description=file_ref.description,
+                metadata={
+                    "created_at": file_ref.created_at,
+                    "size_bytes": file_ref.size_bytes
+                }
+            ))
+        
+        # 确定任务状态
+        success = standardized_response.status.value in ['success', 'partial_success']
+        task_completed = standardized_response.status.value == 'success' and standardized_response.completion_percentage >= 100.0
+        
+        return {
+            "success": success,
+            "task_completed": task_completed,
+            "agent_id": standardized_response.agent_id,
+            "agent_name": standardized_response.agent_name,
+            "message": standardized_response.message,
+            "status": standardized_response.status.value,
+            "completion_percentage": standardized_response.completion_percentage,
+            "file_references": file_references,
+            "issues": [issue.to_dict() for issue in standardized_response.issues],
+            "quality_metrics": standardized_response.quality_metrics.to_dict() if standardized_response.quality_metrics else None,
+            "next_steps": standardized_response.next_steps,
+            "metadata": standardized_response.metadata,
+            "error": None if success else f"Task failed: {standardized_response.message}",
+            "raw_response": raw_response,
+            "response_type": standardized_response.response_type.value,
+            "timestamp": standardized_response.timestamp
+        }
+    
+    def _convert_legacy_to_internal(self, raw_response: Dict[str, Any], 
+                                  agent_id: str, task_id: str) -> Dict[str, Any]:
+        """将传统响应转换为内部格式"""
+        self.logger.info(f"📄 使用传统响应格式: {agent_id}")
+        
+        # 提取基本信息
+        success = raw_response.get("success", False)
+        message = raw_response.get("message", raw_response.get("response", "No message"))
+        error = raw_response.get("error")
+        
+        # 处理文件引用
+        file_references = []
+        if "file_references" in raw_response:
+            for ref in raw_response["file_references"]:
+                if isinstance(ref, dict):
+                    file_references.append(FileReference(
+                        file_path=ref.get("file_path", ""),
+                        file_type=ref.get("file_type", "unknown"),
+                        description=ref.get("description", ""),
+                        metadata=ref.get("metadata", {})
+                    ))
+        
+        # 检查生成的文件
+        if "generated_files" in raw_response:
+            for file_path in raw_response["generated_files"]:
+                file_references.append(FileReference(
+                    file_path=file_path,
+                    file_type=self._detect_file_type(file_path),
+                    description=f"Generated file by {agent_id}",
+                    metadata={"generated_by": agent_id}
+                ))
+        
+        return {
+            "success": success,
+            "task_completed": success,  # 简单假设成功即完成
+            "agent_id": agent_id,
+            "agent_name": raw_response.get("agent_name", agent_id),
+            "message": message,
+            "status": "success" if success else "failed",
+            "completion_percentage": 100.0 if success else 0.0,
+            "file_references": file_references,
+            "issues": [],
+            "quality_metrics": None,
+            "next_steps": [],
+            "metadata": {"legacy_response": True},
+            "error": error,
+            "raw_response": raw_response,
+            "response_type": "task_completion",
+            "timestamp": str(time.time())
+        }
+    
+    def _create_error_response(self, raw_response: Dict[str, Any], error_message: str) -> Dict[str, Any]:
+        """创建错误响应"""
+        return {
+            "success": False,
+            "task_completed": False,
+            "agent_id": "unknown",
+            "agent_name": "Unknown",
+            "message": f"Response processing failed: {error_message}",
+            "status": "failed",
+            "completion_percentage": 0.0,
+            "file_references": [],
+            "issues": [{"issue_type": "error", "severity": "high", "description": error_message}],
+            "quality_metrics": None,
+            "next_steps": ["Fix response format"],
+            "metadata": {"processing_error": True},
+            "error": error_message,
+            "raw_response": raw_response,
+            "response_type": "error_report",
+            "timestamp": str(time.time())
+        }
+    
+    def _detect_file_type(self, file_path: str) -> str:
+        """检测文件类型"""
+        if file_path.endswith('.v'):
+            return 'verilog'
+        elif file_path.endswith('_tb.v') or 'testbench' in file_path.lower():
+            return 'testbench'
+        elif file_path.endswith('.json'):
+            return 'json'
+        elif file_path.endswith('.md'):
+            return 'documentation'
+        elif file_path.endswith('.txt'):
+            return 'text'
+        else:
+            return 'unknown'
+    
+    def set_preferred_response_format(self, format_type: ResponseFormat):
+        """设置首选响应格式"""
+        self.preferred_response_format = format_type
+        self.logger.info(f"📝 设置首选响应格式: {format_type.value}")
+    
+    def get_response_format_instructions(self) -> str:
+        """获取响应格式说明"""
+        if self.preferred_response_format == ResponseFormat.JSON:
+            return """
+请使用以下JSON格式返回响应：
+{
+  "agent_name": "your_agent_class_name",
+  "agent_id": "your_agent_id", 
+  "status": "success|failed|in_progress",
+  "completion_percentage": 0-100,
+  "message": "main response message",
+  "generated_files": [{"path": "...", "file_type": "...", "description": "..."}],
+  "issues": [{"issue_type": "...", "severity": "...", "description": "..."}],
+  "next_steps": ["step1", "step2"]
+}
+"""
+        elif self.preferred_response_format == ResponseFormat.MARKDOWN:
+            return """
+请使用以下Markdown格式返回响应：
+# Agent Response: YourAgentName
+## 📋 Basic Information
+- **Agent**: YourAgentName (`agent_id`)
+- **Status**: success/failed/in_progress
+- **Progress**: X.X%
+## 💬 Message
+Your main response message here
+## 📁 Files
+### Generated Files
+- **path/to/file.v** (verilog): Description
+"""
+        else:
+            return "请返回结构化的响应信息"
     
     def _simple_next_speaker_decision(self, current_result: Dict[str, Any]) -> Optional[str]:
         """简单的下一个发言者决策"""

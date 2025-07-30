@@ -16,6 +16,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from .enums import AgentCapability, AgentStatus
+from .response_format import (
+    StandardizedResponse, ResponseBuilder, ResponseFormat, 
+    TaskStatus, ResponseType, QualityMetrics,
+    create_success_response, create_error_response, create_progress_response
+)
 from tools.tool_registry import ToolRegistry, ToolPermission
 from .agent_prompts import agent_prompt_manager
 
@@ -354,6 +359,115 @@ class BaseAgent(ABC):
             file_path=file_path,
             format_type=format_type
         )
+    
+    # ==========================================================================
+    # 📝 标准化响应方法
+    # ==========================================================================
+    
+    def create_response_builder(self, task_id: str) -> ResponseBuilder:
+        """创建响应构建器"""
+        return ResponseBuilder(
+            agent_name=self.__class__.__name__,
+            agent_id=self.agent_id,
+            task_id=task_id
+        )
+    
+    def create_success_response_formatted(self, task_id: str, message: str, 
+                                        generated_files: List[str] = None, 
+                                        format_type: ResponseFormat = ResponseFormat.JSON) -> str:
+        """创建格式化的成功响应"""
+        response = create_success_response(
+            agent_name=self.__class__.__name__,
+            agent_id=self.agent_id,
+            task_id=task_id,
+            message=message,
+            generated_files=generated_files or []
+        )
+        return response.format_response(format_type)
+    
+    def create_error_response_formatted(self, task_id: str, error_message: str, 
+                                      error_details: str = None,
+                                      format_type: ResponseFormat = ResponseFormat.JSON) -> str:
+        """创建格式化的错误响应"""
+        response = create_error_response(
+            agent_name=self.__class__.__name__,
+            agent_id=self.agent_id,
+            task_id=task_id,
+            error_message=error_message,
+            error_details=error_details
+        )
+        return response.format_response(format_type)
+    
+    def create_progress_response_formatted(self, task_id: str, message: str, 
+                                         completion_percentage: float,
+                                         next_steps: List[str] = None,
+                                         format_type: ResponseFormat = ResponseFormat.JSON) -> str:
+        """创建格式化的进度响应"""
+        response = create_progress_response(
+            agent_name=self.__class__.__name__,
+            agent_id=self.agent_id,
+            task_id=task_id,
+            message=message,
+            completion_percentage=completion_percentage,
+            next_steps=next_steps or []
+        )
+        return response.format_response(format_type)
+    
+    async def create_advanced_response(self, task_id: str, response_type: ResponseType,
+                                     status: TaskStatus, message: str, 
+                                     completion_percentage: float,
+                                     quality_metrics: QualityMetrics = None,
+                                     format_type: ResponseFormat = ResponseFormat.JSON) -> str:
+        """创建高级格式化响应"""
+        builder = self.create_response_builder(task_id)
+        
+        # 检查是否有生成的文件需要添加
+        recent_tasks = [task for task in self.task_history if task.get("task_id") == task_id]
+        if recent_tasks:
+            latest_task = recent_tasks[-1]
+            result = latest_task.get("result", {})
+            if "generated_files" in result:
+                for file_path in result["generated_files"]:
+                    file_type = self._detect_file_type(file_path)
+                    builder.add_generated_file(file_path, file_type, f"Generated {file_type} file")
+        
+        # 添加下一步建议
+        if status == TaskStatus.IN_PROGRESS:
+            builder.add_next_step("继续任务执行")
+        elif status == TaskStatus.SUCCESS:
+            builder.add_next_step("任务已完成，等待下一步指令")
+        elif status == TaskStatus.REQUIRES_RETRY:
+            builder.add_next_step("需要重新执行任务")
+        
+        # 添加元数据
+        builder.add_metadata("agent_class", self.__class__.__name__)
+        builder.add_metadata("capabilities", [cap.value for cap in self._capabilities])
+        builder.add_metadata("task_count", len(self.task_history))
+        
+        response = builder.build(
+            response_type=response_type,
+            status=status,
+            message=message,
+            completion_percentage=completion_percentage,
+            quality_metrics=quality_metrics
+        )
+        
+        return response.format_response(format_type)
+    
+    def _detect_file_type(self, file_path: str) -> str:
+        """检测文件类型"""
+        if file_path.endswith('.v'):
+            return 'verilog'
+        elif file_path.endswith('_tb.v') or 'testbench' in file_path.lower():
+            return 'testbench'
+        elif file_path.endswith('.json'):
+            return 'json'
+        elif file_path.endswith('.md'):
+            return 'documentation'
+        elif file_path.endswith('.txt'):
+            return 'text'
+        else:
+            return 'unknown'
     
     # ==========================================================================
     # 🔧 工具方法
