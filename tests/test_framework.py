@@ -20,9 +20,9 @@ sys.path.insert(0, str(project_root))
 from config.config import FrameworkConfig, LLMConfig, CoordinatorConfig, AgentConfig
 from core.centralized_coordinator import CentralizedCoordinator
 from core.base_agent import TaskMessage, FileReference
-from agents.verilog_design_agent import VerilogDesignAgent
-from agents.verilog_test_agent import VerilogTestAgent
-from agents.verilog_review_agent import VerilogReviewAgent
+from agents.real_verilog_agent import RealVerilogDesignAgent
+from agents.real_code_reviewer import RealCodeReviewAgent
+
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 
 

@@ -17,9 +17,8 @@ from core.base_agent import BaseAgent, TaskMessage, FileReference
 from core.enums import AgentCapability, AgentStatus, ConversationState
 
 # 专业智能体导入
-from agents.verilog_design_agent import VerilogDesignAgent
-from agents.verilog_test_agent import VerilogTestAgent
-from agents.verilog_review_agent import VerilogReviewAgent
+from agents.real_verilog_agent import RealVerilogDesignAgent
+from agents.real_code_reviewer import RealCodeReviewAgent
 
 # LLM集成
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
@@ -51,9 +50,8 @@ __all__ = [
     "ConversationState",
     
     # 专业智能体
-    "VerilogDesignAgent",
-    "VerilogTestAgent",
-    "VerilogReviewAgent",
+    "RealVerilogDesignAgent",
+    "RealCodeReviewAgent",
     
     # LLM集成
     "EnhancedLLMClient",
@@ -74,9 +72,8 @@ def get_framework_info():
         "components": {
             "coordinator": "CentralizedCoordinator - 中心化协调智能体",
             "agents": [
-                "VerilogDesignAgent - Verilog设计智能体", 
-                "VerilogTestAgent - Verilog测试智能体",
-                "VerilogReviewAgent - Verilog审查智能体"
+                "RealVerilogDesignAgent - 真实LLM驱动的Verilog设计智能体", 
+                "RealCodeReviewAgent - 真实LLM驱动的代码审查智能体"
             ],
             "llm_integration": "EnhancedLLMClient - 增强LLM客户端",
             "tools": "ToolRegistry - 工具注册系统"
@@ -116,9 +113,8 @@ def create_framework(llm_provider: str = "dashscope",
     
     # 创建智能体
     agents = [
-        VerilogDesignAgent(llm_client),
-        VerilogTestAgent(llm_client), 
-        VerilogReviewAgent(llm_client)
+        RealVerilogDesignAgent(config),
+        RealCodeReviewAgent(config)
     ]
     
     # 注册智能体

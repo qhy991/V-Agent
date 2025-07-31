@@ -17,9 +17,9 @@ sys.path.insert(0, str(project_root))
 
 from config.config import FrameworkConfig
 from core.centralized_coordinator import CentralizedCoordinator
-from agents.verilog_design_agent import VerilogDesignAgent
-from agents.verilog_test_agent import VerilogTestAgent
-from agents.verilog_review_agent import VerilogReviewAgent
+from agents.real_verilog_agent import RealVerilogDesignAgent
+from agents.real_code_reviewer import RealCodeReviewAgent
+
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from tools.sample_database import setup_database_for_framework
 

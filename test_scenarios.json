@@ -1,0 +1,88 @@
+{
+  "test_scenarios": {
+    "basic_verilog_design": {
+      "name": "基础Verilog设计测试",
+      "description": "测试Verilog设计智能体的基本功能",
+      "agent": "RealVerilogDesignAgent",
+      "request": "设计一个4位二进制计数器，包含时钟、复位和使能信号，并保存到文件counter_4bit.v",
+      "expected_outputs": ["counter_4bit.v"],
+      "max_iterations": 5
+    },
+    
+    "code_review_and_test": {
+      "name": "代码审查与测试",
+      "description": "测试代码审查智能体的验证功能", 
+      "agent": "RealCodeReviewAgent",
+      "request": "对以下简单与门模块进行完整的功能验证：\n\n```verilog\nmodule and_gate(\n    input a,\n    input b,\n    output y\n);\n    assign y = a & b;\nendmodule\n```\n\n要求：\n1. 保存代码到文件\n2. 生成测试台\n3. 运行仿真\n4. 分析结果",
+      "expected_outputs": ["and_gate.v", "*tb.v"],
+      "max_iterations": 8
+    },
+    
+    "complex_design_flow": {
+      "name": "复杂设计流程测试",
+      "description": "测试完整的设计到验证流程",
+      "agent": "RealVerilogDesignAgent",
+      "request": "设计一个8位ALU，支持加法、减法、与、或运算，包含零标志和溢出标志输出，并进行代码质量分析",
+      "expected_outputs": ["alu_8bit.v", "*analysis*"],
+      "max_iterations": 10
+    },
+    
+    "error_recovery": {
+      "name": "错误恢复测试",
+      "description": "测试工具调用失败后的恢复能力",
+      "agent": "RealCodeReviewAgent", 
+      "request": "请读取文件 'nonexistent_module.v' 并进行分析，如果文件不存在请创建一个示例模块",
+      "expected_outputs": ["*.v"],
+      "max_iterations": 5
+    },
+    
+    "performance_test": {
+      "name": "性能测试",
+      "description": "测试多个工具调用的性能",
+      "agent": "RealVerilogDesignAgent",
+      "request": "快速生成三个简单模块：一个全加器、一个多路选择器、一个D触发器，每个都保存为单独文件",
+      "expected_outputs": ["full_adder.v", "mux*.v", "d_flip_flop.v"],
+      "max_iterations": 8
+    }
+  },
+  
+  "test_configurations": {
+    "quick": {
+      "scenarios": ["basic_verilog_design", "code_review_and_test"],
+      "description": "快速测试核心功能"
+    },
+    
+    "comprehensive": {
+      "scenarios": ["basic_verilog_design", "code_review_and_test", "complex_design_flow", "error_recovery"],
+      "description": "全面测试所有功能"
+    },
+    
+    "stress": {
+      "scenarios": ["performance_test", "complex_design_flow"],
+      "description": "压力测试和性能验证"
+    }
+  },
+  
+  "validation_criteria": {
+    "response_time": {
+      "max_seconds": 120,
+      "description": "单个请求最大响应时间"
+    },
+    
+    "success_rate": {
+      "min_percentage": 80,
+      "description": "最小成功率要求"
+    },
+    
+    "file_generation": {
+      "check_existence": true,
+      "check_content": true,
+      "description": "验证生成文件的存在性和内容有效性"
+    },
+    
+    "tool_usage": {
+      "min_tools_called": 1,
+      "description": "每个测试至少应该调用一个工具"
+    }
+  }
+}

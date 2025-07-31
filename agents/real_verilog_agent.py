@@ -8,7 +8,7 @@ Real LLM-powered Verilog Design Agent
 import os 
 import json
 import asyncio
-from typing import Dict, Any, Set
+from typing import Dict, Any, Set, List
 from pathlib import Path
 
 from core.base_agent import BaseAgent, TaskMessage
@@ -16,6 +16,7 @@ from core.enums import AgentCapability
 from core.response_format import ResponseFormat, TaskStatus, ResponseType, QualityMetrics
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
+from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
 
 
 class RealVerilogDesignAgent(BaseAgent):
@@ -36,7 +37,82 @@ class RealVerilogDesignAgent(BaseAgent):
         self.config = config or FrameworkConfig.from_env()
         self.llm_client = EnhancedLLMClient(self.config.llm)
         
-        self.logger.info(f"🔧 真实Verilog设计智能体初始化完成")
+        # 设置专用日志器
+        self.agent_logger = get_agent_logger('RealVerilogDesignAgent')
+        self.artifacts_dir = get_artifacts_dir()
+        
+        self.logger.info(f"🔧 真实Verilog设计智能体(Function Calling支持)初始化完成")
+        self.agent_logger.info("RealVerilogDesignAgent初始化完成")
+    
+    def _register_function_calling_tools(self):
+        """注册Verilog设计专用工具"""
+        # 调用父类方法注册基础工具
+        super()._register_function_calling_tools()
+        
+        # 注册Verilog设计专用工具
+        self.register_function_calling_tool(
+            name="analyze_design_requirements",
+            func=self._tool_analyze_design_requirements,
+            description="分析Verilog设计需求",
+            parameters={
+                "requirements": {"type": "string", "description": "设计需求描述", "required": True}
+            }
+        )
+        
+        self.register_function_calling_tool(
+            name="search_existing_modules",
+            func=self._tool_search_existing_modules,
+            description="搜索现有的Verilog模块",
+            parameters={
+                "module_type": {"type": "string", "description": "模块类型", "required": False},
+                "functionality": {"type": "string", "description": "功能描述", "required": False}
+            }
+        )
+        
+        self.register_function_calling_tool(
+            name="generate_verilog_code",
+            func=self._tool_generate_verilog_code,
+            description="生成Verilog代码",
+            parameters={
+                "requirements": {"type": "string", "description": "设计需求", "required": True},
+                "module_info": {"type": "object", "description": "模块信息", "required": False}
+            }
+        )
+        
+        self.register_function_calling_tool(
+            name="analyze_code_quality", 
+            func=self._tool_analyze_code_quality,
+            description="分析Verilog代码质量",
+            parameters={
+                "code": {"type": "string", "description": "Verilog代码", "required": True}
+            }
+        )
+    
+    async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
+        """实现LLM调用"""
+        # 构建完整的prompt
+        full_prompt = ""
+        system_prompt = None
+        
+        for msg in conversation:
+            if msg["role"] == "system":
+                system_prompt = msg["content"]
+            elif msg["role"] == "user":
+                full_prompt += f"User: {msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                full_prompt += f"Assistant: {msg['content']}\n\n"
+        
+        try:
+            response = await self.llm_client.send_prompt(
+                prompt=full_prompt.strip(),
+                system_prompt=system_prompt,
+                temperature=0.4,
+                max_tokens=4000
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ LLM调用失败: {str(e)}")
+            raise
     
     def get_capabilities(self) -> Set[AgentCapability]:
         return {
@@ -585,3 +661,113 @@ class RealVerilogDesignAgent(BaseAgent):
         )
         
         return response.format_response(ResponseFormat.JSON)
+    
+    # ==========================================================================
+    # 🔧 Function Calling 工具实现方法
+    # ==========================================================================
+    
+    async def _tool_analyze_design_requirements(self, requirements: str, **kwargs) -> Dict[str, Any]:
+        """工具：分析设计需求"""
+        try:
+            self.logger.info("🔧 工具调用: 分析设计需求")
+            
+            analysis = await self._analyze_design_requirements(requirements)
+            
+            return {
+                "success": True,
+                "analysis": analysis,
+                "message": "设计需求分析完成"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 设计需求分析失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"分析失败: {str(e)}",
+                "analysis": None
+            }
+    
+    async def _tool_search_existing_modules(self, module_type: str = "", functionality: str = "", **kwargs) -> Dict[str, Any]:
+        """工具：搜索现有模块"""
+        try:
+            self.logger.info("🔧 工具调用: 搜索现有模块")
+            
+            search_result = await self.search_database_modules(
+                module_name=module_type,
+                description=functionality,
+                limit=5
+            )
+            
+            return {
+                "success": True,
+                "modules": search_result.get('result', {}).get('data', []),
+                "count": len(search_result.get('result', {}).get('data', [])),
+                "message": "模块搜索完成"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 模块搜索失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"搜索失败: {str(e)}",
+                "modules": []
+            }
+    
+    async def _tool_generate_verilog_code(self, requirements: str, module_info: Dict = None, **kwargs) -> Dict[str, Any]:
+        """工具：生成Verilog代码"""
+        try:
+            self.logger.info("🔧 工具调用: 生成Verilog代码")
+            
+            # 如果没有提供module_info，先分析需求
+            if not module_info:
+                module_info = await self._analyze_design_requirements(requirements)
+            
+            # 搜索相关模块
+            search_results = await self._search_existing_modules(module_info)
+            
+            # 生成代码
+            verilog_code = await self._generate_verilog_code(
+                requirements, module_info, search_results, {}
+            )
+            
+            return {
+                "success": True,
+                "code": verilog_code,
+                "module_info": module_info,
+                "message": "Verilog代码生成完成"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ Verilog代码生成失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"代码生成失败: {str(e)}",
+                "code": None
+            }
+    
+    async def _tool_analyze_code_quality(self, code: str, **kwargs) -> Dict[str, Any]:
+        """工具：分析代码质量"""
+        try:
+            self.logger.info("🔧 工具调用: 分析代码质量")
+            
+            quality_metrics = await self._analyze_code_quality(code)
+            
+            return {
+                "success": True,
+                "quality_metrics": {
+                    "overall_score": quality_metrics.overall_score,
+                    "syntax_score": quality_metrics.syntax_score,
+                    "functionality_score": quality_metrics.functionality_score,
+                    "documentation_quality": quality_metrics.documentation_quality,
+                    "performance_score": quality_metrics.performance_score
+                },
+                "message": "代码质量分析完成"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 代码质量分析失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"质量分析失败: {str(e)}",
+                "quality_metrics": None
+            }

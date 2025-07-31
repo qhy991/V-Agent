@@ -17,17 +17,16 @@ from pathlib import Path
 from core.base_agent import BaseAgent, TaskMessage
 from core.enums import AgentCapability
 from core.response_format import ResponseFormat, TaskStatus, ResponseType, QualityMetrics
-from core.function_calling import FunctionCallingAgent, ToolCall, ToolResult
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
+from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
 
 
-class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
+class RealCodeReviewAgent(BaseAgent):
     """真实LLM驱动的代码审查智能体"""
     
     def __init__(self, config: FrameworkConfig = None):
-        # Initialize BaseAgent first
-        BaseAgent.__init__(self, 
+        super().__init__(
             agent_id="real_code_review_agent",
             role="code_reviewer",
             capabilities={
@@ -39,19 +38,24 @@ class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
             }
         )
         
-        # Initialize FunctionCallingAgent
-        FunctionCallingAgent.__init__(self)
-        
         # 初始化LLM客户端
         self.config = config or FrameworkConfig.from_env()
         self.llm_client = EnhancedLLMClient(self.config.llm)
         
-        self.logger.info(f"🔍 真实代码审查智能体(支持Function Calling)初始化完成")
+        # 设置专用日志器
+        self.agent_logger = get_agent_logger('RealCodeReviewAgent')
+        self.artifacts_dir = get_artifacts_dir()
+        
+        self.logger.info(f"🔍 真实代码审查智能体(Function Calling支持)初始化完成")
+        self.agent_logger.info("RealCodeReviewAgent初始化完成")
     
-    def _register_tools(self):
+    def _register_function_calling_tools(self):
         """注册可用的工具"""
+        # 调用父类方法注册基础工具
+        super()._register_function_calling_tools()
+        
         # 1. 测试台生成工具
-        self.tool_registry.register_tool(
+        self.register_function_calling_tool(
             name="generate_testbench",
             func=self._tool_generate_testbench,
             description="为Verilog模块生成测试台(testbench)",
@@ -60,16 +64,6 @@ class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
                     "type": "string",
                     "description": "完整的Verilog模块代码",
                     "required": True
-                },
-                "code": {
-                    "type": "string", 
-                    "description": "完整的Verilog模块代码（兼容参数）",
-                    "required": False
-                },
-                "module_name": {
-                    "type": "string",
-                    "description": "模块名称（当不提供完整代码时使用）",
-                    "required": False
                 },
                 "test_cases": {
                     "type": "array",
@@ -80,7 +74,7 @@ class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
         )
         
         # 2. 仿真执行工具
-        self.tool_registry.register_tool(
+        self.register_function_calling_tool(
             name="run_simulation",
             func=self._tool_run_simulation,
             description="使用iverilog运行Verilog仿真",
@@ -97,229 +91,35 @@ class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
                 },
                 "module_code": {
                     "type": "string",
-                    "description": "模块代码内容（必须包含完整代码）",
-                    "required": True
+                    "description": "模块代码内容",
+                    "required": False
                 },
                 "testbench_code": {
                     "type": "string",
-                    "description": "测试台代码内容（必须包含完整代码）",
-                    "required": True
+                    "description": "测试台代码内容",
+                    "required": False
                 }
             }
         )
         
         # 3. 代码分析工具
-        self.tool_registry.register_tool(
+        self.register_function_calling_tool(
             name="analyze_code_quality",
             func=self._tool_analyze_code_quality,
             description="分析Verilog代码质量",
             parameters={
                 "code": {
                     "type": "string",
-                    "description": "要分析的Verilog代码（必须包含完整代码）",
+                    "description": "要分析的Verilog代码",
                     "required": True
-                },
-                "module_code": {
-                    "type": "string", 
-                    "description": "要分析的Verilog代码（兼容参数）",
-                    "required": False
                 }
             }
         )
         
-        # 4. 文件写入工具
-        self.tool_registry.register_tool(
-            name="write_code_file",
-            func=self._tool_write_code_file,
-            description="将代码写入到文件",
-            parameters={
-                "filename": {
-                    "type": "string",
-                    "description": "要写入的文件名（包含.v扩展名）",
-                    "required": True
-                },
-                "content": {
-                    "type": "string",
-                    "description": "要写入的完整代码内容",
-                    "required": True
-                },
-                "directory": {
-                    "type": "string",
-                    "description": "输出目录（默认为./output）",
-                    "required": False
-                }
-            }
-        )
+        # 使用父类的write_file工具，无需重复注册
     
-    def _get_base_system_prompt(self) -> str:
-        """获取基础system prompt"""
-        return f"""你是一位资深的Verilog/SystemVerilog代码审查专家，拥有20年的FPGA和ASIC设计经验。
-
-你的主要职责：
-1. 代码审查和质量分析
-2. 测试台生成和功能验证
-3. 设计问题识别和改进建议
-4. 工具调用决策和执行
-
-专业能力：
-- 深度理解Verilog/SystemVerilog语法和最佳实践
-- 熟悉数字电路设计原理和验证方法
-- 精通testbench编写和仿真调试
-- 具备丰富的代码质量评估经验
-
-可用工具：
-1. write_code_file - 将代码写入到文件
-2. generate_testbench - 为Verilog模块生成测试台
-3. run_simulation - 使用iverilog运行Verilog仿真（支持文件路径）
-4. analyze_code_quality - 分析Verilog代码质量
-
-**推荐工作流程**：
-1. 首先使用write_code_file将模块代码保存到文件
-2. 使用generate_testbench基于文件生成测试台
-3. 使用write_code_file保存测试台到文件
-4. 使用run_simulation基于文件路径运行仿真
-
-**重要：避免代码截断**
-- 对于长代码，优先使用write_code_file保存到文件
-- 然后使用文件路径而非完整代码内容调用工具
-- 确保所有代码内容完整无截断
-
-工具调用格式：
-当你需要调用工具时，请使用以下JSON格式：
-{{
-    "tool_calls": [
-        {{
-            "tool_name": "write_code_file",
-            "parameters": {{
-                "filename": "模块文件名.v",
-                "content": "完整的Verilog代码"
-            }}
-        }},
-        {{
-            "tool_name": "generate_testbench",
-            "parameters": {{
-                "module_code": "完整的模块代码"
-            }}
-        }},
-        {{
-            "tool_name": "run_simulation",
-            "parameters": {{
-                "module_file": "./output/模块文件名.v",
-                "testbench_file": "./output/模块名_tb.v"
-            }}
-        }}
-    ]
-}}
-
-工作流程：
-1. 分析用户提供的代码和需求
-2. 使用write_code_file保存模块代码到文件
-3. 使用generate_testbench生成测试台
-4. 使用write_code_file保存测试台到文件
-5. 使用run_simulation基于文件路径运行仿真
-6. 分析工具执行结果，提供完整报告
-
-**工具调用最佳实践**：
-- 优先使用文件路径而非完整代码内容
-- 确保所有代码内容完整无截断
-- 在调用run_simulation前确保文件已保存
-- 使用相对路径./output/作为标准目录
-
-请根据用户的具体需求，智能地选择和调用合适的工具来完成任务。"""
-    def _parse_tool_calls(self, response: str) -> List[ToolCall]:
-        """解析LLM响应中的工具调用"""
-        tool_calls = []
-        
-        try:
-            # 尝试解析JSON格式的工具调用
-            if response.strip().startswith('{'):
-                data = json.loads(response)
-                if 'tool_calls' in data:
-                    for tool_call_data in data['tool_calls']:
-                        tool_call = ToolCall(
-                            tool_name=tool_call_data.get('tool_name', ''),
-                            parameters=tool_call_data.get('parameters', {})
-                        )
-                        tool_calls.append(tool_call)
-                        self.logger.info(f"🔧 解析到工具调用: {tool_call.tool_name}")
-            
-            # 如果没有找到工具调用，尝试从文本中提取
-            if not tool_calls:
-                # 查找可能的工具调用模式
-                tool_patterns = [
-                    r'调用工具\s*[：:]\s*(\w+)',
-                    r'使用工具\s*[：:]\s*(\w+)',
-                    r'tool[：:]\s*(\w+)',
-                    r'function[：:]\s*(\w+)'
-                ]
-                
-                for pattern in tool_patterns:
-                    matches = re.findall(pattern, response, re.IGNORECASE)
-                    for match in matches:
-                        tool_call = ToolCall(
-                            tool_name=match,
-                            parameters={}
-                        )
-                        tool_calls.append(tool_call)
-                        self.logger.info(f"🔧 从文本中解析到工具调用: {tool_call.tool_name}")
-            
-            return tool_calls
-            
-        except json.JSONDecodeError as e:
-            self.logger.warning(f"⚠️ JSON解析失败: {str(e)}")
-            return []
-        except Exception as e:
-            self.logger.error(f"❌ 工具调用解析失败: {str(e)}")
-            return []
-    
-    async def _execute_tool_call(self, tool_call: ToolCall) -> ToolResult:
-        """执行工具调用"""
-        try:
-            self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name}")
-            
-            # 检查工具是否存在
-            if tool_call.tool_name not in self.tool_registry.list_tools():
-                return ToolResult(
-                    call_id=tool_call.call_id or "unknown",
-                    success=False,
-                    result=None,
-                    error=f"工具 '{tool_call.tool_name}' 不存在"
-                )
-            
-            # 获取工具函数
-            tool_func = self.tool_registry.get_tool(tool_call.tool_name)
-            if not tool_func:
-                return ToolResult(
-                    call_id=tool_call.call_id or "unknown",
-                    success=False,
-                    result=None,
-                    error=f"无法获取工具函数: {tool_call.tool_name}"
-                )
-            
-            # 执行工具函数
-            if asyncio.iscoroutinefunction(tool_func):
-                result = await tool_func(**tool_call.parameters)
-            else:
-                result = tool_func(**tool_call.parameters)
-            
-            self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
-            return ToolResult(
-                call_id=tool_call.call_id or "unknown",
-                success=True,
-                result=result,
-                error=None
-            )
-            
-        except Exception as e:
-            self.logger.error(f"❌ 工具执行失败 {tool_call.tool_name}: {str(e)}")
-            return ToolResult(
-                call_id=tool_call.call_id or "unknown",
-                success=False,
-                result=None,
-                error=str(e)
-            )
-    async def _call_llm(self, conversation: List[Dict[str, str]]) -> str:
-        """调用LLM"""
+    async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
+        """调用LLM进行Function Calling"""
         # 构建完整的prompt
         full_prompt = ""
         system_prompt = None
@@ -343,6 +143,7 @@ class RealCodeReviewAgent(FunctionCallingAgent, BaseAgent):
         except Exception as e:
             self.logger.error(f"❌ LLM调用失败: {str(e)}")
             raise
+    # 删除重复的方法，使用BaseAgent中的通用实现
     
     def get_capabilities(self) -> Set[AgentCapability]:
         return {

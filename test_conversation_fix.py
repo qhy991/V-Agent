@@ -8,8 +8,8 @@ import json
 from config.config import FrameworkConfig
 from core.centralized_coordinator import CentralizedCoordinator
 from agents.real_code_reviewer import RealCodeReviewAgent
-from agents.verilog_design_agent import VerilogDesignAgent
-from agents.verilog_test_agent import VerilogTestAgent
+from agents.real_verilog_agent import RealVerilogDesignAgent
+from agents.real_code_reviewer import RealCodeReviewAgent
 
 
 async def test_conversation_fix():

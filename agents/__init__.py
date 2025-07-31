@@ -5,12 +5,10 @@
 Agents Module for Centralized Agent Framework
 """
 
-from .verilog_design_agent import VerilogDesignAgent
-from .verilog_test_agent import VerilogTestAgent
-from .verilog_review_agent import VerilogReviewAgent
+from .real_verilog_agent import RealVerilogDesignAgent
+from .real_code_reviewer import RealCodeReviewAgent
 
 __all__ = [
-    'VerilogDesignAgent',
-    'VerilogTestAgent', 
-    'VerilogReviewAgent'
+    'RealVerilogDesignAgent',
+    'RealCodeReviewAgent'
 ]
