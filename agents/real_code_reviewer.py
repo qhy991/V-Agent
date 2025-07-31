@@ -567,9 +567,9 @@ class RealCodeReviewAgent(BaseAgent):
         output_files = []
         
         try:
-            # 确保输出目录存在
-            output_dir = Path("./output")
-            output_dir.mkdir(exist_ok=True)
+            # 使用工件目录确保目录存在
+            output_dir = self.artifacts_dir
+            output_dir.mkdir(parents=True, exist_ok=True)
             
             # 保存综合报告
             report_path = output_dir / f"code_review_report_{task_id}.md"
@@ -830,52 +830,99 @@ class RealCodeReviewAgent(BaseAgent):
     
     async def _perform_functional_testing(self, file_path: str, code_content: str, 
                                         task_context: str) -> Dict[str, Any]:
-        """执行功能测试"""
-        try:
-            # 1. 生成测试台
-            testbench_result = await self._generate_testbench(file_path, code_content, task_context)
+        """执行功能测试，包含LLM驱动的错误修复"""
+        max_retries = 3
+        current_code = code_content
+        
+        for attempt in range(max_retries):
+            self.logger.info(f"🔍 功能测试尝试 {attempt + 1}/{max_retries}")
             
-            if not testbench_result['success']:
-                return {
-                    'file_path': file_path,
-                    'test_success': False,
-                    'error': f"测试台生成失败: {testbench_result['error']}",
-                    'testbench_generated': False
-                }
-            
-            # 2. 执行iverilog仿真
-            simulation_result = await self._run_iverilog_simulation(
-                file_path, code_content, testbench_result['testbench_code']
-            )
-            
-            # 3. 分析测试结果
-            test_analysis = await self._analyze_test_results(
-                file_path, simulation_result, testbench_result.get('expected_results', [])
-            )
-            
-            return {
-                'file_path': file_path,
-                'test_success': simulation_result['success'],
-                'testbench_generated': True,
-                'testbench_file': testbench_result.get('testbench_file'),
-                'simulation_output': simulation_result.get('output', ''),
-                'compilation_success': simulation_result.get('compilation_success', False),
-                'execution_success': simulation_result.get('execution_success', False),
-                'test_cases': test_analysis.get('test_cases', []),
-                'failed_cases': test_analysis.get('failed_cases', []),
-                'pass_rate': test_analysis.get('pass_rate', 0.0),
-                'error_details': simulation_result.get('error', ''),
-                'recommendations': test_analysis.get('recommendations', [])
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 功能测试失败 {file_path}: {str(e)}")
-            return {
-                'file_path': file_path,
-                'test_success': False,
-                'error': f"测试执行异常: {str(e)}",
-                'testbench_generated': False
-            }
+            try:
+                # 1. 生成测试台
+                testbench_result = await self._generate_testbench(file_path, current_code, task_context)
+                
+                if not testbench_result['success']:
+                    if attempt == max_retries - 1:
+                        return {
+                            'file_path': file_path,
+                            'test_success': False,
+                            'error': f"测试台生成失败: {testbench_result['error']}",
+                            'testbench_generated': False,
+                            'iterations': attempt + 1
+                        }
+                    continue
+                
+                # 2. 执行iverilog仿真
+                simulation_result = await self._run_iverilog_simulation(
+                    file_path, current_code, testbench_result['testbench_code']
+                )
+                
+                # 3. 如果成功，分析结果
+                if simulation_result['success']:
+                    test_analysis = await self._analyze_test_results(
+                        file_path, simulation_result, testbench_result.get('expected_results', [])
+                    )
+                    
+                    return {
+                        'file_path': file_path,
+                        'test_success': True,
+                        'testbench_generated': True,
+                        'testbench_file': testbench_result.get('testbench_file'),
+                        'simulation_output': simulation_result.get('output', ''),
+                        'compilation_success': True,
+                        'execution_success': True,
+                        'test_cases': test_analysis.get('test_cases', []),
+                        'failed_cases': test_analysis.get('failed_cases', []),
+                        'pass_rate': test_analysis.get('pass_rate', 0.0),
+                        'error_details': '',
+                        'recommendations': test_analysis.get('recommendations', []),
+                        'iterations': attempt + 1,
+                        'code_fixed': attempt > 0
+                    }
+                
+                # 4. 如果失败，使用LLM修复代码
+                if simulation_result.get('error'):
+                    self.logger.info(f"⚠️ 检测到错误，使用LLM修复代码...")
+                    
+                    fixed_code = await self._fix_code_with_llm(
+                        current_code, simulation_result['error'], task_context
+                    )
+                    
+                    if fixed_code and fixed_code != current_code:
+                        current_code = fixed_code
+                        self.logger.info(f"✅ LLM已生成修复后的代码")
+                        continue
+                    else:
+                        self.logger.warning(f"⚠️ LLM未能修复代码或代码无变化")
+                
+                # 5. 最后一次尝试仍失败
+                if attempt == max_retries - 1:
+                    return {
+                        'file_path': file_path,
+                        'test_success': False,
+                        'testbench_generated': True,
+                        'error_details': simulation_result.get('error', '未知错误'),
+                        'iterations': attempt + 1,
+                        'final_code': current_code
+                    }
+                
+            except Exception as e:
+                self.logger.error(f"❌ 功能测试异常 {file_path}: {str(e)}")
+                if attempt == max_retries - 1:
+                    return {
+                        'file_path': file_path,
+                        'test_success': False,
+                        'error': f"测试执行异常: {str(e)}",
+                        'testbench_generated': False,
+                        'iterations': attempt + 1
+                    }
+        
+        return {
+            'file_path': file_path,
+            'test_success': False,
+            'error': '达到最大重试次数',
+            'iterations': max_retries
+        }
     
     async def _generate_testbench(self, file_path: str, code_content: str, 
                                 task_context: str) -> Dict[str, Any]:
@@ -1027,8 +1074,8 @@ testbench应该：
     
     async def _save_testbench_file(self, module_name: str, testbench_code: str) -> str:
         """保存测试台文件"""
-        output_dir = Path("./output")
-        output_dir.mkdir(exist_ok=True)
+        output_dir = self.artifacts_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
         
         testbench_file = output_dir / f"{module_name}_tb.v"
         
@@ -1037,6 +1084,66 @@ testbench应该：
         
         self.logger.info(f"💾 测试台已保存: {testbench_file}")
         return str(testbench_file)
+    
+    async def _fix_code_with_llm(self, original_code: str, error_message: str, task_context: str) -> str:
+        """使用LLM根据错误信息修复代码"""
+        try:
+            self.logger.info("🔧 使用LLM修复代码...")
+            
+            fix_prompt = f"""
+你是一位资深的Verilog设计和调试专家。请根据以下错误信息修复Verilog代码。
+
+## 任务背景
+{task_context}
+
+## 当前代码
+```verilog
+{original_code}
+```
+
+## 错误信息
+{error_message}
+
+## 修复要求
+1. **精确定位错误**：分析错误信息，找到确切的语法或逻辑问题
+2. **最小化修改**：只修复必要的错误，保持原有设计意图
+3. **验证修复**：确保修复后的代码可以成功编译和仿真
+4. **保持功能**：修复后必须实现原有的设计功能
+
+## 常见错误类型和修复建议
+- **语法错误**：检查括号匹配、分号、模块声明
+- **类型错误**：reg/wire声明与使用的一致性
+- **端口错误**：模块端口与实例化的一致性
+- **时序错误**：时钟和复位信号的处理
+
+## 修复策略
+1. 首先分析错误类型和位置
+2. 然后提供修复后的完整代码
+3. 最后简要说明修复的要点
+
+请只返回修复后的完整Verilog代码，不要添加解释文字：
+"""
+            
+            fixed_code = await self.llm_client.send_prompt(
+                prompt=fix_prompt,
+                temperature=0.3,
+                max_tokens=3000,
+                system_prompt="你是一个专业的Verilog代码修复专家，专注于解决编译错误和逻辑问题。"
+            )
+            
+            # 清理返回的代码
+            fixed_code = fixed_code.strip()
+            if fixed_code.startswith('```verilog'):
+                fixed_code = fixed_code[10:]
+            if fixed_code.endswith('```'):
+                fixed_code = fixed_code[:-3]
+            
+            self.logger.info(f"✅ LLM生成修复代码完成，长度: {len(fixed_code)} 字符")
+            return fixed_code.strip()
+            
+        except Exception as e:
+            self.logger.error(f"❌ LLM代码修复失败: {str(e)}")
+            return original_code  # 返回原代码如果修复失败
     
     async def _run_iverilog_simulation(self, module_file: str, module_code: str, 
                                      testbench_code: str) -> Dict[str, Any]:
@@ -1410,7 +1517,7 @@ endmodule
                 try:
                     module_path = Path(module_file)
                     if not module_path.is_absolute():
-                        module_path = Path("./output") / module_path
+                        module_path = self.artifacts_dir / module_path
                     
                     with open(module_path, 'r', encoding='utf-8') as f:
                         module_code = f.read()
@@ -1440,7 +1547,7 @@ endmodule
                 try:
                     testbench_path = Path(testbench_file)
                     if not testbench_path.is_absolute():
-                        testbench_path = Path("./output") / testbench_path
+                        testbench_path = self.artifacts_dir / testbench_path
                     
                     with open(testbench_path, 'r', encoding='utf-8') as f:
                         testbench_code = f.read()

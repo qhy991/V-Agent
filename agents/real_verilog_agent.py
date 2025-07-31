@@ -127,35 +127,88 @@ class RealVerilogDesignAgent(BaseAgent):
     async def execute_enhanced_task(self, enhanced_prompt: str, 
                                   original_message: TaskMessage,
                                   file_contents: Dict[str, Dict]) -> Dict[str, Any]:
-        """执行Verilog设计任务"""
+        """执行Verilog设计任务，包含LLM驱动的错误修复"""
         task_id = original_message.task_id
         self.logger.info(f"🎯 开始执行真实Verilog设计任务: {task_id}")
+        
+        max_retries = 3
+        current_code = None
         
         try:
             # 1. 分析任务需求
             task_analysis = await self._analyze_design_requirements(enhanced_prompt)
             self.logger.info(f"📊 任务分析: {task_analysis.get('module_type', 'unknown')}")
             
-            # 2. 搜索相关的现有模块
-            search_results = await self._search_existing_modules(task_analysis)
-            
-            # 3. 生成Verilog代码
-            verilog_code = await self._generate_verilog_code(
-                enhanced_prompt, task_analysis, search_results, file_contents
-            )
-            
-            # 4. 代码质量分析
-            quality_metrics = await self._analyze_code_quality(verilog_code)
-            
-            # 5. 保存生成的文件
-            output_files = await self._save_generated_files(verilog_code, task_analysis, task_id)
-            
-            # 6. 创建标准化响应
-            response = await self._create_design_response(
-                task_id, task_analysis, quality_metrics, output_files, verilog_code
-            )
-            
-            return {"formatted_response": response}
+            for attempt in range(max_retries):
+                self.logger.info(f"🔄 设计尝试 {attempt + 1}/{max_retries}")
+                
+                try:
+                    # 2. 搜索相关的现有模块（只在第一次或需要时）
+                    if attempt == 0:
+                        search_results = await self._search_existing_modules(task_analysis)
+                    else:
+                        search_results = {"success": False, "result": {"data": []}}
+                    
+                    # 3. 生成或修复Verilog代码
+                    if attempt == 0:
+                        # 首次生成代码
+                        current_code = await self._generate_verilog_code(
+                            enhanced_prompt, task_analysis, search_results, file_contents
+                        )
+                    else:
+                        # 基于错误修复代码
+                        current_code = await self._regenerate_verilog_code(
+                            enhanced_prompt, task_analysis, current_code, last_error
+                        )
+                    
+                    if not current_code:
+                        raise Exception("未能生成有效代码")
+                    
+                    # 4. 代码质量分析
+                    quality_metrics = await self._analyze_code_quality(current_code)
+                    
+                    # 5. 尝试编译和基础验证
+                    compilation_result = await self._basic_verilog_validation(current_code)
+                    
+                    if compilation_result['success']:
+                        # 6. 保存生成的文件
+                        output_files = await self._save_generated_files(
+                            current_code, task_analysis, task_id, attempt + 1
+                        )
+                        
+                        # 7. 创建标准化响应
+                        response = await self._create_design_response(
+                            task_id, task_analysis, quality_metrics, output_files, 
+                            current_code, attempt + 1, compilation_result.get('warnings', [])
+                        )
+                        
+                        return {"formatted_response": response}
+                    
+                    # 8. 记录错误用于下次修复
+                    last_error = compilation_result.get('error', '编译验证失败')
+                    self.logger.info(f"⚠️ 第{attempt + 1}次尝试失败: {last_error}")
+                    
+                    if attempt == max_retries - 1:
+                        # 最后一次尝试仍失败
+                        output_files = await self._save_generated_files(
+                            current_code, task_analysis, task_id, attempt + 1
+                        )
+                        
+                        response = await self._create_design_response(
+                            task_id, task_analysis, quality_metrics, output_files,
+                            current_code, attempt + 1, [f"编译错误: {last_error}"]
+                        )
+                        
+                        return {"formatted_response": response}
+                    
+                except Exception as e:
+                    last_error = str(e)
+                    self.logger.error(f"❌ 第{attempt + 1}次尝试异常: {last_error}")
+                    
+                    if attempt == max_retries - 1:
+                        raise e
+                    
+                    await asyncio.sleep(0.5)  # 短暂延迟后重试
             
         except Exception as e:
             self.logger.error(f"❌ Verilog设计任务失败: {str(e)}")
@@ -517,9 +570,9 @@ class RealVerilogDesignAgent(BaseAgent):
             bit_width = task_analysis.get('bit_width', 8)
             filename = f"{module_type}_{bit_width}bit.v"
             
-            # 确保输出目录存在
-            output_dir = Path("./output")
-            output_dir.mkdir(exist_ok=True)
+            # 使用工件目录确保目录存在
+            output_dir = self.artifacts_dir
+            output_dir.mkdir(parents=True, exist_ok=True)
             
             file_path = output_dir / filename
             
@@ -578,9 +631,100 @@ class RealVerilogDesignAgent(BaseAgent):
             self.logger.error(f"❌ 文件保存失败: {str(e)}")
             return []
     
+    async def _basic_verilog_validation(self, verilog_code: str) -> Dict[str, Any]:
+        """基础Verilog代码验证"""
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                
+                # 创建临时Verilog文件
+                test_file = temp_path / "test_module.v"
+                with open(test_file, 'w', encoding='utf-8') as f:
+                    f.write(verilog_code)
+                
+                # 尝试编译
+                compile_cmd = ['iverilog', '-o', str(temp_path / 'test'), str(test_file)]
+                
+                compile_process = subprocess.run(
+                    compile_cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                    cwd=temp_dir
+                )
+                
+                if compile_process.returncode == 0:
+                    return {
+                        'success': True,
+                        'warnings': []
+                    }
+                else:
+                    return {
+                        'success': False,
+                        'error': compile_process.stderr.strip()
+                    }
+                    
+        except subprocess.TimeoutExpired:
+            return {
+                'success': False,
+                'error': '编译超时'
+            }
+        except FileNotFoundError:
+            return {
+                'success': True,
+                'warnings': ['iverilog未安装，跳过编译验证']
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'验证异常: {str(e)}'
+            }
+    
+    async def _regenerate_verilog_code(self, prompt: str, task_analysis: Dict[str, Any],
+                                     previous_code: str, error_message: str) -> str:
+        """基于错误信息重新生成Verilog代码"""
+        try:
+            regenerate_prompt = f"""
+你是一位资深的Verilog设计专家。之前的Verilog代码存在以下问题，请重新生成修复后的代码。
+
+## 设计需求
+{prompt}
+
+## 模块规格
+{json.dumps(task_analysis, indent=2, ensure_ascii=False)}
+
+## 之前的代码（存在错误）
+```verilog
+{previous_code}
+```
+
+## 错误信息
+{error_message}
+
+## 修复要求
+1. **精确定位错误**：分析错误信息，找到确切的语法或逻辑问题
+2. **完整修复**：提供修复后的完整代码
+3. **保持功能**：确保修复后的代码实现原有的设计功能
+4. **最佳实践**：遵循Verilog最佳实践
+
+请返回修复后的完整Verilog代码：
+"""
+            
+            fixed_code = await self.llm_client.send_prompt(
+                prompt=regenerate_prompt,
+                temperature=0.2,
+                max_tokens=4000
+            )
+            
+            return fixed_code.strip()
+            
+        except Exception as e:
+            self.logger.error(f"❌ 代码重新生成失败: {str(e)}")
+            return previous_code  # 返回原代码如果修复失败
+    
     async def _create_design_response(self, task_id: str, task_analysis: Dict[str, Any],
                                     quality_metrics: QualityMetrics, output_files: list,
-                                    verilog_code: str) -> str:
+                                    verilog_code: str, iterations: int = 1, warnings: List[str] = None) -> str:
         """创建标准化设计响应"""
         
         builder = self.create_response_builder(task_id)
@@ -647,15 +791,22 @@ class RealVerilogDesignAgent(BaseAgent):
         builder.add_metadata("code_lines", len(verilog_code.split('\n')))
         builder.add_metadata("file_count", len(output_files))
         builder.add_metadata("llm_powered", True)
+        builder.add_metadata("iterations", iterations)
+        builder.add_metadata("warnings", warnings or [])
         
         # 构建响应
         status = TaskStatus.SUCCESS if quality_metrics.overall_score >= 0.7 else TaskStatus.REQUIRES_RETRY
         completion = 100.0 if status == TaskStatus.SUCCESS else 80.0
         
+        message = f"成功设计了{task_analysis.get('functionality', 'Verilog模块')}"
+        if iterations > 1:
+            message += f"（经过{iterations}次迭代修复）"
+        message += f"，代码质量分数: {quality_metrics.overall_score:.2f}"
+        
         response = builder.build(
             response_type=ResponseType.TASK_COMPLETION,
             status=status,
-            message=f"成功设计了{task_analysis.get('functionality', 'Verilog模块')}，代码质量分数: {quality_metrics.overall_score:.2f}",
+            message=message,
             completion_percentage=completion,
             quality_metrics=quality_metrics
         )

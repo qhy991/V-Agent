@@ -111,9 +111,10 @@ class AgentPromptManager:
 3. **结构化文件名**：使用有意义的文件名和路径结构
 
 ### 文件路径命名规范
-- 使用任务ID作为目录: `output/{task_id}/`
+- 使用任务ID作为目录: 通过系统提供的artifacts目录
 - 文件类型后缀: `.v` (Verilog), `.sv` (SystemVerilog), `.json` (数据), `.md` (文档)
 - 功能性前缀: `design_`, `test_`, `review_`, `analysis_`
+- 目录结构: 系统会自动创建所需目录，无需手动创建
 
 ### 文件引用最佳实践
 1. **创建FileReference对象**：
