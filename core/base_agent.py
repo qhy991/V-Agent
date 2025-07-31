@@ -327,7 +327,7 @@ class BaseAgent(ABC):
             return []
     
     async def _execute_tool_call_with_retry(self, tool_call: ToolCall) -> ToolResult:
-        """执行工具调用，支持失败重试"""
+        """执行工具调用，支持失败重试和LLM反馈"""
         last_error = None
         
         for attempt in range(self.max_tool_retry_attempts):
@@ -363,26 +363,41 @@ class BaseAgent(ABC):
                 last_error = str(e)
                 self.logger.warning(f"⚠️ 工具执行失败 {tool_call.tool_name} (尝试 {attempt + 1}): {str(e)}")
                 
-                # 记录失败上下文，用于智能重试
+                # 记录详细的失败上下文，用于LLM分析和智能重试
                 failure_context = {
                     "tool_name": tool_call.tool_name,
                     "parameters": tool_call.parameters,
                     "error": str(e),
-                    "attempt": attempt + 1
+                    "error_type": type(e).__name__,
+                    "attempt": attempt + 1,
+                    "timestamp": time.time(),
+                    "agent_id": self.agent_id,
+                    "role": self.role
                 }
+                
+                # 增强错误信息格式
+                detailed_error = await self._enhance_error_with_context(failure_context)
+                failure_context["detailed_error"] = detailed_error
+                
                 self.tool_failure_contexts.append(failure_context)
                 
-                # 如果不是最后一次尝试，等待一下再重试
-                if attempt < self.max_tool_retry_attempts - 1:
+                # 如果是最后一次尝试，记录完整错误链
+                if attempt == self.max_tool_retry_attempts - 1:
+                    self.logger.error(f"❌ 工具调用最终失败 {tool_call.tool_name}: {last_error}")
+                    self.logger.error(f"📊 失败上下文: {json.dumps(failure_context, indent=2, default=str)}")
+                else:
+                    # 使用LLM分析错误并提供重试建议
+                    retry_advice = await self._get_llm_retry_advice(failure_context)
+                    self.logger.info(f"💡 重试建议: {retry_advice}")
                     await asyncio.sleep(1)
         
-        # 所有重试都失败了
-        self.logger.error(f"❌ 工具调用最终失败 {tool_call.tool_name}: {last_error}")
+        # 所有重试都失败了，返回增强的错误信息
         return ToolResult(
             call_id=tool_call.call_id or "unknown",
             success=False,
             result=None,
-            error=f"工具执行失败 (已重试{self.max_tool_retry_attempts}次): {last_error}"
+            error=f"工具执行失败 (已重试{self.max_tool_retry_attempts}次): {last_error}",
+            context={"failure_chain": self.tool_failure_contexts}
         )
     
     def _format_tool_results(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> str:

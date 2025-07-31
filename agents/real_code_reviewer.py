@@ -20,6 +20,7 @@ from core.response_format import ResponseFormat, TaskStatus, ResponseType, Quali
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
 from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
+from tools.script_tools import ScriptManager
 
 
 class RealCodeReviewAgent(BaseAgent):
@@ -45,6 +46,9 @@ class RealCodeReviewAgent(BaseAgent):
         # 设置专用日志器
         self.agent_logger = get_agent_logger('RealCodeReviewAgent')
         self.artifacts_dir = get_artifacts_dir()
+        
+        # 初始化脚本管理器
+        self.script_manager = ScriptManager(work_dir=self.artifacts_dir)
         
         self.logger.info(f"🔍 真实代码审查智能体(Function Calling支持)初始化完成")
         self.agent_logger.info("RealCodeReviewAgent初始化完成")
@@ -112,6 +116,59 @@ class RealCodeReviewAgent(BaseAgent):
                     "type": "string",
                     "description": "要分析的Verilog代码",
                     "required": True
+                }
+            }
+        )
+        
+        # 4. 脚本生成工具
+        self.register_function_calling_tool(
+            name="write_build_script",
+            func=self._tool_write_build_script,
+            description="生成构建脚本(Makefile或shell脚本)",
+            parameters={
+                "verilog_files": {
+                    "type": "array",
+                    "description": "Verilog源文件列表",
+                    "required": True
+                },
+                "testbench_files": {
+                    "type": "array", 
+                    "description": "测试台文件列表",
+                    "required": True
+                },
+                "script_type": {
+                    "type": "string",
+                    "description": "脚本类型: 'makefile' 或 'bash'",
+                    "required": False
+                },
+                "target_name": {
+                    "type": "string",
+                    "description": "目标名称",
+                    "required": False
+                }
+            }
+        )
+        
+        # 5. 脚本执行工具
+        self.register_function_calling_tool(
+            name="execute_build_script",
+            func=self._tool_execute_build_script,
+            description="执行构建脚本进行编译和仿真",
+            parameters={
+                "script_name": {
+                    "type": "string",
+                    "description": "脚本文件名",
+                    "required": True
+                },
+                "action": {
+                    "type": "string",
+                    "description": "执行的动作: 'all', 'compile', 'simulate', 'clean'",
+                    "required": False
+                },
+                "arguments": {
+                    "type": "array",
+                    "description": "额外的命令行参数",
+                    "required": False
                 }
             }
         )
@@ -1650,4 +1707,123 @@ endmodule
                 "success": False,
                 "error": f"工具执行异常: {str(e)}",
                 "code_quality": None
+            }
+    
+    async def _tool_write_build_script(self, verilog_files: List[str], testbench_files: List[str], 
+                                     script_type: str = "bash", target_name: str = "simulation", **kwargs) -> Dict[str, Any]:
+        """工具：生成构建脚本"""
+        try:
+            self.logger.info(f"🔧 工具调用: 生成构建脚本 ({script_type})")
+            
+            if script_type.lower() in ["makefile", "make"]:
+                # 生成Makefile
+                script_content = self.script_manager.generate_makefile(
+                    verilog_files=verilog_files,
+                    testbench_files=testbench_files,
+                    target_name=target_name
+                )
+                script_name = f"{target_name}.mk"
+                result = self.script_manager.write_script(
+                    script_name=script_name,
+                    script_content=script_content,
+                    script_type="make",
+                    make_executable=False
+                )
+            else:
+                # 生成Bash脚本
+                script_content = self.script_manager.generate_build_script(
+                    verilog_files=verilog_files,
+                    testbench_files=testbench_files,
+                    target_name=target_name
+                )
+                script_name = f"build_{target_name}.sh"
+                result = self.script_manager.write_script(
+                    script_name=script_name,
+                    script_content=script_content,
+                    script_type="bash",
+                    make_executable=True
+                )
+            
+            if result["success"]:
+                self.logger.info(f"✅ 构建脚本生成成功: {result['script_path']}")
+                return {
+                    "success": True,
+                    "script_path": result["script_path"],
+                    "script_name": result["script_name"],
+                    "script_type": script_type,
+                    "verilog_files": verilog_files,
+                    "testbench_files": testbench_files,
+                    "message": f"构建脚本已生成: {result['script_path']}"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result["error"],
+                    "script_path": None
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ 构建脚本生成工具失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"工具执行异常: {str(e)}",
+                "script_path": None
+            }
+    
+    async def _tool_execute_build_script(self, script_name: str, action: str = "all", 
+                                       arguments: List[str] = None, **kwargs) -> Dict[str, Any]:
+        """工具：执行构建脚本"""
+        try:
+            self.logger.info(f"🔧 工具调用: 执行构建脚本 ({script_name})")
+            
+            # 准备参数
+            script_args = []
+            if action and action != "all":
+                script_args.append(action)
+            
+            if arguments:
+                script_args.extend(arguments)
+            
+            # 执行脚本
+            result = self.script_manager.execute_script(
+                script_path=script_name,
+                arguments=script_args,
+                working_directory=str(self.artifacts_dir),
+                timeout=600  # 10分钟超时
+            )
+            
+            if result["success"]:
+                self.logger.info(f"✅ 脚本执行成功: {script_name}")
+                return {
+                    "success": True,
+                    "return_code": result["return_code"],
+                    "stdout": result["stdout"],
+                    "stderr": result["stderr"],
+                    "script_path": result["script_path"],
+                    "command": result["command"],
+                    "action": action,
+                    "message": f"脚本执行成功: {script_name}"
+                }
+            else:
+                self.logger.warning(f"⚠️ 脚本执行失败: {script_name}")
+                return {
+                    "success": False,
+                    "return_code": result.get("return_code", -1),
+                    "stdout": result.get("stdout", ""),
+                    "stderr": result.get("stderr", ""),
+                    "error": result.get("error", "脚本执行失败"),
+                    "script_path": result.get("script_path", script_name),
+                    "command": result.get("command", ""),
+                    "action": action,
+                    "message": f"脚本执行失败: {result.get('error', '未知错误')}"
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ 脚本执行工具失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"工具执行异常: {str(e)}",
+                "return_code": -1,
+                "stdout": "",
+                "stderr": ""
             }
