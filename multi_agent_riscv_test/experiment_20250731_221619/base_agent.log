@@ -1,0 +1,135 @@
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🛠️ 传统工具调用已启用: 权限=5
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - ✅ CentralizedCoordinator (Function Calling支持) 初始化完成
+[2025-07-31 22:16:19] Agent.centralized_coordinator - DEBUG - 📝 System prompt 长度: 4208 字符
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🧠 中心化协调智能体初始化完成
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - ✅ RealVerilogDesignAgent (Function Calling支持) 初始化完成
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - DEBUG - 📝 System prompt 长度: 6180 字符
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🔧 真实Verilog设计智能体(Function Calling支持)初始化完成
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_build_script
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - ✅ RealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-07-31 22:16:19] Agent.real_code_review_agent - DEBUG - 📝 System prompt 长度: 6653 字符
+[2025-07-31 22:16:19] Agent.real_code_review_agent - INFO - 🔍 真实代码审查智能体(Function Calling支持)初始化完成
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - ✅ 智能体注册成功: real_verilog_design_agent (verilog_designer)
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - ✅ 智能体注册成功: real_code_review_agent (code_reviewer)
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1753971379
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '
+作为RISC-V CPU架构师，请设计一个简化的32位RISC-V处理器核心，包含：
+
+📋 设计要求：
+1. **指令集支持**: RV32I基础整数指令集
+   - 算术指令: ADD, SUB, AND, OR, XOR
+   - 逻辑移位: SLL, SRL, SRA  
+   - 分支指令: BEQ, BNE, BLT, BGE
+   - 内存访问: LW, SW
+   - 立即数指令: ADDI, ANDI, ORI
+
+2. **核心模块设计**:
+   - Program Counter (PC) 模块
+   - Instruction Fetch Unit (IFU)
+   - Instruction Decode Unit (IDU) 
+   - Arithmetic Logic Unit (ALU)
+   - Register File (32个32位寄存器)
+   - Memory Interface Unit
+
+3. **设计约束**:
+   - 单周期执行（简化版）
+   - 32位数据宽度
+   - 支持基本的数据前递
+   - 包含控制信号生成
+
+4. **文件组织**:
+   - 每个模块独立的.v文件
+   - 顶层CPU集成模块
+   - 详细的端口定义和注释
+
+请先从PC模块开始，然后是ALU模块，最后集成为完整的CPU。
+每个模块都要包含详细的功能说明和端口定义。
+'
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '
+作为risc-v cpu架构师，请设计一个简化的32位risc-v处理器核心，包含：
+
+📋 设计要求：
+1. **指令集支持**: rv32i基础整数指令集
+   - 算术指令: add, sub, and, or, xor
+   - 逻辑移位: sll, srl, sra  
+   - 分支指令: beq, bne, blt, bge
+   - 内存访问: lw, sw
+   - 立即数指令: addi, andi, ori
+
+2. **核心模块设计**:
+   - program counter (pc) 模块
+   - instruction fetch unit (ifu)
+   - instruction decode unit (idu) 
+   - arithmetic logic unit (alu)
+   - register file (32个32位寄存器)
+   - memory interface unit
+
+3. **设计约束**:
+   - 单周期执行（简化版）
+   - 32位数据宽度
+   - 支持基本的数据前递
+   - 包含控制信号生成
+
+4. **文件组织**:
+   - 每个模块独立的.v文件
+   - 顶层cpu集成模块
+   - 详细的端口定义和注释
+
+请先从pc模块开始，然后是alu模块，最后集成为完整的cpu。
+每个模块都要包含详细的功能说明和端口定义。
+'
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected design keywords: ['设计', '生成']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: design
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 9
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['code_generation', 'module_design']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "design",
+  "complexity": 9,
+  "required_capabilities": [
+    "code_generation",
+    "module_design"
+  ],
+  "estimated_hours": 4.5,
+  "priority": "medium",
+  "dependencies": []
+}
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Agent Selection Process Started
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Total registered agents: 2
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Excluded agents: set()
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents after filtering: 2
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agent details:
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO -   - real_verilog_design_agent: status=idle, capabilities=['specification_analysis', 'code_generation', 'module_design']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO -   - real_code_review_agent: status=idle, capabilities=['verification', 'specification_analysis', 'quality_analysis', 'test_generation', 'code_review']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: LLM client available: False
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Using simple agent selection strategy
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Agent Selection
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task type: design
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Available agents: ['real_verilog_design_agent', 'real_code_review_agent']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Looking for agents with CODE_GENERATION capability
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Checking real_verilog_design_agent: ['specification_analysis', 'code_generation', 'module_design']
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔍 DEBUG: Selected real_verilog_design_agent for design task
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1753971379
+[2025-07-31 22:16:19] Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: real_verilog_design_agent 发言
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+[2025-07-31 22:16:19] Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1753971379
+[2025-07-31 22:16:27] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: riscv_cpu - 复杂度9
+[2025-07-31 22:16:27] Agent.real_verilog_design_agent - INFO - 📊 任务分析: riscv_cpu
+[2025-07-31 22:16:27] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 1/3
+[2025-07-31 22:16:27] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计

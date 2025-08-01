@@ -1,0 +1,202 @@
+{
+  "experiment_id": "unified_tdd_adder_1753998815",
+  "design_type": "adder",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 592.4341094493866,
+  "timestamp": 1753999407.6212924,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1753998815",
+    "total_iterations": 5,
+    "final_design": [
+      "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+      "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+    ],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1753998815.2040844,
+        "duration": 71.89880061149597,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "logs/experiment_20250801_055335/artifacts/adder_16bit.v:24: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:24: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:29: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:29: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:29: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:29: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:29: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:34: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:35: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:39: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:39: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:39: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:39: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:46: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:48: error: 'a' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:2:      : It was declared here as a net.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:49: error: 'b' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:3:      : It was declared here as a net.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:50: error: 'cin' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:4:      : It was declared here as a net.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:51: error: 'sum' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:5:      : It was declared here as a net.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:52: error: 'cout' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:6:      : It was declared here as a net.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3229753 logs/experiment_20250801_055335/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 19,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_055335/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1753998887.1029544,
+        "duration": 157.995854139328,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "logs/experiment_20250801_055335/artifacts/adder_16bit.v:1: syntax error\nI give up.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3229911 logs/experiment_20250801_055335/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 2,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_055335/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1753999045.0988503,
+        "duration": 75.50689768791199,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "logs/experiment_20250801_055335/artifacts/adder_16bit.v:1: syntax error\nI give up.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3229987 logs/experiment_20250801_055335/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 2,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_055335/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      },
+      {
+        "iteration": 4,
+        "start_time": 1753999120.605776,
+        "duration": 172.27185082435608,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:11: error: timescale directive cannot be inside a module definition.\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:13: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:49: error: Syntax error in continuous assignment\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:15: error: 'a' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:2:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:15: error: 'b' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:3:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:16: error: 'cin' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:4:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:17: error: 'sum' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:5:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:18: error: 'cout' has already been declared in this scope.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:6:      : It was declared here as a net.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3230159 logs/experiment_20250801_055335/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 8,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_055335/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 4
+        }
+      },
+      {
+        "iteration": 5,
+        "start_time": 1753999292.8776605,
+        "duration": 114.74337863922119,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_055335/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "logs/experiment_20250801_055335/artifacts/adder_16bit.v:41: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:41: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:41: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:41: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:41: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:48: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:53: error: Invalid module item.\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:53: syntax error\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:53: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:53: error: Invalid module instantiation\nlogs/experiment_20250801_055335/artifacts/adder_16bit.v:59: error: Invalid module item.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3230274 logs/experiment_20250801_055335/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 11,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_055335/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 5
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 5,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}

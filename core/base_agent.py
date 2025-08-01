@@ -78,7 +78,15 @@ class BaseAgent(ABC):
         self.status = AgentStatus.IDLE
         
         # 设置日志 - 使用增强日志系统
-        self.logger = get_component_logger('base_agent', f"Agent.{self.agent_id}")
+        # 特殊处理不同智能体的日志映射
+        if self.agent_id == "centralized_coordinator":
+            self.logger = get_component_logger('coordinator', f"Agent.{self.agent_id}")
+        elif self.agent_id == "real_verilog_design_agent":
+            self.logger = get_component_logger('real_verilog_agent', f"Agent.{self.agent_id}")
+        elif self.agent_id == "real_code_review_agent":
+            self.logger = get_component_logger('real_code_reviewer', f"Agent.{self.agent_id}")
+        else:
+            self.logger = get_component_logger('base_agent', f"Agent.{self.agent_id}")
         
         # 获取全局工件目录（如果已初始化）
         try:
@@ -204,6 +212,28 @@ class BaseAgent(ABC):
         tools_info += "2. 等待工具执行结果后再继续\n"
         tools_info += "3. 如果工具调用失败，分析错误原因并调整参数重试\n"
         tools_info += "4. 根据工具结果做出下一步决策\n\n"
+        
+        tools_info += "### 🚨 错误处理与修复策略:\n"
+        tools_info += "**当工具调用失败时，你应该：**\n"
+        tools_info += "1. **仔细分析错误信息**: 详细阅读错误详情和建议修复方案\n"
+        tools_info += "2. **识别错误类型**: 区分是文件错误、参数错误、权限错误还是语法错误\n"
+        tools_info += "3. **针对性修复**: 基于错误类型采取对应的修复策略\n"
+        tools_info += "4. **参数调整**: 根据失败分析调整工具调用参数\n"
+        tools_info += "5. **逐步修复**: 优先修复关键阻塞性错误\n"
+        tools_info += "6. **学习改进**: 避免在后续调用中重复相同错误\n\n"
+        
+        tools_info += "**常见错误修复指南：**\n"
+        tools_info += "- **文件不存在**: 先创建文件或检查路径，使用绝对路径\n"
+        tools_info += "- **权限错误**: 检查文件权限，确保目录可写\n"
+        tools_info += "- **参数错误**: 验证所有必需参数，检查参数格式\n"
+        tools_info += "- **语法错误**: 仔细检查代码语法，特别是括号和分号\n"
+        tools_info += "- **网络错误**: 检查连接状态，考虑重试或使用备用方案\n\n"
+        
+        tools_info += "**智能重试策略：**\n"
+        tools_info += "- 不要盲目重复相同的调用\n"
+        tools_info += "- 基于错误分析调整参数再重试\n"
+        tools_info += "- 如果多次失败，考虑替代方案\n"
+        tools_info += "- 利用工具执行结果中的详细分析和建议\n\n"
         
         return base_prompt + tools_info
     
@@ -351,6 +381,20 @@ class BaseAgent(ABC):
                 else:
                     result = tool_func(**tool_call.parameters)
                 
+                # 检查工具内部是否报告失败
+                tool_success = True
+                tool_error = None
+                
+                if isinstance(result, dict):
+                    tool_success = result.get('success', True)
+                    tool_error = result.get('error', None)
+                    
+                    # 如果工具内部报告失败，记录并抛出异常以触发重试
+                    if not tool_success:
+                        error_msg = tool_error or "工具内部执行失败"
+                        self.logger.warning(f"⚠️ 工具内部报告失败 {tool_call.tool_name}: {error_msg}")
+                        raise Exception(error_msg)
+                
                 self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
                 return ToolResult(
                     call_id=tool_call.call_id or "unknown",
@@ -401,29 +445,215 @@ class BaseAgent(ABC):
         )
     
     def _format_tool_results(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> str:
-        """格式化工具执行结果"""
-        result_message = "## 工具执行结果\n\n"
+        """格式化工具执行结果 - 增强版，为LLM提供丰富的上下文信息"""
+        result_message = "## 🔧 工具执行结果详细报告\n\n"
         
-        for tool_call, tool_result in zip(tool_calls, tool_results):
+        # 统计信息
+        total_calls = len(tool_calls)
+        successful_calls = sum(1 for tr in tool_results if tr.success)
+        failed_calls = total_calls - successful_calls
+        
+        result_message += f"📊 **执行摘要**: {successful_calls}/{total_calls} 个工具成功执行"
+        if failed_calls > 0:
+            result_message += f" ({failed_calls} 个失败)"
+        result_message += "\n\n"
+        
+        # 详细结果
+        for i, (tool_call, tool_result) in enumerate(zip(tool_calls, tool_results), 1):
             if tool_result.success:
-                result_message += f"### ✅ {tool_call.tool_name} - 执行成功\n"
-                result_message += f"**结果**: {tool_result.result}\n\n"
+                result_message += f"### ✅ 工具 {i}: {tool_call.tool_name} - 执行成功\n"
+                result_message += f"**调用参数**: {self._format_parameters(tool_call.parameters)}\n"
+                formatted_result = self._format_tool_result(tool_result.result)
+                result_message += f"**执行结果**: {formatted_result}\n"
+                
+                # 检查是否有错误修复建议（即使工具执行成功）
+                if isinstance(tool_result.result, dict):
+                    if tool_result.result.get('needs_fix') and tool_result.result.get('fix_suggestion'):
+                        result_message += f"🔧 **智能修复建议**: {tool_result.result['fix_suggestion']}\n"
+                        result_message += f"**下一步行动**: 建议根据修复建议调用write_file工具修改代码，然后重新测试\n\n"
+                    else:
+                        result_message += f"**状态**: 成功完成，可进行下一步操作\n\n"
+                else:
+                    result_message += f"**状态**: 成功完成，可进行下一步操作\n\n"
             else:
-                result_message += f"### ❌ {tool_call.tool_name} - 执行失败\n"
-                result_message += f"**错误**: {tool_result.error}\n"
-                result_message += f"**建议**: 请分析错误原因并调整参数重新调用\n\n"
+                result_message += f"### ❌ 工具 {i}: {tool_call.tool_name} - 执行失败\n"
+                result_message += f"**调用参数**: {self._format_parameters(tool_call.parameters)}\n"
+                result_message += f"**错误信息**: {tool_result.error}\n"
+                
+                # 如果有详细的错误上下文，显示它
+                if hasattr(tool_result, 'context') and tool_result.context:
+                    failure_contexts = tool_result.context.get('failure_chain', [])
+                    if failure_contexts:
+                        latest_context = failure_contexts[-1]
+                        if 'detailed_error' in latest_context:
+                            result_message += f"**详细分析**:\n```\n{latest_context['detailed_error']}\n```\n"
+                
+                result_message += f"**影响**: 此工具调用失败可能影响后续操作的执行\n"
+                result_message += f"**建议**: 请根据错误信息分析问题并调整参数重新调用\n\n"
         
-        # 如果有失败的工具调用，添加重试建议
-        failed_calls = [tc for tc, tr in zip(tool_calls, tool_results) if not tr.success]
-        if failed_calls:
-            result_message += "### 🔄 重试建议\n"
-            result_message += "对于失败的工具调用，请:\n"
-            result_message += "1. 检查参数是否正确\n"
-            result_message += "2. 确认文件路径是否存在\n"
-            result_message += "3. 调整参数后重新调用\n\n"
+        # 失败分析和建议
+        if failed_calls > 0:
+            result_message += "## 🚨 失败分析与修复建议\n\n"
+            
+            # 分析失败模式
+            failure_patterns = self._analyze_failure_patterns(tool_calls, tool_results)
+            if failure_patterns:
+                result_message += "### 📈 失败模式分析\n"
+                for pattern, description in failure_patterns.items():
+                    result_message += f"- **{pattern}**: {description}\n"
+                result_message += "\n"
+            
+            # 智能修复建议
+            result_message += "### 💡 智能修复建议\n"
+            repair_suggestions = self._generate_repair_suggestions(tool_calls, tool_results)
+            for i, suggestion in enumerate(repair_suggestions, 1):
+                result_message += f"{i}. {suggestion}\n"
+            result_message += "\n"
+            
+            # 替代方案
+            alternatives = self._suggest_alternatives(tool_calls, tool_results)
+            if alternatives:
+                result_message += "### 🔄 替代方案\n"
+                for alt in alternatives:
+                    result_message += f"- {alt}\n"
+                result_message += "\n"
         
-        result_message += "请基于以上结果继续处理任务。"
+        # 下一步行动指导
+        result_message += "## 🎯 下一步行动指导\n\n"
+        if failed_calls == 0:
+            result_message += "✅ 所有工具执行成功！请基于执行结果继续完成任务。\n"
+            result_message += "- 检查输出结果是否符合预期\n"
+            result_message += "- 根据结果进行下一步操作\n"
+            result_message += "- 如需进一步处理，请继续调用相应工具\n"
+        else:
+            result_message += "⚠️ 存在失败的工具调用，建议采取以下行动：\n"
+            result_message += "1. **优先修复关键失败**: 专注解决阻塞性错误\n"
+            result_message += "2. **调整参数重试**: 基于错误分析修改调用参数\n"
+            result_message += "3. **考虑替代方案**: 如果直接修复困难，尝试其他方法\n"
+            result_message += "4. **寻求帮助**: 如果问题持续，请描述遇到的具体问题\n"
+        
+        result_message += "\n💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。"
+        
         return result_message
+    
+    def _format_parameters(self, parameters: Dict[str, Any]) -> str:
+        """格式化参数显示"""
+        if not parameters:
+            return "无参数"
+        
+        formatted_params = []
+        for key, value in parameters.items():
+            if isinstance(value, str) and len(value) > 100:
+                # 长字符串截断显示
+                formatted_params.append(f"{key}: '{value[:50]}...'[截断，总长度:{len(value)}]")
+            elif isinstance(value, (list, dict)) and len(str(value)) > 200:
+                # 复杂对象简化显示
+                formatted_params.append(f"{key}: {type(value).__name__}[长度:{len(value)}]")
+            else:
+                formatted_params.append(f"{key}: {repr(value)}")
+        
+        return "{ " + ", ".join(formatted_params) + " }"
+    
+    def _format_tool_result(self, result: Any) -> str:
+        """格式化工具结果显示"""
+        if result is None:
+            return "无返回值"
+        elif isinstance(result, dict):
+            # 字典结果格式化
+            if 'success' in result:
+                status = "✅ 成功" if result.get('success') else "❌ 失败"
+                details = []
+                for key, value in result.items():
+                    if key != 'success':
+                        if isinstance(value, str) and len(value) > 100:
+                            details.append(f"{key}: '{value[:50]}...'[截断]")
+                        else:
+                            details.append(f"{key}: {value}")
+                return f"{status}; {'; '.join(details)}"
+            else:
+                return str(result)
+        elif isinstance(result, str) and len(result) > 200:
+            return f"'{result[:100]}...'[内容截断，总长度:{len(result)}字符]"
+        else:
+            return str(result)
+    
+    def _analyze_failure_patterns(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> Dict[str, str]:
+        """分析失败模式"""
+        patterns = {}
+        
+        failed_tools = [(tc, tr) for tc, tr in zip(tool_calls, tool_results) if not tr.success]
+        if not failed_tools:
+            return patterns
+        
+        # 分析文件相关失败
+        file_failures = [tc for tc, tr in failed_tools if 'file' in tc.tool_name.lower()]
+        if file_failures:
+            patterns["文件操作失败"] = f"共{len(file_failures)}个文件操作工具失败，可能是路径或权限问题"
+        
+        # 分析网络相关失败
+        network_failures = [tc for tc, tr in failed_tools if any(keyword in tr.error.lower() 
+                           for keyword in ['connection', 'timeout', 'network', 'api'])]
+        if network_failures:
+            patterns["网络连接问题"] = f"检测到{len(network_failures)}个网络相关错误，可能需要检查连接状态"
+        
+        # 分析参数相关失败
+        param_failures = [tc for tc, tr in failed_tools if any(keyword in tr.error.lower() 
+                         for keyword in ['parameter', 'argument', 'missing', 'required'])]
+        if param_failures:
+            patterns["参数问题"] = f"发现{len(param_failures)}个参数相关错误，需要检查调用参数"
+        
+        # 分析权限相关失败
+        permission_failures = [tc for tc, tr in failed_tools if 'permission' in tr.error.lower()]
+        if permission_failures:
+            patterns["权限问题"] = f"存在{len(permission_failures)}个权限相关错误，需要检查访问权限"
+        
+        return patterns
+    
+    def _generate_repair_suggestions(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> List[str]:
+        """生成修复建议"""
+        suggestions = []
+        
+        failed_pairs = [(tc, tr) for tc, tr in zip(tool_calls, tool_results) if not tr.success]
+        
+        for tool_call, tool_result in failed_pairs:
+            error_lower = tool_result.error.lower()
+            
+            if 'file not found' in error_lower or 'no such file' in error_lower:
+                suggestions.append(f"对于工具 {tool_call.tool_name}: 检查文件路径，确保文件存在或先创建文件")
+            elif 'permission denied' in error_lower:
+                suggestions.append(f"对于工具 {tool_call.tool_name}: 检查文件/目录权限，必要时修改权限设置")
+            elif 'parameter' in error_lower or 'argument' in error_lower:
+                suggestions.append(f"对于工具 {tool_call.tool_name}: 检查参数格式和必需参数是否完整")
+            elif 'syntax' in error_lower:
+                suggestions.append(f"对于工具 {tool_call.tool_name}: 检查输入代码的语法正确性")
+            else:
+                suggestions.append(f"对于工具 {tool_call.tool_name}: 分析具体错误信息 '{tool_result.error[:50]}...' 并相应调整")
+        
+        # 通用建议
+        if len(failed_pairs) > 1:
+            suggestions.append("检查是否存在工具间的依赖关系，考虑调整执行顺序")
+        
+        return suggestions[:5]  # 限制建议数量
+    
+    def _suggest_alternatives(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> List[str]:
+        """建议替代方案"""
+        alternatives = []
+        
+        failed_tools = [tc.tool_name for tc, tr in zip(tool_calls, tool_results) if not tr.success]
+        
+        if 'write_file' in failed_tools:
+            alternatives.append("考虑使用不同的文件路径或目录")
+            alternatives.append("检查磁盘空间是否充足")
+        
+        if 'read_file' in failed_tools:
+            alternatives.append("尝试使用绝对路径而非相对路径")
+            alternatives.append("确认目标文件确实已创建")
+        
+        if any('simulation' in tool for tool in failed_tools):
+            alternatives.append("检查Verilog代码语法，考虑使用在线语法检查器")
+            alternatives.append("确认仿真工具(如iverilog)已正确安装")
+        
+        return alternatives[:3]  # 限制数量
     
     @abstractmethod
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
@@ -857,7 +1087,12 @@ class BaseAgent(ABC):
             # 确保目录存在
             output_dir.mkdir(parents=True, exist_ok=True)
             
-            # 构建完整文件路径
+            # 构建完整文件路径 - 处理可能的路径重复问题
+            # 如果filename已经包含路径信息，只取文件名部分
+            if '/' in filename or '\\' in filename:
+                filename = Path(filename).name
+                self.logger.info(f"🔧 提取文件名: {filename}")
+            
             file_path = output_dir / filename
             
             # 清理内容（移除markdown标记等）
@@ -925,3 +1160,289 @@ class BaseAgent(ABC):
                 "error": f"文件读取异常: {str(e)}",
                 "content": None
             }
+    
+    # ==========================================================================
+    # 🚨 错误处理增强方法 - 修复缺失的关键功能
+    # ==========================================================================
+    
+    async def _enhance_error_with_context(self, failure_context: Dict[str, Any]) -> str:
+        """增强错误信息，基于上下文生成详细分析"""
+        try:
+            tool_name = failure_context.get("tool_name", "unknown")
+            error = failure_context.get("error", "unknown error")
+            error_type = failure_context.get("error_type", "Exception")
+            parameters = failure_context.get("parameters", {})
+            attempt = failure_context.get("attempt", 1)
+            
+            # 分析错误类型和常见原因
+            error_analysis = self._analyze_error_type(error, error_type, tool_name, parameters)
+            
+            # 构建增强的错误描述
+            enhanced_error = f"""
+=== 工具执行失败详细分析 ===
+🔧 工具名称: {tool_name}
+📝 错误类型: {error_type}
+🔍 原始错误: {error}
+📊 尝试次数: {attempt}/{self.max_tool_retry_attempts}
+⚙️ 调用参数: {parameters}
+
+🎯 错误分析:
+{error_analysis['category']}: {error_analysis['description']}
+
+💡 可能原因:
+{chr(10).join(f"• {cause}" for cause in error_analysis['possible_causes'])}
+
+🔧 建议修复:
+{chr(10).join(f"• {fix}" for fix in error_analysis['suggested_fixes'])}
+
+⚠️ 影响评估: {error_analysis['impact']}
+""".strip()
+            
+            return enhanced_error
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 错误增强失败: {str(e)}")
+            return f"工具 {failure_context.get('tool_name', 'unknown')} 执行失败: {failure_context.get('error', 'unknown')}"
+    
+    def _analyze_error_type(self, error: str, error_type: str, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """分析错误类型并提供详细信息"""
+        error_lower = error.lower()
+        
+        # 文件相关错误
+        if "no such file or directory" in error_lower or "filenotfounderror" in error_type.lower():
+            return {
+                "category": "文件访问错误",
+                "description": "指定的文件或目录不存在",
+                "possible_causes": [
+                    "文件路径不正确或文件未创建",
+                    "相对路径解析错误",
+                    "文件被删除或移动",
+                    "权限不足无法访问文件"
+                ],
+                "suggested_fixes": [
+                    "检查文件路径是否正确",
+                    "使用绝对路径替代相对路径",
+                    "先创建文件或目录再访问",
+                    "检查文件权限设置"
+                ],
+                "impact": "中等 - 可通过修正路径或创建文件解决"
+            }
+        
+        # 权限相关错误
+        elif "permission denied" in error_lower or "permissionerror" in error_type.lower():
+            return {
+                "category": "权限访问错误", 
+                "description": "没有足够权限执行操作",
+                "possible_causes": [
+                    "文件或目录权限设置不当",
+                    "用户权限不足",
+                    "文件被其他进程占用",
+                    "目录为只读状态"
+                ],
+                "suggested_fixes": [
+                    "检查并修改文件权限",
+                    "使用具有足够权限的用户运行",
+                    "确保文件未被其他进程占用",
+                    "检查目录写入权限"
+                ],
+                "impact": "中等 - 需要调整权限设置"
+            }
+        
+        # 参数相关错误
+        elif "typeerror" in error_type.lower() or "missing" in error_lower or "required" in error_lower:
+            return {
+                "category": "参数错误",
+                "description": "工具调用参数不正确或缺失",
+                "possible_causes": [
+                    "必需参数未提供",
+                    "参数类型不匹配",
+                    "参数值格式错误",
+                    "参数名称拼写错误"
+                ],
+                "suggested_fixes": [
+                    "检查所有必需参数是否提供",
+                    "验证参数类型和格式",
+                    "参考工具文档确认参数要求",
+                    "使用正确的参数名称"
+                ],
+                "impact": "低 - 通过修正参数即可解决"
+            }
+        
+        # 编程语言特定错误（Verilog等）
+        elif "syntax error" in error_lower or "parse error" in error_lower:
+            return {
+                "category": "语法错误",
+                "description": "代码存在语法错误",
+                "possible_causes": [
+                    "Verilog语法不正确",
+                    "缺少分号或括号不匹配",
+                    "关键字拼写错误",
+                    "模块定义不完整"
+                ],
+                "suggested_fixes": [
+                    "检查代码语法规范",
+                    "验证括号和分号匹配",
+                    "确认关键字拼写正确",
+                    "补全模块定义"
+                ],
+                "impact": "中等 - 需要修复代码语法"
+            }
+        
+        # 网络/连接相关错误
+        elif "connection" in error_lower or "timeout" in error_lower:
+            return {
+                "category": "连接错误",
+                "description": "网络连接或服务连接失败",
+                "possible_causes": [
+                    "网络连接不稳定",
+                    "服务器响应超时",
+                    "API密钥或认证失败",
+                    "服务暂时不可用"
+                ],
+                "suggested_fixes": [
+                    "检查网络连接状态",
+                    "增加连接超时时间",
+                    "验证API密钥和认证信息",
+                    "稍后重试或使用备用服务"
+                ],
+                "impact": "高 - 影响外部服务调用"
+            }
+        
+        # 内存/资源相关错误
+        elif "memory" in error_lower or "resource" in error_lower:
+            return {
+                "category": "资源不足错误",
+                "description": "系统资源不足",
+                "possible_causes": [
+                    "内存不足",
+                    "磁盘空间不够",
+                    "文件句柄耗尽",
+                    "CPU资源紧张"
+                ],
+                "suggested_fixes": [
+                    "释放不必要的内存",
+                    "清理磁盘空间",
+                    "关闭不用的文件句柄",
+                    "优化资源使用"
+                ],
+                "impact": "高 - 需要释放系统资源"
+            }
+        
+        # 通用错误
+        else:
+            return {
+                "category": "通用执行错误",
+                "description": f"工具执行过程中发生异常: {error_type}",
+                "possible_causes": [
+                    "工具内部逻辑错误",
+                    "输入数据格式问题",
+                    "环境配置不当",
+                    "依赖库版本冲突"
+                ],
+                "suggested_fixes": [
+                    "检查工具输入数据",
+                    "验证环境配置",
+                    "更新或重装依赖库",
+                    "查看详细错误日志"
+                ],
+                "impact": "中等 - 需要具体分析解决"
+            }
+    
+    async def _get_llm_retry_advice(self, failure_context: Dict[str, Any]) -> str:
+        """使用LLM分析错误并提供重试建议"""
+        try:
+            # 获取详细的错误信息
+            enhanced_error = failure_context.get("detailed_error", "")
+            tool_name = failure_context.get("tool_name", "unknown")
+            parameters = failure_context.get("parameters", {})
+            attempt = failure_context.get("attempt", 1)
+            
+            # 构建LLM分析prompt
+            analysis_prompt = f"""
+作为一位经验丰富的系统调试专家，请分析以下工具执行失败的情况并提供具体的修复建议。
+
+## 失败详情
+{enhanced_error}
+
+## 历史失败记录
+{json.dumps([ctx for ctx in self.tool_failure_contexts[-3:]], indent=2, ensure_ascii=False, default=str)}
+
+## 请提供以下建议：
+
+### 1. 根本原因分析
+- 这个错误的最可能根本原因是什么？
+- 为什么之前的尝试失败了？
+
+### 2. 具体修复步骤
+- 应该如何修改参数？
+- 需要什么前置条件？
+- 有什么替代方案？
+
+### 3. 重试策略
+- 是否值得重试？
+- 如果重试，应该如何调整？
+- 预期成功概率？
+
+请简洁明确地回答，重点关注可操作的建议。
+"""
+            
+            # 如果有LLM客户端，使用LLM分析
+            if hasattr(self, 'llm_client') and self.llm_client:
+                try:
+                    advice = await self.llm_client.send_prompt(
+                        prompt=analysis_prompt,
+                        temperature=0.3,
+                        max_tokens=3000,
+                        system_prompt="你是一位专业的系统调试和错误分析专家，专注于提供准确、可操作的技术建议。"
+                    )
+                    return advice.strip()
+                except Exception as llm_error:
+                    self.logger.warning(f"⚠️ LLM分析失败: {str(llm_error)}")
+            
+            # 备用方案：基于规则的建议
+            return self._generate_rule_based_advice(failure_context)
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 重试建议生成失败: {str(e)}")
+            return "建议检查错误详情并调整参数后重试"
+    
+    def _generate_rule_based_advice(self, failure_context: Dict[str, Any]) -> str:
+        """生成基于规则的重试建议（备用方案）"""
+        tool_name = failure_context.get("tool_name", "")
+        error = failure_context.get("error", "").lower()
+        attempt = failure_context.get("attempt", 1)
+        
+        advice_parts = []
+        
+        # 基于工具类型的建议
+        if "write_file" in tool_name:
+            advice_parts.append("• 检查目录是否存在，文件路径是否正确")
+            advice_parts.append("• 确保有写入权限")
+        elif "read_file" in tool_name:
+            advice_parts.append("• 确认文件确实存在")
+            advice_parts.append("• 尝试使用绝对路径")
+        elif "simulation" in tool_name or "iverilog" in tool_name:
+            advice_parts.append("• 检查Verilog代码语法")
+            advice_parts.append("• 确保iverilog已正确安装")
+        
+        # 基于错误类型的建议
+        if "not found" in error:
+            advice_parts.append("• 检查文件或命令是否存在")
+            advice_parts.append("• 验证路径和环境变量")
+        elif "permission" in error:
+            advice_parts.append("• 检查文件和目录权限")
+            advice_parts.append("• 确保运行用户有足够权限")
+        elif "syntax" in error:
+            advice_parts.append("• 仔细检查代码语法")
+            advice_parts.append("• 使用代码格式化工具")
+        
+        # 基于尝试次数的建议
+        if attempt >= 2:
+            advice_parts.append("• 考虑使用不同的参数或方法")
+            advice_parts.append("• 检查是否需要更换工具或策略")
+        
+        if not advice_parts:
+            advice_parts.append("• 检查错误详情，调整参数后重试")
+            advice_parts.append("• 如果问题持续，考虑使用替代方案")
+        
+        return f"基于错误分析的重试建议：\n" + "\n".join(advice_parts)

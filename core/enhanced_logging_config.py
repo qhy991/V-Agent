@@ -8,6 +8,7 @@ Provides component-specific logging with file separation and session management
 
 import logging
 import logging.config
+import logging.handlers
 import os
 import sys
 from pathlib import Path
@@ -48,6 +49,7 @@ class ComponentLoggerManager:
             # 核心框架组件
             'framework': 'framework.log',
             'coordinator': 'centralized_coordinator.log',
+            'centralized_coordinator': 'centralized_coordinator.log',
             'base_agent': 'base_agent.log',
             
             # 智能体组件
@@ -176,41 +178,62 @@ class ComponentLoggerManager:
             '__main__': 'framework',
             'config.config': 'config',
             
-            # 协调器
+            # 协调器 - 添加实际使用的logger名称
             'core.centralized_coordinator': 'coordinator',
             'CentralizedCoordinator': 'coordinator',
+            'Coordinator': 'coordinator',
+            'centralized_coordinator': 'coordinator',
             
-            # 基础智能体
+            # 基础智能体 - 添加Agent.前缀的日志器
             'core.base_agent': 'base_agent',
             'BaseAgent': 'base_agent',
+            'Agent.real_verilog_design_agent': 'real_verilog_agent',
+            'Agent.real_code_review_agent': 'real_code_reviewer',
             
-            # 智能体实现
+            # 协调器特殊映射 - Agent.centralized_coordinator 应该映射到coordinator而不是base_agent
+            'Agent.centralized_coordinator': 'coordinator',
+            'Agent.coordinator': 'coordinator',
+            
+            # 智能体实现 - 添加所有可能的名称
             'agents.real_verilog_agent': 'real_verilog_agent',
             'agents.real_code_reviewer': 'real_code_reviewer',
             'RealVerilogDesignAgent': 'real_verilog_agent',
             'RealCodeReviewAgent': 'real_code_reviewer',
+            'real_verilog_agent': 'real_verilog_agent',
+            'real_code_reviewer': 'real_code_reviewer',
             
             # Function Calling
             'core.function_calling': 'function_calling',
+            'function_calling': 'function_calling',
             
-            # LLM集成
+            # LLM集成 - 添加所有可能的名称
             'llm_integration.enhanced_llm_client': 'enhanced_llm_client',
             'EnhancedLLMClient': 'enhanced_llm_client',
             'llm_integration': 'llm_client',
+            'enhanced_llm_client': 'enhanced_llm_client',
+            'llm_client': 'llm_client',
             
-            # 工具
+            # 工具 - 添加script_tools等
             'tools': 'tools',
             'tools.verilog_tools': 'verilog_tools',
             'tools.sample_database': 'database',
+            'tools.script_tools': 'tools',
+            'script_tools': 'tools',
+            'verilog_tools': 'verilog_tools',
+            'database': 'database',
             
             # 测试
             'test_complete_framework': 'test_framework',
             'test_quick_validation': 'validation',
             'FrameworkTester': 'test_runner',
+            'test_framework': 'test_framework',
+            'test_runner': 'test_runner',
+            'validation': 'validation',
             
             # 性能和调试
             'performance': 'performance',
-            'debug': 'debug'
+            'debug': 'debug',
+            'error': 'error'
         }
         
         for logger_name, component in component_logger_mapping.items():
@@ -268,11 +291,15 @@ class ComponentLoggerManager:
         if logger_name is None:
             logger_name = component_name
             
-        if logger_name not in self.loggers:
+        # 生成唯一的缓存键
+        cache_key = f"{component_name}:{logger_name}"
+        
+        if cache_key not in self.loggers:
             logger = logging.getLogger(logger_name)
+            
             # 确保logger使用正确的组件配置
             if component_name in self.component_files:
-                # 手动添加组件特定的handlers
+                # 清除现有handlers，避免重复
                 logger.handlers.clear()
                 
                 # 添加控制台handler
@@ -294,12 +321,69 @@ class ComponentLoggerManager:
                 ))
                 logger.addHandler(session_handler)
                 
+                # 添加主日志文件handler (轮转)
+                main_file = self.base_log_dir / self.component_files[component_name]
+                main_handler = logging.handlers.RotatingFileHandler(
+                    main_file, maxBytes=10485760, backupCount=5, encoding='utf-8'
+                )
+                main_handler.setLevel(logging.INFO)
+                main_handler.setFormatter(logging.Formatter(
+                    '[%(asctime)s] %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                ))
+                logger.addHandler(main_handler)
+                
+                # 添加错误汇总handler
+                error_handler = logging.FileHandler(
+                    self.session_log_dir / 'all_errors.log', mode='a', encoding='utf-8'
+                )
+                error_handler.setLevel(logging.ERROR)
+                error_handler.setFormatter(logging.Formatter(
+                    '[%(asctime)s] %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                ))
+                logger.addHandler(error_handler)
+                
+                # 添加全局汇总handler
+                global_handler = logging.FileHandler(
+                    self.session_log_dir / 'experiment_summary.log', mode='a', encoding='utf-8'
+                )
+                global_handler.setLevel(logging.INFO)
+                global_handler.setFormatter(logging.Formatter(
+                    '[%(asctime)s] %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                ))
+                logger.addHandler(global_handler)
+                
+                logger.setLevel(logging.DEBUG)
+                logger.propagate = False
+            else:
+                # 对于未知组件，使用默认配置
+                logger.handlers.clear()
+                console_handler = logging.StreamHandler()
+                console_handler.setLevel(logging.INFO)
+                console_handler.setFormatter(logging.Formatter(
+                    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                ))
+                logger.addHandler(console_handler)
+                
+                # 写入到general日志文件
+                file_handler = logging.FileHandler(
+                    self.session_log_dir / 'framework.log', mode='a', encoding='utf-8'
+                )
+                file_handler.setLevel(logging.DEBUG)
+                file_handler.setFormatter(logging.Formatter(
+                    '[%(asctime)s] %(name)s - %(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                ))
+                logger.addHandler(file_handler)
+                
                 logger.setLevel(logging.DEBUG)
                 logger.propagate = False
             
-            self.loggers[logger_name] = logger
+            self.loggers[cache_key] = logger
             
-        return self.loggers[logger_name]
+        return self.loggers[cache_key]
     
     def get_artifacts_dir(self) -> Path:
         """获取工件目录路径"""
@@ -354,6 +438,34 @@ class ComponentLoggerManager:
         except Exception as e:
             print(f"⚠️ 无法创建会话摘要: {e}")
     
+    def force_refresh_loggers(self):
+        """强制刷新所有logger配置，应用新的映射"""
+        print("🔄 强制刷新logger配置...")
+        
+        # 清理现有的logger缓存
+        old_loggers = self.loggers.copy()
+        self.loggers.clear()
+        
+        # 重新配置所有之前创建的logger
+        refreshed_count = 0
+        for cache_key, old_logger in old_loggers.items():
+            try:
+                # 解析缓存键
+                if ':' in cache_key:
+                    component_name, logger_name = cache_key.split(':', 1)
+                else:
+                    component_name = logger_name = cache_key
+                
+                # 重新创建logger（这会应用新的映射）
+                new_logger = self.get_component_logger(component_name, logger_name)
+                refreshed_count += 1
+                print(f"  ✅ 刷新logger: {logger_name} -> {component_name}")
+                
+            except Exception as e:
+                print(f"  ❌ 刷新logger失败 {cache_key}: {e}")
+        
+        print(f"✅ 完成刷新 {refreshed_count} 个logger")
+
     def get_log_stats(self) -> Dict[str, Any]:
         """获取日志统计信息"""
         stats = {
@@ -453,6 +565,44 @@ def get_session_dir() -> Path:
     if _logger_manager is None:
         _logger_manager = setup_enhanced_logging()
     return _logger_manager.get_session_dir()
+
+
+def force_refresh_all_loggers():
+    """强制刷新所有logger配置，立即应用新的映射"""
+    global _logger_manager
+    if _logger_manager is not None:
+        _logger_manager.force_refresh_loggers()
+        return True
+    else:
+        print("⚠️ 日志管理器未初始化，无法刷新")
+        return False
+
+
+def reset_logging_system():
+    """完全重置日志系统，强制重新初始化"""
+    global _logger_manager
+    print("🔄 完全重置日志系统...")
+    
+    # 清理全局日志管理器
+    _logger_manager = None
+    
+    # 清理Python的logging模块中的handler
+    import logging
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+        handler.close()
+    
+    # 清理所有已知的logger
+    for name in list(logging.Logger.manager.loggerDict.keys()):
+        if any(keyword in name.lower() for keyword in ['agent', 'coordinator', 'llm', 'enhanced']):
+            logger = logging.getLogger(name)
+            for handler in logger.handlers[:]:
+                logger.removeHandler(handler)
+                handler.close()
+            logger.handlers.clear()
+    
+    print("✅ 日志系统重置完成")
 
 
 # 预定义的便利函数

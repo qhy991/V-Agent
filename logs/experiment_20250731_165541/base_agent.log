@@ -1,0 +1,96 @@
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_build_script
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - ✅ RealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-07-31 16:55:41] Agent.real_code_review_agent - DEBUG - 📝 System prompt 长度: 6194 字符
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔍 真实代码审查智能体(Function Calling支持)初始化完成
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+        请为以下Verilog项目创建完整的构建和仿真环境：
+        - 设计文件: agent_execution_test/correct.v
+        - 测试文件: a...
+[2025-07-31 16:55:41] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/5
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - 📖 读取文件: agent_execution_test/correct.v
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - ✅ 文件读取成功: agent_execution_test/correct.v (211 字符)
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: read_file
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - 📖 读取文件: agent_execution_test/correct_tb.v
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - ✅ 文件读取成功: agent_execution_test/correct_tb.v (302 字符)
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: read_file
+[2025-07-31 16:55:43] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 2/5
+[2025-07-31 16:55:44] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: write_build_script (尝试 1/3)
+[2025-07-31 16:55:44] Agent.real_code_review_agent - INFO - 🔧 工具调用: 生成构建脚本 (makefile)
+[2025-07-31 16:55:44] Agent.real_code_review_agent - INFO - ✅ 构建脚本生成成功: logs/experiment_20250731_165541/artifacts/scripts/sim.mk
+[2025-07-31 16:55:44] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: write_build_script
+[2025-07-31 16:55:44] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 3/5
+[2025-07-31 16:55:46] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: execute_build_script (尝试 1/3)
+[2025-07-31 16:55:46] Agent.real_code_review_agent - INFO - 🔧 工具调用: 执行构建脚本 (logs/experiment_20250731_165541/artifacts/scripts/sim.mk)
+[2025-07-31 16:55:46] Agent.real_code_review_agent - WARNING - ⚠️ 脚本执行失败: logs/experiment_20250731_165541/artifacts/scripts/sim.mk
+[2025-07-31 16:55:46] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: execute_build_script
+[2025-07-31 16:55:46] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 4/5
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: analyze_code_quality (尝试 1/3)
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - 🔧 工具调用: 分析代码质量
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: analyze_code_quality
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: analyze_code_quality (尝试 1/3)
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - 🔧 工具调用: 分析代码质量
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: analyze_code_quality
+[2025-07-31 16:55:49] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 5/5
+[2025-07-31 16:55:53] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: generate_testbench (尝试 1/3)
+[2025-07-31 16:55:53] Agent.real_code_review_agent - INFO - 🔧 工具调用: 生成测试台
+[2025-07-31 16:55:53] Agent.real_code_review_agent - INFO - 📊 解析模块信息: correct, 输入: 1, 输出: 1
+[2025-07-31 16:55:53] Agent.real_code_review_agent - INFO - 📊 解析模块信息: correct, 输入: 1, 输出: 1
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - 💾 测试台已保存: logs/experiment_20250731_165541/artifacts/correct_tb.v
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: generate_testbench
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: run_simulation (尝试 1/3)
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - 🔧 工具调用: 运行仿真
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - 🔨 编译命令: iverilog -o /tmp/tmp5i743njs/simulation /tmp/tmp5i743njs/module.v /tmp/tmp5i743njs/testbench.v
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - ✅ iverilog编译成功
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - ▶️ 仿真命令: vvp /tmp/tmp5i743njs/simulation
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - ✅ 仿真执行成功
+[2025-07-31 16:56:12] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: run_simulation
+[2025-07-31 16:56:27] Agent.real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+        尝试构建这个有错误的Verilog文件：
+        - 文件: agent_execution_test/error.v
+        - 要求: 如果编译失败，请分析错误并...
+[2025-07-31 16:56:27] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/3
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 解析到工具调用: read_file
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 解析到工具调用: analyze_code_quality
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 解析到工具调用: write_file
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 📖 读取文件: agent_execution_test/error.v
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - ✅ 文件读取成功: agent_execution_test/error.v (220 字符)
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: read_file
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: analyze_code_quality (尝试 1/3)
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 工具调用: 分析代码质量
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: analyze_code_quality
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 📝 写入文件: agent_execution_test/fix_error.v
+[2025-07-31 16:56:30] Agent.real_code_review_agent - ERROR - ❌ 文件写入失败: [Errno 2] No such file or directory: 'agent_execution_test/agent_execution_test/fix_error.v'
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-07-31 16:56:30] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 2/3
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - 📝 写入文件: fix_error.v
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - ✅ 文件写入成功: agent_execution_test/fix_error.v
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: execute_build_script (尝试 1/3)
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - 🔧 工具调用: 执行构建脚本 (build.sh)
+[2025-07-31 16:56:33] Agent.real_code_review_agent - WARNING - ⚠️ 脚本执行失败: build.sh
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: execute_build_script
+[2025-07-31 16:56:33] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 3/3
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: write_build_script (尝试 1/3)
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - 🔧 工具调用: 生成构建脚本 (bash)
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - ✅ 构建脚本生成成功: logs/experiment_20250731_165541/artifacts/scripts/build_error_module.sh
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: write_build_script
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: execute_build_script (尝试 1/3)
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - 🔧 工具调用: 执行构建脚本 (build.sh)
+[2025-07-31 16:56:35] Agent.real_code_review_agent - WARNING - ⚠️ 脚本执行失败: build.sh
+[2025-07-31 16:56:35] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: execute_build_script
+[2025-07-31 16:56:37] Agent.real_code_review_agent - INFO - 🔧 工具调用: 生成构建脚本 (bash)
+[2025-07-31 16:56:37] Agent.real_code_review_agent - INFO - ✅ 构建脚本生成成功: logs/experiment_20250731_165541/artifacts/scripts/build_test_build.sh
+[2025-07-31 16:56:37] Agent.real_code_review_agent - INFO - 🔧 工具调用: 执行构建脚本 (test_build)
+[2025-07-31 16:56:37] Agent.real_code_review_agent - WARNING - ⚠️ 脚本执行失败: test_build

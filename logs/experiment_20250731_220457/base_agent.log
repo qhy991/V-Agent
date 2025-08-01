@@ -1,0 +1,51 @@
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - ✅ RealVerilogDesignAgent (Function Calling支持) 初始化完成
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - DEBUG - 📝 System prompt 长度: 6180 字符
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔧 真实Verilog设计智能体(Function Calling支持)初始化完成
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_build_script
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - ✅ RealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-07-31 22:04:57] Agent.real_code_review_agent - DEBUG - 📝 System prompt 长度: 6653 字符
+[2025-07-31 22:04:57] Agent.real_code_review_agent - INFO - 🔍 真实代码审查智能体(Function Calling支持)初始化完成
+[2025-07-31 22:04:57] Agent.centralized_coordinator - INFO - 🛠️ 传统工具调用已启用: 权限=5
+[2025-07-31 22:04:57] Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: write_file
+[2025-07-31 22:04:57] Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: read_file
+[2025-07-31 22:04:57] Agent.centralized_coordinator - INFO - ✅ CentralizedCoordinator (Function Calling支持) 初始化完成
+[2025-07-31 22:04:57] Agent.centralized_coordinator - DEBUG - 📝 System prompt 长度: 4208 字符
+[2025-07-31 22:04:57] Agent.centralized_coordinator - INFO - 🧠 中心化协调智能体初始化完成
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🚀 开始Function Calling处理: 请分析一个简单AND门的设计需求...
+[2025-07-31 22:04:57] Agent.real_verilog_design_agent - INFO - 🔄 Function Calling 迭代 1/2
+[2025-07-31 22:04:58] Agent.real_verilog_design_agent - INFO - 🔧 解析到工具调用: analyze_design_requirements
+[2025-07-31 22:04:58] Agent.real_verilog_design_agent - INFO - 🔧 执行工具调用: analyze_design_requirements (尝试 1/3)
+[2025-07-31 22:04:58] Agent.real_verilog_design_agent - INFO - 🔧 工具调用: 分析设计需求
+[2025-07-31 22:05:02] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: simple_gate - 复杂度2
+[2025-07-31 22:05:02] Agent.real_verilog_design_agent - INFO - ✅ 工具执行成功: analyze_design_requirements
+[2025-07-31 22:05:02] Agent.real_verilog_design_agent - INFO - 🔄 Function Calling 迭代 2/2
+[2025-07-31 22:05:08] Agent.real_verilog_design_agent - INFO - 🔧 解析到工具调用: generate_verilog_code
+[2025-07-31 22:05:08] Agent.real_verilog_design_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 1/3)
+[2025-07-31 22:05:08] Agent.real_verilog_design_agent - INFO - 🔧 工具调用: 生成Verilog代码
+[2025-07-31 22:05:08] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
+[2025-07-31 22:05:13] Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 210 字符
+[2025-07-31 22:05:13] Agent.real_verilog_design_agent - INFO - ✅ 工具执行成功: generate_verilog_code
+[2025-07-31 22:05:15] Agent.real_code_review_agent - INFO - 🚀 开始Function Calling处理: 请生成一个简单的测试台...
+[2025-07-31 22:05:15] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/2
+[2025-07-31 22:05:18] Agent.real_code_review_agent - INFO - 🔧 执行工具调用: generate_testbench (尝试 1/3)
+[2025-07-31 22:05:18] Agent.real_code_review_agent - INFO - 🔧 工具调用: 生成测试台
+[2025-07-31 22:05:18] Agent.real_code_review_agent - INFO - 📊 解析模块信息: simple_module, 输入: 2, 输出: 1
+[2025-07-31 22:05:18] Agent.real_code_review_agent - INFO - 📊 解析模块信息: simple_module, 输入: 2, 输出: 1
+[2025-07-31 22:05:38] Agent.real_code_review_agent - INFO - 💾 测试台已保存: logs/experiment_20250731_220457/artifacts/simple_module_tb.v
+[2025-07-31 22:05:38] Agent.real_code_review_agent - INFO - ✅ 工具执行成功: generate_testbench
+[2025-07-31 22:05:38] Agent.real_code_review_agent - INFO - 🔄 Function Calling 迭代 2/2
+[2025-07-31 22:05:41] Agent.real_code_review_agent - INFO - ✅ 任务完成，无需调用工具

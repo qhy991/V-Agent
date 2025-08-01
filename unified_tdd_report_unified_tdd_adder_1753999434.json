@@ -1,0 +1,163 @@
+{
+  "experiment_id": "unified_tdd_adder_1753999434",
+  "design_type": "adder",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 255.91330122947693,
+  "timestamp": 1753999690.603449,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1753999434",
+    "total_iterations": 5,
+    "final_design": [],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1753999434.708036,
+        "duration": 110.61040687561035,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": true,
+            "stage": "simulation",
+            "compile_stdout": "",
+            "simulation_stdout": "========================================\n🧪 开始16位超前进位加法器功能测试\n========================================\n[0] a=0000, b=0000, cin=0 → sum=0000, cout=0\n\\n📋 测试组1: 基本加法功能\n----------------------------------------\n[10000] a=1234, b=5678, cin=0 → sum=68ac, cout=0\n✅ PASS -                                                                                                                                                                             : a=1234, b=5678, cin=0 → sum=68ac, cout=0\n[15000] a=1234, b=5678, cin=1 → sum=68ad, cout=0\n✅ PASS -                                                                                                                                                                                 : a=1234, b=5678, cin=1 → sum=68ad, cout=0\n[20000] a=0000, b=0000, cin=0 → sum=0000, cout=0\n✅ PASS -                                                                                                                                                                                             : a=0000, b=0000, cin=0 → sum=0000, cout=0\n[25000] a=0000, b=0000, cin=1 → sum=0001, cout=0\n✅ PASS -                                                                                                                                                                                     : a=0000, b=0000, cin=1 → sum=0001, cout=0\n\\n📋 测试组2: 进位传播测试\n----------------------------------------\n[30000] a=ffff, b=0001, cin=0 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                         : a=ffff, b=0001, cin=0 → sum=0000, cout=1\n[35000] a=ffff, b=0000, cin=1 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                         +0: a=ffff, b=0000, cin=1 → sum=0000, cout=1\n[40000] a=ffff, b=ffff, cin=0 → sum=fffe, cout=1\n✅ PASS -                                                                                                                                                                                     : a=ffff, b=ffff, cin=0 → sum=fffe, cout=1\n[45000] a=ffff, b=ffff, cin=1 → sum=ffff, cout=1\n✅ PASS -                                                                                                                                                                                         +1: a=ffff, b=ffff, cin=1 → sum=ffff, cout=1\n\\n📋 测试组3: 特殊模式测试\n----------------------------------------\n[50000] a=aaaa, b=5555, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                 : a=aaaa, b=5555, cin=0 → sum=ffff, cout=0\n[55000] a=aaaa, b=5555, cin=1 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                                     +1: a=aaaa, b=5555, cin=1 → sum=0000, cout=1\n[60000] a=0fff, b=0001, cin=0 → sum=1000, cout=0\n✅ PASS -                                                                                                                                                                                     : a=0fff, b=0001, cin=0 → sum=1000, cout=0\n[65000] a=00ff, b=0001, cin=0 → sum=0100, cout=0\n✅ PASS -                                                                                                                                                                                     : a=00ff, b=0001, cin=0 → sum=0100, cout=0\n\\n📋 测试组4: 边界条件测试\n----------------------------------------\n[70000] a=0000, b=0001, cin=0 → sum=0001, cout=0\n✅ PASS -                                                                                                                                                                                             +1: a=0000, b=0001, cin=0 → sum=0001, cout=0\n[75000] a=7fff, b=7fff, cin=0 → sum=fffe, cout=1\n❌ FAIL -                                                                                                                                                                                     : a=7fff, b=7fff, cin=0\n    Expected: sum=fffe, cout=0\n    Actual:   sum=fffe, cout=1\n[80000] a=8000, b=8000, cin=0 → sum=0000, cout=0\n❌ FAIL -                                                                                                                                                                                             : a=8000, b=8000, cin=0\n    Expected: sum=0000, cout=1\n    Actual:   sum=0000, cout=0\n[85000] a=1234, b=edcb, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                         : a=1234, b=edcb, cin=0 → sum=ffff, cout=0\n\\n📋 测试组5: 随机测试\n----------------------------------------\n[90000] a=3a5c, b=7b2e, cin=0 → sum=b58a, cout=1\n❌ FAIL -                                                                                                                                                                                         1: a=3a5c, b=7b2e, cin=0\n    Expected: sum=b58a, cout=0\n    Actual:   sum=b58a, cout=1\n[95000] a=9f84, b=1376, cin=1 → sum=b2fb, cout=0\n✅ PASS -                                                                                                                                                                                         2: a=9f84, b=1376, cin=1 → sum=b2fb, cout=0\n[100000] a=456a, b=ba95, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                         3: a=456a, b=ba95, cin=0 → sum=ffff, cout=0\n[105000] a=c3e7, b=2d18, cin=1 → sum=f100, cout=0\n✅ PASS -                                                                                                                                                                                         4: a=c3e7, b=2d18, cin=1 → sum=f100, cout=0\n\\n========================================\n🏁 测试完成统计\n========================================\n总测试用例: 20\n通过测试: 17\n失败测试: 3\n❌ 有 3 个测试失败，需要检查设计\n🔍 建议检查项目:\n   - 进位生成逻辑 (Generate)\n   - 进位传播逻辑 (Propagate)\n   - 超前进位计算\n   - 求和逻辑\n========================================\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:197: $finish called at 120000 (1ps)\n",
+            "simulation_stderr": "",
+            "return_code": 0,
+            "all_tests_passed": false,
+            "test_summary": "⚠️ 测试失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "测试用例失败"
+            ],
+            "suggestions": [
+              "检查设计逻辑",
+              "分析测试台输出"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_060354/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1753999545.3184881,
+        "duration": 0.009118080139160156,
+        "result": {
+          "success": true,
+          "design_files": [],
+          "test_results": {
+            "success": false,
+            "error": "没有找到设计文件",
+            "all_tests_passed": false
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1753999545.3276343,
+        "duration": 72.33055257797241,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "logs/experiment_20250801_060354/artifacts/adder_16bit.v:1: syntax error\nI give up.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3230484 logs/experiment_20250801_060354/artifacts/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "returncode": 2,
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "检查Verilog语法：分号、括号、关键字拼写等"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_060354/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      },
+      {
+        "iteration": 4,
+        "start_time": 1753999617.6582253,
+        "duration": 72.9349148273468,
+        "result": {
+          "success": true,
+          "design_files": [
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit.v', file_type='verilog', description='real_verilog_design_agent生成的verilog文件', metadata={'created_at': None, 'size_bytes': None})",
+            "FileReference(file_path='logs/experiment_20250801_060354/artifacts/adder_16bit_doc.md', file_type='documentation', description='real_verilog_design_agent生成的documentation文件', metadata={'created_at': None, 'size_bytes': None})"
+          ],
+          "test_results": {
+            "success": true,
+            "stage": "simulation",
+            "compile_stdout": "",
+            "simulation_stdout": "========================================\n🧪 开始16位超前进位加法器功能测试\n========================================\n[0] a=0000, b=0000, cin=0 → sum=0000, cout=0\n\\n📋 测试组1: 基本加法功能\n----------------------------------------\n[10000] a=1234, b=5678, cin=0 → sum=68ac, cout=0\n✅ PASS -                                                                                                                                                                             : a=1234, b=5678, cin=0 → sum=68ac, cout=0\n[15000] a=1234, b=5678, cin=1 → sum=68ad, cout=0\n✅ PASS -                                                                                                                                                                                 : a=1234, b=5678, cin=1 → sum=68ad, cout=0\n[20000] a=0000, b=0000, cin=0 → sum=0000, cout=0\n✅ PASS -                                                                                                                                                                                             : a=0000, b=0000, cin=0 → sum=0000, cout=0\n[25000] a=0000, b=0000, cin=1 → sum=0001, cout=0\n✅ PASS -                                                                                                                                                                                     : a=0000, b=0000, cin=1 → sum=0001, cout=0\n\\n📋 测试组2: 进位传播测试\n----------------------------------------\n[30000] a=ffff, b=0001, cin=0 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                         : a=ffff, b=0001, cin=0 → sum=0000, cout=1\n[35000] a=ffff, b=0000, cin=1 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                         +0: a=ffff, b=0000, cin=1 → sum=0000, cout=1\n[40000] a=ffff, b=ffff, cin=0 → sum=fffe, cout=1\n✅ PASS -                                                                                                                                                                                     : a=ffff, b=ffff, cin=0 → sum=fffe, cout=1\n[45000] a=ffff, b=ffff, cin=1 → sum=ffff, cout=1\n✅ PASS -                                                                                                                                                                                         +1: a=ffff, b=ffff, cin=1 → sum=ffff, cout=1\n\\n📋 测试组3: 特殊模式测试\n----------------------------------------\n[50000] a=aaaa, b=5555, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                 : a=aaaa, b=5555, cin=0 → sum=ffff, cout=0\n[55000] a=aaaa, b=5555, cin=1 → sum=0000, cout=1\n✅ PASS -                                                                                                                                                                                     +1: a=aaaa, b=5555, cin=1 → sum=0000, cout=1\n[60000] a=0fff, b=0001, cin=0 → sum=1000, cout=0\n✅ PASS -                                                                                                                                                                                     : a=0fff, b=0001, cin=0 → sum=1000, cout=0\n[65000] a=00ff, b=0001, cin=0 → sum=0100, cout=0\n✅ PASS -                                                                                                                                                                                     : a=00ff, b=0001, cin=0 → sum=0100, cout=0\n\\n📋 测试组4: 边界条件测试\n----------------------------------------\n[70000] a=0000, b=0001, cin=0 → sum=0001, cout=0\n✅ PASS -                                                                                                                                                                                             +1: a=0000, b=0001, cin=0 → sum=0001, cout=0\n[75000] a=7fff, b=7fff, cin=0 → sum=fffe, cout=1\n❌ FAIL -                                                                                                                                                                                     : a=7fff, b=7fff, cin=0\n    Expected: sum=fffe, cout=0\n    Actual:   sum=fffe, cout=1\n[80000] a=8000, b=8000, cin=0 → sum=0000, cout=0\n❌ FAIL -                                                                                                                                                                                             : a=8000, b=8000, cin=0\n    Expected: sum=0000, cout=1\n    Actual:   sum=0000, cout=0\n[85000] a=1234, b=edcb, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                         : a=1234, b=edcb, cin=0 → sum=ffff, cout=0\n\\n📋 测试组5: 随机测试\n----------------------------------------\n[90000] a=3a5c, b=7b2e, cin=0 → sum=b58a, cout=1\n❌ FAIL -                                                                                                                                                                                         1: a=3a5c, b=7b2e, cin=0\n    Expected: sum=b58a, cout=0\n    Actual:   sum=b58a, cout=1\n[95000] a=9f84, b=1376, cin=1 → sum=b2fb, cout=0\n✅ PASS -                                                                                                                                                                                         2: a=9f84, b=1376, cin=1 → sum=b2fb, cout=0\n[100000] a=456a, b=ba95, cin=0 → sum=ffff, cout=0\n✅ PASS -                                                                                                                                                                                         3: a=456a, b=ba95, cin=0 → sum=ffff, cout=0\n[105000] a=c3e7, b=2d18, cin=1 → sum=f100, cout=0\n✅ PASS -                                                                                                                                                                                         4: a=c3e7, b=2d18, cin=1 → sum=f100, cout=0\n\\n========================================\n🏁 测试完成统计\n========================================\n总测试用例: 20\n通过测试: 17\n失败测试: 3\n❌ 有 3 个测试失败，需要检查设计\n🔍 建议检查项目:\n   - 进位生成逻辑 (Generate)\n   - 进位传播逻辑 (Propagate)\n   - 超前进位计算\n   - 求和逻辑\n========================================\n/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v:197: $finish called at 120000 (1ps)\n",
+            "simulation_stderr": "",
+            "return_code": 0,
+            "all_tests_passed": false,
+            "test_summary": "⚠️ 测试失败",
+            "detailed_analysis": {},
+            "failure_reasons": [
+              "测试用例失败"
+            ],
+            "suggestions": [
+              "检查设计逻辑",
+              "分析测试台输出"
+            ],
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/carry_lookahead_adder_tb.v",
+            "design_files": [
+              "logs/experiment_20250801_060354/artifacts/adder_16bit.v"
+            ]
+          },
+          "all_tests_passed": false,
+          "iteration": 4
+        }
+      },
+      {
+        "iteration": 5,
+        "start_time": 1753999690.5931764,
+        "duration": 0.01002192497253418,
+        "result": {
+          "success": true,
+          "design_files": [],
+          "test_results": {
+            "success": false,
+            "error": "没有找到设计文件",
+            "all_tests_passed": false
+          },
+          "all_tests_passed": false,
+          "iteration": 5
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 5,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}

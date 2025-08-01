@@ -141,6 +141,9 @@ class ScriptManager:
                 logger.info(f"✅ 脚本执行成功: {script_path}")
             else:
                 logger.warning(f"⚠️ 脚本执行失败: {script_path}, 返回码: {result.returncode}")
+                # 详细记录错误信息
+                if result.stderr:
+                    logger.error(f"📋 标准错误输出: {result.stderr}")
             
             return {
                 "success": success,
@@ -151,7 +154,16 @@ class ScriptManager:
                 "command": ' '.join(cmd),
                 "working_directory": str(work_dir),
                 "execution_time": timeout,
-                "message": "脚本执行成功" if success else f"脚本执行失败，返回码: {result.returncode}"
+                "message": "脚本执行成功" if success else f"脚本执行失败，返回码: {result.returncode}",
+                "error_details": {
+                    "command_line": ' '.join(cmd),
+                    "exit_code": result.returncode,
+                    "stderr_content": result.stderr,
+                    "stdout_content": result.stdout,
+                    "working_dir": str(work_dir),
+                    "script_exists": script_path.exists(),
+                    "script_size": script_path.stat().st_size if script_path.exists() else 0
+                } if not success else None
             }
             
         except subprocess.TimeoutExpired:

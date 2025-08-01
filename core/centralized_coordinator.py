@@ -121,6 +121,35 @@ class CentralizedCoordinator(BaseAgent):
         
         self.logger.info("🧠 中心化协调智能体初始化完成")
     
+    async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
+        """实现BaseAgent的抽象方法 - 协调器的LLM调用"""
+        if not self.llm_client:
+            raise ValueError("协调器未配置LLM客户端，无法进行Function Calling")
+        
+        # 构建完整的prompt
+        full_prompt = ""
+        system_prompt = None
+        
+        for msg in conversation:
+            if msg["role"] == "system":
+                system_prompt = msg["content"]
+            elif msg["role"] == "user":
+                full_prompt += f"User: {msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                full_prompt += f"Assistant: {msg['content']}\n\n"
+        
+        try:
+            response = await self.llm_client.send_prompt(
+                prompt=full_prompt.strip(),
+                system_prompt=system_prompt or "你是一个智能的任务协调器，负责分析任务并协调多个智能体完成工作。",
+                temperature=0.3,
+                max_tokens=8000
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ 协调器LLM调用失败: {str(e)}")
+            raise
+    
     def get_capabilities(self) -> Set[AgentCapability]:
         """获取协调者能力"""
         return {AgentCapability.TASK_COORDINATION, 
@@ -488,7 +517,7 @@ Your selection:"""
             response = await self.llm_client.send_prompt(
                 prompt=selection_prompt,
                 temperature=self.coordinator_config.decision_temperature,
-                max_tokens=100
+                max_tokens=2000
             )
             
             # DEBUG: Log raw LLM response

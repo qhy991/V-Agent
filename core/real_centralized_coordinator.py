@@ -261,7 +261,7 @@ class RealCentralizedCoordinator:
             llm_response = await self.llm_client.send_prompt(
                 decision_prompt,
                 json_mode=True,
-                max_tokens=1000
+                max_tokens=4000
             )
             
             # 记录原始LLM响应用于调试

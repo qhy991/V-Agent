@@ -66,12 +66,25 @@ class EnhancedLLMClient:
         base_delay = self.retry_config["base_delay"]
         last_exception = None
         
+        # 记录请求开始
+        self.logger.info(f"🤖 开始LLM请求 - 模型: {self.config.model_name}, JSON模式: {json_mode}")
+        
+        # 详细记录对话内容
+        if system_prompt:
+            self.logger.info(f"📋 System Prompt ({len(system_prompt)} 字符):")
+            self.logger.info(f"📋 {system_prompt}")
+        
+        self.logger.info(f"👤 User Prompt ({len(prompt)} 字符):")
+        self.logger.info(f"👤 {prompt}")
+        
         for attempt in range(max_retries):
             try:
                 async with self._get_session() as session:
                     # 使用配置中的默认值
                     temperature = temperature or self.config.temperature
                     max_tokens = max_tokens or self.config.max_tokens
+                    
+                    self.logger.debug(f"🔧 LLM参数 - 温度: {temperature}, 最大Token: {max_tokens}")
                     
                     # 判断提供商
                     provider_name = self.config.provider
@@ -94,7 +107,11 @@ class EnhancedLLMClient:
                     if attempt > 0:
                         self.stats["retries"] += 1
                     
-                    self.logger.debug(f"LLM请求完成，耗时: {duration:.2f}s, 尝试次数: {attempt + 1}")
+                    # 详细记录响应内容
+                    self.logger.info(f"🤖 LLM响应 ({len(response_content)} 字符, {duration:.2f}s):")
+                    self.logger.info(f"🤖 {response_content}")
+                    
+                    self.logger.debug(f"📊 LLM统计 - 耗时: {duration:.2f}s, 尝试次数: {attempt + 1}, 总Token: {len(prompt) + len(response_content)}")
                     return response_content
                     
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:

@@ -523,7 +523,7 @@ class RealCodeReviewAgent(BaseAgent):
             comprehensive_report = await self.llm_client.send_prompt(
                 prompt=report_prompt,
                 temperature=0.4,
-                max_tokens=2500
+                max_tokens=6000
             )
             
             self.logger.info("📊 综合审查报告生成完成")
@@ -1247,8 +1247,19 @@ testbench应该：
                 )
                 
                 if compile_process.returncode != 0:
-                    result['error'] = f"编译失败: {compile_process.stderr}"
-                    self.logger.error(f"❌ iverilog编译失败: {compile_process.stderr}")
+                    error_message = compile_process.stderr
+                    result['error'] = f"编译失败: {error_message}"
+                    self.logger.error(f"❌ iverilog编译失败: {error_message}")
+                    
+                    # 尝试智能分析和修复编译错误
+                    fix_suggestion = await self._analyze_compilation_error(
+                        error_message, 
+                        module_content, 
+                        testbench_content
+                    )
+                    result['fix_suggestion'] = fix_suggestion
+                    result['needs_fix'] = True
+                    
                     return result
                 
                 result['compilation_success'] = True
@@ -1292,6 +1303,53 @@ testbench应该：
                 result['error'] = f"仿真执行异常: {str(e)}"
                 self.logger.error(f"❌ 仿真异常: {str(e)}")
                 return result
+    
+    async def _analyze_compilation_error(self, error_message: str, module_content: str, testbench_content: str) -> str:
+        """智能分析编译错误并提供修复建议"""
+        try:
+            self.logger.info("🔍 开始智能错误分析...")
+            
+            analysis_prompt = f"""
+作为Verilog专家，请分析以下编译错误并提供具体的修复建议：
+
+## 编译错误信息：
+```
+{error_message}
+```
+
+## 模块代码：
+```verilog
+{module_content[:2000]}  // 截取前2000字符
+```
+
+## 测试台代码：
+```verilog  
+{testbench_content[:1000]}  // 截取前1000字符
+```
+
+请提供：
+1. **错误原因分析** - 详细解释为什么会出现这个错误
+2. **具体修复步骤** - 提供准确的代码修改建议
+3. **修复后的代码片段** - 给出修正后的关键代码段
+4. **预防措施** - 如何避免类似错误
+
+请使用结构化格式回答，重点关注实际可执行的修复方案。
+"""
+
+            # 调用LLM进行错误分析
+            response = await self.llm_client.send_prompt(
+                prompt=analysis_prompt,
+                system_prompt="你是一位经验丰富的Verilog/SystemVerilog设计专家，擅长快速诊断和修复编译错误。",
+                temperature=0.1,  # 低温度确保准确性
+                max_tokens=4000
+            )
+            
+            self.logger.info("✅ 错误分析完成")
+            return response
+            
+        except Exception as e:
+            self.logger.error(f"❌ 错误分析失败: {str(e)}")
+            return f"自动错误分析失败: {str(e)}，请手动检查编译错误信息。"
     
     async def _analyze_test_results(self, file_path: str, simulation_result: Dict[str, Any],
                                   expected_results: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -1385,7 +1443,7 @@ testbench应该：
         response = await self.llm_client.send_prompt(
             prompt=analysis_prompt,
             temperature=0.3,
-            max_tokens=2000,
+            max_tokens=5000,
             json_mode=True
         )
         
@@ -1623,11 +1681,43 @@ endmodule
                             "simulation_output": None
                         }
             elif not testbench_code:
-                return {
-                    "success": False,
-                    "error": "需要提供testbench_code或testbench_file参数",
-                    "simulation_output": None
-                }
+                # 尝试自动生成基础测试台
+                self.logger.info("🔧 没有提供测试台，尝试自动生成基础测试台...")
+                try:
+                    if module_code:
+                        # 简单解析模块信息并生成基础测试台
+                        module_info = self._parse_module_info(module_code)
+                        if module_info.get('module_name'):
+                            testbench_code = f"""
+module tb_{module_info['module_name']};
+    // 基础测试台 - 自动生成  
+    initial begin
+        $display("Starting simulation for {module_info['module_name']}");
+        #10;
+        $display("Simulation completed");
+        $finish;
+    end
+endmodule
+"""
+                            self.logger.info("✅ 自动生成基础测试台")
+                        else:
+                            return {
+                                "success": False,
+                                "error": "无法解析模块信息，无法自动生成测试台",
+                                "simulation_output": None
+                            }
+                    else:
+                        return {
+                            "success": False,
+                            "error": "无法读取模块代码，无法自动生成测试台", 
+                            "simulation_output": None
+                        }
+                except Exception as e:
+                    return {
+                        "success": False,
+                        "error": f"自动生成测试台失败: {str(e)}",
+                        "simulation_output": None
+                    }
             
             # 运行仿真
             simulation_result = await self._run_iverilog_simulation(
@@ -1806,16 +1896,37 @@ endmodule
                 }
             else:
                 self.logger.warning(f"⚠️ 脚本执行失败: {script_name}")
+                error_details = result.get("error_details", {})
+                
+                # 构建详细的错误报告
+                error_report = f"脚本执行失败: {script_name}\n"
+                error_report += f"命令: {result.get('command', 'N/A')}\n"
+                error_report += f"返回码: {result.get('return_code', -1)}\n"
+                
+                if result.get("stderr"):
+                    error_report += f"错误输出: {result['stderr']}\n"
+                if result.get("stdout"):
+                    error_report += f"标准输出: {result['stdout']}\n"
+                
+                if error_details:
+                    error_report += f"工作目录: {error_details.get('working_dir', 'N/A')}\n"
+                    error_report += f"脚本存在: {error_details.get('script_exists', False)}\n"
+                    if not error_details.get('script_exists', True):
+                        error_report += "建议: 检查脚本路径或重新生成脚本\n"
+                
                 return {
                     "success": False,
                     "return_code": result.get("return_code", -1),
                     "stdout": result.get("stdout", ""),
                     "stderr": result.get("stderr", ""),
                     "error": result.get("error", "脚本执行失败"),
+                    "error_report": error_report,
+                    "error_details": error_details,
                     "script_path": result.get("script_path", script_name),
                     "command": result.get("command", ""),
                     "action": action,
-                    "message": f"脚本执行失败: {result.get('error', '未知错误')}"
+                    "message": f"脚本执行失败: {result.get('error', '未知错误')}",
+                    "suggestion": self._generate_error_fix_suggestion(result, script_name)
                 }
                 
         except Exception as e:
@@ -1827,3 +1938,40 @@ endmodule
                 "stdout": "",
                 "stderr": ""
             }
+    
+    def _generate_error_fix_suggestion(self, result: Dict[str, Any], script_name: str) -> str:
+        """生成错误修复建议"""
+        error_msg = result.get("error", "")
+        stderr = result.get("stderr", "")
+        return_code = result.get("return_code", -1)
+        
+        suggestions = []
+        
+        # 基于返回码的建议
+        if return_code == 127:
+            suggestions.append("命令未找到 - 检查脚本路径和可执行权限")
+        elif return_code == 126:
+            suggestions.append("权限拒绝 - 检查脚本执行权限")
+        elif return_code == 2:
+            suggestions.append("文件或目录不存在 - 检查文件路径")
+        
+        # 基于错误信息的建议
+        if "No such file or directory" in stderr or "No such file or directory" in error_msg:
+            suggestions.append("检查文件路径是否正确，确保所有依赖文件存在")
+        
+        if "Permission denied" in stderr:
+            suggestions.append("检查文件权限，可能需要执行 chmod +x script_name")
+        
+        if "iverilog" in stderr and ("not found" in stderr or "command not found" in stderr):
+            suggestions.append("iverilog未安装或不在PATH中，请安装Icarus Verilog")
+        
+        if "syntax error" in stderr.lower():
+            suggestions.append("Verilog语法错误 - 检查源代码语法")
+        
+        if "undeclared" in stderr.lower():
+            suggestions.append("未声明的信号或变量 - 检查信号声明")
+        
+        if not suggestions:
+            suggestions.append("检查脚本内容和执行环境，查看详细错误信息")
+        
+        return "; ".join(suggestions)
