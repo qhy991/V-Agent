@@ -164,7 +164,8 @@ module carry_lookahead_adder_16bit (
                  config_profile: str = "standard",
                  custom_config: Dict[str, Any] = None,
                  testbench_path: str = None,
-                 custom_requirements: str = None):
+                 custom_requirements: str = None,
+                 output_dir: str = None):
         """初始化统一TDD测试"""
         self.design_type = design_type
         self.config_profile = config_profile
@@ -177,13 +178,22 @@ module carry_lookahead_adder_16bit (
             base_config.update(custom_config)
         self.experiment_config = base_config
         
-        # 生成实验ID
+        # 生成实验ID和输出目录
         self.experiment_id = f"unified_tdd_{design_type}_{int(time.time())}"
+        
+        # 创建专用输出目录
+        if output_dir:
+            self.output_dir = Path(output_dir)
+        else:
+            self.output_dir = project_root / "tdd_experiments" / self.experiment_id
+        
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         
         print(f"🧪 统一TDD测试初始化")
         print(f"   设计类型: {design_type}")
         print(f"   配置档案: {config_profile}")
         print(f"   实验ID: {self.experiment_id}")
+        print(f"   输出目录: {self.output_dir}")
     
     def get_design_requirements(self) -> str:
         """获取设计需求"""
@@ -375,16 +385,121 @@ module carry_lookahead_adder_16bit (
                 print(f"   状态: {session_info.get('status', 'unknown')}")
         
         print("=" * 80)
+        
+        # 复制关键文件到输出目录
+        await self._copy_experiment_files(result)
+        
         return analysis
     
     async def _save_experiment_report(self, analysis: Dict[str, Any]):
-        """保存实验报告"""
-        report_path = project_root / f"unified_tdd_report_{self.experiment_id}.json"
+        """保存实验报告到专用目录"""
+        # 保存详细的实验报告
+        report_path = self.output_dir / "experiment_report.json"
         
         with open(report_path, 'w', encoding='utf-8') as f:
             json.dump(analysis, f, ensure_ascii=False, indent=2, default=str)
         
-        print(f"💾 实验报告已保存: {report_path.name}")
+        # 保存简化的结果摘要
+        summary_path = self.output_dir / "experiment_summary.txt"
+        await self._save_text_summary(analysis, summary_path)
+        
+        print(f"💾 实验报告已保存到: {self.output_dir}")
+        print(f"   📄 详细报告: {report_path.name}")
+        print(f"   📋 结果摘要: {summary_path.name}")
+    
+    async def _save_text_summary(self, analysis: Dict[str, Any], summary_path: Path):
+        """保存人类可读的文本摘要"""
+        with open(summary_path, 'w', encoding='utf-8') as f:
+            f.write("=" * 80 + "\n")
+            f.write("🧪 TDD实验结果摘要\n")
+            f.write("=" * 80 + "\n\n")
+            
+            f.write(f"实验ID: {analysis['experiment_id']}\n")
+            f.write(f"设计类型: {analysis['design_type']}\n")
+            f.write(f"配置档案: {analysis['config_profile']}\n")
+            f.write(f"实验状态: {'✅ 成功' if analysis['success'] else '❌ 失败'}\n")
+            f.write(f"总耗时: {analysis['total_duration']:.2f} 秒\n")
+            f.write(f"时间戳: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(analysis['timestamp']))}\n\n")
+            
+            if analysis.get('success'):
+                summary = analysis.get('summary', {})
+                f.write("📊 成功统计:\n")
+                f.write(f"- 迭代次数: {summary.get('iterations_used', 0)}\n")
+                f.write(f"- 生成文件: {summary.get('files_generated', 0)} 个\n")
+                f.write(f"- 完成原因: {summary.get('completion_reason', 'tests_passed')}\n")
+                f.write(f"- 平均迭代时间: {summary.get('average_iteration_time', 0):.2f} 秒\n\n")
+                
+                # 测试结果
+                test_results = analysis.get('detailed_result', {}).get('test_results', {})
+                if test_results:
+                    f.write("🧪 测试结果:\n")
+                    f.write(f"- 测试状态: {'✅ 通过' if test_results.get('all_tests_passed') else '❌ 失败'}\n")
+                    f.write(f"- 测试阶段: {test_results.get('stage', 'unknown')}\n")
+                    f.write(f"- 返回码: {test_results.get('return_code', -1)}\n")
+                    if test_results.get('test_summary'):
+                        f.write(f"- 测试摘要: {test_results['test_summary']}\n")
+            else:
+                f.write("❌ 失败信息:\n")
+                error = analysis.get('error', '未知错误')
+                f.write(f"- 错误: {error}\n")
+    
+    async def _copy_experiment_files(self, result: Dict[str, Any]):
+        """复制实验生成的文件到输出目录"""
+        try:
+            # 创建子目录
+            artifacts_dir = self.output_dir / "artifacts"
+            logs_dir = self.output_dir / "logs"
+            artifacts_dir.mkdir(exist_ok=True)
+            logs_dir.mkdir(exist_ok=True)
+            
+            # 复制设计文件
+            final_design = result.get('final_design', [])
+            for file_ref in final_design:
+                if isinstance(file_ref, str):
+                    # 从字符串中提取文件路径
+                    if "file_path='" in file_ref:
+                        start = file_ref.find("file_path='") + len("file_path='")
+                        end = file_ref.find("'", start)
+                        file_path = file_ref[start:end]
+                    else:
+                        file_path = file_ref
+                else:
+                    file_path = str(file_ref)
+                
+                source_path = Path(file_path)
+                if source_path.exists():
+                    dest_path = artifacts_dir / source_path.name
+                    import shutil
+                    shutil.copy2(source_path, dest_path)
+                    print(f"   📁 复制文件: {source_path.name}")
+            
+            # 复制测试结果中的设计文件
+            test_results = result.get('test_results', {})
+            design_files = test_results.get('design_files', [])
+            for file_path in design_files:
+                source_path = Path(file_path)
+                if source_path.exists():
+                    dest_path = artifacts_dir / source_path.name
+                    import shutil
+                    shutil.copy2(source_path, dest_path)
+                    print(f"   📁 复制设计文件: {source_path.name}")
+            
+            # 保存仿真输出
+            if test_results.get('simulation_stdout'):
+                sim_output_path = logs_dir / "simulation_output.log"
+                with open(sim_output_path, 'w', encoding='utf-8') as f:
+                    f.write(test_results['simulation_stdout'])
+                print(f"   📝 保存仿真输出: {sim_output_path.name}")
+            
+            # 保存编译输出
+            if test_results.get('compile_stdout'):
+                compile_output_path = logs_dir / "compile_output.log"
+                with open(compile_output_path, 'w', encoding='utf-8') as f:
+                    f.write(test_results['compile_stdout'])
+                print(f"   📝 保存编译输出: {compile_output_path.name}")
+                
+        except Exception as e:
+            print(f"⚠️ 复制文件时出现警告: {str(e)}")
 
 
 def create_argument_parser():
@@ -436,6 +551,9 @@ def create_argument_parser():
                        action='store_true',
                        help='禁用深度分析')
     
+    parser.add_argument('--output-dir', '-o',
+                       help='实验输出目录路径 (默认: tdd_experiments/实验ID)')
+    
     return parser
 
 
@@ -462,7 +580,8 @@ async def main():
         config_profile=args.config,
         custom_config=custom_config if custom_config else None,
         testbench_path=args.testbench,
-        custom_requirements=args.requirements
+        custom_requirements=args.requirements,
+        output_dir=args.output_dir
     )
     
     try:

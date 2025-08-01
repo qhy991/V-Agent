@@ -1043,3 +1043,143 @@ Segmentation fault (core dumped)
 [2025-08-01 10:24:58] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102151/artifacts/adder_8bit.v
 [2025-08-01 10:24:58] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102151/artifacts/adder_8bit_doc.md
 [2025-08-01 10:24:58] Agent.real_verilog_design_agent - INFO - 💾 文件保存完成: 2 个文件
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - ✅ RealVerilogDesignAgent (Function Calling支持) 初始化完成
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🔧 真实Verilog设计智能体(Function Calling支持)初始化完成
+[2025-08-01 10:28:49] RealVerilogDesignAgent - INFO - RealVerilogDesignAgent初始化完成
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-01 10:28:49] Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1754015329
+[2025-08-01 10:28:55] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: adder - 复杂度4
+[2025-08-01 10:28:55] Agent.real_verilog_design_agent - INFO - 📊 任务分析: adder
+[2025-08-01 10:28:55] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 1/3
+[2025-08-01 10:28:55] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
+[2025-08-01 10:29:06] Agent.real_verilog_design_agent - INFO - verilog_code='module simple_8bit_adder (\nendmodule'
+[2025-08-01 10:29:06] Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 36 字符
+[2025-08-01 10:29:06] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_1_conv_1754015329.v
+[2025-08-01 10:29:12] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.00
+[2025-08-01 10:29:12] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v
+[2025-08-01 10:29:13] Agent.real_verilog_design_agent - INFO - ⚠️ 第1次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v: No such file or directory
+Segmentation fault (core dumped)
+No top level modules, and no -s option.
+[2025-08-01 10:29:13] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 2/3
+[2025-08-01 10:29:23] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1005 字符
+[2025-08-01 10:29:23] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_2_conv_1754015329.v
+[2025-08-01 10:29:30] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:29:30] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v
+[2025-08-01 10:29:32] Agent.real_verilog_design_agent - INFO - ⚠️ 第2次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v: No such file or directory
+No top level modules, and no -s option.
+Segmentation fault (core dumped)
+[2025-08-01 10:29:32] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 3/3
+[2025-08-01 10:29:41] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1049 字符
+[2025-08-01 10:29:41] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_3_conv_1754015329.v
+[2025-08-01 10:29:48] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:29:48] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_3.v
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - ⚠️ 第3次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_3.v: No such file or directory
+No top level modules, and no -s option.
+Segmentation fault (core dumped)
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102849/artifacts/adder_8bit.v
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102849/artifacts/adder_8bit_doc.md
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - 💾 文件保存完成: 2 个文件
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-01 10:29:50] Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1754015390
+[2025-08-01 10:29:55] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: adder - 复杂度4
+[2025-08-01 10:29:55] Agent.real_verilog_design_agent - INFO - 📊 任务分析: adder
+[2025-08-01 10:29:55] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 1/3
+[2025-08-01 10:29:55] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
+[2025-08-01 10:30:01] Agent.real_verilog_design_agent - INFO - verilog_code='module simple_8bit_adder (\nmodule full_adder (\nendmodule\nendmodule'
+[2025-08-01 10:30:01] Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 66 字符
+[2025-08-01 10:30:01] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_1_conv_1754015390.v
+[2025-08-01 10:30:08] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.00
+[2025-08-01 10:30:08] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v
+[2025-08-01 10:30:09] Agent.real_verilog_design_agent - INFO - ⚠️ 第1次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v: No such file or directory
+No top level modules, and no -s option.Segmentation fault (core dumped)
+[2025-08-01 10:30:09] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 2/3
+[2025-08-01 10:30:22] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1662 字符
+[2025-08-01 10:30:22] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_2_conv_1754015390.v
+[2025-08-01 10:30:30] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:30:30] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v
+[2025-08-01 10:30:31] Agent.real_verilog_design_agent - INFO - ⚠️ 第2次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v: No such file or directory
+Segmentation fault (core dumped)
+No top level modules, and no -s option.
+[2025-08-01 10:30:31] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 3/3
+[2025-08-01 10:30:48] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1652 字符
+[2025-08-01 10:30:48] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_3_conv_1754015390.v
+[2025-08-01 10:30:57] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:30:57] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_3.v
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - ⚠️ 第3次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_3.v: No such file or directory
+Segmentation fault (core dumped)
+No top level modules, and no -s option.
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102849/artifacts/adder_8bit.v
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_102849/artifacts/adder_8bit_doc.md
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - 💾 文件保存完成: 2 个文件
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-01 10:30:58] Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1754015458
+[2025-08-01 10:31:04] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: adder - 复杂度4
+[2025-08-01 10:31:04] Agent.real_verilog_design_agent - INFO - 📊 任务分析: adder
+[2025-08-01 10:31:04] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 1/3
+[2025-08-01 10:31:04] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
+[2025-08-01 10:31:14] Agent.real_verilog_design_agent - INFO - verilog_code='module simple_8bit_adder (\nmodule full_adder (\nendmodule\nendmodule'
+[2025-08-01 10:31:14] Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 66 字符
+[2025-08-01 10:31:14] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_1_conv_1754015458.v
+[2025-08-01 10:31:20] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.00
+[2025-08-01 10:31:20] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v
+[2025-08-01 10:31:21] Agent.real_verilog_design_agent - INFO - ⚠️ 第1次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_1.v: No such file or directory
+No top level modules, and no -s option.Segmentation fault (core dumped)
+[2025-08-01 10:31:21] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 2/3
+[2025-08-01 10:31:30] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 595 字符
+[2025-08-01 10:31:30] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_102849/artifacts/debug_iterations/iteration_2_conv_1754015458.v
+[2025-08-01 10:31:39] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:31:39] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v
+[2025-08-01 10:31:40] Agent.real_verilog_design_agent - INFO - ⚠️ 第2次尝试失败: logs/experiment_20250801_102849/artifacts/debug_validation/test_module_attempt_2.v: No such file or directory
+Segmentation fault (core dumped)
+No top level modules, and no -s option.
+[2025-08-01 10:31:40] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 3/3
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 注册Function Calling工具: analyze_code_quality
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - ✅ RealVerilogDesignAgent (Function Calling支持) 初始化完成
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🔧 真实Verilog设计智能体(Function Calling支持)初始化完成
+[2025-08-01 10:32:37] RealVerilogDesignAgent - INFO - RealVerilogDesignAgent初始化完成
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-01 10:32:37] Agent.real_verilog_design_agent - INFO - 🎯 开始执行真实Verilog设计任务: conv_1754015557
+[2025-08-01 10:32:43] Agent.real_verilog_design_agent - INFO - 📋 LLM需求分析完成: adder - 复杂度4
+[2025-08-01 10:32:43] Agent.real_verilog_design_agent - INFO - 📊 任务分析: adder
+[2025-08-01 10:32:43] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 1/3
+[2025-08-01 10:32:43] Agent.real_verilog_design_agent - INFO - 🔍 未找到相关模块，将完全原创设计
+[2025-08-01 10:32:49] Agent.real_verilog_design_agent - INFO - verilog_code='module simple_8bit_adder (\nmodule full_adder (\nendmodule\nendmodule'
+[2025-08-01 10:32:49] Agent.real_verilog_design_agent - INFO - ✅ LLM Verilog代码生成完成: 66 字符
+[2025-08-01 10:32:49] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_103237/artifacts/debug_iterations/iteration_1_conv_1754015557.v
+[2025-08-01 10:32:58] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.00
+[2025-08-01 10:32:58] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_1.v
+[2025-08-01 10:33:00] Agent.real_verilog_design_agent - INFO - ⚠️ 第1次尝试失败: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_1.v: No such file or directory
+No top level modules, and no -s option.
+Segmentation fault (core dumped)
+[2025-08-01 10:33:00] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 2/3
+[2025-08-01 10:33:15] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1673 字符
+[2025-08-01 10:33:15] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_103237/artifacts/debug_iterations/iteration_2_conv_1754015557.v
+[2025-08-01 10:33:24] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:33:24] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_2.v
+[2025-08-01 10:33:25] Agent.real_verilog_design_agent - INFO - ⚠️ 第2次尝试失败: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_2.v: No such file or directory
+Segmentation fault (core dumped)
+No top level modules, and no -s option.
+[2025-08-01 10:33:25] Agent.real_verilog_design_agent - INFO - 🔄 设计尝试 3/3
+[2025-08-01 10:33:42] Agent.real_verilog_design_agent - INFO - 📋 从markdown中提取Verilog代码: 1686 字符
+[2025-08-01 10:33:42] Agent.real_verilog_design_agent - INFO - 🔍 调试代码已保存: logs/experiment_20250801_103237/artifacts/debug_iterations/iteration_3_conv_1754015557.v
+[2025-08-01 10:33:51] Agent.real_verilog_design_agent - INFO - 📊 LLM代码质量分析完成: 总分 0.88
+[2025-08-01 10:33:51] Agent.real_verilog_design_agent - INFO - 🔍 调试文件已保存: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_3.v
+[2025-08-01 10:33:52] Agent.real_verilog_design_agent - INFO - ⚠️ 第3次尝试失败: logs/experiment_20250801_103237/artifacts/debug_validation/test_module_attempt_3.v: No such file or directory
+No top level modules, and no -s option.
+Segmentation fault (core dumped)
+[2025-08-01 10:33:52] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_103237/artifacts/adder_8bit.v
+[2025-08-01 10:33:52] Agent.real_verilog_design_agent - INFO - 💾 成功保存文件: logs/experiment_20250801_103237/artifacts/adder_8bit_doc.md
+[2025-08-01 10:33:52] Agent.real_verilog_design_agent - INFO - 💾 文件保存完成: 2 个文件
