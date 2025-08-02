@@ -356,6 +356,39 @@ class BaseAgent(ABC):
             self.logger.error(f"❌ 工具调用解析失败: {str(e)}")
             return []
     
+    def _normalize_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """标准化工具参数，解决Schema不一致问题"""
+        try:
+            from core.schema_system.unified_schemas import UnifiedSchemas
+            return UnifiedSchemas.resolve_parameter_aliases(parameters)
+        except ImportError:
+            # 如果统一Schema系统不可用，使用基本的别名映射
+            normalized = parameters.copy()
+            
+            # 基本的参数别名映射
+            alias_mappings = {
+                "code": "verilog_code",
+                "module_code": "verilog_code", 
+                "design_code": "verilog_code",
+                "name": "module_name",
+                "module": "module_name",
+                "path": "file_path",
+                "filename": "file_path",
+                "files": "verilog_files",
+                "design_files": "verilog_files"
+            }
+            
+            # 应用别名映射
+            for alias, standard_name in alias_mappings.items():
+                if alias in normalized and standard_name not in normalized:
+                    normalized[standard_name] = normalized[alias]
+                    self.logger.debug(f"🔄 参数别名映射: {alias} -> {standard_name}")
+            
+            return normalized
+        except Exception as e:
+            self.logger.debug(f"参数标准化失败: {e}")
+            return parameters
+    
     async def _execute_tool_call_with_retry(self, tool_call: ToolCall) -> ToolResult:
         """执行工具调用，支持失败重试和LLM反馈"""
         last_error = None
@@ -363,6 +396,17 @@ class BaseAgent(ABC):
         for attempt in range(self.max_tool_retry_attempts):
             try:
                 self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name} (尝试 {attempt + 1}/{self.max_tool_retry_attempts})")
+                
+                # 标准化参数（解决Schema不一致问题）
+                normalized_parameters = self._normalize_tool_parameters(tool_call.tool_name, tool_call.parameters)
+                if normalized_parameters != tool_call.parameters:
+                    self.logger.info(f"🎯 {tool_call.tool_name} 参数已标准化")
+                    # 使用标准化后的参数创建新的工具调用
+                    tool_call = ToolCall(
+                        tool_name=tool_call.tool_name,
+                        parameters=normalized_parameters,
+                        call_id=tool_call.call_id
+                    )
                 
                 # 检查工具是否存在
                 if tool_call.tool_name not in self.function_calling_registry:
@@ -1074,10 +1118,136 @@ class BaseAgent(ABC):
     # ==========================================================================
     
     async def _tool_write_file(self, filename: str, content: str, directory: str = None, **kwargs) -> Dict[str, Any]:
-        """基础工具：写入文件"""
+        """基础工具：写入文件（增强版，支持中央文件管理）"""
         try:
             self.logger.info(f"📝 写入文件: {filename}")
             
+            # 尝试使用实验管理器 + 中央文件管理器
+            try:
+                # 先尝试实验管理器
+                try:
+                    from core.experiment_manager import get_experiment_manager
+                    exp_manager = get_experiment_manager()
+                    
+                    if exp_manager.current_experiment_path:
+                        # 清理内容
+                        cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
+                        file_type = self._determine_file_type(filename, cleaned_content)
+                        
+                        # 确定子文件夹
+                        if "testbench" in filename.lower() or "_tb" in filename.lower():
+                            subdir = "testbenches"
+                        elif filename.endswith('.v'):
+                            subdir = "designs"
+                        else:
+                            subdir = "artifacts"
+                        
+                        # 保存到实验文件夹
+                        exp_file_path = exp_manager.save_file(
+                            content=cleaned_content,
+                            filename=filename,
+                            subdir=subdir,
+                            description=f"由{self.agent_id}创建的{file_type}文件"
+                        )
+                        
+                        if exp_file_path:
+                            # 同时注册到中央文件管理器
+                            try:
+                                from core.file_manager import get_file_manager
+                                file_manager = get_file_manager()
+                                file_ref = file_manager.save_file(
+                                    content=cleaned_content,
+                                    filename=filename,
+                                    file_type=file_type,
+                                    created_by=self.agent_id,
+                                    description=f"由{self.agent_id}创建的{file_type}文件",
+                                    file_path=str(exp_file_path)
+                                )
+                                
+                                self.logger.info(f"✅ 文件已保存到实验文件夹: {filename} (ID: {file_ref.file_id})")
+                                
+                                return {
+                                    "success": True,
+                                    "message": f"文件 {filename} 已成功保存到实验文件夹",
+                                    "file_path": str(exp_file_path),
+                                    "file_id": file_ref.file_id,
+                                    "file_type": file_ref.file_type,
+                                    "filename": filename,
+                                    "content_length": len(cleaned_content),
+                                    "experiment_path": str(exp_manager.current_experiment_path),
+                                    "subdir": subdir,
+                                    "file_reference": {
+                                        "file_id": file_ref.file_id,
+                                        "file_path": str(exp_file_path),
+                                        "file_type": file_ref.file_type,
+                                        "created_by": file_ref.created_by,
+                                        "created_at": file_ref.created_at,
+                                        "description": file_ref.description
+                                    }
+                                }
+                            except Exception as e:
+                                self.logger.warning(f"⚠️ 中央文件管理器注册失败: {e}")
+                                # 即使中央管理器失败，文件已经保存到实验文件夹
+                                return {
+                                    "success": True,
+                                    "message": f"文件 {filename} 已成功保存到实验文件夹",
+                                    "file_path": str(exp_file_path),
+                                    "file_id": None,
+                                    "file_type": file_type,
+                                    "filename": filename,
+                                    "content_length": len(cleaned_content),
+                                    "experiment_path": str(exp_manager.current_experiment_path),
+                                    "subdir": subdir
+                                }
+                except ImportError:
+                    self.logger.debug("实验管理器不可用")
+                except Exception as e:
+                    self.logger.warning(f"实验管理器保存失败: {e}")
+                
+                # 回退到纯中央文件管理器
+                from core.file_manager import get_file_manager
+                file_manager = get_file_manager()
+                
+                # 清理内容（移除markdown标记等）
+                cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
+                
+                # 确定文件类型
+                file_type = self._determine_file_type(filename, cleaned_content)
+                
+                # 使用中央文件管理器保存文件
+                file_ref = file_manager.save_file(
+                    content=cleaned_content,
+                    filename=filename,
+                    file_type=file_type,
+                    created_by=self.agent_id,
+                    description=f"由{self.agent_id}创建的{file_type}文件"
+                )
+                
+                self.logger.info(f"✅ 文件已通过中央管理器保存: {filename} (ID: {file_ref.file_id})")
+                
+                return {
+                    "success": True,
+                    "message": f"文件 {filename} 已成功保存到中央管理器",
+                    "file_path": file_ref.file_path,
+                    "file_id": file_ref.file_id,
+                    "file_type": file_ref.file_type,
+                    "filename": filename,
+                    "content_length": len(cleaned_content),
+                    "file_reference": {
+                        "file_id": file_ref.file_id,
+                        "file_path": file_ref.file_path,
+                        "file_type": file_ref.file_type,
+                        "created_by": file_ref.created_by,
+                        "created_at": file_ref.created_at,
+                        "description": file_ref.description
+                    }
+                }
+            except ImportError:
+                self.logger.warning("中央文件管理器不可用，使用传统文件保存方法")
+            except Exception as e:
+                self.logger.warning(f"中央文件管理器保存失败: {e}，回退到传统方法")
+            
+            # 传统文件保存方法（保持向后兼容性）
             # 如果没有指定目录，使用默认工件目录
             if directory is None:
                 output_dir = self.default_artifacts_dir
@@ -1120,6 +1290,28 @@ class BaseAgent(ABC):
                 "error": f"文件写入异常: {str(e)}",
                 "file_path": None
             }
+    
+    def _determine_file_type(self, filename: str, content: str) -> str:
+        """根据文件名和内容确定文件类型"""
+        filename_lower = filename.lower()
+        
+        # 根据文件扩展名判断
+        if filename_lower.endswith('.v'):
+            # 进一步判断是设计文件还是测试台
+            if 'testbench' in filename_lower or '_tb' in filename_lower or 'tb_' in filename_lower:
+                return "testbench"
+            elif 'module' in content and ('initial' in content or '$monitor' in content or '$display' in content):
+                return "testbench"
+            else:
+                return "verilog"
+        elif filename_lower.endswith('.sv'):
+            return "verilog"
+        elif filename_lower.endswith(('.txt', '.log')):
+            return "report"
+        elif filename_lower.endswith('.json'):
+            return "analysis"
+        else:
+            return "temp"
     
     async def _tool_read_file(self, filepath: str, **kwargs) -> Dict[str, Any]:
         """基础工具：读取文件"""

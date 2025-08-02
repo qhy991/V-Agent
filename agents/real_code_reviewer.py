@@ -1750,17 +1750,17 @@ endmodule
                 "simulation_output": None
             }
     
-    async def _tool_analyze_code_quality(self, code: str = None, module_code: str = None, **kwargs) -> Dict[str, Any]:
-        """工具：分析代码质量"""
+    async def _tool_analyze_code_quality(self, verilog_code: str = None, code: str = None, module_code: str = None, **kwargs) -> Dict[str, Any]:
+        """工具：分析代码质量（支持统一Schema）"""
         try:
             self.logger.info("🔧 工具调用: 分析代码质量")
             
-            # 处理参数兼容性
-            actual_code = code or module_code
+            # 支持多种参数名（解决Schema不一致问题）
+            actual_code = verilog_code or code or module_code
             if actual_code is None:
                 return {
                     "success": False,
-                    "error": "需要提供code或module_code参数",
+                    "error": "需要提供verilog_code、code或module_code参数",
                     "code_quality": None
                 }
             

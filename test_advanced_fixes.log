@@ -1,0 +1,192 @@
+2025-08-02 10:31:03,930 - core.file_manager - INFO - 🗂️ 中央文件管理器已初始化，工作空间: /tmp/tdd_advanced_test_cl5no335
+2025-08-02 10:31:03,931 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_problematic.v (ID: e7de7f0e, 类型: verilog)
+2025-08-02 10:31:03,931 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_complete.v (ID: 0dadf2b7, 类型: verilog)
+2025-08-02 10:31:03,932 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_tb.v (ID: e851137c, 类型: testbench)
+2025-08-02 10:31:03,933 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,933 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 1个)
+2025-08-02 10:31:03,933 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,933 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,933 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_path': '/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v', 'file_type': 'verilog', 'file_id': 'e7de7f0e'}
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:31:03,934 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+2025-08-02 10:31:03,934 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,935 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,935 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - WARNING - 缺失模块: module
+2025-08-02 10:31:03,935 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_problematic.v (模块: simple_8bit_adder)
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=False
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 兼容性问题: 测试台没有实例化任何设计模块
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 兼容性问题: 缺失依赖模块: ['module']
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 查找缺失的依赖模块: ['module']
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 搜索缺失模块: module
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,935 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: simple_8bit_adder_problematic.v (859 bytes)
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: simple_8bit_adder_tb.v (1017 bytes)
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3332730
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO -   1. simple_8bit_adder_problematic.v (设计)
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO -   2. simple_8bit_adder_tb.v (测试台)
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3332730 /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,936 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+2025-08-02 10:31:03,987 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 8
+2025-08-02 10:31:03,987 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:14: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_problematic.v:22: error: Unknown module type: full_adder
+8 error(s) during elaboration.
+*** These modules were missing:
+        full_adder referenced 8 times.
+***
+
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_path': '/tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v', 'file_type': 'verilog', 'file_id': '0dadf2b7'}
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v
+2025-08-02 10:31:03,989 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+2025-08-02 10:31:03,990 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 1个)
+2025-08-02 10:31:03,990 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,990 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 1个)
+2025-08-02 10:31:03,991 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: 1个)
+2025-08-02 10:31:03,991 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - WARNING - 缺失模块: module
+2025-08-02 10:31:03,991 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_complete.v (模块: full_adder)
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=False
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 兼容性问题: 测试台没有实例化任何设计模块
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 兼容性问题: 缺失依赖模块: ['module']
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 查找缺失的依赖模块: ['module']
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 搜索缺失模块: module
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,991 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: simple_8bit_adder_complete.v (1050 bytes)
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: simple_8bit_adder_tb.v (1017 bytes)
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3332730
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO -   1. simple_8bit_adder_complete.v (设计)
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO -   2. simple_8bit_adder_tb.v (测试台)
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3332730 /tmp/tdd_advanced_test_cl5no335/designs/simple_8bit_adder_complete.v /tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:31:03,992 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+2025-08-02 10:31:04,036 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+2025-08-02 10:31:04,037 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3332730
+2025-08-02 10:31:04,038 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+2025-08-02 10:31:04,057 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+2025-08-02 10:31:04,058 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: VCD info: dumpfile simple_8bit_adder.vcd opened for output.
+开始8位加法器测试...
+Test 1: 0f + 10 + 0 = 1f (cout=0)
+Test 2: ff + 01 + 0 = 00 (cout=1)
+Test 3: ff + ff + 1 = ff (cout=1)
+测试完成
+/tmp/tdd_advanced_test_cl5no335/testbenches/simple_8bit_adder_tb.v:36: $finish called at 30 (1s)
+...
+2025-08-02 10:31:04,058 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True
+2025-08-02 10:36:48,649 - core.file_manager - INFO - 🗂️ 中央文件管理器已初始化，工作空间: /tmp/tdd_advanced_test_52bkjes0
+2025-08-02 10:36:48,649 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_problematic.v (ID: 6e327621, 类型: verilog)
+2025-08-02 10:36:48,650 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_complete.v (ID: 9225e3cf, 类型: verilog)
+2025-08-02 10:36:48,650 - core.file_manager - INFO - 💾 文件已保存: simple_8bit_adder_tb.v (ID: f89e922b, 类型: testbench)
+2025-08-02 10:36:48,651 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,652 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 无)
+2025-08-02 10:36:48,652 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,652 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,652 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_path': '/tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v', 'file_type': 'verilog', 'file_id': '6e327621'}
+2025-08-02 10:36:48,652 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,653 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+2025-08-02 10:36:48,653 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,654 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder_tb (依赖: ['simple_8bit_adder'])
+2025-08-02 10:36:48,654 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,655 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder_tb (依赖: ['simple_8bit_adder'])
+2025-08-02 10:36:48,655 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'simple_8bit_adder'}
+2025-08-02 10:36:48,655 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - WARNING - 缺失模块: full_adder
+2025-08-02 10:36:48,655 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_problematic.v (模块: simple_8bit_adder)
+2025-08-02 10:36:48,655 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_tb.v (模块: simple_8bit_adder_tb)
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=False
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 兼容性问题: 缺失依赖模块: ['full_adder']
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 查找缺失的依赖模块: ['full_adder']
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 搜索缺失模块: full_adder
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 在文件内容中找到模块 full_adder: simple_8bit_adder_complete.v
+2025-08-02 10:36:48,655 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 2 个文件
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 2 个
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: simple_8bit_adder_problematic.v (859 bytes)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件2: simple_8bit_adder_complete.v (1050 bytes)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: simple_8bit_adder_tb.v (1017 bytes)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - WARNING - ⚠️ 发现多个设计文件，这可能导致模块冲突:
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - WARNING -     - simple_8bit_adder_problematic.v
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - WARNING -     - simple_8bit_adder_complete.v
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3333075
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   1. simple_8bit_adder_complete.v (设计)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   2. simple_8bit_adder_problematic.v (设计)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO -   3. simple_8bit_adder_tb.v (测试台)
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3333075 /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,656 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+2025-08-02 10:36:48,701 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 2
+2025-08-02 10:36:48,701 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v:1: error: 'simple_8bit_adder' has already been declared in this scope.
+/tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v:11:      : It was declared here as a module.
+/tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_problematic.v:34: error: Module simple_8bit_adder was already declared here: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v:11
+
+
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_path': '/tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v', 'file_type': 'verilog', 'file_id': '9225e3cf'}
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v
+2025-08-02 10:36:48,703 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+2025-08-02 10:36:48,704 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v
+2025-08-02 10:36:48,704 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+2025-08-02 10:36:48,704 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 无)
+2025-08-02 10:36:48,704 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,705 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder_tb (依赖: ['simple_8bit_adder'])
+2025-08-02 10:36:48,705 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: full_adder (依赖: 无)
+2025-08-02 10:36:48,706 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder (依赖: ['full_adder'])
+2025-08-02 10:36:48,707 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: simple_8bit_adder_tb (依赖: ['simple_8bit_adder'])
+2025-08-02 10:36:48,707 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'simple_8bit_adder'}
+2025-08-02 10:36:48,707 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_complete.v (模块: full_adder)
+2025-08-02 10:36:48,707 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: simple_8bit_adder_tb.v (模块: simple_8bit_adder_tb)
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: simple_8bit_adder_complete.v (1050 bytes)
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: simple_8bit_adder_tb.v (1017 bytes)
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3333075
+2025-08-02 10:36:48,707 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+2025-08-02 10:36:48,708 - extensions.test_analyzer.TestAnalyzer - INFO -   1. simple_8bit_adder_complete.v (设计)
+2025-08-02 10:36:48,708 - extensions.test_analyzer.TestAnalyzer - INFO -   2. simple_8bit_adder_tb.v (测试台)
+2025-08-02 10:36:48,708 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3333075 /tmp/tdd_advanced_test_52bkjes0/designs/simple_8bit_adder_complete.v /tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v
+2025-08-02 10:36:48,708 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+2025-08-02 10:36:48,756 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+2025-08-02 10:36:48,757 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3333075
+2025-08-02 10:36:48,760 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+2025-08-02 10:36:48,790 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+2025-08-02 10:36:48,790 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: VCD info: dumpfile simple_8bit_adder.vcd opened for output.
+开始8位加法器测试...
+Test 1: 0f + 10 + 0 = 1f (cout=0)
+Test 2: ff + 01 + 0 = 00 (cout=1)
+Test 3: ff + ff + 1 = ff (cout=1)
+测试完成
+/tmp/tdd_advanced_test_52bkjes0/testbenches/simple_8bit_adder_tb.v:36: $finish called at 30 (1s)
+...
+2025-08-02 10:36:48,791 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True

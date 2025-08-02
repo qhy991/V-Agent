@@ -1,171 +1,278 @@
-# 🧪 测试驱动开发(TDD)功能使用指南
+# 🧪 统一测试驱动开发(TDD)工具使用指南
 
-## 📋 功能概述
+## 📋 工具概述
 
-本框架提供完整的测试驱动开发功能，支持：
-- ✅ **多轮迭代**：AI智能体根据测试结果自动改进设计
-- ✅ **完整保存**：每次迭代的结果、日志、文件都完整保存
-- ✅ **易用入口**：统一的命令行接口，支持多种配置
-- ✅ **结果分析**：详细的实验报告和迭代历史追踪
+`unified_tdd_test.py` 是一个基于真实LLM驱动的智能Verilog设计工具，采用测试驱动开发(TDD)方法，能够自动生成、测试和优化硬件设计。
+
+### 🎯 核心特性
+- **智能设计生成**: 基于需求描述自动生成Verilog代码
+- **自动测试台生成**: 为每个设计创建全面的测试台
+- **迭代优化**: 通过测试失败反馈自动改进设计
+- **质量保证**: 代码质量分析和覆盖率检测
+- **结果追踪**: 完整的实验日志和结果保存
 
 ## 🚀 快速开始
 
-### 1. 统一测试入口
-
+### 基本用法
 ```bash
-# 基本使用 - ALU设计
-python unified_tdd_test.py --design alu
+# 使用预定义模板（推荐新手）
+python unified_tdd_test.py --design simple_adder
 
-# 超前进位加法器 - 快速测试
-python unified_tdd_test.py --design adder --config quick
+# 使用标准配置
+python unified_tdd_test.py --design counter --config standard
 
-# 自定义设计
-python unified_tdd_test.py --design custom --requirements "设计一个UART模块" --testbench uart_tb.v
+# 快速测试模式
+python unified_tdd_test.py --design alu --config quick
 ```
 
-### 2. 配置档案
-
-| 档案 | 迭代次数 | 超时(秒) | 深度分析 | 适用场景 |
-|------|----------|----------|----------|----------|
-| `quick` | 3 | 120 | ❌ | 快速验证 |
-| `standard` | 5 | 300 | ✅ | 标准开发 |
-| `thorough` | 8 | 600 | ✅ | 复杂设计 |
-| `debug` | 10 | 900 | ✅ | 问题调试 |
-
-### 3. 预定义设计模板
-
-- **alu**: 32位算术逻辑单元
-- **counter**: 8位可控计数器  
-- **adder**: 16位超前进位加法器
-- **custom**: 自定义设计需求
-
-## 💾 结果保存机制
-
-### 实验日志结构
-```
-logs/experiment_YYYYMMDD_HHMMSS/
-├── experiment_summary.log          # 实验总结
-├── artifacts/                      # 生成的文件
-│   ├── debug_iterations/           # 迭代历史
-│   │   ├── iteration_1_*.v        # 第1次迭代设计
-│   │   ├── iteration_2_*.v        # 第2次迭代设计
-│   │   └── ...                     # 每次迭代都保存
-│   └── debug_validation/           # 验证文件
-├── [agent_name].log                # 各智能体详细日志
-└── all_errors.log                  # 错误汇总
-```
-
-### 实验报告
-```
-unified_tdd_report_[实验ID].json    # 完整实验分析报告
-```
-
-## 🔧 高级用法
-
-### 1. 编程接口
-```python
-from extensions import create_test_driven_coordinator, TestDrivenConfig
-
-# 创建TDD协调器
-tdd_config = TestDrivenConfig(max_iterations=5, enable_deep_analysis=True)
-tdd_coordinator = create_test_driven_coordinator(your_coordinator, tdd_config)
-
-# 执行测试驱动任务
-result = await tdd_coordinator.execute_test_driven_task(
-    task_description="设计需求",
-    testbench_path="path/to/testbench.v"
-)
-```
-
-### 2. 查看迭代历史
-```python
-# 获取会话信息
-session_info = tdd_coordinator.get_session_info(session_id)
-
-# 获取迭代历史
-history = tdd_coordinator.get_iteration_history(session_id)
-```
-
-### 3. 自定义配置
+### 高级用法
 ```bash
-# 完全自定义配置
-python unified_tdd_test.py --design alu --iterations 10 --timeout 600 --no-deep-analysis
+# 自定义设计需求
+python unified_tdd_test.py --design custom --requirements "设计一个8位UART发射器模块"
+
+# 提供现有测试台
+python unified_tdd_test.py --design custom --requirements "设计需求" --testbench my_testbench.v
+
+# 调试模式（更多迭代次数和详细日志）
+python unified_tdd_test.py --design alu --config debug --iterations 15
+
+# 指定输出目录
+python unified_tdd_test.py --design counter --output-dir ./my_experiment
 ```
 
-## 📊 结果分析
+## 📚 预定义设计模板
+
+### 1. **simple_adder** (推荐入门)
+- **功能**: 8位简单加法器
+- **接口**: `a[7:0]`, `b[7:0]`, `cin`, `sum[7:0]`, `cout`
+- **特点**: 设计简单，快速验证TDD流程
+- **用法**: `--design simple_adder`
+
+### 2. **counter** 
+- **功能**: 8位双向计数器
+- **接口**: `clk`, `rst_n`, `enable`, `up_down`, `count[7:0]`, `overflow`
+- **特点**: 时序设计，包含复位逻辑
+- **用法**: `--design counter`
+
+### 3. **adder_16bit**
+- **功能**: 16位加法器
+- **接口**: `a[15:0]`, `b[15:0]`, `cin`, `sum[15:0]`, `cout`, `overflow`
+- **特点**: 中等复杂度，包含溢出检测
+- **用法**: `--design adder_16bit`
+
+### 4. **alu**
+- **功能**: 32位算术逻辑单元
+- **接口**: `a[31:0]`, `b[31:0]`, `op[3:0]`, `result[31:0]`, `zero`, `overflow`
+- **特点**: 高复杂度，支持多种运算
+- **用法**: `--design alu`
+
+### 5. **adder**
+- **功能**: 16位超前进位加法器
+- **接口**: `a[15:0]`, `b[15:0]`, `cin`, `sum[15:0]`, `cout`
+- **特点**: 高性能设计，进位优化
+- **用法**: `--design adder`
+
+### 6. **custom**
+- **功能**: 自定义设计
+- **特点**: 完全自定义需求和接口
+- **用法**: `--design custom --requirements "你的设计需求"`
+
+## ⚙️ 配置档案
+
+### quick (快速模式)
+- **迭代次数**: 3
+- **单次超时**: 120秒
+- **深度分析**: 禁用
+- **适用场景**: 快速原型验证
+
+### standard (标准模式) - 默认
+- **迭代次数**: 2
+- **单次超时**: 300秒
+- **深度分析**: 启用
+- **适用场景**: 日常开发
+
+### thorough (彻底模式)
+- **迭代次数**: 8
+- **单次超时**: 600秒
+- **深度分析**: 启用
+- **适用场景**: 复杂设计验证
+
+### debug (调试模式)
+- **迭代次数**: 10
+- **单次超时**: 900秒
+- **深度分析**: 启用
+- **适用场景**: 问题诊断和复杂调试
+
+## 📊 命令行参数详解
+
+### 必需参数
+- `--design` / `-d`: 设计类型选择
+  - 选项: `alu`, `counter`, `adder_16bit`, `simple_adder`, `adder`, `custom`
+  - 默认: `simple_adder`
+
+### 可选参数
+- `--config` / `-c`: 配置档案
+  - 选项: `quick`, `standard`, `thorough`, `debug`
+  - 默认: `standard`
+
+- `--testbench` / `-t`: 测试台文件路径
+  - 用途: 提供现有测试台而非自动生成
+
+- `--requirements` / `-r`: 自定义设计需求
+  - 用途: 使用custom设计时的需求描述
+
+- `--iterations` / `-i`: 最大迭代次数
+  - 用途: 覆盖配置档案中的默认值
+
+- `--timeout`: 每次迭代超时时间(秒)
+  - 用途: 覆盖配置档案中的默认值
+
+- `--no-deep-analysis`: 禁用深度分析
+  - 用途: 加快执行速度
+
+- `--output-dir` / `-o`: 输出目录
+  - 默认: `tdd_experiments/unified_tdd_设计类型_时间戳`
+
+## 📁 输出结构
+
+每次实验都会在输出目录中生成：
+
+```
+unified_tdd_设计类型_时间戳/
+├── artifacts/                 # 设计文件
+│   ├── 设计模块.v             # 生成的Verilog设计
+│   └── 测试台.v              # 生成的测试台
+├── logs/                      # 日志文件
+│   ├── simulation_output.log  # 仿真输出
+│   └── compile_output.log     # 编译输出
+├── experiment_report.json     # 详细JSON报告
+└── experiment_summary.txt     # 人类可读摘要
+```
+
+## 📝 输出文件说明
+
+### experiment_summary.txt
+包含关键信息：
+- 实验状态（成功/失败）
+- 迭代次数和耗时
+- 生成文件数量
+- 测试结果摘要
+
+### experiment_report.json
+包含完整信息：
+- 详细的迭代历史
+- 工具调用记录
+- 错误诊断信息
+- 质量度量数据
+
+## 🛠️ 使用示例
+
+### 示例1: 初学者入门
+```bash
+# 使用最简单的设计快速体验TDD流程
+python unified_tdd_test.py --design simple_adder --config quick
+
+# 查看结果
+cat tdd_experiments/unified_tdd_simple_adder_*/experiment_summary.txt
+```
+
+### 示例2: 标准开发流程
+```bash
+# 开发一个计数器，使用标准配置
+python unified_tdd_test.py --design counter
+
+# 开发一个ALU，使用更多迭代次数
+python unified_tdd_test.py --design alu --iterations 5
+```
+
+### 示例3: 自定义设计
+```bash
+# 设计一个FIFO缓冲器
+python unified_tdd_test.py --design custom \
+    --requirements "设计一个16深度、8位宽的同步FIFO，包含读写指针、满空标志" \
+    --config thorough
+```
+
+### 示例4: 使用现有测试台
+```bash
+# 使用预先准备的测试台
+python unified_tdd_test.py --design custom \
+    --requirements "设计一个SPI主控制器" \
+    --testbench ./my_spi_testbench.v \
+    --config debug
+```
+
+## 🔍 结果分析
 
 ### 成功指标
-- **功能正确性**: 通过所有测试用例
-- **迭代效率**: 较少迭代次数达到目标
-- **设计质量**: AI生成的设计符合最佳实践
+- ✅ `实验状态: 成功`
+- ✅ `迭代次数: 1-2` (理想情况)
+- ✅ `生成文件: > 0`
+- ✅ `完成原因: tests_passed`
 
 ### 失败分析
-- **编译错误**: 语法错误、模块接口问题
-- **功能错误**: 逻辑实现不正确
-- **性能问题**: 不满足时序要求
+如果实验失败，检查：
+1. `experiment_summary.txt` 中的错误原因
+2. `logs/` 目录中的详细日志
+3. JSON报告中的迭代历史
 
-### 查看详细结果
-```bash
-# 查看最新实验日志
-ls -la logs/experiment_*/
+## ⚠️ 注意事项
 
-# 查看具体迭代设计
-cat logs/experiment_*/artifacts/debug_iterations/iteration_2_*.v
+### 设计需求编写
+- **明确接口**: 详细指定端口名称和位宽
+- **功能描述**: 清楚说明期望的行为
+- **约束条件**: 指明时序、复位等要求
 
-# 查看实验报告
-cat unified_tdd_report_*.json
-```
+### 性能优化
+- 使用 `quick` 配置进行初步验证
+- 复杂设计使用 `thorough` 或 `debug` 配置
+- 适当调整 `--iterations` 和 `--timeout` 参数
+
+### 故障排除
+- 检查环境配置（.env文件）
+- 确保有足够的磁盘空间
+- 网络连接正常（LLM API调用）
 
 ## 🎯 最佳实践
 
-### 1. 测试台设计
-- 覆盖所有功能点
-- 包含边界条件测试
-- 清晰的错误提示信息
-- 明确的成功标准
+1. **从简单开始**: 新用户建议从 `simple_adder` 开始
+2. **渐进复杂**: 逐步尝试更复杂的设计类型
+3. **保存结果**: 成功的实验结果可作为参考模板
+4. **迭代改进**: 根据失败结果调整需求描述
+5. **合理配置**: 根据设计复杂度选择合适的配置档案
 
-### 2. 设计需求描述
-- 明确模块接口规格
-- 详细功能要求说明
-- 性能和约束条件
-- 预期的测试标准
+## 🔧 环境要求
 
-### 3. 配置选择
-- **开发阶段**: 使用 `standard` 配置
-- **问题调试**: 使用 `debug` 配置
-- **快速验证**: 使用 `quick` 配置
-- **复杂项目**: 使用 `thorough` 配置
+- Python 3.8+
+- 依赖包: 按照项目requirements.txt安装
+- LLM API配置: 在.env文件中配置
+- Verilog仿真器: iverilog (推荐)
 
-## 🔍 故障排除
+## 📞 技术支持
 
-### 常见问题
-1. **测试台文件不存在**: 检查路径，或使用预定义模板
-2. **LLM调用失败**: 检查API配置和网络连接
-3. **编译错误**: 查看 `all_errors.log` 了解详情
-4. **超时问题**: 调整 `--timeout` 参数或使用更高级的配置档案
+如遇问题，请查看：
+1. 实验输出的详细日志
+2. 项目README文档
+3. CLAUDE.md中的架构说明
 
-### 调试技巧
-```bash
-# 启用详细日志
-export LOG_LEVEL=DEBUG
+## 🎉 验证成功案例
 
-# 使用调试配置
-python unified_tdd_test.py --design alu --config debug
+### 16位加法器测试结果
+- **命令**: `python unified_tdd_test.py --design adder_16bit --config standard`
+- **结果**: ✅ 1次迭代成功
+- **质量**: 代码质量100分，覆盖率85%+
+- **特点**: 正确实现接口、进位处理和溢出检测
 
-# 查看特定智能体日志
-tail -f logs/experiment_*/real_verilog_agent.log
-```
+### 8位计数器测试结果  
+- **命令**: `python unified_tdd_test.py --design counter --config standard`
+- **结果**: ✅ 快速通过所有测试
+- **特点**: 准确实现rst_n复位逻辑，无接口错误
 
-## 🎉 成功案例
+### 简单加法器测试结果
+- **命令**: `python unified_tdd_test.py --design simple_adder --config quick`
+- **结果**: ✅ 入门友好，快速验证TDD流程
+- **特点**: 设计简洁，适合新手学习
 
-### 超前进位加法器
-- **测试**: `python unified_tdd_test.py --design adder`
-- **结果**: 2次迭代成功，通过20个测试用例
-- **特点**: AI正确实现超前进位逻辑
+---
 
-### 32位ALU
-- **测试**: `python unified_tdd_test.py --design alu --config standard`
-- **结果**: 支持8种运算，完整标志位输出
-- **验证**: 通过算术、逻辑、比较运算全覆盖测试
-
-这个TDD功能为硬件设计提供了强大的迭代改进能力，显著提高设计质量和开发效率！🚀
+🎉 **现在就开始你的TDD硬件设计之旅吧！**

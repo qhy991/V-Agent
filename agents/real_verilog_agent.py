@@ -13,7 +13,8 @@ import tempfile
 from typing import Dict, Any, Set, List
 from pathlib import Path
 
-from core.base_agent import BaseAgent, TaskMessage
+from core.schema_system.enhanced_base_agent import EnhancedBaseAgent
+from core.base_agent import TaskMessage
 from core.enums import AgentCapability
 from core.response_format import ResponseFormat, TaskStatus, ResponseType, QualityMetrics
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
@@ -21,7 +22,7 @@ from config.config import FrameworkConfig
 from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
 
 
-class RealVerilogDesignAgent(BaseAgent):
+class RealVerilogDesignAgent(EnhancedBaseAgent):
     """真实LLM驱动的Verilog HDL设计智能体"""
     
     def __init__(self, config: FrameworkConfig = None):
@@ -32,7 +33,8 @@ class RealVerilogDesignAgent(BaseAgent):
                 AgentCapability.CODE_GENERATION,
                 AgentCapability.MODULE_DESIGN,
                 AgentCapability.SPECIFICATION_ANALYSIS
-            }
+            },
+            config=config
         )
         
         # 初始化LLM客户端
@@ -43,8 +45,153 @@ class RealVerilogDesignAgent(BaseAgent):
         self.agent_logger = get_agent_logger('RealVerilogDesignAgent')
         self.artifacts_dir = get_artifacts_dir()
         
-        self.logger.info(f"🔧 真实Verilog设计智能体(Function Calling支持)初始化完成")
+        # 注册Schema增强工具
+        self._register_enhanced_schema_tools()
+        
+        self.logger.info(f"🔧 真实Verilog设计智能体(Schema支持)初始化完成")
         self.agent_logger.info("RealVerilogDesignAgent初始化完成")
+    
+    def _register_enhanced_schema_tools(self):
+        """注册带Schema验证的Verilog设计工具"""
+        
+        # 1. 设计需求分析工具 - 升级到Schema版本
+        self.register_enhanced_tool(
+            name="analyze_design_requirements",
+            func=self._tool_analyze_design_requirements,
+            description="分析和解析Verilog设计需求，提取关键设计参数",
+            security_level="normal",
+            category="analysis",
+            schema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 50000,
+                        "description": "设计需求描述，包含功能规格和约束条件"
+                    },
+                    "design_complexity": {
+                        "type": "string",
+                        "enum": ["simple", "medium", "complex", "advanced"],
+                        "default": "medium",
+                        "description": "设计复杂度估计"
+                    }
+                },
+                "required": ["requirements"],
+                "additionalProperties": False
+            }
+        )
+        
+        # 2. 现有模块搜索工具 - 升级到Schema版本
+        self.register_enhanced_tool(
+            name="search_existing_modules",
+            func=self._tool_search_existing_modules,
+            description="搜索现有的Verilog模块和IP核",
+            security_level="normal",
+            category="database",
+            schema={
+                "type": "object",
+                "properties": {
+                    "module_type": {
+                        "type": "string",
+                        "enum": ["arithmetic", "memory", "interface", "controller", "dsp", "custom"],
+                        "description": "模块类型分类"
+                    },
+                    "functionality": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 500,
+                        "description": "功能关键词描述"  
+                    },
+                    "max_results": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50,
+                        "default": 10,
+                        "description": "最大返回结果数"
+                    }
+                },
+                "additionalProperties": False
+            }
+        )
+        
+        # 3. Verilog代码生成工具 - 升级到Schema版本
+        self.register_enhanced_tool(
+            name="generate_verilog_code",
+            func=self._tool_generate_verilog_code,
+            description="生成高质量的Verilog HDL代码",
+            security_level="high",
+            category="code_generation",
+            schema={
+                "type": "object",
+                "properties": {
+                    "requirements": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 10000,
+                        "description": "设计需求和功能描述"
+                    },
+                    "module_info": {
+                        "type": "object",
+                        "properties": {
+                            "module_name": {
+                                "type": "string",
+                                "pattern": r"^[a-zA-Z][a-zA-Z0-9_]*$",
+                                "maxLength": 100,
+                                "description": "模块名称，必须以字母开头"
+                            },
+                            "input_ports": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "maxItems": 100,
+                                "description": "输入端口列表"
+                            },
+                            "output_ports": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "maxItems": 100,
+                                "description": "输出端口列表"
+                            }
+                        },
+                        "additionalProperties": False,
+                        "description": "模块基本信息"
+                    }
+                },
+                "required": ["requirements"],
+                "additionalProperties": False
+            }
+        )
+        
+        # 4. 代码质量分析工具 - 升级到Schema版本
+        self.register_enhanced_tool(
+            name="analyze_code_quality",
+            func=self._tool_analyze_code_quality,
+            description="分析Verilog代码质量和合规性",
+            security_level="normal",
+            category="quality_assurance",
+            schema={
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "minLength": 10,
+                        "maxLength": 100000,
+                        "description": "待分析的Verilog代码"
+                    },
+                    "analysis_type": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["syntax", "style", "timing", "synthesis", "testability"]
+                        },
+                        "default": ["syntax", "style"],
+                        "description": "分析类型选择"
+                    }
+                },
+                "required": ["code"],
+                "additionalProperties": False
+            }
+        )
     
     def _register_function_calling_tools(self):
         """注册Verilog设计专用工具"""
@@ -1171,12 +1318,20 @@ class RealVerilogDesignAgent(BaseAgent):
                 "code": None
             }
     
-    async def _tool_analyze_code_quality(self, code: str, **kwargs) -> Dict[str, Any]:
-        """工具：分析代码质量"""
+    async def _tool_analyze_code_quality(self, verilog_code: str = None, code: str = None, **kwargs) -> Dict[str, Any]:
+        """工具：分析代码质量（支持统一Schema）"""
         try:
             self.logger.info("🔧 工具调用: 分析代码质量")
             
-            quality_metrics = await self._analyze_code_quality(code)
+            # 支持多种参数名（解决Schema不一致问题）
+            actual_code = verilog_code or code
+            if not actual_code:
+                return {
+                    "success": False,
+                    "error": "缺少必需的代码参数（verilog_code 或 code）"
+                }
+            
+            quality_metrics = await self._analyze_code_quality(actual_code)
             
             return {
                 "success": True,

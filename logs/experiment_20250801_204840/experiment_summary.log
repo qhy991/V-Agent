@@ -1,0 +1,2147 @@
+[2025-08-01 20:48:40] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-01 20:48:40] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 请设计一个简单的测试模块。请使用以下工具调用：
+        
+        ```json
+        {
+            "tool_calls": [
+             ...
+[2025-08-01 20:48:40] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 📋 System Prompt (2731 字符):
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **严格参数验证要求**:
+- 所有模块名、端口名必须以字母开头，只能包含字母、数字、下划线
+- 端口宽度范围: 1-1024位
+- 字符串长度需符合要求（设计描述至少10字符）
+- **必须使用精确的参数名称，不允许自创参数名**
+- 如果参数验证失败，请根据错误提示修正参数格式
+
+🎯 **可用工具及其精确参数**:
+
+### 1. analyze_design_requirements
+**必需参数**:
+- `requirements` (string): 设计需求描述，至少10字符
+**可选参数**:
+- `design_type` (string): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (string): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+**必需参数**:
+- `module_name` (string): 模块名称，必须以字母开头，只能包含字母、数字、下划线
+- `requirements` (string): 设计需求和功能描述，至少10字符
+**可选参数**:
+- `input_ports` (array): 输入端口定义列表
+- `output_ports` (array): 输出端口定义列表
+- `clock_domain` (object): 时钟域配置
+- `coding_style` (string): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+**可选参数**:
+- `module_type` (string): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (string): 功能关键词描述
+- `complexity_filter` (string): "simple", "medium", "complex", "any"
+- `max_results` (integer): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+**必需参数**:
+- `verilog_code` (string): 待分析的Verilog代码，至少10字符
+**可选参数**:
+- `analysis_scope` (array): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块的Verilog代码，至少10字符
+**可选参数**:
+- `test_scenarios` (array): 测试场景描述列表
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间(时钟周期数)，100-1000000
+
+❌ **严格禁止使用以下错误参数名**:
+- `design_description` (正确: `requirements`)
+- `code` (正确: `verilog_code`)  
+- `test_cases` (正确: `test_scenarios`)
+- `ports` (正确: `input_ports` 或 `output_ports`)
+
+✅ **工具调用示例**:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个8位加法器，能够对两个8位二进制数进行加法运算",
+                "design_type": "combinational",
+                "complexity_level": "simple"
+            }
+        }
+    ]
+}
+```
+
+当收到设计任务时，请按照以下流程操作：
+1. 首先分析设计需求 (analyze_design_requirements)
+2. 搜索相关现有模块 (search_existing_modules)
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+**关键提醒**: 每次工具调用必须使用上述列出的精确参数名称。任何自创或错误的参数名都会导致验证失败！
+
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 👤 User Prompt (989 字符):
+[2025-08-01 20:48:40] LLMClient-dashscope - INFO - 👤 User: 请设计一个简单的测试模块。请使用以下工具调用：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+                    "tool_name": "generate_verilog_code",
+                    "parameters": {
+                        "module_name": "test_module",
+                        "requirements": "简单测试模块",
+                        "input_ports": "invalid_format_string",
+                        "output_ports": "also_invalid"
+                    }
+                },
+                {
+                    "tool_name": "analyze_code_quality",
+                    "parameters": {
+                        "verilog_code": "module test; endmodule"
+                    }
+                },
+                {
+                    "tool_name": "generate_testbench",
+                    "parameters": {
+                        "module_name": "test_module",
+                        "verilog_code": "module test; endmodule"
+                    }
+                }
+            ]
+        }
+        ```
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 🤖 LLM响应 (2151 字符, 6.81s):
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "简单测试模块"
+            }
+        },
+        {
+            "tool_name": "search_existing_modules",
+            "parameters": {
+                "module_type": "custom",
+                "functionality": "test",
+                "complexity_filter": "any"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "test_module",
+                "requirements": "简单测试模块",
+                "input_ports": [
+                    "clk",
+                    "rst_n"
+                ],
+                "output_ports": [
+                    "led"
+                ],
+                "clock_domain": {
+                    "clock": "clk",
+                    "reset": "rst_n"
+                },
+                "coding_style": "rtl"
+            }
+        },
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "analysis_scope": [
+                    "syntax",
+                    "style",
+                    "synthesis"
+                ],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "test_module",
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "test_scenarios": [
+                    "测试时钟和复位功能",
+                    "验证LED状态切换"
+                ],
+                "clock_period": 10.0,
+                "simulation_time": 1000
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_design_requirements 参数验证失败，尝试智能修复
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - ERROR - ❌ analyze_design_requirements 参数修复失败
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - INFO - ✅ search_existing_modules 参数验证通过
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - INFO - 🎯 search_existing_modules 执行成功 (0.00s)
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - WARNING - ⚠️ generate_verilog_code 参数验证失败，尝试智能修复
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - WARNING - ⚠️ 修复后的参数仍然无效: generate_verilog_code
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - ERROR - ❌ generate_verilog_code 参数修复失败
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - ERROR - ❌ 关键工具失败: generate_verilog_code
+[2025-08-01 20:48:47] core.schema_system.enhanced_base_agent - INFO - 🔄 第 2/5 次迭代
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 📋 System Prompt (2731 字符):
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **严格参数验证要求**:
+- 所有模块名、端口名必须以字母开头，只能包含字母、数字、下划线
+- 端口宽度范围: 1-1024位
+- 字符串长度需符合要求（设计描述至少10字符）
+- **必须使用精确的参数名称，不允许自创参数名**
+- 如果参数验证失败，请根据错误提示修正参数格式
+
+🎯 **可用工具及其精确参数**:
+
+### 1. analyze_design_requirements
+**必需参数**:
+- `requirements` (string): 设计需求描述，至少10字符
+**可选参数**:
+- `design_type` (string): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (string): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+**必需参数**:
+- `module_name` (string): 模块名称，必须以字母开头，只能包含字母、数字、下划线
+- `requirements` (string): 设计需求和功能描述，至少10字符
+**可选参数**:
+- `input_ports` (array): 输入端口定义列表
+- `output_ports` (array): 输出端口定义列表
+- `clock_domain` (object): 时钟域配置
+- `coding_style` (string): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+**可选参数**:
+- `module_type` (string): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (string): 功能关键词描述
+- `complexity_filter` (string): "simple", "medium", "complex", "any"
+- `max_results` (integer): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+**必需参数**:
+- `verilog_code` (string): 待分析的Verilog代码，至少10字符
+**可选参数**:
+- `analysis_scope` (array): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块的Verilog代码，至少10字符
+**可选参数**:
+- `test_scenarios` (array): 测试场景描述列表
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间(时钟周期数)，100-1000000
+
+❌ **严格禁止使用以下错误参数名**:
+- `design_description` (正确: `requirements`)
+- `code` (正确: `verilog_code`)  
+- `test_cases` (正确: `test_scenarios`)
+- `ports` (正确: `input_ports` 或 `output_ports`)
+
+✅ **工具调用示例**:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个8位加法器，能够对两个8位二进制数进行加法运算",
+                "design_type": "combinational",
+                "complexity_level": "simple"
+            }
+        }
+    ]
+}
+```
+
+当收到设计任务时，请按照以下流程操作：
+1. 首先分析设计需求 (analyze_design_requirements)
+2. 搜索相关现有模块 (search_existing_modules)
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+**关键提醒**: 每次工具调用必须使用上述列出的精确参数名称。任何自创或错误的参数名都会导致验证失败！
+
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 👤 User Prompt (10550 字符):
+[2025-08-01 20:48:47] LLMClient-dashscope - INFO - 👤 User: 请设计一个简单的测试模块。请使用以下工具调用：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+                    "tool_name": "generate_verilog_code",
+                    "parameters": {
+                        "module_name": "test_module",
+                        "requirements": "简单测试模块",
+                        "input_ports": "invalid_format_string",
+                        "output_ports": "also_invalid"
+                    }
+                },
+                {
+                    "tool_name": "analyze_code_quality",
+                    "parameters": {
+                        "verilog_code": "module test; endmodule"
+                    }
+                },
+                {
+                    "tool_name": "generate_testbench",
+                    "parameters": {
+                        "module_name": "test_module",
+                        "verilog_code": "module test; endmodule"
+                    }
+                }
+            ]
+        }
+        ```
+        
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "简单测试模块"
+            }
+        },
+        {
+            "tool_name": "search_existing_modules",
+            "parameters": {
+                "module_type": "custom",
+                "functionality": "test",
+                "complexity_filter": "any"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "test_module",
+                "requirements": "简单测试模块",
+                "input_ports": [
+                    "clk",
+                    "rst_n"
+                ],
+                "output_ports": [
+                    "led"
+                ],
+                "clock_domain": {
+                    "clock": "clk",
+                    "reset": "rst_n"
+                },
+                "coding_style": "rtl"
+            }
+        },
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "analysis_scope": [
+                    "syntax",
+                    "style",
+                    "synthesis"
+                ],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "test_module",
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "test_scenarios": [
+                    "测试时钟和复位功能",
+                    "验证LED状态切换"
+                ],
+                "clock_period": 10.0,
+                "simulation_time": 1000
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 工具调用结果:
+
+❌ analyze_design_requirements: 参数验证失败
+   错误: 参数验证失败:
+
+发现 1 个错误:
+1. [requirements] 字符串长度不能少于 10
+   建议: 请增加字符串长度至至少 10 个字符
+
+==================================================
+🔧 智能修复建议:
+
+1. 字段 'requirements':
+   问题: 字符串太短，需要至少 10 个字符
+   建议: None
+   置信度: 20.0%
+
+
+==================================================
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'requirements': 字符串长度不能少于 10
+   期望: length >= 10
+   实际: length = 6
+
+🔧 自动修复建议:
+1. 字段 'requirements':
+   修复类型: length_fix
+   建议值: None
+   置信度: 20.0%
+   说明: 字符串太短，需要至少 10 个字符
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "requirements": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 50000,
+      "description": "设计需求描述，包含功能规格和约束条件"
+    },
+    "design_type": {
+      "type": "string",
+      "enum": [
+        "combinational",
+        "sequential",
+        "mixed",
+        "custom"
+      ],
+      "default": "mixed",
+      "description": "设计类型分类"
+    },
+    "complexity_level": {
+      "type": "string",
+      "enum": [
+        "simple",
+        "medium",
+        "complex",
+        "advanced"
+      ],
+      "default": "medium",
+      "description": "设计复杂度级别"
+    }
+  },
+  "required": [
+    "requirements"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+   您提供的参数: {'requirements': '简单测试模块'}
+   正确的参数格式应该是:
+     - requirements (string): 设计需求描述，包含功能规格和约束条件
+
+✅ search_existing_modules: 执行成功
+❌ generate_verilog_code: 参数验证失败
+   错误: 参数验证失败:
+
+发现 6 个错误:
+1. [requirements] 字符串长度不能少于 10
+   建议: 请增加字符串长度至至少 10 个字符
+2. [input_ports[0]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+3. [input_ports[1]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+4. [output_ports[0]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+5. [clock_domain.clock] 不允许的额外字段: clock
+   建议: 请移除字段 'clock' 或检查拼写
+6. [clock_domain.reset] 不允许的额外字段: reset
+   建议: 请移除字段 'reset' 或检查拼写
+
+==================================================
+🔧 智能修复建议:
+
+1. 字段 'requirements':
+   问题: 字符串太短，需要至少 10 个字符
+   建议: None
+   置信度: 20.0%
+
+2. 字段 'input_ports[0]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+3. 字段 'input_ports[1]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+4. 字段 'output_ports[0]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+5. 字段 'clock_domain.clock':
+   问题: 移除不允许的额外字段 'clock_domain.clock'
+   建议: None
+   置信度: 90.0%
+
+6. 字段 'clock_domain.reset':
+   问题: 移除不允许的额外字段 'clock_domain.reset'
+   建议: None
+   置信度: 90.0%
+
+
+==================================================
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'requirements': 字符串长度不能少于 10
+   期望: length >= 10
+   实际: length = 6
+
+2. 字段 'input_ports[0]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+3. 字段 'input_ports[1]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+4. 字段 'output_ports[0]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+5. 字段 'clock_domain.clock': 不允许的额外字段: clock
+   期望: allowed properties: clock_name, reset_name, reset_active
+   实际: extra field: clock
+
+6. 字段 'clock_domain.reset': 不允许的额外字段: reset
+   期望: allowed properties: clock_name, reset_name, reset_active
+   实际: extra field: reset
+
+🔧 自动修复建议:
+1. 字段 'requirements':
+   修复类型: length_fix
+   建议值: None
+   置信度: 20.0%
+   说明: 字符串太短，需要至少 10 个字符
+
+2. 字段 'input_ports[0]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+3. 字段 'input_ports[1]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+4. 字段 'output_ports[0]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+5. 字段 'clock_domain.clock':
+   修复类型: remove_extra
+   建议值: None
+   置信度: 90.0%
+   说明: 移除不允许的额外字段 'clock_domain.clock'
+
+6. 字段 'clock_domain.reset':
+   修复类型: remove_extra
+   建议值: None
+   置信度: 90.0%
+   说明: 移除不允许的额外字段 'clock_domain.reset'
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "module_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Verilog模块名称，必须以字母开头，只能包含字母、数字和下划线"
+    },
+    "requirements": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10000,
+      "description": "设计需求和功能描述"
+    },
+    "input_ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "maxLength": 50
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024,
+            "default": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "description": "输入端口定义列表"
+    },
+    "output_ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "maxLength": 50
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024,
+            "default": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "description": "输出端口定义列表"
+    },
+    "clock_domain": {
+      "type": "object",
+      "properties": {
+        "clock_name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "default": "clk"
+        },
+        "reset_name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "default": "rst"
+        },
+        "reset_active": {
+          "type": "string",
+          "enum": [
+            "high",
+            "low"
+          ],
+          "default": "high"
+        }
+      },
+      "additionalProperties": false,
+      "description": "时钟域配置"
+    },
+    "coding_style": {
+      "type": "string",
+      "enum": [
+        "behavioral",
+        "structural",
+        "rtl",
+        "mixed"
+      ],
+      "default": "rtl",
+      "description": "Verilog编码风格"
+    }
+  },
+  "required": [
+    "module_name",
+    "requirements"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+   您提供的参数: {'module_name': 'test_module', 'requirements': '简单测试模块', 'input_ports': ['clk', 'rst_n'], 'output_ports': ['led'], 'clock_domain': {}, 'coding_style': 'rtl'}
+   正确的参数格式应该是:
+     - module_name (string): Verilog模块名称，必须以字母开头，只能包含字母、数字和下划线
+     - requirements (string): 设计需求和功能描述
+
+❌ analyze_code_quality: 参数验证失败
+   错误: 跳过执行：关键工具 generate_verilog_code 已失败
+
+❌ generate_testbench: 参数验证失败
+   错误: 跳过执行：关键工具 generate_verilog_code 已失败
+
+⚠️ **重要提醒**:
+1. 必须使用精确的参数名称，不允许自创参数名
+2. 所有必需参数都必须提供
+3. 参数值必须符合类型和格式要求
+4. 请仔细检查上述错误信息，修正参数后重新调用
+
+📝 正确的JSON格式示例:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "正确的参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 🤖 LLM响应 (2520 字符, 9.17s):
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个简单的测试模块，用于验证基本的时钟和复位功能"
+            }
+        },
+        {
+            "tool_name": "search_existing_modules",
+            "parameters": {
+                "module_type": "custom",
+                "functionality": "test",
+                "complexity_filter": "any"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "test_module",
+                "requirements": "设计一个简单的测试模块，用于验证基本的时钟和复位功能",
+                "input_ports": [
+                    {
+                        "name": "clk",
+                        "width": 1
+                    },
+                    {
+                        "name": "rst_n",
+                        "width": 1
+                    }
+                ],
+                "output_ports": [
+                    {
+                        "name": "led",
+                        "width": 1
+                    }
+                ],
+                "clock_domain": {
+                    "clock_name": "clk",
+                    "reset_name": "rst_n",
+                    "reset_active": "low"
+                },
+                "coding_style": "rtl"
+            }
+        },
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "analysis_scope": [
+                    "syntax",
+                    "style",
+                    "synthesis"
+                ],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "test_module",
+                "verilog_code": "module test_module (\n    input clk,\n    input rst_n,\n    output reg led\n);\n\nalways @(posedge clk or negedge rst_n) begin\n    if (!rst_n)\n        led <= 1'b0;\n    else\n        led <= ~led;\nend\n\nendmodule",
+                "test_scenarios": [
+                    "测试时钟和复位功能",
+                    "验证LED状态切换"
+                ],
+                "clock_period": 10.0,
+                "simulation_time": 1000
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:48:56] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 👤 User Prompt (155 字符):
+[2025-08-01 20:48:56] LLMClient-dashscope - INFO - 👤 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个简单的测试模块，用于验证基本的时钟和复位功能
+设计类型: mixed
+复杂度级别: medium
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+
+返回JSON格式的分析结果。
+
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 🤖 LLM响应 (1343 字符, 8.91s):
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 🤖 {
+  "功能模块分解": [
+    {
+      "模块名称": "ClockGenerator",
+      "功能描述": "生成一个固定频率的时钟信号，用于驱动测试模块的逻辑部分。"
+    },
+    {
+      "模块名称": "ResetController",
+      "功能描述": "控制复位信号的生成和释放，模拟系统复位行为。"
+    },
+    {
+      "模块名称": "TestModule",
+      "功能描述": "主测试模块，包含需要验证的时钟和复位逻辑。"
+    }
+  ],
+  "输入/输出端口需求": [
+    {
+      "端口名称": "clk",
+      "方向": "input",
+      "类型": "wire",
+      "描述": "外部提供的时钟信号，用于驱动测试模块。"
+    },
+    {
+      "端口名称": "rst_n",
+      "方向": "input",
+      "类型": "wire",
+      "描述": "复位信号，低电平有效，用于初始化测试模块。"
+    },
+    {
+      "端口名称": "test_output",
+      "方向": "output",
+      "类型": "reg",
+      "描述": "测试模块的输出信号，用于验证时钟和复位逻辑是否正常工作。"
+    }
+  ],
+  "时钟域要求": [
+    {
+      "时钟域名称": "main_clock_domain",
+      "描述": "所有与测试模块相关的逻辑都运行在该时钟域中，由外部提供的时钟信号驱动。"
+    }
+  ],
+  "设计约束": [
+    {
+      "约束类型": "时序约束",
+      "描述": "确保时钟信号的稳定性和周期性，以满足测试模块的时序要求。"
+    },
+    {
+      "约束类型": "复位约束",
+      "描述": "复位信号必须在时钟上升沿之前被释放，以避免亚稳态问题。"
+    },
+    {
+      "约束类型": "同步约束",
+      "描述": "所有复位操作应为同步复位，确保复位信号与时钟同步。"
+    }
+  ],
+  "验证要点": [
+    {
+      "验证点": "时钟信号稳定性",
+      "描述": "验证生成的时钟信号是否具有稳定的频率和占空比。"
+    },
+    {
+      "验证点": "复位信号有效性",
+      "描述": "验证复位信号在低电平时是否能正确初始化测试模块，并在释放后恢复正常操作。"
+    },
+    {
+      "验证点": "同步复位行为",
+      "描述": "验证复位信号是否在时钟上升沿之后被释放，确保复位逻辑的同步性。"
+    },
+    {
+      "验证点": "测试模块输出行为",
+      "描述": "验证测试模块在不同复位状态下的输出是否符合预期。"
+    }
+  ]
+}
+[2025-08-01 20:49:05] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (8.92s)
+[2025-08-01 20:49:05] core.schema_system.enhanced_base_agent - INFO - ✅ search_existing_modules 参数验证通过
+[2025-08-01 20:49:05] core.schema_system.enhanced_base_agent - INFO - 🎯 search_existing_modules 执行成功 (0.00s)
+[2025-08-01 20:49:05] core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 👤 User Prompt (293 字符):
+[2025-08-01 20:49:05] LLMClient-dashscope - INFO - 👤 
+请生成一个名为 test_module 的Verilog模块，要求如下：
+
+功能需求: 设计一个简单的测试模块，用于验证基本的时钟和复位功能
+编码风格: rtl
+
+端口定义:
+    input clk,  // 
+    input rst_n,  //
+    output led,  //
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst_n (active low)
+
+请生成完整的、可综合的Verilog代码，包括：
+1. 模块声明
+2. 端口定义
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 🤖 LLM响应 (1790 字符, 7.96s):
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 🤖 以下是符合IEEE 1800标准、可综合的Verilog代码，名为 `test_module`，用于验证基本的时钟和复位功能。该模块通过一个简单的计数器控制输出 `led` 的状态，以验证时钟和复位是否正常工作。
+
+```verilog
+// test_module.v
+// Verilog module for testing basic clock and reset functionality
+// Author: [Your Name]
+// Date: [Insert Date]
+
+`timescale 1ns / 1ps
+
+module test_module (
+    input clk,          // Clock signal
+    input rst_n,        // Active low reset signal
+    output reg led      // Output LED to indicate functionality
+);
+
+// Internal signals
+reg [31:0] counter;     // 32-bit counter for demonstration
+
+//-----------------------------------------------------------------------------
+// Main logic: Toggle the LED on every rising edge of the clock
+//              when not in reset
+//-----------------------------------------------------------------------------
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        // Reset condition: clear the counter and set LED to 0
+        counter <= 32'h0;
+        led <= 1'b0;
+    end else begin
+        // Increment the counter on each clock cycle
+        counter <= counter + 1;
+
+        // Toggle the LED every 1000 clock cycles (for visibility)
+        if (counter == 32'h000003E8) begin  // 1000 in hex
+            led <= ~led;
+            counter <= 32'h0;              // Reset counter after toggle
+        end
+    end
+end
+
+endmodule
+```
+
+---
+
+### ✅ 说明：
+
+- **端口定义**：
+  - `clk`: 输入时钟信号。
+  - `rst_n`: 低电平有效的复位信号。
+  - `led`: 输出信号，用于指示模块运行状态。
+
+- **内部信号**：
+  - `counter`: 32位计数器，用于控制LED切换频率。
+
+- **逻辑实现**：
+  - 在时钟上升沿或复位下降沿触发。
+  - 复位时清空计数器并关闭LED。
+  - 正常运行时，每1000个时钟周期切换一次LED状态。
+
+- **可综合性**：
+  - 使用了 `reg` 类型变量和 `always @(posedge ...)` 结构，符合RTL设计规范。
+  - 没有使用非综合的语句（如 `$display`）。
+
+---
+
+### 📌 使用建议：
+
+此模块可用于测试FPGA开发板上的时钟和复位电路，例如将 `led` 连接到实际的LED引脚，观察其闪烁情况以确认系统是否正常工作。
+
+如需进一步扩展，可以添加更多测试逻辑或状态机来验证更复杂的时序行为。
+[2025-08-01 20:49:13] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (7.96s)
+[2025-08-01 20:49:13] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_code_quality 参数验证通过
+[2025-08-01 20:49:13] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 执行成功 (0.00s)
+[2025-08-01 20:49:13] core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 📋 System Prompt (25 字符):
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 📋 你是验证工程师，请生成全面的Verilog测试台。
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 👤 User Prompt (472 字符):
+[2025-08-01 20:49:13] LLMClient-dashscope - INFO - 👤 
+请为以下Verilog模块生成一个完整的测试台(testbench)：
+
+目标模块: test_module
+```verilog
+module test_module (
+    input clk,
+    input rst_n,
+    output reg led
+);
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        led <= 1'b0;
+    else
+        led <= ~led;
+end
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 1000 个时钟周期
+- 测试场景: 测试时钟和复位功能, 验证LED状态切换
+
+请生成包含以下内容的测试台：
+1. testbench模块声明
+2. 信号声明
+3. 时钟和复位生成
+4. 被测模块实例化
+5. 测试激励生成
+6. 结果检查和显示
+7. 适当的$display和$monitor语句
+
+确保测试台能够充分验证模块功能。
+
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 🤖 LLM响应 (2952 字符, 18.45s):
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 🤖 以下是一个完整的 **Verilog 测试台（testbench）**，用于验证你提供的 `test_module` 模块。该测试台满足所有指定的测试要求：
+
+---
+
+### ✅ **1. testbench 模块声明**
+
+```verilog
+module test_module_tb;
+```
+
+---
+
+### ✅ **2. 信号声明**
+
+```verilog
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+
+    // 被测模块输出
+    wire led;
+```
+
+---
+
+### ✅ **3. 时钟和复位生成**
+
+```verilog
+    // 时钟生成：周期为 10ns
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns 周期
+    end
+
+    // 复位生成：初始为低电平，持续 20ns 后释放
+    initial begin
+        rst_n = 0;
+        #20 rst_n = 1;
+    end
+```
+
+---
+
+### ✅ **4. 被测模块实例化**
+
+```verilog
+    // 实例化被测模块
+    test_module uut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .led(led)
+    );
+```
+
+---
+
+### ✅ **5. 测试激励生成**
+
+```verilog
+    // 仿真时间控制：运行 1000 个时钟周期（即 10,000ns）
+    initial begin
+        #10000 $finish; // 1000 * 10ns = 10,000ns
+    end
+```
+
+---
+
+### ✅ **6. 结果检查和显示**
+
+```verilog
+    // 使用 $monitor 显示关键信号变化
+    initial begin
+        $monitor("Time: %0t | clk: %b | rst_n: %b | led: %b", $time, clk, rst_n, led);
+    end
+
+    // 在特定时间点打印状态信息（可选）
+    initial begin
+        #0   $display("Initial state: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #10  $display("After 1 clock cycle: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #20  $display("After 2 clock cycles: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #30  $display("After 3 clock cycles: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        // 可以继续添加更多时间点的打印
+    end
+```
+
+---
+
+### ✅ **7. 完整的测试台代码**
+
+```verilog
+module test_module_tb;
+
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+
+    // 被测模块输出
+    wire led;
+
+    // 时钟生成：周期为 10ns
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns 周期
+    end
+
+    // 复位生成：初始为低电平，持续 20ns 后释放
+    initial begin
+        rst_n = 0;
+        #20 rst_n = 1;
+    end
+
+    // 实例化被测模块
+    test_module uut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .led(led)
+    );
+
+    // 仿真时间控制：运行 1000 个时钟周期（即 10,000ns）
+    initial begin
+        #10000 $finish; // 1000 * 10ns = 10,000ns
+    end
+
+    // 使用 $monitor 显示关键信号变化
+    initial begin
+        $monitor("Time: %0t | clk: %b | rst_n: %b | led: %b", $time, clk, rst_n, led);
+    end
+
+    // 在特定时间点打印状态信息（可选）
+    initial begin
+        #0   $display("Initial state: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #10  $display("After 1 clock cycle: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #20  $display("After 2 clock cycles: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        #30  $display("After 3 clock cycles: clk=%b, rst_n=%b, led=%b", clk, rst_n, led);
+        // 可以继续添加更多时间点的打印
+    end
+
+endmodule
+```
+
+---
+
+### ✅ **功能说明**
+
+- **时钟**：每 5ns 翻转一次，形成 10ns 的周期。
+- **复位**：在开始时拉低 20ns，之后释放。
+- **LED 控制**：在每次时钟上升沿切换 LED 状态。
+- **监控与显示**：使用 `$monitor` 和 `$display` 实时跟踪信号变化，确保 LED 正确翻转。
+
+---
+
+### ✅ **预期行为**
+
+- 初始状态下，`led` 为 0。
+- 复位结束后，`led` 每个时钟周期翻转一次。
+- 通过观察 `$monitor` 输出，可以验证 LED 是否按预期切换。
+
+---
+
+如需进一步扩展，可以加入波形查看器（如 ModelSim、Vivado Simulator）或增加更复杂的测试场景（如异步复位、多时钟域等）。需要的话我可以帮你扩展。
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (18.45s)
+[2025-08-01 20:49:32] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-01 20:49:32] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 请生成一个8位加法器，使用以下工具调用（参数格式需要修复）：
+        
+        ```json
+        {
+            "tool_calls": [
+      ...
+[2025-08-01 20:49:32] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 📋 System Prompt (2731 字符):
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **严格参数验证要求**:
+- 所有模块名、端口名必须以字母开头，只能包含字母、数字、下划线
+- 端口宽度范围: 1-1024位
+- 字符串长度需符合要求（设计描述至少10字符）
+- **必须使用精确的参数名称，不允许自创参数名**
+- 如果参数验证失败，请根据错误提示修正参数格式
+
+🎯 **可用工具及其精确参数**:
+
+### 1. analyze_design_requirements
+**必需参数**:
+- `requirements` (string): 设计需求描述，至少10字符
+**可选参数**:
+- `design_type` (string): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (string): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+**必需参数**:
+- `module_name` (string): 模块名称，必须以字母开头，只能包含字母、数字、下划线
+- `requirements` (string): 设计需求和功能描述，至少10字符
+**可选参数**:
+- `input_ports` (array): 输入端口定义列表
+- `output_ports` (array): 输出端口定义列表
+- `clock_domain` (object): 时钟域配置
+- `coding_style` (string): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+**可选参数**:
+- `module_type` (string): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (string): 功能关键词描述
+- `complexity_filter` (string): "simple", "medium", "complex", "any"
+- `max_results` (integer): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+**必需参数**:
+- `verilog_code` (string): 待分析的Verilog代码，至少10字符
+**可选参数**:
+- `analysis_scope` (array): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块的Verilog代码，至少10字符
+**可选参数**:
+- `test_scenarios` (array): 测试场景描述列表
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间(时钟周期数)，100-1000000
+
+❌ **严格禁止使用以下错误参数名**:
+- `design_description` (正确: `requirements`)
+- `code` (正确: `verilog_code`)  
+- `test_cases` (正确: `test_scenarios`)
+- `ports` (正确: `input_ports` 或 `output_ports`)
+
+✅ **工具调用示例**:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个8位加法器，能够对两个8位二进制数进行加法运算",
+                "design_type": "combinational",
+                "complexity_level": "simple"
+            }
+        }
+    ]
+}
+```
+
+当收到设计任务时，请按照以下流程操作：
+1. 首先分析设计需求 (analyze_design_requirements)
+2. 搜索相关现有模块 (search_existing_modules)
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+**关键提醒**: 每次工具调用必须使用上述列出的精确参数名称。任何自创或错误的参数名都会导致验证失败！
+
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 👤 User Prompt (524 字符):
+[2025-08-01 20:49:32] LLMClient-dashscope - INFO - 👤 User: 请生成一个8位加法器，使用以下工具调用（参数格式需要修复）：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+                    "tool_name": "generate_verilog_code",
+                    "parameters": {
+                        "module_name": "adder_8bit",
+                        "requirements": "8位二进制加法器",
+                        "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                        "output_ports": ["sum [7:0]", "cout"]
+                    }
+                }
+            ]
+        }
+        ```
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 🤖 LLM响应 (387 字符, 2.10s):
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_8bit",
+                "requirements": "8位二进制加法器，能够对两个8位二进制数进行加法运算，并处理进位输入和输出",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"]
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:49:34] core.schema_system.enhanced_base_agent - WARNING - ⚠️ generate_verilog_code 参数验证失败，尝试智能修复
+[2025-08-01 20:49:34] core.schema_system.enhanced_base_agent - ERROR - ❌ generate_verilog_code 参数修复失败
+[2025-08-01 20:49:34] core.schema_system.enhanced_base_agent - ERROR - ❌ 关键工具失败: generate_verilog_code
+[2025-08-01 20:49:34] core.schema_system.enhanced_base_agent - INFO - 🔄 第 2/5 次迭代
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 📋 System Prompt (2731 字符):
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **严格参数验证要求**:
+- 所有模块名、端口名必须以字母开头，只能包含字母、数字、下划线
+- 端口宽度范围: 1-1024位
+- 字符串长度需符合要求（设计描述至少10字符）
+- **必须使用精确的参数名称，不允许自创参数名**
+- 如果参数验证失败，请根据错误提示修正参数格式
+
+🎯 **可用工具及其精确参数**:
+
+### 1. analyze_design_requirements
+**必需参数**:
+- `requirements` (string): 设计需求描述，至少10字符
+**可选参数**:
+- `design_type` (string): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (string): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+**必需参数**:
+- `module_name` (string): 模块名称，必须以字母开头，只能包含字母、数字、下划线
+- `requirements` (string): 设计需求和功能描述，至少10字符
+**可选参数**:
+- `input_ports` (array): 输入端口定义列表
+- `output_ports` (array): 输出端口定义列表
+- `clock_domain` (object): 时钟域配置
+- `coding_style` (string): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+**可选参数**:
+- `module_type` (string): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (string): 功能关键词描述
+- `complexity_filter` (string): "simple", "medium", "complex", "any"
+- `max_results` (integer): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+**必需参数**:
+- `verilog_code` (string): 待分析的Verilog代码，至少10字符
+**可选参数**:
+- `analysis_scope` (array): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块的Verilog代码，至少10字符
+**可选参数**:
+- `test_scenarios` (array): 测试场景描述列表
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间(时钟周期数)，100-1000000
+
+❌ **严格禁止使用以下错误参数名**:
+- `design_description` (正确: `requirements`)
+- `code` (正确: `verilog_code`)  
+- `test_cases` (正确: `test_scenarios`)
+- `ports` (正确: `input_ports` 或 `output_ports`)
+
+✅ **工具调用示例**:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个8位加法器，能够对两个8位二进制数进行加法运算",
+                "design_type": "combinational",
+                "complexity_level": "simple"
+            }
+        }
+    ]
+}
+```
+
+当收到设计任务时，请按照以下流程操作：
+1. 首先分析设计需求 (analyze_design_requirements)
+2. 搜索相关现有模块 (search_existing_modules)
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+**关键提醒**: 每次工具调用必须使用上述列出的精确参数名称。任何自创或错误的参数名都会导致验证失败！
+
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 👤 User Prompt (6252 字符):
+[2025-08-01 20:49:34] LLMClient-dashscope - INFO - 👤 User: 请生成一个8位加法器，使用以下工具调用（参数格式需要修复）：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+                    "tool_name": "generate_verilog_code",
+                    "parameters": {
+                        "module_name": "adder_8bit",
+                        "requirements": "8位二进制加法器",
+                        "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                        "output_ports": ["sum [7:0]", "cout"]
+                    }
+                }
+            ]
+        }
+        ```
+        
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_8bit",
+                "requirements": "8位二进制加法器，能够对两个8位二进制数进行加法运算，并处理进位输入和输出",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"]
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 工具调用结果:
+
+❌ generate_verilog_code: 参数验证失败
+   错误: 参数验证失败:
+
+发现 5 个错误:
+1. [input_ports[0]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+2. [input_ports[1]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+3. [input_ports[2]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+4. [output_ports[0]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+5. [output_ports[1]] 字段类型错误，期望 object，实际 str
+   建议: 请提供 object 类型的值
+
+==================================================
+🔧 智能修复建议:
+
+1. 字段 'input_ports[0]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+2. 字段 'input_ports[1]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+3. 字段 'input_ports[2]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+4. 字段 'output_ports[0]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+5. 字段 'output_ports[1]':
+   问题: 无法自动转换为 None 类型，需要检查参数格式
+   建议: None
+   置信度: 10.0%
+
+
+==================================================
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'input_ports[0]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+2. 字段 'input_ports[1]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+3. 字段 'input_ports[2]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+4. 字段 'output_ports[0]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+5. 字段 'output_ports[1]': 字段类型错误，期望 object，实际 str
+   期望: type: object
+   实际: type: str
+
+🔧 自动修复建议:
+1. 字段 'input_ports[0]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+2. 字段 'input_ports[1]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+3. 字段 'input_ports[2]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+4. 字段 'output_ports[0]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+5. 字段 'output_ports[1]':
+   修复类型: type_conversion
+   建议值: None
+   置信度: 10.0%
+   说明: 无法自动转换为 None 类型，需要检查参数格式
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "module_name": {
+      "type": "string",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Verilog模块名称，必须以字母开头，只能包含字母、数字和下划线"
+    },
+    "requirements": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10000,
+      "description": "设计需求和功能描述"
+    },
+    "input_ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "maxLength": 50
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024,
+            "default": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "description": "输入端口定义列表"
+    },
+    "output_ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+            "maxLength": 50
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1024,
+            "default": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 100,
+      "description": "输出端口定义列表"
+    },
+    "clock_domain": {
+      "type": "object",
+      "properties": {
+        "clock_name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "default": "clk"
+        },
+        "reset_name": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+          "default": "rst"
+        },
+        "reset_active": {
+          "type": "string",
+          "enum": [
+            "high",
+            "low"
+          ],
+          "default": "high"
+        }
+      },
+      "additionalProperties": false,
+      "description": "时钟域配置"
+    },
+    "coding_style": {
+      "type": "string",
+      "enum": [
+        "behavioral",
+        "structural",
+        "rtl",
+        "mixed"
+      ],
+      "default": "rtl",
+      "description": "Verilog编码风格"
+    }
+  },
+  "required": [
+    "module_name",
+    "requirements"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+   您提供的参数: {'module_name': 'adder_8bit', 'requirements': '8位二进制加法器，能够对两个8位二进制数进行加法运算，并处理进位输入和输出', 'input_ports': ['a [7:0]', 'b [7:0]', 'cin'], 'output_ports': ['sum [7:0]', 'cout']}
+   正确的参数格式应该是:
+     - module_name (string): Verilog模块名称，必须以字母开头，只能包含字母、数字和下划线
+     - requirements (string): 设计需求和功能描述
+
+⚠️ **重要提醒**:
+1. 必须使用精确的参数名称，不允许自创参数名
+2. 所有必需参数都必须提供
+3. 参数值必须符合类型和格式要求
+4. 请仔细检查上述错误信息，修正参数后重新调用
+
+📝 正确的JSON格式示例:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "正确的参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 🤖 LLM响应 (893 字符, 2.49s):
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_8bit",
+                "requirements": "8位二进制加法器，能够对两个8位二进制数进行加法运算，并处理进位输入和输出",
+                "input_ports": [
+                    {
+                        "name": "a",
+                        "width": 8
+                    },
+                    {
+                        "name": "b",
+                        "width": 8
+                    },
+                    {
+                        "name": "cin"
+                    }
+                ],
+                "output_ports": [
+                    {
+                        "name": "sum",
+                        "width": 8
+                    },
+                    {
+                        "name": "cout"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+[2025-08-01 20:49:36] core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 👤 User Prompt (356 字符):
+[2025-08-01 20:49:36] LLMClient-dashscope - INFO - 👤 
+请生成一个名为 adder_8bit 的Verilog模块，要求如下：
+
+功能需求: 8位二进制加法器，能够对两个8位二进制数进行加法运算，并处理进位输入和输出
+编码风格: rtl
+
+端口定义:
+    input [7:0] a,  // 
+    input [7:0] b,  // 
+    input cin,  //
+    output [7:0] sum,  // 
+    output cout,  //
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst (active high)
+
+请生成完整的、可综合的Verilog代码，包括：
+1. 模块声明
+2. 端口定义
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 🤖 LLM响应 (2261 字符, 9.86s):
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 🤖 以下是符合IEEE 1800标准、可综合的 `adder_8bit` Verilog 模块代码，采用 RTL 编码风格，并包含必要的注释：
+
+```verilog
+// adder_8bit.v
+// 8-bit Binary Adder with Carry-in and Carry-out
+// Designed for RTL synthesis, supports clocked operation
+
+module adder_8bit (
+    input        clk,        // Clock signal
+    input        rst,        // Active high reset
+    input  [7:0] a,         // 8-bit input A
+    input  [7:0] b,         // 8-bit input B
+    input        cin,        // Carry-in
+    output reg [7:0] sum,   // 8-bit sum output
+    output reg     cout      // Carry-out
+);
+
+    // Internal signals for intermediate carry values
+    reg [7:0] carry;        // Carry register for each bit
+
+    // Sequential logic: Register the sum and carry on rising edge of clock
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            sum <= 8'b0;        // Reset sum to 0
+            cout <= 1'b0;       // Reset carry out to 0
+            carry <= 8'b0;      // Reset internal carry
+        end else begin
+            // Compute the sum and carry for each bit
+            // Using full adder logic for each bit
+            for (integer i = 0; i < 8; i = i + 1) begin
+                // Full adder logic: sum = a[i] ^ b[i] ^ carry[i]
+                // carry[i+1] = (a[i] & b[i]) | (a[i] & carry[i]) | (b[i] & carry[i])
+                if (i == 0) begin
+                    // First bit uses cin as initial carry
+                    sum[i] <= a[i] ^ b[i] ^ cin;
+                    carry[i] <= (a[i] & b[i]) | (a[i] & cin) | (b[i] & cin);
+                end else begin
+                    sum[i] <= a[i] ^ b[i] ^ carry[i-1];
+                    carry[i] <= (a[i] & b[i]) | (a[i] & carry[i-1]) | (b[i] & carry[i-1]);
+                end
+            end
+            // Output the final carry
+            cout <= carry[7];
+        end
+    end
+
+endmodule
+```
+
+### 说明：
+
+- **模块功能**：实现一个 8 位二进制加法器，支持进位输入 (`cin`) 和输出 (`cout`)。
+- **时钟和复位**：使用同步复位（`rst`）在时钟上升沿进行操作。
+- **内部信号**：
+  - `carry`：用于存储每一位的进位值。
+- **逻辑实现**：
+  - 使用 `for` 循环实现每一位的全加器逻辑。
+  - 第一位使用 `cin` 作为初始进位，其余位使用前一位的进位结果。
+- **输出**：
+  - `sum`：8 位加法结果。
+  - `cout`：最终的进位输出。
+
+### 注意事项：
+
+- 此代码是 **RTL 级别** 的，适用于综合工具（如 Synopsys Design Compiler、Xilinx Vivado、Altera Quartus 等）。
+- 如果需要更高效的实现（如使用流水线或使用 LUT 实现），可以进一步优化，但当前版本已满足基本功能需求。
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (9.86s)
+[2025-08-01 20:49:46] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-01 20:49:46] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 请分析设计需求，但使用错误的参数名：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+...
+[2025-08-01 20:49:46] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 📋 System Prompt (2731 字符):
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **严格参数验证要求**:
+- 所有模块名、端口名必须以字母开头，只能包含字母、数字、下划线
+- 端口宽度范围: 1-1024位
+- 字符串长度需符合要求（设计描述至少10字符）
+- **必须使用精确的参数名称，不允许自创参数名**
+- 如果参数验证失败，请根据错误提示修正参数格式
+
+🎯 **可用工具及其精确参数**:
+
+### 1. analyze_design_requirements
+**必需参数**:
+- `requirements` (string): 设计需求描述，至少10字符
+**可选参数**:
+- `design_type` (string): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (string): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+**必需参数**:
+- `module_name` (string): 模块名称，必须以字母开头，只能包含字母、数字、下划线
+- `requirements` (string): 设计需求和功能描述，至少10字符
+**可选参数**:
+- `input_ports` (array): 输入端口定义列表
+- `output_ports` (array): 输出端口定义列表
+- `clock_domain` (object): 时钟域配置
+- `coding_style` (string): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+**可选参数**:
+- `module_type` (string): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (string): 功能关键词描述
+- `complexity_filter` (string): "simple", "medium", "complex", "any"
+- `max_results` (integer): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+**必需参数**:
+- `verilog_code` (string): 待分析的Verilog代码，至少10字符
+**可选参数**:
+- `analysis_scope` (array): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块的Verilog代码，至少10字符
+**可选参数**:
+- `test_scenarios` (array): 测试场景描述列表
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间(时钟周期数)，100-1000000
+
+❌ **严格禁止使用以下错误参数名**:
+- `design_description` (正确: `requirements`)
+- `code` (正确: `verilog_code`)  
+- `test_cases` (正确: `test_scenarios`)
+- `ports` (正确: `input_ports` 或 `output_ports`)
+
+✅ **工具调用示例**:
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个8位加法器，能够对两个8位二进制数进行加法运算",
+                "design_type": "combinational",
+                "complexity_level": "simple"
+            }
+        }
+    ]
+}
+```
+
+当收到设计任务时，请按照以下流程操作：
+1. 首先分析设计需求 (analyze_design_requirements)
+2. 搜索相关现有模块 (search_existing_modules)
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+**关键提醒**: 每次工具调用必须使用上述列出的精确参数名称。任何自创或错误的参数名都会导致验证失败！
+
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 👤 User Prompt (388 字符):
+[2025-08-01 20:49:46] LLMClient-dashscope - INFO - 👤 User: 请分析设计需求，但使用错误的参数名：
+        
+        ```json
+        {
+            "tool_calls": [
+                {
+                    "tool_name": "analyze_design_requirements",
+                    "parameters": {
+                        "design_description": "这是错误的参数名",
+                        "wrong_param": "另一个错误参数"
+                    }
+                }
+            ]
+        }
+        ```
+[2025-08-01 20:49:47] LLMClient-dashscope - INFO - 🤖 LLM响应 (118 字符, 0.94s):
+[2025-08-01 20:49:47] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "error": "参数验证失败: 'design_description' 和 'wrong_param' 是无效的参数名。请使用正确的参数名 'requirements' 和其他允许的参数。"
+}
+```
+[2025-08-01 20:49:47] Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: test_error_feedback

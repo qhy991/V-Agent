@@ -1,0 +1,572 @@
+{
+  "experiment_id": "unified_tdd_simple_adder_1754128312",
+  "design_type": "simple_adder",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 462.5351891517639,
+  "timestamp": 1754128774.9226332,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1754128312",
+    "total_iterations": 5,
+    "final_design": [],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1754128312.4067316,
+        "duration": 19.43891406059265,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "715c5e46",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-02T17:52:11.761308",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:1: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:3: warning: macro verilog undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:74: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:76: warning: macro clk undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:77: warning: macro rst undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro a undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro b undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:79: warning: macro cin undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:80: warning: macro sum undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:81: warning: macro cout undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:83: warning: macro c undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:86: warning: macro sum undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:86: warning: macro cout undefined (and assumed null) at this point.\nNo top level modules, and no -s option.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3359198 /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/simple_8bit_adder_tb.v",
+            "returncode": 1,
+            "error_details": {
+              "error_count": 13,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 1,
+                  "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 3,
+                  "message": "warning: macro verilog undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 74,
+                  "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 76,
+                  "message": "warning: macro clk undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 77,
+                  "message": "warning: macro rst undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 78,
+                  "message": "warning: macro a undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 78,
+                  "message": "warning: macro b undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 79,
+                  "message": "warning: macro cin undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 80,
+                  "message": "warning: macro sum undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 81,
+                  "message": "warning: macro cout undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 83,
+                  "message": "warning: macro c undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 86,
+                  "message": "warning: macro sum undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 86,
+                  "message": "warning: macro cout undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 13 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 1\n   错误: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 3\n   错误: warning: macro verilog undefined (and assumed null) at this point.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 74\n   错误: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n... 还有 10 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 1,
+                "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 3,
+                "message": "warning: macro verilog undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 74,
+                "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 76,
+                "message": "warning: macro clk undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 77,
+                "message": "warning: macro rst undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 78,
+                "message": "warning: macro a undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 78,
+                "message": "warning: macro b undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 79,
+                "message": "warning: macro cin undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 80,
+                "message": "warning: macro sum undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 81,
+                "message": "warning: macro cout undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 83,
+                "message": "warning: macro c undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 86,
+                "message": "warning: macro sum undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 86,
+                "message": "warning: macro cout undefined (and assumed null) at this point.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:1: warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:3: warning: macro verilog undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:74: warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:76: warning: macro clk undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:77: warning: macro rst undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro a undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro b undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:79: warning: macro cin undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:80: warning: macro sum undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:81: warning: macro cout undefined (and assumed null) at this point."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "缺少顶层模块"
+            ],
+            "suggestions": [
+              "🔍 检查是否缺少子模块定义（如full_adder等）",
+              "🔧 确保所有被实例化的模块都有对应的模块定义",
+              "📁 验证所有依赖文件都已包含在编译命令中",
+              "🎯 使用iverilog的-s选项明确指定顶层模块",
+              "🔍 建议运行依赖分析以识别缺失的模块文件"
+            ],
+            "error_category": "dependency_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/simple_8bit_adder_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+              ],
+              "design_modules": [
+                "simple_8bit_adder"
+              ],
+              "testbench_modules": [
+                "simple_8bit_adder_testbench"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1754128331.8456862,
+        "duration": 242.9130835533142,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "715c5e46",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-02T17:52:11.761308",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:1: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:3: warning: macro verilog undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:74: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:76: warning: macro clk undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:77: warning: macro rst undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro a undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro b undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:79: warning: macro cin undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:80: warning: macro sum undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:81: warning: macro cout undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:83: warning: macro c undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:86: warning: macro sum undefined (and assumed null) at this point.\n/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:86: warning: macro cout undefined (and assumed null) at this point.\nNo top level modules, and no -s option.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3359441 /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/simple_8bit_adder_tb.v",
+            "returncode": 1,
+            "error_details": {
+              "error_count": 13,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 1,
+                  "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 3,
+                  "message": "warning: macro verilog undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 74,
+                  "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 76,
+                  "message": "warning: macro clk undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 77,
+                  "message": "warning: macro rst undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 78,
+                  "message": "warning: macro a undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 78,
+                  "message": "warning: macro b undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 79,
+                  "message": "warning: macro cin undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 80,
+                  "message": "warning: macro sum undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 81,
+                  "message": "warning: macro cout undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 83,
+                  "message": "warning: macro c undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 86,
+                  "message": "warning: macro sum undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                  "line": 86,
+                  "message": "warning: macro cout undefined (and assumed null) at this point.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 13 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 1\n   错误: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 3\n   错误: warning: macro verilog undefined (and assumed null) at this point.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v, 行: 74\n   错误: warning: macro simple_8bit_adder undefined (and assumed null) at this point.\n... 还有 10 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 1,
+                "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 3,
+                "message": "warning: macro verilog undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 74,
+                "message": "warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 76,
+                "message": "warning: macro clk undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 77,
+                "message": "warning: macro rst undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 78,
+                "message": "warning: macro a undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 78,
+                "message": "warning: macro b undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 79,
+                "message": "warning: macro cin undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 80,
+                "message": "warning: macro sum undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 81,
+                "message": "warning: macro cout undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 83,
+                "message": "warning: macro c undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 86,
+                "message": "warning: macro sum undefined (and assumed null) at this point.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v",
+                "line": 86,
+                "message": "warning: macro cout undefined (and assumed null) at this point.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:1: warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:3: warning: macro verilog undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:74: warning: macro simple_8bit_adder undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:76: warning: macro clk undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:77: warning: macro rst undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro a undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:78: warning: macro b undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:79: warning: macro cin undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:80: warning: macro sum undefined (and assumed null) at this point.",
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v:81: warning: macro cout undefined (and assumed null) at this point."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "缺少顶层模块"
+            ],
+            "suggestions": [
+              "🔍 检查是否缺少子模块定义（如full_adder等）",
+              "🔧 确保所有被实例化的模块都有对应的模块定义",
+              "📁 验证所有依赖文件都已包含在编译命令中",
+              "🎯 使用iverilog的-s选项明确指定顶层模块",
+              "🔍 建议运行依赖分析以识别缺失的模块文件"
+            ],
+            "error_category": "dependency_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/simple_8bit_adder_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/simple_8bit_adder_11.v"
+              ],
+              "design_modules": [
+                "simple_8bit_adder"
+              ],
+              "testbench_modules": [
+                "simple_8bit_adder_testbench"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1754128574.7588096,
+        "duration": 90.02069759368896,
+        "result": {
+          "success": true,
+          "design_files": [],
+          "test_results": {
+            "success": false,
+            "error": "没有找到设计文件",
+            "all_tests_passed": false
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      },
+      {
+        "iteration": 4,
+        "start_time": 1754128664.7795382,
+        "duration": 58.64867925643921,
+        "result": {
+          "success": true,
+          "design_files": [],
+          "test_results": {
+            "success": false,
+            "error": "没有找到设计文件",
+            "all_tests_passed": false
+          },
+          "all_tests_passed": false,
+          "iteration": 4
+        }
+      },
+      {
+        "iteration": 5,
+        "start_time": 1754128723.428252,
+        "duration": 51.49423122406006,
+        "result": {
+          "success": true,
+          "design_files": [],
+          "test_results": {
+            "success": false,
+            "error": "没有找到设计文件",
+            "all_tests_passed": false
+          },
+          "all_tests_passed": false,
+          "iteration": 5
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 5,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}

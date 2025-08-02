@@ -1,0 +1,35 @@
+[2025-08-02 10:22:49] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-02 10:22:49] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-02 10:22:49] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+[2025-08-02 10:22:49] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: /tmp/tdd_test_06x6focu/designs/simple_adder_current.v (ID: e0b715cd)
+[2025-08-02 10:22:49] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择当前迭代文件: 1 个设计文件, 0 个测试台文件
+[2025-08-02 10:22:49] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 提取到 1 个文件引用
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /tmp/tdd_test_06x6focu/testbenches/simple_adder_tb_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_path': '/tmp/tdd_test_06x6focu/designs/simple_adder_current.v', 'file_type': 'verilog', 'file_id': 'e0b715cd'}
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /tmp/tdd_test_06x6focu/designs/simple_adder_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /tmp/tdd_test_06x6focu/designs/simple_adder_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /tmp/tdd_test_06x6focu/designs/simple_adder_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /tmp/tdd_test_06x6focu/designs/simple_adder_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   1. /tmp/tdd_test_06x6focu/designs/simple_adder_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /tmp/tdd_test_06x6focu/testbenches/simple_adder_tb_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: simple_adder_current.v (168 bytes)
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: simple_adder_tb_current.v (816 bytes)
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3332236
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   1. simple_adder_current.v (设计)
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO -   2. simple_adder_tb_current.v (测试台)
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3332236 /tmp/tdd_test_06x6focu/designs/simple_adder_current.v /tmp/tdd_test_06x6focu/testbenches/simple_adder_tb_current.v
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3332236
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: VCD info: dumpfile simple_adder.vcd opened for output.
+PASS: a=ff, b=ff, sum=1fe
+PASS: a=00, b=00, sum=000
+/tmp/tdd_test_06x6focu/testbenches/simple_adder_tb_current.v:24: $finish called at 20 (1s)
+...
+[2025-08-02 10:22:49] extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True

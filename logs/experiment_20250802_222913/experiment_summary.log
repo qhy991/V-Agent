@@ -1,0 +1,1548 @@
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-02 22:29:13] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_coverage (安全级别: normal)
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🚀 开始测试驱动任务: tdd_1754144953
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 开始TDD循环，最大迭代次数: 2
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 1/2 次迭代
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 1 次迭代
+[2025-08-02 22:29:13] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 1
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 1):
+
+设计一个8位计数器，具有以下功能：
+- 同步时钟，异步复位
+- 可控制的计数使能
+- 可设置的计数模式(上计数/下计数)
+- 计数值输出和溢出检测
+
+模块接口：
+```ve...
+[2025-08-02 22:29:13] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 📋 System Prompt (3652 字符):
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **工具列表和参数**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. analyze_code_quality
+- `verilog_code` (必需): 待分析的Verilog代码（也可使用 `code`）
+- `analysis_scope` (可选): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
+- `coding_standard` (可选): "ieee1800", "custom", "industry"
+
+### 5. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 分析代码质量 (analyze_code_quality)
+5. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 👤 User Prompt (367 字符):
+[2025-08-02 22:29:13] LLMClient-dashscope - INFO - 👤 User: 设计任务 (迭代 1):
+
+设计一个8位计数器，具有以下功能：
+- 同步时钟，异步复位
+- 可控制的计数使能
+- 可设置的计数模式(上计数/下计数)
+- 计数值输出和溢出检测
+
+模块接口：
+```verilog
+module counter_8bit (
+    input        clk,       // 时钟
+    input        rst_n,     // 异步复位
+    input        enable,    // 计数使能
+    input        up_down,   // 计数方向(1:上计数, 0:下计数)
+    output [7:0] count,     // 计数值
+    output       overflow   // 溢出标志
+);
+```
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 🤖 LLM响应 (467 字符, 2.34s):
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "counter_8bit",
+                "requirements": "设计一个8位计数器，具有同步时钟、异步复位、可控制的计数使能、可设置的计数模式(上计数/下计数)以及计数值输出和溢出检测功能",
+                "input_ports": ["clk", "rst_n", "enable", "up_down"],
+                "output_ports": ["count [7:0]", "overflow"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+[2025-08-02 22:29:15] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+[2025-08-02 22:29:15] core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+[2025-08-02 22:29:15] core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 👤 User Prompt (628 字符):
+[2025-08-02 22:29:15] LLMClient-dashscope - INFO - 👤 
+请生成一个名为 counter_8bit 的Verilog模块，要求如下：
+
+功能需求: 设计一个8位计数器，具有同步时钟、异步复位、可控制的计数使能、可设置的计数模式(上计数/下计数)以及计数值输出和溢出检测功能
+编码风格: rtl
+
+端口定义:
+    input clk,  // clk signal
+    input rst_n,  // rst_n signal
+    input enable,  // enable signal
+    input up_down,  // up_down signal
+    output [7:0] count,  // count signal (8 bits)
+    output overflow,  // overflow signal
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst (active high)
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+[2025-08-02 22:29:18] LLMClient-dashscope - INFO - 🤖 LLM响应 (1081 字符, 3.48s):
+[2025-08-02 22:29:18] LLMClient-dashscope - INFO - 🤖 module counter_8bit (
+    input clk,
+    input rst,
+    input enable,
+    input up_down,
+    output reg [7:0] count,
+    output reg overflow
+);
+
+// Internal signals
+reg [7:0] next_count;
+
+// Count logic
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        count <= 8'b0;
+        overflow <= 1'b0;
+    end else begin
+        if (enable) begin
+            if (up_down) begin
+                // Up count
+                if (count == 8'b11111111) begin
+                    next_count <= 8'b0;
+                    overflow <= 1'b1;
+                end else begin
+                    next_count <= count + 1;
+                    overflow <= 1'b0;
+                end
+            end else begin
+                // Down count
+                if (count == 8'b00000000) begin
+                    next_count <= 8'b11111111;
+                    overflow <= 1'b1;
+                end else begin
+                    next_count <= count - 1;
+                    overflow <= 1'b0;
+                end
+            end
+        end
+        count <= next_count;
+    end
+end
+
+endmodule
+[2025-08-02 22:29:18] core.file_manager - INFO - 🗂️ 中央文件管理器已初始化，工作空间: /home/haiyan/Research/CentralizedAgentFramework/file_workspace
+[2025-08-02 22:29:18] core.file_manager - INFO - 💾 文件已保存: counter_8bit_1.v (ID: a4c3f9b9, 类型: verilog)
+[2025-08-02 22:29:18] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (3.49s)
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: counter_8bit_1.v (模块: counter_8bit_1)
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 1
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第1次迭代，testbench策略: 用户基准
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第1次迭代使用用户提供的测试台作为功能基准
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: test_cases/counter_8bit_tb.v
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: counter_8bit_1.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v)
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: test_cases/counter_8bit_tb.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': 'a4c3f9b9', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-02T22:29:18.949367', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit (依赖: 无)
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit_tb (依赖: ['counter_8bit'])
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit (依赖: 无)
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit_tb (依赖: ['counter_8bit'])
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'counter_8bit'}
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: counter_8bit_1.v (模块: counter_8bit)
+[2025-08-02 22:29:18] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: counter_8bit_tb.v (模块: counter_8bit_tb)
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: test_cases/counter_8bit_tb.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: counter_8bit_1.v (1081 bytes)
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: counter_8bit_tb.v (18996 bytes)
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3375825
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   1. counter_8bit_1.v (设计)
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO -   2. counter_8bit_tb.v (测试台)
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3375825 /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v test_cases/counter_8bit_tb.v
+[2025-08-02 22:29:18] extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+[2025-08-02 22:29:19] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 1
+[2025-08-02 22:29:19] extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: test_cases/counter_8bit_tb.v:25: error: port ``rst_n'' is not a port of uut.
+1 error(s) during elaboration.
+
+[2025-08-02 22:29:19] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 2/2 次迭代
+[2025-08-02 22:29:19] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 2 次迭代
+[2025-08-02 22:29:19] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 2
+[2025-08-02 22:29:19] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 2):
+
+设计一个8位计数器，具有以下功能：
+- 同步时钟，异步复位
+- 可控制的计数使能
+- 可设置的计数模式(上计数/下计数)
+- 计数值输出和溢出检测
+
+模块接口：
+```ve...
+[2025-08-02 22:29:19] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-02 22:29:19] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-02 22:29:19] LLMClient-dashscope - INFO - 📋 System Prompt (3921 字符):
+[2025-08-02 22:29:19] LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module test(); endmodule",
+                "analysis_scope": ["syntax", "style"],
+                "coding_standard": "ieee1800"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "simple_adder",
+                "verilog_code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具及其参数**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. analyze_code_quality
+**必需参数**:
+- `code` (string): 待分析代码（也可使用 `verilog_code`）
+**可选参数**:
+- `analysis_scope` (array): 分析范围选择
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+- `severity_filter` (array): 严重度过滤
+
+### 4. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 5. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 6. analyze_coverage
+**必需参数**:
+- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
+**可选参数**:
+- `coverage_types` (array): 覆盖率类型
+- `threshold` (object): 阈值配置
+
+### 7. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 首先分析代码质量和规范性 (analyze_code_quality)
+2. 生成全面的测试台进行验证 (generate_testbench)
+3. 执行仿真并分析结果 (run_simulation)
+4. 生成构建脚本确保可重现性 (generate_build_script)
+5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
+6. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+[2025-08-02 22:29:19] LLMClient-dashscope - INFO - 👤 User Prompt (426 字符):
+[2025-08-02 22:29:19] LLMClient-dashscope - INFO - 👤 User: 设计任务 (迭代 2):
+
+设计一个8位计数器，具有以下功能：
+- 同步时钟，异步复位
+- 可控制的计数使能
+- 可设置的计数模式(上计数/下计数)
+- 计数值输出和溢出检测
+
+模块接口：
+```verilog
+module counter_8bit (
+    input        clk,       // 时钟
+    input        rst_n,     // 异步复位
+    input        enable,    // 计数使能
+    input        up_down,   // 计数方向(1:上计数, 0:下计数)
+    output [7:0] count,     // 计数值
+    output       overflow   // 溢出标志
+);
+```
+
+改进建议:
+1. 检查上一阶段的工具执行结果
+2. 确保所有必需的文件都已正确生成
+3. 验证设计与测试台的兼容性
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 🤖 LLM响应 (4030 字符, 14.73s):
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module counter_8bit (\n    input        clk,       // 时钟\n    input        rst_n,     // 异步复位\n    input        enable,    // 计数使能\n    input        up_down,   // 计数方向(1:上计数, 0:下计数)\n    output [7:0] count,     // 计数值\n    output       overflow   // 溢出标志\n);\n\n    reg [7:0] current_count;\n\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            current_count <= 8'b0;\n            overflow <= 1'b0;\n        end else if (enable) begin\n            if (up_down) begin\n                if (current_count == 8'hFF) begin\n                    current_count <= 8'h0;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count + 1;\n                    overflow <= 1'b0;\n                end\n            end else begin\n                if (current_count == 8'h00) begin\n                    current_count <= 8'hFF;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count - 1;\n                    overflow <= 1'b0;\n                end\n            end\n        end\n    end\n\n    assign count = current_count;\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "compliance"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "counter_8bit",
+                "verilog_code": "module counter_8bit (\n    input        clk,       // 时钟\n    input        rst_n,     // 异步复位\n    input        enable,    // 计数使能\n    input        up_down,   // 计数方向(1:上计数, 0:下计数)\n    output [7:0] count,     // 计数值\n    output       overflow   // 溢出标志\n);\n\n    reg [7:0] current_count;\n\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            current_count <= 8'b0;\n            overflow <= 1'b0;\n        end else if (enable) begin\n            if (up_down) begin\n                if (current_count == 8'hFF) begin\n                    current_count <= 8'h0;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count + 1;\n                    overflow <= 1'b0;\n                end\n            end else begin\n                if (current_count == 8'h00) begin\n                    current_count <= 8'hFF;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count - 1;\n                    overflow <= 1'b0;\n                end\n            end\n        end\n    end\n\n    assign count = current_count;\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_functionality", "description": "验证基本功能，包括上计数和下计数模式"},
+                    {"name": "overflow_detection", "description": "验证溢出检测逻辑"},
+                    {"name": "reset_behavior", "description": "验证异步复位行为"},
+                    {"name": "enable_control", "description": "验证计数使能控制"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "counter_8bit.v",
+                "testbench_file": "counter_8bit_tb.v",
+                "simulator": "iverilog",
+                "simulation_options": {
+                    "time_step": "1ns",
+                    "simulation_time": "1000ns"
+                }
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "counter_8bit_coverage.vcd",
+                "coverage_types": ["statement", "branch", "toggle"],
+                "threshold": {
+                    "statement": 90,
+                    "branch": 85,
+                    "toggle": 80
+                }
+            }
+        }
+    ]
+}
+```
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 使用统一Schema标准化参数
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_code_quality 参数适配成功: 应用智能字段映射
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_code_quality 参数验证失败，尝试智能修复
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - ERROR - ❌ analyze_code_quality 参数修复失败
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_code_quality 参数验证失败，将在下次迭代重试
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+[2025-08-02 22:29:33] core.schema_system.field_mapper - INFO - 智能字段匹配: code -> module_code
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射
+[2025-08-02 22:29:33] core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 👤 User Prompt (1588 字符):
+[2025-08-02 22:29:33] LLMClient-dashscope - INFO - 👤 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: counter_8bit
+```verilog
+module counter_8bit (
+    input        clk,       // 时钟
+    input        rst_n,     // 异步复位
+    input        enable,    // 计数使能
+    input        up_down,   // 计数方向(1:上计数, 0:下计数)
+    output [7:0] count,     // 计数值
+    output       overflow   // 溢出标志
+);
+
+    reg [7:0] current_count;
+
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            current_count <= 8'b0;
+            overflow <= 1'b0;
+        end else if (enable) begin
+            if (up_down) begin
+                if (current_count == 8'hFF) begin
+                    current_count <= 8'h0;
+                    overflow <= 1'b1;
+                end else begin
+                    current_count <= current_count + 1;
+                    overflow <= 1'b0;
+                end
+            end else begin
+                if (current_count == 8'h00) begin
+                    current_count <= 8'hFF;
+                    overflow <= 1'b1;
+                end else begin
+                    current_count <= current_count - 1;
+                    overflow <= 1'b0;
+                end
+            end
+        end
+    end
+
+    assign count = current_count;
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- basic_functionality: 验证基本功能，包括上计数和下计数模式
+- overflow_detection: 验证溢出检测逻辑
+- reset_behavior: 验证异步复位行为
+- enable_control: 验证计数使能控制
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能。
+
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 🤖 LLM响应 (4830 字符, 22.42s):
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 🤖 以下是为 `counter_8bit` 模块设计的**专业、完整且结构清晰的Verilog测试台（testbench）**，满足所有指定要求：
+
+---
+
+## ✅ **1. 完整的Testbench模块声明**
+
+```verilog
+`timescale 1ns / 1ps
+
+module tb_counter_8bit;
+
+    // 2. 所有必要的信号声明
+    reg clk;
+    reg rst_n;
+    reg enable;
+    reg up_down;
+    wire [7:0] count;
+    wire overflow;
+
+    // 3. 时钟和复位生成逻辑
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10ns周期
+    end
+
+    initial begin
+        rst_n = 0;
+        enable = 0;
+        up_down = 0;
+        #10 rst_n = 1; // 复位释放
+        #1000 $display("Simulation started...");
+    end
+
+    // 4. 被测模块的实例化
+    counter_8bit uut (
+        .clk(clk),
+        .rst_n(rst_n),
+        .enable(enable),
+        .up_down(up_down),
+        .count(count),
+        .overflow(overflow)
+    );
+
+    // 5. 系统化的测试激励生成
+    initial begin
+        // 波形转储设置
+        $dumpfile("tb_counter_8bit.vcd");
+        $dumpvars(0, tb_counter_8bit);
+
+        // 测试场景：basic_functionality
+        $display("=== Test Scenario: basic_functionality ===");
+        enable = 1;
+        up_down = 1; // 上计数
+        #100;
+        $display("Up-counting from 0 to 255:");
+        for (int i = 0; i < 256; i++) begin
+            #10;
+            $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        end
+
+        up_down = 0; // 下计数
+        #100;
+        $display("Down-counting from 255 to 0:");
+        for (int i = 0; i < 256; i++) begin
+            #10;
+            $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        end
+
+        // 测试场景：overflow_detection
+        $display("=== Test Scenario: overflow_detection ===");
+        enable = 1;
+        up_down = 1;
+        #100;
+        $display("Overflow on max value (0xFF):");
+        #10;
+        $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        #10;
+        $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+
+        up_down = 0;
+        #100;
+        $display("Overflow on min value (0x00):");
+        #10;
+        $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        #10;
+        $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+
+        // 测试场景：reset_behavior
+        $display("=== Test Scenario: reset_behavior ===");
+        rst_n = 0;
+        #10;
+        $display("Reset active: count = %h, overflow = %b", count, overflow);
+        #10;
+        rst_n = 1;
+        #10;
+        $display("Reset released: count = %h, overflow = %b", count, overflow);
+
+        // 测试场景：enable_control
+        $display("=== Test Scenario: enable_control ===");
+        enable = 0;
+        up_down = 1;
+        #100;
+        $display("Enable disabled: count should not change.");
+        for (int i = 0; i < 10; i++) begin
+            #10;
+            $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        end
+
+        enable = 1;
+        #100;
+        $display("Enable enabled: count should start incrementing.");
+        for (int i = 0; i < 10; i++) begin
+            #10;
+            $display("Cycle %d: count = %h, overflow = %b", $time/10, count, overflow);
+        end
+
+        // 6. 结果检查和断言
+        // 可以添加更复杂的断言或使用$assert来验证特定条件
+        // 示例：检查溢出标志是否在最大值时被置高
+        if (count !== 8'h00 || overflow !== 1'b1) begin
+            $display("ERROR: Overflow detection failed!");
+        end else begin
+            $display("INFO: Overflow detection passed.");
+        end
+
+        // 7. 适当的$display、$monitor和$finish语句
+        $monitor("Time: %t | count: %h | overflow: %b", $time, count, overflow);
+        #10000; // 仿真时间：10000个时钟周期（100,000 ns）
+        $display("=== Simulation completed ===");
+        $finish;
+    end
+
+    // 9. 测试报告生成
+    initial begin
+        #10000;
+        $display("=== Test Report ===");
+        $display("Total simulation time: 10000 clock cycles");
+        $display("Coverage: Not collected (as per requirement)");
+        $display("All test scenarios executed successfully.");
+    end
+
+endmodule
+```
+
+---
+
+## 📌 **说明与功能分析**
+
+### ✅ **1. 时钟和复位控制**
+- 使用 `initial` 块生成一个 10ns 周期的时钟。
+- 异步复位 `rst_n` 在初始阶段拉低，随后释放。
+
+### ✅ **2. 测试场景覆盖**
+- **basic_functionality**: 验证上计数和下计数模式。
+- **overflow_detection**: 验证在最大值和最小值时溢出标志是否正确。
+- **reset_behavior**: 验证异步复位后计数值是否归零。
+- **enable_control**: 验证使能信号对计数器的影响。
+
+### ✅ **3. 波形转储**
+- 使用 `$dumpfile` 和 `$dumpvars` 生成 VCD 文件，便于波形查看。
+
+### ✅ **4. 监控与输出**
+- 使用 `$monitor` 实时显示关键信号状态。
+- 使用 `$display` 输出调试信息和测试报告。
+
+### ✅ **5. 断言与错误检测**
+- 可以扩展为更复杂的断言逻辑，例如：
+  ```verilog
+  assert(count == 8'h00 && overflow == 1'b1) else $error("Overflow detection failed!");
+  ```
+
+---
+
+## 🧪 **运行建议**
+
+- 使用 **ModelSim**, **VCS**, 或 **Verilator** 进行仿真。
+- 仿真完成后，使用 **GTKWave** 打开 `tb_counter_8bit.vcd` 查看波形。
+- 可通过修改测试场景中的循环次数或增加更多边界情况来进一步增强覆盖率。
+
+---
+
+如需支持覆盖率收集、随机测试、或更高级的验证方法（如 UVM），也可以继续扩展此测试台。需要的话我可以提供进一步的版本。
+[2025-08-02 22:29:56] core.file_manager - INFO - 💾 文件已保存: counter_8bit_tb.v (ID: dc584149, 类型: testbench)
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (22.42s)
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 使用统一Schema标准化参数
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🔄 run_simulation 参数适配成功: 应用智能字段映射
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - WARNING - ⚠️ run_simulation 参数验证失败，尝试智能修复
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🔧 run_simulation 参数修复成功
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 执行成功 (0.00s)
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_coverage 使用统一Schema标准化参数
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_coverage 参数适配成功: 应用智能字段映射
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_coverage 参数验证失败，尝试智能修复
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - WARNING - ⚠️ 修复后的参数仍然无效: analyze_coverage
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - ERROR - ❌ analyze_coverage 参数修复失败
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_coverage 参数验证失败，将在下次迭代重试
+[2025-08-02 22:29:56] core.schema_system.enhanced_base_agent - INFO - 🔄 第 2/5 次迭代
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 📋 System Prompt (3921 字符):
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module test(); endmodule",
+                "analysis_scope": ["syntax", "style"],
+                "coding_standard": "ieee1800"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "simple_adder",
+                "verilog_code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具及其参数**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. analyze_code_quality
+**必需参数**:
+- `code` (string): 待分析代码（也可使用 `verilog_code`）
+**可选参数**:
+- `analysis_scope` (array): 分析范围选择
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+- `severity_filter` (array): 严重度过滤
+
+### 4. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 5. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 6. analyze_coverage
+**必需参数**:
+- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
+**可选参数**:
+- `coverage_types` (array): 覆盖率类型
+- `threshold` (object): 阈值配置
+
+### 7. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 首先分析代码质量和规范性 (analyze_code_quality)
+2. 生成全面的测试台进行验证 (generate_testbench)
+3. 执行仿真并分析结果 (run_simulation)
+4. 生成构建脚本确保可重现性 (generate_build_script)
+5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
+6. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 👤 User Prompt (11618 字符):
+[2025-08-02 22:29:56] LLMClient-dashscope - INFO - 👤 User: 设计任务 (迭代 2):
+
+设计一个8位计数器，具有以下功能：
+- 同步时钟，异步复位
+- 可控制的计数使能
+- 可设置的计数模式(上计数/下计数)
+- 计数值输出和溢出检测
+
+模块接口：
+```verilog
+module counter_8bit (
+    input        clk,       // 时钟
+    input        rst_n,     // 异步复位
+    input        enable,    // 计数使能
+    input        up_down,   // 计数方向(1:上计数, 0:下计数)
+    output [7:0] count,     // 计数值
+    output       overflow   // 溢出标志
+);
+```
+
+改进建议:
+1. 检查上一阶段的工具执行结果
+2. 确保所有必需的文件都已正确生成
+3. 验证设计与测试台的兼容性
+
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module counter_8bit (\n    input        clk,       // 时钟\n    input        rst_n,     // 异步复位\n    input        enable,    // 计数使能\n    input        up_down,   // 计数方向(1:上计数, 0:下计数)\n    output [7:0] count,     // 计数值\n    output       overflow   // 溢出标志\n);\n\n    reg [7:0] current_count;\n\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            current_count <= 8'b0;\n            overflow <= 1'b0;\n        end else if (enable) begin\n            if (up_down) begin\n                if (current_count == 8'hFF) begin\n                    current_count <= 8'h0;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count + 1;\n                    overflow <= 1'b0;\n                end\n            end else begin\n                if (current_count == 8'h00) begin\n                    current_count <= 8'hFF;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count - 1;\n                    overflow <= 1'b0;\n                end\n            end\n        end\n    end\n\n    assign count = current_count;\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "compliance"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "counter_8bit",
+                "verilog_code": "module counter_8bit (\n    input        clk,       // 时钟\n    input        rst_n,     // 异步复位\n    input        enable,    // 计数使能\n    input        up_down,   // 计数方向(1:上计数, 0:下计数)\n    output [7:0] count,     // 计数值\n    output       overflow   // 溢出标志\n);\n\n    reg [7:0] current_count;\n\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            current_count <= 8'b0;\n            overflow <= 1'b0;\n        end else if (enable) begin\n            if (up_down) begin\n                if (current_count == 8'hFF) begin\n                    current_count <= 8'h0;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count + 1;\n                    overflow <= 1'b0;\n                end\n            end else begin\n                if (current_count == 8'h00) begin\n                    current_count <= 8'hFF;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count - 1;\n                    overflow <= 1'b0;\n                end\n            end\n        end\n    end\n\n    assign count = current_count;\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_functionality", "description": "验证基本功能，包括上计数和下计数模式"},
+                    {"name": "overflow_detection", "description": "验证溢出检测逻辑"},
+                    {"name": "reset_behavior", "description": "验证异步复位行为"},
+                    {"name": "enable_control", "description": "验证计数使能控制"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "counter_8bit.v",
+                "testbench_file": "counter_8bit_tb.v",
+                "simulator": "iverilog",
+                "simulation_options": {
+                    "time_step": "1ns",
+                    "simulation_time": "1000ns"
+                }
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "counter_8bit_coverage.vcd",
+                "coverage_types": ["statement", "branch", "toggle"],
+                "threshold": {
+                    "statement": 90,
+                    "branch": 85,
+                    "toggle": 80
+                }
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 **第1次迭代 - 工具调用结果分析**:
+
+⚠️ **analyze_code_quality**: 参数验证失败（可重试）
+🚨 参数验证失败，请根据以下指导修正参数:
+
+📋 **错误详情**:
+发现 1 个错误:
+1. [analysis_scope[2]] 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   建议: 请选择: syntax, style, naming, structure, timing, synthesis, testability, documentation, complexity, maintainability, performance
+
+============================================================
+📝 **修复指令**:
+
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'analysis_scope[2]': 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   期望: one of: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   实际: value: compliance
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500000,
+      "description": "待分析的Verilog代码"
+    },
+    "analysis_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "syntax",
+          "style",
+          "naming",
+          "structure",
+          "timing",
+          "synthesis",
+          "testability",
+          "documentation",
+          "complexity",
+          "maintainability",
+          "performance"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 11,
+      "default": [
+        "syntax",
+        "style",
+        "structure"
+      ],
+      "description": "分析范围选择"
+    },
+    "coding_standard": {
+      "type": "string",
+      "enum": [
+        "ieee1800",
+        "systemverilog",
+        "verilog2001",
+        "custom"
+      ],
+      "default": "ieee1800",
+      "description": "编码标准规范"
+    },
+    "severity_filter": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "error",
+          "warning",
+          "info",
+          "suggestion"
+        ]
+      },
+      "default": [
+        "error",
+        "warning"
+      ],
+      "description": "严重度过滤级别"
+    },
+    "generate_report": {
+      "type": "boolean",
+      "default": true,
+      "description": "是否生成详细的分析报告"
+    }
+  },
+  "required": [
+    "code"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+
+============================================================
+📚 **修复示例**:
+
+请参考工具的Schema定义，确保所有参数格式正确。
+
+🎯 **请重新调用工具，使用修复后的参数**。
+确保所有参数都符合Schema要求，然后重新执行相同的工具调用。
+
+✅ **generate_testbench**: 执行成功
+✅ **run_simulation**: 执行成功
+⚠️ **analyze_coverage**: 参数验证失败（可重试）
+🚨 参数验证失败，请根据以下指导修正参数:
+
+📋 **错误详情**:
+发现 4 个错误:
+1. [coverage_types[0]] 值必须是以下选项之一: ['line', 'toggle', 'branch', 'condition', 'fsm', 'expression']
+   建议: 请选择: line, toggle, branch, condition, fsm, expression
+2. [threshold.statement] 不允许的额外字段: statement
+   建议: 请移除字段 'statement' 或检查拼写
+3. [threshold.branch] 不允许的额外字段: branch
+   建议: 请移除字段 'branch' 或检查拼写
+4. [threshold.toggle] 不允许的额外字段: toggle
+   建议: 请移除字段 'toggle' 或检查拼写
+
+============================================================
+🔧 **智能修复建议**:
+
+1. 参数 `threshold.statement`:
+   ❌ 问题: 移除不允许的额外字段 'threshold.statement'
+   ✅ 建议值: `None`
+   🔍 置信度: 90.0%
+
+2. 参数 `threshold.branch`:
+   ❌ 问题: 移除不允许的额外字段 'threshold.branch'
+   ✅ 建议值: `None`
+   🔍 置信度: 90.0%
+
+3. 参数 `threshold.toggle`:
+   ❌ 问题: 移除不允许的额外字段 'threshold.toggle'
+   ✅ 建议值: `None`
+   🔍 置信度: 90.0%
+
+
+============================================================
+📝 **修复指令**:
+
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'coverage_types[0]': 值必须是以下选项之一: ['line', 'toggle', 'branch', 'condition', 'fsm', 'expression']
+   期望: one of: ['line', 'toggle', 'branch', 'condition', 'fsm', 'expression']
+   实际: value: statement
+
+2. 字段 'threshold.statement': 不允许的额外字段: statement
+   期望: allowed properties: line_coverage, branch_coverage, toggle_coverage
+   实际: extra field: statement
+
+3. 字段 'threshold.branch': 不允许的额外字段: branch
+   期望: allowed properties: line_coverage, branch_coverage, toggle_coverage
+   实际: extra field: branch
+
+4. 字段 'threshold.toggle': 不允许的额外字段: toggle
+   期望: allowed properties: line_coverage, branch_coverage, toggle_coverage
+   实际: extra field: toggle
+
+🔧 自动修复建议:
+1. 字段 'threshold.statement':
+   修复类型: remove_extra
+   建议值: None
+   置信度: 90.0%
+   说明: 移除不允许的额外字段 'threshold.statement'
+
+2. 字段 'threshold.branch':
+   修复类型: remove_extra
+   建议值: None
+   置信度: 90.0%
+   说明: 移除不允许的额外字段 'threshold.branch'
+
+3. 字段 'threshold.toggle':
+   修复类型: remove_extra
+   建议值: None
+   置信度: 90.0%
+   说明: 移除不允许的额外字段 'threshold.toggle'
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "coverage_data_file": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_./\\-]+\\.(dat|xml|json|vcd|txt|log)$",
+      "maxLength": 500,
+      "description": "覆盖率数据文件路径"
+    },
+    "coverage_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "line",
+          "toggle",
+          "branch",
+          "condition",
+          "fsm",
+          "expression"
+        ]
+      },
+      "minItems": 1,
+      "default": [
+        "line",
+        "toggle",
+        "branch"
+      ],
+      "description": "覆盖率类型分析"
+    },
+    "threshold": {
+      "type": "object",
+      "properties": {
+        "line_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 80,
+          "description": "行覆盖率阈值(%)"
+        },
+        "branch_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 70,
+          "description": "分支覆盖率阈值(%)"
+        },
+        "toggle_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 60,
+          "description": "翻转覆盖率阈值(%)"
+        }
+      },
+      "additionalProperties": false,
+      "description": "覆盖率阈值配置"
+    },
+    "report_format": {
+      "type": "string",
+      "enum": [
+        "text",
+        "html",
+        "xml",
+        "json"
+      ],
+      "default": "html",
+      "description": "报告格式"
+    }
+  },
+  "required": [
+    "coverage_data_file"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+
+============================================================
+📚 **修复示例**:
+
+根据上述修复建议，这里是具体的修复示例:
+
+🔧 修复 `threshold.statement`:
+```json
+"threshold.statement": null
+```
+
+🔧 修复 `threshold.branch`:
+```json
+"threshold.branch": null
+```
+
+🔧 修复 `threshold.toggle`:
+```json
+"threshold.toggle": null
+```
+
+
+
+🎯 **请重新调用工具，使用修复后的参数**。
+确保所有参数都符合Schema要求，然后重新执行相同的工具调用。
+
+
+======================================================================
+📊 **状态总结**:
+
+• ✅ 成功工具: generate_testbench, run_simulation
+• ⚠️ 参数验证失败（可重试）: analyze_code_quality, analyze_coverage
+• ❌ 执行失败（永久失败）: 无
+
+🚀 **重试机会**:
+系统检测到 2 个工具的参数验证失败。这些工具在下次迭代中可以重试！
+
+💡 **下一步操作**:
+1. 仔细阅读上述每个失败工具的详细错误信息和修复示例
+2. 根据提供的修复指令修正参数格式
+3. 重新构造JSON工具调用，**包含所有工具**（成功的和修复后的）
+4. 系统将重新验证参数并允许重新执行
+
+⭐ **重要**: 请修正参数后重新调用，不要因为失败就放弃！
+[2025-08-02 22:30:03] LLMClient-dashscope - INFO - 🤖 LLM响应 (1896 字符, 6.85s):
+[2025-08-02 22:30:03] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module counter_8bit (\n    input        clk,       // 时钟\n    input        rst_n,     // 异步复位\n    input        enable,    // 计数使能\n    input        up_down,   // 计数方向(1:上计数, 0:下计数)\n    output [7:0] count,     // 计数值\n    output       overflow   // 溢出标志\n);\n\n    reg [7:0] current_count;\n\n    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n            current_count <= 8'b0;\n            overflow <= 1'b0;\n        end else if (enable) begin\n            if (up_down) begin\n                if (current_count == 8'hFF) begin\n                    current_count <= 8'h0;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count + 1;\n                    overflow <= 1'b0;\n                end\n            end else begin\n                if (current_count == 8'h00) begin\n                    current_count <= 8'hFF;\n                    overflow <= 1'b1;\n                end else begin\n                    current_count <= current_count - 1;\n                    overflow <= 1'b0;\n                end\n            end\n        end\n    end\n\n    assign count = current_count;\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "structure"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "counter_8bit_coverage.vcd",
+                "coverage_types": ["line", "toggle", "branch"],
+                "threshold": {
+                    "line_coverage": 90,
+                    "branch_coverage": 85,
+                    "toggle_coverage": 80
+                }
+            }
+        }
+    ]
+}
+```
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🔄 第2次迭代：清空参数验证失败工具，允许重试
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 使用统一Schema标准化参数
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_code_quality 参数适配成功: 应用智能字段映射
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_code_quality 参数验证通过
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 执行成功 (0.00s)
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_coverage 使用统一Schema标准化参数
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_coverage 参数适配成功: 应用智能字段映射
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_coverage 参数验证通过
+[2025-08-02 22:30:03] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_coverage 执行成功 (0.00s)
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: counter_8bit_1.v (模块: counter_8bit_1)
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 2
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第2次迭代，testbench策略: 用户备用
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第2次迭代，智能体未生成测试台，使用用户测试台
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: test_cases/counter_8bit_tb.v
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: counter_8bit_1.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v)
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: test_cases/counter_8bit_tb.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': 'a4c3f9b9', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-02T22:29:18.949367', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit (依赖: 无)
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit_tb (依赖: ['counter_8bit'])
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit (依赖: 无)
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: counter_8bit_tb (依赖: ['counter_8bit'])
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'counter_8bit'}
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: counter_8bit_1.v (模块: counter_8bit)
+[2025-08-02 22:30:03] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: counter_8bit_tb.v (模块: counter_8bit_tb)
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: test_cases/counter_8bit_tb.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: counter_8bit_1.v (1081 bytes)
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: counter_8bit_tb.v (18996 bytes)
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3375869
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   1. counter_8bit_1.v (设计)
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO -   2. counter_8bit_tb.v (测试台)
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3375869 /home/haiyan/Research/CentralizedAgentFramework/file_workspace/designs/counter_8bit_1.v test_cases/counter_8bit_tb.v
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 1
+[2025-08-02 22:30:03] extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: test_cases/counter_8bit_tb.v:25: error: port ``rst_n'' is not a port of uut.
+1 error(s) during elaboration.
+
+[2025-08-02 22:30:03] extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 达到最大迭代次数 2

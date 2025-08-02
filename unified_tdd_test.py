@@ -28,9 +28,9 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from config.config import FrameworkConfig
-from core.centralized_coordinator import CentralizedCoordinator
-from agents.real_verilog_agent import RealVerilogDesignAgent
-from agents.real_code_reviewer import RealCodeReviewAgent
+from core.enhanced_centralized_coordinator import EnhancedCentralizedCoordinator
+from agents.enhanced_real_verilog_agent import EnhancedRealVerilogAgent
+from agents.enhanced_real_code_reviewer import EnhancedRealCodeReviewAgent
 from extensions import create_test_driven_coordinator, TestDrivenConfig
 
 
@@ -64,26 +64,82 @@ module alu_32bit (
         
         "counter": {
             "description": """
-设计一个8位计数器，具有以下功能：
-- 同步时钟，异步复位
-- 可控制的计数使能
-- 可设置的计数模式(上计数/下计数)
-- 计数值输出和溢出检测
+设计一个8位计数器模块counter_8bit，严格按照以下接口规范实现：
 
-模块接口：
+**关键要求 - 接口必须完全匹配**:
 ```verilog
 module counter_8bit (
     input        clk,       // 时钟
-    input        rst_n,     // 异步复位
+    input        rst_n,     // 异步复位（低电平有效） - 注意是rst_n不是rst！
     input        enable,    // 计数使能
     input        up_down,   // 计数方向(1:上计数, 0:下计数)
     output [7:0] count,     // 计数值
     output       overflow   // 溢出标志
 );
 ```
+
+**功能要求**:
+- 异步复位：当rst_n为低电平时，count=0, overflow=0
+- 同步计数：在时钟上升沿进行计数
+- 使能控制：enable为高时计数，为低时保持
+- 双向计数：up_down=1上计数，up_down=0下计数
+- 溢出检测：上计数255→0时overflow=1，下计数0→255时overflow=1
+
+**警告**：
+1. 端口名必须是rst_n，不能是rst！
+2. 复位逻辑必须是negedge rst_n，不能是negedge rst！
+3. 复位条件必须是if (!rst_n)，不能是if (!rst)！
             """,
             "testbench": None,  # 需要用户提供或生成
             "complexity": "simple"
+        },
+        
+        "adder_16bit": {
+            "description": """
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+**测试验证要求**:
+设计必须通过以下测试：
+- 基本加法运算测试
+- 进位传播测试  
+- 溢出检测测试
+- 边界值测试（0x0000, 0xFFFF等）
+- 随机数据测试
+            """,
+            "testbench": None,  # 将创建专门的测试台
+            "complexity": "medium"
         },
         
         "simple_adder": {
@@ -155,7 +211,7 @@ module carry_lookahead_adder_16bit (
     # 预定义的实验配置
     EXPERIMENT_CONFIGS = {
         "quick": {"max_iterations": 3, "timeout_per_iteration": 120, "deep_analysis": False},
-        "standard": {"max_iterations": 5, "timeout_per_iteration": 300, "deep_analysis": True},
+        "standard": {"max_iterations": 2, "timeout_per_iteration": 300, "deep_analysis": True},
         "thorough": {"max_iterations": 8, "timeout_per_iteration": 600, "deep_analysis": True},
         "debug": {"max_iterations": 10, "timeout_per_iteration": 900, "deep_analysis": True}
     }
@@ -223,22 +279,22 @@ module carry_lookahead_adder_16bit (
         """设置TDD框架"""
         print("🏗️ 初始化TDD框架...")
         
-        # 1. 创建标准组件
+        # 1. 创建增强版标准组件
         config = FrameworkConfig.from_env()
-        self.coordinator = CentralizedCoordinator(config)
+        self.coordinator = EnhancedCentralizedCoordinator(config)
         
-        # 2. 注册智能体
-        self.verilog_agent = RealVerilogDesignAgent(config)
-        self.reviewer_agent = RealCodeReviewAgent(config)
+        # 2. 注册增强版智能体
+        self.verilog_agent = EnhancedRealVerilogAgent(config)
+        self.reviewer_agent = EnhancedRealCodeReviewAgent(config)
         
         self.coordinator.register_agent(self.verilog_agent)
         self.coordinator.register_agent(self.reviewer_agent)
         
-        print("   ✅ 标准协调器和智能体初始化完成")
+        print("   ✅ 增强版协调器和智能体初始化完成")
         
         # 3. 创建测试驱动配置
         tdd_config = TestDrivenConfig(
-            max_iterations=self.experiment_config.get("max_iterations", 5),
+            max_iterations=self.experiment_config.get("max_iterations", 2),
             enable_deep_analysis=self.experiment_config.get("deep_analysis", True),
             timeout_per_iteration=self.experiment_config.get("timeout_per_iteration", 300),
             save_iteration_logs=True
@@ -277,7 +333,7 @@ module carry_lookahead_adder_16bit (
             
             # 3. 执行测试驱动任务
             print(f"🔄 启动测试驱动开发循环...")
-            print(f"   最大迭代次数: {self.experiment_config.get('max_iterations', 5)}")
+            print(f"   最大迭代次数: {self.experiment_config.get('max_iterations', 2)}")
             print(f"   每次迭代超时: {self.experiment_config.get('timeout_per_iteration', 300)}秒")
             
             result = await self.tdd_coordinator.execute_test_driven_task(
@@ -524,7 +580,7 @@ def create_argument_parser():
     )
     
     parser.add_argument('--design', '-d', 
-                       choices=['alu', 'counter', 'simple_adder', 'adder', 'custom'],
+                       choices=['alu', 'counter', 'adder_16bit', 'simple_adder', 'adder', 'custom'],
                        default='simple_adder',
                        help='设计类型 (默认: simple_adder)')
     

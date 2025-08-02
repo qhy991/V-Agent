@@ -216,6 +216,23 @@ class CentralizedCoordinator(BaseAgent):
     async def analyze_task_requirements(self, task_description: str, 
                                       context: Dict[str, Any] = None) -> Dict[str, Any]:
         """分析任务需求"""
+        context = context or {}
+        
+        # 🔧 检查是否有强制指定的任务类型（用于TDD等特殊场景）
+        if "force_task_type" in context:
+            forced_type = context["force_task_type"]
+            self.logger.info(f"🔧 DEBUG: 使用强制指定的任务类型: {forced_type}")
+            # 构造强制任务分析结果
+            return {
+                "task_type": forced_type,
+                "complexity": 7,  # 中等复杂度
+                "required_capabilities": ["code_generation", "module_design"] if forced_type == "design" else ["code_review", "quality_analysis"],
+                "estimated_hours": 3.5,
+                "priority": "high",  # TDD任务优先级高
+                "dependencies": [],
+                "forced": True  # 标记为强制指定
+            }
+        
         if not self.llm_client:
             # 简单的规则分析
             return self._simple_task_analysis(task_description)
@@ -388,9 +405,26 @@ Task to analyze: {task_description}
         return result
     
     async def select_best_agent(self, task_analysis: Dict[str, Any], 
-                              exclude_agents: Set[str] = None) -> Optional[str]:
+                              exclude_agents: Set[str] = None,
+                              context: Dict[str, Any] = None) -> Optional[str]:
         """选择最适合的智能体"""
         exclude_agents = exclude_agents or set()
+        context = context or {}
+        
+        # 🔧 检查是否有优先智能体（用于TDD等特殊场景）
+        if "preferred_agent_role" in context:
+            preferred_role = context["preferred_agent_role"]
+            self.logger.info(f"🔧 DEBUG: 检查优先智能体角色: {preferred_role}")
+            
+            # 查找匹配优先角色的智能体
+            for agent_id, info in self.registered_agents.items():
+                if (agent_id not in exclude_agents and 
+                    info.status != AgentStatus.FAILED and
+                    info.role == preferred_role):
+                    self.logger.info(f"🔧 DEBUG: 找到优先智能体: {agent_id} (角色: {preferred_role})")
+                    return agent_id
+            
+            self.logger.warning(f"🔧 DEBUG: 未找到优先角色 {preferred_role} 的智能体，继续常规选择")
         
         self.logger.info(f"🔍 DEBUG: Agent Selection Process Started")
         self.logger.info(f"🔍 DEBUG: Total registered agents: {len(self.registered_agents)}")
@@ -573,7 +607,7 @@ Your selection:"""
             task_analysis = await self.analyze_task_requirements(initial_task, context)
             
             # 2. 选择初始智能体
-            selected_agent_id = await self.select_best_agent(task_analysis)
+            selected_agent_id = await self.select_best_agent(task_analysis, context=context)
             if not selected_agent_id:
                 return {
                     "success": False,
