@@ -1,0 +1,89 @@
+{
+  "experiment_id": "unified_tdd_adder_16bit_1754205473",
+  "design_type": "adder_16bit",
+  "config_profile": "standard",
+  "success": true,
+  "total_duration": 60.684587717056274,
+  "timestamp": 1754205533.8645194,
+  "detailed_result": {
+    "success": true,
+    "session_id": "tdd_1754205473",
+    "total_iterations": 2,
+    "final_design": [
+      {
+        "file_id": "0029dfbc",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/testbenches/testbench_adder_16bit.v",
+        "file_type": "testbench",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T15:18:53.758320",
+        "description": "由enhanced_real_verilog_agent创建的testbench文件"
+      },
+      {
+        "file_id": "72f41aa2",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/testbenches/adder_16bit_tb.v",
+        "file_type": "testbench",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T15:18:53.744397",
+        "description": "由enhanced_real_verilog_agent创建的testbench文件"
+      },
+      {
+        "file_id": "54672737",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/designs/adder_16bit.v",
+        "file_type": "verilog",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T15:18:53.751541",
+        "description": "由enhanced_real_verilog_agent创建的verilog文件"
+      }
+    ],
+    "test_results": {
+      "success": true,
+      "stage": "simulation",
+      "compile_stdout": "",
+      "simulation_stdout": "VCD info: dumpfile adder_16bit.vcd opened for output.\nTime=0 | a=0x1234, b=0x5678, cin=0 | sum=0x68ac, cout=0, overflow=0\nTime=10 | a=0x8000, b=0x8000, cin=0 | sum=0x0000, cout=1, overflow=1\nTime=20 | a=0xffff, b=0x8000, cin=0 | sum=0x7fff, cout=1, overflow=1\nTime=30 | a=0xffff, b=0xffff, cin=1 | sum=0xffff, cout=1, overflow=0\nTime=40 | a=0x0000, b=0x0000, cin=1 | sum=0x0001, cout=0, overflow=0\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/testbenches/testbench_adder_16bit.v:43: $finish called at 50 (1s)\n",
+      "simulation_stderr": "",
+      "return_code": 0,
+      "all_tests_passed": true,
+      "test_summary": "✅ 仿真完成（需人工确认）",
+      "detailed_analysis": {
+        "output_analysis": "未发现明确的测试结果指示器"
+      },
+      "failure_reasons": [],
+      "suggestions": [
+        "人工检查仿真输出"
+      ],
+      "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/testbenches/testbench_adder_16bit.v",
+      "design_files": [
+        "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/designs/adder_16bit.v"
+      ],
+      "compilation_files": [
+        "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/designs/adder_16bit.v"
+      ],
+      "dependency_analysis": {
+        "success": true,
+        "compatible": true,
+        "issues": [],
+        "suggestions": [],
+        "missing_dependencies": [],
+        "additional_files": [],
+        "compilation_files": [
+          "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754205473/artifacts/designs/adder_16bit.v"
+        ],
+        "design_modules": [
+          "adder_16bit"
+        ],
+        "testbench_modules": [
+          "tb_adder_16bit"
+        ]
+      }
+    },
+    "completion_reason": "tests_passed",
+    "context_file": "tdd_context_tdd_1754205473.json"
+  },
+  "summary": {
+    "iterations_used": 2,
+    "efficiency": "成功率: 100%",
+    "files_generated": 3,
+    "completion_reason": "tests_passed",
+    "average_iteration_time": 30.342293858528137
+  }
+}

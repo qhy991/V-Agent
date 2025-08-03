@@ -1,0 +1,2180 @@
+🧪 统一测试驱动开发(TDD)测试入口
+==================================================
+🧪 统一TDD测试初始化
+   设计类型: adder_16bit
+   配置档案: standard
+   实验ID: unified_tdd_adder_16bit_1754202497
+   输出目录: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+================================================================================
+🚀 开始统一TDD实验: ADDER_16BIT
+================================================================================
+🔧 设置框架和智能体...
+🔧 实验管理器设置完成:
+   - 基础路径: tdd_experiments
+   - 当前实验: unified_tdd_adder_16bit_1754202497
+   - 实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+   - 创建路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+✅ 实验目录创建成功: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+✅ 成功加载环境配置: /home/haiyan/Research/CentralizedAgentFramework/.env
+✅ 增强日志系统初始化成功
+📂 实验目录: logs/experiment_20250803_142817
+📁 工件目录: logs/experiment_20250803_142817/artifacts
+📋 主日志目录: logs
+14:28:17 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+14:28:17 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+14:28:17 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-30b-a3b-instruct-2507
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+14:28:17 - EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+14:28:17 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+14:28:17 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+14:28:17 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-30b-a3b-instruct-2507
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+14:28:17 - Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+14:28:17 - EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+🔧 智能体实验路径设置:
+   - Verilog Agent ID: enhanced_real_verilog_agent
+   - Review Agent ID: enhanced_real_code_review_agent
+   - 实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:28:17 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+14:28:17 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+14:28:17 - Agent.centralized_coordinator - INFO - 🛠️ 传统工具调用已启用: 权限=5
+14:28:17 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: write_file
+14:28:17 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: read_file
+14:28:17 - Agent.centralized_coordinator - INFO - ✅ EnhancedCentralizedCoordinator (Function Calling支持) 初始化完成
+14:28:17 - Agent.centralized_coordinator - INFO - 🧠 中心化协调智能体初始化完成
+14:28:17 - Agent.centralized_coordinator - INFO - 🧠⚡ 增强中心化协调智能体初始化完成 - Schema系统支持已启用
+14:28:17 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_verilog_agent (verilog_designer) - Schema工具: 4
+14:28:17 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_code_review_agent (code_reviewer) - Schema工具: 5
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+✅ 框架设置完成
+📋 设计需求已准备
+🎯 测试台: testbench_adder_16bit.v
+14:28:17 - core.experiment_manager.ExperimentManager - INFO - 📋 复制依赖: testbench_adder_16bit.v
+📋 测试台已复制到: testbench_adder_16bit.v
+⚙️ 配置: standard ({'max_iterations': 3, 'timeout_per_iteration': 300, 'deep_analysis': True})
+🔄 启动测试驱动开发循环...
+   最大迭代次数: 3
+   每次迭代超时: 300秒
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🚀 开始测试驱动任务: tdd_1754202497
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 开始TDD循环，最大迭代次数: 3
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 1/3 次迭代
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754202497_iter_1
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 1 次迭代
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 1
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+14:28:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 创建持续对话ID: tdd_tdd_1754202497_1754202497
+14:28:17 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754202497
+14:28:17 - Agent.centralized_coordinator - INFO - 🔧 DEBUG: 使用强制指定的任务类型: design
+14:28:17 - Agent.centralized_coordinator - INFO - 🎯 强制任务类型: design, 首选角色: verilog_designer
+14:28:17 - Agent.centralized_coordinator - INFO - ✅⚡ 选择首选角色智能体: enhanced_real_verilog_agent (角色: verilog_designer)
+14:28:17 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754202497
+14:28:17 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_verilog_agent 发言
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+14:28:17 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754202497
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 1):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16...
+14:28:17 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+14:28:17 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:17 - LLMClient-dashscope - INFO - 📋 System Prompt (3701 字符):
+14:28:17 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+14:28:17 - LLMClient-dashscope - INFO - 👤 User Prompt (847 字符):
+14:28:17 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 1):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+✨ **首次设计指导**:
+- 请仔细分析需求，设计符合接口规范的代码
+- 注意使用正确的Verilog语法，避免SystemVerilog特性
+- 确保所有端口定义正确匹配
+14:28:17 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:21 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1219 字符, 3.68s):
+14:28:21 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，包含进位输出和有符号溢出检测，接口必须严格匹配指定规范。",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "requirements": "实现16位二进制加法器，支持输入进位cin，输出sum、cout和overflow。overflow为有符号数溢出标志（当两个同号操作数相加结果异号时触发）。",
+                "input_ports": [
+                    {"name": "a", "width": 16, "description": "第一个16位操作数"},
+                    {"name": "b", "width": 16, "description": "第二个16位操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 16, "description": "16位加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"},
+                    {"name": "overflow", "width": 1, "description": "有符号溢出标志"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+14:28:21 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:21 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+14:28:21 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+14:28:21 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+14:28:21 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+14:28:21 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:21 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+14:28:21 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+14:28:21 - LLMClient-dashscope - INFO - 👤 User Prompt (200 字符):
+14:28:21 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，包含进位输出和有符号溢出检测，接口必须严格匹配指定规范。
+设计类型: combinational
+复杂度级别: medium
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+
+返回JSON格式的分析结果。
+
+14:28:21 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:29 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1575 字符, 8.39s):
+14:28:29 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    "16位输入A寄存器（用于接收被加数）",
+    "16位输入B寄存器（用于接收加数）",
+    "16位加法运算核心逻辑（使用全加器链或超前进位结构实现）",
+    "进位输出生成逻辑（生成最高位的进位输出Cout）",
+    "有符号溢出检测逻辑（基于符号位和进位位判断是否发生溢出）"
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "a",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "16位有符号被加数"
+      },
+      {
+        "名称": "b",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "16位有符号加数"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "sum",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "16位有符号加法结果"
+      },
+      {
+        "名称": "cout",
+        "位宽": 1,
+        "类型": "logic",
+        "描述": "最高位进位输出，用于无符号加法扩展"
+      },
+      {
+        "名称": "ovf",
+        "位宽": 1,
+        "类型": "logic",
+        "描述": "有符号溢出标志：当结果超出16位有符号数范围时置高"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "该设计为纯组合逻辑模块，不涉及任何时序元件（如触发器、锁存器），因此无需时钟信号。所有输入到输出均为即时响应，无延迟约束。"
+  },
+  "设计约束": [
+    "必须使用组合逻辑实现，禁止引入任何时序元件。",
+    "必须正确处理有符号数加法，采用二进制补码表示。",
+    "进位输出（cout）应反映无符号加法的最高位进位。",
+    "溢出检测（ovf）需根据以下条件判断：当两个同号操作数相加产生异号结果时，即发生溢出；等价于 (a[15] == b[15]) && (a[15] != sum[15])。",
+    "综合工具应优化为最小延迟路径，优先考虑超前进位（Carry-Lookahead）结构以提升性能。",
+    "接口必须严格匹配指定规范，端口名称、位宽、方向不可更改。"
+  ],
+  "验证要点": [
+    "测试正数 + 正数：确保结果正确且无溢出（如 32767 + 1 → 溢出，ovf 应为1）。",
+    "测试负数 + 负数：确保结果正确且无溢出（如 -32768 + (-1) → 溢出，ovf 应为1）。",
+    "测试正数 + 负数：确保结果正确且无溢出（如 32767 + (-32768) = -1）。",
+    "验证进位输出（cout）在无符号加法中正确：例如 65535 + 1 → cout=1，sum=0。",
+    "边界值测试：包括 a=0, b=0；a=32767, b=32767；a=-32768, b=-32768 等。",
+    "检查 ovf 标志是否仅在有符号溢出时置位，且与符号位变化一致。",
+    "静态时序分析（STA）应无违例，因是组合逻辑，关键路径延迟应在可接受范围内。"
+  ]
+}
+```
+14:28:29 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:29 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (8.39s)
+14:28:29 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+14:28:29 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+14:28:29 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+14:28:29 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: adder_16bit
+14:28:29 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:29 - LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+14:28:29 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+14:28:29 - LLMClient-dashscope - INFO - 👤 User Prompt (601 字符):
+14:28:29 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 adder_16bit 的Verilog模块，要求如下：
+
+功能需求: 实现16位二进制加法器，支持输入进位cin，输出sum、cout和overflow。overflow为有符号数溢出标志（当两个同号操作数相加结果异号时触发）。
+编码风格: rtl
+
+端口定义:
+    input [15:0] a,  // 第一个16位操作数
+    input [15:0] b,  // 第二个16位操作数
+    input cin,  // 输入进位
+    output [15:0] sum,  // 16位加法结果
+    output cout,  // 输出进位
+    output overflow,  // 有符号溢出标志
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst (active high)
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+14:28:29 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:32 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1050 字符, 2.97s):
+14:28:32 - LLMClient-dashscope - INFO - 🤖 module adder_16bit #(
+    parameter WIDTH = 16
+) (
+    input clk,
+    input rst,
+    input [WIDTH-1:0] a,
+    input [WIDTH-1:0] b,
+    input cin,
+    output reg [WIDTH-1:0] sum,
+    output reg cout,
+    output reg overflow
+);
+
+// Internal signals for intermediate calculations
+reg [WIDTH:0] internal_sum;
+reg [WIDTH:0] temp_sum;
+
+// Sequential logic block for synchronous update
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        sum <= 16'd0;
+        cout <= 1'b0;
+        overflow <= 1'b0;
+    end else begin
+        // Perform 16-bit addition with carry-in
+        temp_sum = {1'b0, a} + {1'b0, b} + cin;
+        internal_sum = temp_sum;
+
+        // Assign outputs
+        sum <= internal_sum[WIDTH-1:0];
+        cout <= internal_sum[WIDTH];
+
+        // Detect signed overflow: when both operands have same sign but result has opposite sign
+        // Overflow occurs if (a_sign == b_sign) && (a_sign != result_sign)
+        overflow <= (a[WIDTH-1] == b[WIDTH-1]) && (a[WIDTH-1] != internal_sum[WIDTH-1]);
+    end
+end
+
+endmodule
+14:28:32 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: adder_16bit.v
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1050
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔍 尝试智能分割内容
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - ✅ 智能分割成功，代码长度: 1050
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1050
+14:28:32 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+14:28:32 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/adder_16bit.v
+14:28:32 - core.file_manager - INFO - 🆔 生成新文件ID: 3a60f997
+14:28:32 - core.file_manager - INFO - 🆕 创建新文件引用: 3a60f997
+14:28:32 - core.file_manager - INFO - 💾 文件已保存: adder_16bit.v (ID: 3a60f997, 类型: verilog)
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: adder_16bit.v (ID: 3a60f997)
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (2.97s)
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 2/2 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，包含进位输出和有符号溢出检测，接口必须严格匹配指定规范。', design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    "16位输入A寄存器（用于接收被加数）",\n    "16位输入B寄存器（用于接收加数）",\n    "16位加法运算核心逻辑（使用全加器链或超前进位结构实现）",\n    "进位输出生成逻辑（生成最高位的进位输出Cout）",\n    "有符号溢出检测逻辑（基于符号位和进位位判断是否发生溢出）"\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "a",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "16位有符号被加数"\n      },\n      {\n        "名称": "b",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "16位有符号加数"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "sum",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "16位有符号加法结果"\n      },\n      {\n        "名称": "cout",\n        "位宽": 1,\n        "类型": "logic",\n        "描述": "最高位进位输出，用于无符号加法扩展"\n      },\n      {\n        "名称": "ovf",\n        "位宽": 1,\n        "类型": "logic",\n        "描述": "有符号溢出标志：当结果超出16位有符号数范围时置高"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "该设计为纯组合逻辑模块，不涉及任何时序元件（如触发器、锁存器），因此无需时钟信号。所有输入到输出均为即时响应，无延迟约束。"\n  },\n  "设计约束": [\n    "必须使用组合逻辑实现，禁止引入任何时序元件。",\n    "必须正确处理有符号数加法，采用二进制补码表示。",\n    "进位输出（cout）应反映无符号加法的最高位进位。",\n    "溢出检测（ovf）需根据以下条件判断：当两个同号操作数相加产生异号结果时，即发生溢出；等价于 (a[15] == b[15]) && (a[15] != sum[15])。",\n    "综合工具应优化为最小延迟路径，优先考虑超前进位（Carry-Lookahead）结构以提升性能。",\n    "接口必须严格匹配指定规范，端口名称、位宽、方向不可更改。"\n  ],\n  "验证要点": [\n    "测试正数 + 正数：确保结果正确且无溢出（如 32767 + 1 → 溢出，ovf 应为1）。",\n    "测试负数 + 负数：确保结果正确且无溢出（如 -32768 + (-1) → 溢出，ovf 应为1）。",\n    "测试正数 + 负数：确保结果正确且无溢出（如 32767 + (-32768) = -1）。",\n    "验证进位输出（cout）在无符号加法中正确：例如 65535 + 1 → cout=1，sum=0。",\n    "边界值测试：包括 a=0, b=0；a=32767, b=32767；a=-32768, b=-32768 等。",\n    "检查 ovf 标志是否仅在有符号溢出时置位，且与符号位变化一致。",\n    "静态时序分析（STA）应无违例，因是组合逻辑，关键路径延迟应在可接受范围内。"\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: 设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，包含进位输出和有符号溢出检测，接口必须严格匹配指定规范。; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'adder_16bit', requirements: '实现16位二进制加法器，支持输入进位cin，输出sum、cout和overflow。overflow为有符号数溢出标志（当两个同号操作数相加结果异号时触发）。', input_ports: [{'name': 'a', 'width': 16, 'description': '第一个16位操作数'}, {'name': 'b', 'width': 16, 'description': '第二个16位操作数'}, {'name': 'cin', 'width': 1, 'description': '输入进位'}], output_ports: [{'name': 'sum', 'width': 16, 'description': '16位加法结果'}, {'name': 'cout', 'width': 1, 'description': '输出进位'}, {'name': 'overflow', 'width': 1, 'description': '有符号溢出标志'}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: adder_16bit; verilog_code: 'module adder_16bit #(
+    parameter WIDTH = 16
+) (...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: 3a60f997; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 2
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 2
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+14:28:32 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+14:28:32 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: conv_1754202497
+14:28:32 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_verilog_agent
+14:28:32 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_verilog_agent
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: adder_16bit.v (模块: adder_16bit)
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: adder_16bit.v (模块: adder)
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 1
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第1次迭代，testbench策略: 用户基准
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第1次迭代使用用户提供的测试台作为功能基准
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: adder_16bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v)
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: adder_16bit.v
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+14:28:32 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 0轮对话历史
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': '3a60f997', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T14:28:32.953340', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'adder_16bit'}
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit.v (模块: adder_16bit)
+14:28:32 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_adder_16bit.v (模块: tb_adder_16bit)
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: adder_16bit.v (1050 bytes)
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: testbench_adder_16bit.v (10745 bytes)
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3433379
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   1. adder_16bit.v (设计)
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO -   2. testbench_adder_16bit.v (测试台)
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3433379 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:32 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 6
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement
+
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析编译错误，stderr长度: 960
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: stderr内容: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: ...
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 匹配错误模式: syntax error -> 语法错误
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 错误分析使用完整上下文: 0轮对话历史, 0次历史迭代, 0个编译错误
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析测试失败，生成改进建议
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议数量: 4
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 失败类别: syntax_error
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议1: 检查上一阶段的工具执行结果...
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议2: 确保所有必需的文件都已正确生成...
+14:28:33 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议3: 验证设计与测试台的兼容性...
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 测试失败，分析错误信息传递
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 test_results keys: ['success', 'stage', 'compile_stdout', 'compile_stderr', 'command', 'returncode', 'error_details', 'precise_errors', 'all_tests_passed', 'test_summary', 'detailed_analysis', 'failure_reasons', 'suggestions', 'error_category', 'intelligent_error_analysis', 'has_intelligent_suggestions', 'testbench_path', 'design_files', 'compilation_files', 'dependency_analysis']
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存编译错误信息: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework...
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 保存了3个编译错误
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存失败原因: ['语法错误']
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存错误类别: syntax_issue
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: improvement_analysis keys: ['suggestions', 'analysis_timestamp', 'failure_category', 'has_actionable_suggestions', 'test_execution_success']
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 改进建议数量: 4
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议1: 检查上一阶段的工具执行结果...
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议2: 确保所有必需的文件都已正确生成...
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议3: 验证设计与测试台的兼容性...
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 2/3 次迭代
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754202497_iter_2
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 2 次迭代
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 2
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 完整上下文传递: 包含0轮对话，0个代码文件
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 继续持续对话: tdd_tdd_1754202497_1754202497
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 向持续对话智能体发送任务: enhanced_real_verilog_agent
+14:28:33 - extensions.test_driven_coordinator.TestDrivenCoordinator - ERROR - ❌ 持续对话异常: 'EnhancedCentralizedCoordinator' object has no attribute 'agents'
+14:28:33 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754202513
+14:28:33 - Agent.centralized_coordinator - INFO - 🔧 DEBUG: 使用强制指定的任务类型: design
+14:28:33 - Agent.centralized_coordinator - INFO - 🎯 强制任务类型: design, 首选角色: verilog_designer
+14:28:33 - Agent.centralized_coordinator - INFO - ✅⚡ 选择首选角色智能体: enhanced_real_verilog_agent (角色: verilog_designer)
+14:28:33 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754202513
+14:28:33 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_verilog_agent 发言
+14:28:33 - Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+14:28:33 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754202513
+14:28:33 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 2):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16...
+14:28:33 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+14:28:33 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:33 - LLMClient-dashscope - INFO - 📋 System Prompt (3701 字符):
+14:28:33 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+14:28:33 - LLMClient-dashscope - INFO - 👤 User Prompt (2375 字符):
+14:28:33 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 2):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+
+
+🎯 **基于历史迭代的成功经验指导**:
+
+### ❌ 避免的错误模式:
+1. 语句格式错误：检查语句语法，确保符合Verilog-2001标准
+
+### 🎯 本次迭代要求:
+请严格按照上述成功模式生成代码，确保：
+1. 使用正确的数组大小
+2. 实现纯组合逻辑
+3. 严格匹配接口规范
+📚 **历史迭代经验教训**:
+
+### 迭代1:
+- 编译成功: False
+- 主要失败原因: compilation_error
+- 经验教训: 
+
+
+
+🔧 **严格代码验证要求**:
+1. **编译器兼容性 (iverilog - Verilog-2001标准)**:
+   ❌ 禁止：logic类型、interface、generate内复杂逻辑、assert语句
+   ✅ 只用：wire、reg、assign、always@(*)
+2. **纯组合逻辑验证**:
+   ❌ 严禁：clk、rst、@(posedge)、output reg配合always@(posedge)
+   ✅ 必须：output wire配合assign，或output reg配合always@(*)
+3. **接口严格匹配**:
+   - 模块名必须完全匹配测试台实例化
+   - 端口名必须与测试台连接一致
+
+🚨 **上次编译错误详情**:
+```
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement
+
+```
+
+💡 **改进建议**:
+1. 检查上一阶段的工具执行结果
+2. 确保所有必需的文件都已正确生成
+3. 验证设计与测试台的兼容性
+4. 修复Verilog语法错误
+14:28:33 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:36 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1225 字符, 3.64s):
+14:28:36 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个16位加法器模块adder_16bit，实现组合逻辑加法、进位处理和有符号溢出检测，接口必须严格匹配指定规范。",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "requirements": "实现16位二进制加法器，支持输入进位cin，输出sum[15:0]、cout和overflow（有符号溢出标志）。使用纯组合逻辑，行波进位结构，确保时序性能良好且代码可综合。",
+                "input_ports": [
+                    {"name": "a", "width": 16, "description": "第一个16位操作数"},
+                    {"name": "b", "width": 16, "description": "第二个16位操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 16, "description": "16位加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"},
+                    {"name": "overflow", "width": 1, "description": "有符号运算溢出标志"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+14:28:36 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:36 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+14:28:36 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+14:28:36 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+14:28:36 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+14:28:36 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:36 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+14:28:36 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+14:28:36 - LLMClient-dashscope - INFO - 👤 User Prompt (196 字符):
+14:28:36 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个16位加法器模块adder_16bit，实现组合逻辑加法、进位处理和有符号溢出检测，接口必须严格匹配指定规范。
+设计类型: combinational
+复杂度级别: medium
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+
+返回JSON格式的分析结果。
+
+14:28:36 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:46 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1874 字符, 9.36s):
+14:28:46 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    {
+      "模块名称": "full_adder_1bit",
+      "功能描述": "实现一位全加法器，接收两个输入位和来自低位的进位，输出本位和与向高位的进位。",
+      "复用方式": "实例化16次，构成串行进位链"
+    },
+    {
+      "模块名称": "carry_chain",
+      "功能描述": "构建16位串行进位链（Ripple Carry），逐级传递进位信号，确保加法运算的正确性。",
+      "关键特性": "从最低位开始逐级计算进位，延迟较高但结构简单"
+    },
+    {
+      "模块名称": "overflow_detector",
+      "功能描述": "检测有符号加法溢出，基于最高位（MSB）和进位输出判断是否发生溢出。",
+      "判断逻辑": "当两个正数相加结果为负，或两个负数相加结果为正时，判定为溢出。即：overflow = (a[15] == b[15]) && (a[15] != sum[15])"
+    }
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "a",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "第一个16位有符号操作数"
+      },
+      {
+        "名称": "b",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "第二个16位有符号操作数"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "sum",
+        "位宽": 16,
+        "类型": "signed",
+        "描述": "16位加法结果，包含符号位"
+      },
+      {
+        "名称": "overflow",
+        "位宽": 1,
+        "类型": "logic",
+        "描述": "溢出标志，1表示有符号加法溢出，0表示无溢出"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "该设计为纯组合逻辑模块，不涉及任何时钟信号。所有输入到输出均为即时响应，无寄存器延迟。",
+    "约束": "无需时钟域同步，所有路径必须满足组合逻辑最大延迟要求（如建立时间、保持时间等），适用于高速组合路径场景。"
+  },
+  "设计约束": [
+    "模块必须为纯组合逻辑，不能包含任何触发器或时序元件。",
+    "输入 a 和 b 必须为有符号整数（补码表示），输出 sum 也应为有符号结果。",
+    "进位链必须采用串行进位（Ripple Carry）结构，以保证逻辑正确性。",
+    "溢出检测必须基于有符号加法规则，仅在 MSB 与进位关系异常时置位。",
+    "综合工具需优化路径延迟，尤其关注从 a[0] 到 carry_out 的关键路径。",
+    "输出 sum 的位宽必须严格为16位，不可扩展或截断。",
+    "模块名必须为 adder_16bit，且接口定义完全匹配指定规范。"
+  ],
+  "验证要点": [
+    "功能验证：对所有可能的有符号输入组合进行测试（至少覆盖边界值：-32768, -1, 0, 1, 32767）。",
+    "溢出检测验证：验证正+正溢出（如 32767 + 1）、负+负溢出（如 -32768 + (-1)）时 overflow 输出为1。",
+    "非溢出情况验证：验证正常加法（如 100 + 200）时 overflow 输出为0。",
+    "进位链正确性验证：检查低位进位是否正确传递至高位，可通过模拟观察 carry 信号传播过程。",
+    "边界值测试：测试 a=0, b=0；a=32767, b=32767；a=-32768, b=-32768 等极端情况。",
+    "综合后时序分析：确保关键路径延迟在目标工艺下可接受，避免违反时序约束。",
+    "代码风格与可读性：使用清晰命名、注释明确，便于后续维护与审查。"
+  ]
+}
+```
+14:28:46 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:46 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (9.36s)
+14:28:46 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+14:28:46 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+14:28:46 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+14:28:46 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: adder_16bit
+14:28:46 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:46 - LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+14:28:46 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+14:28:46 - LLMClient-dashscope - INFO - 👤 User Prompt (611 字符):
+14:28:46 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 adder_16bit 的Verilog模块，要求如下：
+
+功能需求: 实现16位二进制加法器，支持输入进位cin，输出sum[15:0]、cout和overflow（有符号溢出标志）。使用纯组合逻辑，行波进位结构，确保时序性能良好且代码可综合。
+编码风格: rtl
+
+端口定义:
+    input [15:0] a,  // 第一个16位操作数
+    input [15:0] b,  // 第二个16位操作数
+    input cin,  // 输入进位
+    output [15:0] sum,  // 16位加法结果
+    output cout,  // 输出进位
+    output overflow,  // 有符号运算溢出标志
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst (active high)
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+14:28:46 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:49 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1392 字符, 3.78s):
+14:28:49 - LLMClient-dashscope - INFO - 🤖 module adder_16bit #(
+    parameter WIDTH = 16
+) (
+    input clk,
+    input rst,
+    input [WIDTH-1:0] a,
+    input [WIDTH-1:0] b,
+    input cin,
+    output reg [WIDTH-1:0] sum,
+    output reg cout,
+    output reg overflow
+);
+
+// Internal signals for carry propagation
+reg [WIDTH-1:0] carry;
+
+// Combinational logic for ripple-carry adder
+always @(*) begin
+    // Initialize carry chain
+    carry[0] = cin;
+    
+    // Ripple-carry addition
+    for (int i = 0; i < WIDTH; i++) begin
+        {carry[i+1], sum[i]} = a[i] + b[i] + carry[i];
+    end
+    
+    // Output carry
+    cout = carry[WIDTH];
+    
+    // Overflow detection for signed arithmetic:
+    // Overflow occurs when two positive numbers produce a negative result,
+    // or two negative numbers produce a positive result.
+    // This is detected by comparing the sign bits of inputs and output.
+    overflow = (a[WIDTH-1] == b[WIDTH-1]) && (a[WIDTH-1] != sum[WIDTH-1]);
+end
+
+// Synchronous reset for output registers
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        sum <= 16'd0;
+        cout <= 1'b0;
+        overflow <= 1'b0;
+    end else begin
+        // Outputs are updated on every clock cycle based on combinational logic
+        // No need to reassign in this block since they're driven by combinational logic
+        // The register behavior is implicit through the always block
+    end
+end
+
+endmodule
+14:28:49 - LLMClient-dashscope - INFO - ====================================================================================================
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: adder_16bit.v
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1392
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔍 尝试智能分割内容
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - ✅ 智能分割成功，代码长度: 1392
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1392
+14:28:49 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+14:28:49 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/adder_16bit_v1.v
+14:28:49 - core.file_manager - INFO - 🔄 使用现有文件ID: 3a60f997
+14:28:49 - core.file_manager - INFO - 🔄 覆盖现有文件: adder_16bit.v
+14:28:49 - core.file_manager - INFO - 🔄 更新现有文件引用: 3a60f997
+14:28:49 - core.file_manager - INFO - 💾 文件已保存: adder_16bit.v (ID: 3a60f997, 类型: verilog)
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: adder_16bit.v (ID: 3a60f997)
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (3.79s)
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 2/2 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个16位加法器模块adder_16bit，实现组合逻辑加法、进位处理和有符号溢出检测，接口必须严格匹配指定规范。', design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    {\n      "模块名称": "full_adder_1bit",\n      "功能描述": "实现一位全加法器，接收两个输入位和来自低位的进位，输出本位和与向高位的进位。",\n      "复用方式": "实例化16次，构成串行进位链"\n    },\n    {\n      "模块名称": "carry_chain",\n      "功能描述": "构建16位串行进位链（Ripple Carry），逐级传递进位信号，确保加法运算的正确性。",\n      "关键特性": "从最低位开始逐级计算进位，延迟较高但结构简单"\n    },\n    {\n      "模块名称": "overflow_detector",\n      "功能描述": "检测有符号加法溢出，基于最高位（MSB）和进位输出判断是否发生溢出。",\n      "判断逻辑": "当两个正数相加结果为负，或两个负数相加结果为正时，判定为溢出。即：overflow = (a[15] == b[15]) && (a[15] != sum[15])"\n    }\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "a",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "第一个16位有符号操作数"\n      },\n      {\n        "名称": "b",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "第二个16位有符号操作数"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "sum",\n        "位宽": 16,\n        "类型": "signed",\n        "描述": "16位加法结果，包含符号位"\n      },\n      {\n        "名称": "overflow",\n        "位宽": 1,\n        "类型": "logic",\n        "描述": "溢出标志，1表示有符号加法溢出，0表示无溢出"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "该设计为纯组合逻辑模块，不涉及任何时钟信号。所有输入到输出均为即时响应，无寄存器延迟。",\n    "约束": "无需时钟域同步，所有路径必须满足组合逻辑最大延迟要求（如建立时间、保持时间等），适用于高速组合路径场景。"\n  },\n  "设计约束": [\n    "模块必须为纯组合逻辑，不能包含任何触发器或时序元件。",\n    "输入 a 和 b 必须为有符号整数（补码表示），输出 sum 也应为有符号结果。",\n    "进位链必须采用串行进位（Ripple Carry）结构，以保证逻辑正确性。",\n    "溢出检测必须基于有符号加法规则，仅在 MSB 与进位关系异常时置位。",\n    "综合工具需优化路径延迟，尤其关注从 a[0] 到 carry_out 的关键路径。",\n    "输出 sum 的位宽必须严格为16位，不可扩展或截断。",\n    "模块名必须为 adder_16bit，且接口定义完全匹配指定规范。"\n  ],\n  "验证要点": [\n    "功能验证：对所有可能的有符号输入组合进行测试（至少覆盖边界值：-32768, -1, 0, 1, 32767）。",\n    "溢出检测验证：验证正+正溢出（如 32767 + 1）、负+负溢出（如 -32768 + (-1)）时 overflow 输出为1。",\n    "非溢出情况验证：验证正常加法（如 100 + 200）时 overflow 输出为0。",\n    "进位链正确性验证：检查低位进位是否正确传递至高位，可通过模拟观察 carry 信号传播过程。",\n    "边界值测试：测试 a=0, b=0；a=32767, b=32767；a=-32768, b=-32768 等极端情况。",\n    "综合后时序分析：确保关键路径延迟在目标工艺下可接受，避免违反时序约束。",\n    "代码风格与可读性：使用清晰命名、注释明确，便于后续维护与审查。"\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: 设计一个16位加法器模块adder_16bit，实现组合逻辑加法、进位处理和有符号溢出检测，接口必须严格匹配指定规范。; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'adder_16bit', requirements: '实现16位二进制加法器，支持输入进位cin，输出sum[15:0]、cout和overflow（有符号溢出标志）。使用纯组合逻辑，行波进位结构，确保时序性能良好且代码可综合。', input_ports: [{'name': 'a', 'width': 16, 'description': '第一个16位操作数'}, {'name': 'b', 'width': 16, 'description': '第二个16位操作数'}, {'name': 'cin', 'width': 1, 'description': '输入进位'}], output_ports: [{'name': 'sum', 'width': 16, 'description': '16位加法结果'}, {'name': 'cout', 'width': 1, 'description': '输出进位'}, {'name': 'overflow', 'width': 1, 'description': '有符号运算溢出标志'}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: adder_16bit; verilog_code: 'module adder_16bit #(
+    parameter WIDTH = 16
+) (...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: 3a60f997; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 2
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 2
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: conv_1754202513
+14:28:49 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_verilog_agent
+14:28:49 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_verilog_agent
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: adder_16bit.v (模块: adder_16bit)
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: adder_16bit.v (模块: adder)
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 2
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第2次迭代，testbench策略: 用户备用
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第2次迭代，智能体未生成测试台，使用用户测试台
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: adder_16bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v)
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: adder_16bit.v
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 0轮对话历史
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': '3a60f997', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T14:28:49.848676', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'adder_16bit'}
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit.v (模块: adder_16bit)
+14:28:49 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_adder_16bit.v (模块: tb_adder_16bit)
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: adder_16bit.v (1392 bytes)
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: testbench_adder_16bit.v (10745 bytes)
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3433396
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   1. adder_16bit.v (设计)
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO -   2. testbench_adder_16bit.v (测试台)
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3433396 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 8
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: error: Incomprehensible for loop.
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement
+
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析编译错误，stderr长度: 1277
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: stderr内容: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: error: Incomprehe...
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 匹配错误模式: syntax error -> 语法错误
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 错误分析使用完整上下文: 0轮对话历史, 1次历史迭代, 0个编译错误
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 识别到失败模式: {'repeated_errors': ['compilation_error'], 'error_evolution': [{'iteration': 1, 'failures': ['compilation_error'], 'lessons': []}], 'success_patterns': [], 'common_fixes': []}
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析测试失败，生成改进建议
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议数量: 4
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 失败类别: syntax_error
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议1: 检查上一阶段的工具执行结果...
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议2: 确保所有必需的文件都已正确生成...
+14:28:49 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议3: 验证设计与测试台的兼容性...
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 测试失败，分析错误信息传递
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 test_results keys: ['success', 'stage', 'compile_stdout', 'compile_stderr', 'command', 'returncode', 'error_details', 'precise_errors', 'all_tests_passed', 'test_summary', 'detailed_analysis', 'failure_reasons', 'suggestions', 'error_category', 'intelligent_error_analysis', 'has_intelligent_suggestions', 'testbench_path', 'design_files', 'compilation_files', 'dependency_analysis']
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存编译错误信息: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_...
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 保存了4个编译错误
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存失败原因: ['语法错误']
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存错误类别: syntax_issue
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: improvement_analysis keys: ['suggestions', 'analysis_timestamp', 'failure_category', 'has_actionable_suggestions', 'test_execution_success']
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 改进建议数量: 4
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议1: 检查上一阶段的工具执行结果...
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议2: 确保所有必需的文件都已正确生成...
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议3: 验证设计与测试台的兼容性...
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 3/3 次迭代
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754202497_iter_3
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 3 次迭代
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 3
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 完整上下文传递: 包含0轮对话，0个代码文件
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 继续持续对话: tdd_tdd_1754202497_1754202497
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 向持续对话智能体发送任务: enhanced_real_verilog_agent
+14:28:49 - extensions.test_driven_coordinator.TestDrivenCoordinator - ERROR - ❌ 持续对话异常: 'EnhancedCentralizedCoordinator' object has no attribute 'agents'
+14:28:49 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754202529
+14:28:49 - Agent.centralized_coordinator - INFO - 🔧 DEBUG: 使用强制指定的任务类型: design
+14:28:49 - Agent.centralized_coordinator - INFO - 🎯 强制任务类型: design, 首选角色: verilog_designer
+14:28:49 - Agent.centralized_coordinator - INFO - ✅⚡ 选择首选角色智能体: enhanced_real_verilog_agent (角色: verilog_designer)
+14:28:49 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754202529
+14:28:49 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_verilog_agent 发言
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+14:28:49 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754202529
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 3):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16...
+14:28:49 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+14:28:49 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:28:49 - LLMClient-dashscope - INFO - 📋 System Prompt (3701 字符):
+14:28:49 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+14:28:49 - LLMClient-dashscope - INFO - 👤 User Prompt (2885 字符):
+14:28:49 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 3):
+
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+
+
+🎯 **基于历史迭代的成功经验指导**:
+
+### ❌ 避免的错误模式:
+1. 语句格式错误：检查语句语法，确保符合Verilog-2001标准
+1. 循环语法错误：在generate块中使用简单的assign语句，避免复杂逻辑
+
+### 🎯 本次迭代要求:
+请严格按照上述成功模式生成代码，确保：
+1. 使用正确的数组大小
+2. 实现纯组合逻辑
+3. 严格匹配接口规范
+📚 **历史迭代经验教训**:
+
+### 迭代1:
+- 编译成功: False
+- 主要失败原因: compilation_error
+- 经验教训: 
+
+### 迭代2:
+- 编译成功: False
+- 主要失败原因: compilation_error
+- 经验教训: 
+
+🎯 **基于历史模式的智能建议**:
+
+⚠️ **重复错误警告**: 以下错误在历史迭代中重复出现:
+   - compilation_error
+   请特别注意避免这些错误！
+
+
+🔧 **严格代码验证要求**:
+1. **编译器兼容性 (iverilog - Verilog-2001标准)**:
+   ❌ 禁止：logic类型、interface、generate内复杂逻辑、assert语句
+   ✅ 只用：wire、reg、assign、always@(*)
+2. **纯组合逻辑验证**:
+   ❌ 严禁：clk、rst、@(posedge)、output reg配合always@(posedge)
+   ✅ 必须：output wire配合assign，或output reg配合always@(*)
+3. **接口严格匹配**:
+   - 模块名必须完全匹配测试台实例化
+   - 端口名必须与测试台连接一致
+
+🚨 **上次编译错误详情**:
+```
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v:23: error: Incomprehensible for loop.
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement
+
+```
+
+💡 **改进建议**:
+1. 检查上一阶段的工具执行结果
+2. 确保所有必需的文件都已正确生成
+3. 验证设计与测试台的兼容性
+4. 修复Verilog语法错误
+14:28:49 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:01 - LLMClient-dashscope - INFO - 🤖 LLM响应 (3713 字符, 11.68s):
+14:29:01 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，支持输入进位cin，输出sum、cout和有符号溢出标志overflow。必须严格匹配接口规范，使用Verilog-2001标准，避免logic类型、generate块复杂逻辑、assert语句等不兼容语法。",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "requirements": "实现16位二进制加法器，支持有符号数溢出检测。输入a[15:0], b[15:0], cin；输出sum[15:0], cout, overflow。使用纯组合逻辑，行波进位结构，确保时序性能良好且代码可综合。",
+                "input_ports": [
+                    {"name": "a", "width": 16},
+                    {"name": "b", "width": 16},
+                    {"name": "cin", "width": 1}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 16},
+                    {"name": "cout", "width": 1},
+                    {"name": "overflow", "width": 1}
+                ],
+                "coding_style": "rtl"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n    assign carry[0] = cin;\n    assign sum[0] = a[0] ^ b[0] ^ carry[0];\n    assign carry[1] = (a[0] & b[0]) | (a[0] & carry[0]) | (b[0] & carry[0]);\n    \n    genvar i;\n    generate\n        for (i = 1; i < 16; i = i + 1) begin : carry_chain\n            assign sum[i] = a[i] ^ b[i] ^ carry[i];\n            assign carry[i+1] = (a[i] & b[i]) | (a[i] & carry[i]) | (b[i] & carry[i]);\n        end\n    endgenerate\n\n    assign cout = carry[16];\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule",
+                "test_scenarios": [
+                    "Test case 1: a = 0x7FFF, b = 0x0001, cin = 0 → should not overflow",
+                    "Test case 2: a = 0x7FFF, b = 0x0001, cin = 1 → should overflow",
+                    "Test case 3: a = 0x8000, b = 0x8000, cin = 0 → should overflow (negative + negative)",
+                    "Test case 4: a = 0xFFFF, b = 0xFFFF, cin = 1 → max value with carry",
+                    "Test case 5: a = 0x0000, b = 0x0000, cin = 0 → zero case"
+                ],
+                "clock_period": 10,
+                "simulation_time": 1000
+            }
+        },
+        {
+            "tool_name": "write_file",
+            "parameters": {
+                "filename": "adder_16bit.v",
+                "content": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n    assign carry[0] = cin;\n    assign sum[0] = a[0] ^ b[0] ^ carry[0];\n    assign carry[1] = (a[0] & b[0]) | (a[0] & carry[0]) | (b[0] & carry[0]);\n    \n    genvar i;\n    generate\n        for (i = 1; i < 16; i = i + 1) begin : carry_chain\n            assign sum[i] = a[i] ^ b[i] ^ carry[i];\n            assign carry[i+1] = (a[i] & b[i]) | (a[i] & carry[i]) | (b[i] & carry[i]);\n        end\n    endgenerate\n\n    assign cout = carry[16];\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule",
+                "description": "16-bit ripple-carry adder with signed overflow detection. Fully combinational, matches exact interface specification."
+            }
+        }
+    ]
+}
+```
+14:29:01 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:01 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+14:29:01 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+14:29:01 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+14:29:01 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+14:29:01 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:29:01 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+14:29:01 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+14:29:01 - LLMClient-dashscope - INFO - 👤 User Prompt (276 字符):
+14:29:01 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，支持输入进位cin，输出sum、cout和有符号溢出标志overflow。必须严格匹配接口规范，使用Verilog-2001标准，避免logic类型、generate块复杂逻辑、assert语句等不兼容语法。
+设计类型: combinational
+复杂度级别: medium
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+
+返回JSON格式的分析结果。
+
+14:29:01 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:10 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1743 字符, 8.59s):
+14:29:10 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    "16位加法运算核心逻辑：实现两个16位输入数A和B的逐位加法，考虑进位cin。",
+    "进位链生成：使用超前进位（Carry Lookahead）或串行进位结构，确保组合逻辑延迟合理。",
+    "溢出检测逻辑：基于有符号数加法规则，比较最高位进位与次高位进位，判断是否发生溢出。",
+    "输出寄存器接口封装：输出sum（16位结果）、cout（进位输出）、overflow（溢出标志）"
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "A",
+        "类型": "input",
+        "宽度": 16,
+        "描述": "第一个16位操作数，有符号整数"
+      },
+      {
+        "名称": "B",
+        "类型": "input",
+        "宽度": 16,
+        "描述": "第二个16位操作数，有符号整数"
+      },
+      {
+        "名称": "cin",
+        "类型": "input",
+        "宽度": 1,
+        "描述": "来自低位的进位输入，用于扩展加法"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "sum",
+        "类型": "output",
+        "宽度": 16,
+        "描述": "16位加法结果，有符号表示"
+      },
+      {
+        "名称": "cout",
+        "类型": "output",
+        "宽度": 1,
+        "描述": "最高位产生的进位输出"
+      },
+      {
+        "名称": "overflow",
+        "类型": "output",
+        "宽度": 1,
+        "描述": "有符号加法溢出标志：当正数+正数<0 或 负数+负数>0时置1"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "本设计为纯组合逻辑模块，不涉及任何时钟信号。所有输入到输出均为即时响应，无寄存器延迟。因此无需时钟域划分或同步处理。"
+  },
+  "设计约束": [
+    "必须使用Verilog-2001标准语法，禁止使用logic类型（应使用reg/wire），避免generate块、assert语句等高级特性。",
+    "仅允许使用基本门级和连续赋值（assign）结构，推荐采用连续赋值方式实现加法器核心逻辑。",
+    "溢出判断必须基于有符号数规则：overflow = (A[15] == B[15]) && (A[15] != sum[15])",
+    "进位输出cout应为最高位的进位，即第16位的进位输出。",
+    "不得引入任何时序元件（如触发器、锁存器）或异步复位/置位信号。",
+    "模块名必须为adder_16bit，且为顶层模块，不可嵌套在其他模块中。"
+  ],
+  "验证要点": [
+    "功能正确性验证：测试所有可能的16位有符号数组合，包括正数、负数、零，以及边界情况（如最大值、最小值）。",
+    "进位输出验证：确认cin=1时，结果正确进位；cin=0时，不影响高位进位计算。",
+    "溢出标志验证：重点测试正+正→负、负+负→正的情况，确保overflow被正确置位。",
+    "边界值测试：A=16'h7FFF, B=16'h7FFF → 应产生溢出；A=16'h8000, B=16'h8000 → 应产生溢出。",
+    "组合覆盖度：确保所有输入组合至少覆盖一次，尤其关注进位传播路径和溢出条件。",
+    "静态分析检查：确保无未连接端口、无阻塞赋值错误、无非法类型声明。"
+  ]
+}
+```
+14:29:10 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:10 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (8.59s)
+14:29:10 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+14:29:10 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+14:29:10 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+14:29:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: adder_16bit
+14:29:10 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:29:10 - LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+14:29:10 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。
+14:29:10 - LLMClient-dashscope - INFO - 👤 User Prompt (585 字符):
+14:29:10 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 adder_16bit 的Verilog模块，要求如下：
+
+功能需求: 实现16位二进制加法器，支持有符号数溢出检测。输入a[15:0], b[15:0], cin；输出sum[15:0], cout, overflow。使用纯组合逻辑，行波进位结构，确保时序性能良好且代码可综合。
+编码风格: rtl
+
+端口定义:
+    input [15:0] a,  // 
+    input [15:0] b,  // 
+    input cin,  //
+    output [15:0] sum,  // 
+    output cout,  // 
+    output overflow,  //
+
+时钟域:
+- 时钟信号: clk
+- 复位信号: rst (active high)
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+14:29:10 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:14 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1470 字符, 4.36s):
+14:29:14 - LLMClient-dashscope - INFO - 🤖 module adder_16bit #(
+    parameter WIDTH = 16
+) (
+    input               clk,
+    input               rst,
+    input  [WIDTH-1:0]  a,
+    input  [WIDTH-1:0]  b,
+    input               cin,
+    output reg [WIDTH-1:0] sum,
+    output reg          cout,
+    output reg          overflow
+);
+
+// Internal signals for ripple-carry chain
+wire [WIDTH-1:0] carry;
+
+// Generate carry chain using full adders
+genvar i;
+generate
+    // First stage: LSB (i=0)
+    assign carry[0] = cin;
+    always @(*) begin
+        {carry[1], sum[0]} = a[0] + b[0] + carry[0];
+    end
+
+    // Remaining stages
+    for (i = 1; i < WIDTH; i = i + 1) begin : fa_stage
+        always @(*) begin
+            {carry[i+1], sum[i]} = a[i] + b[i] + carry[i];
+        end
+    end
+endgenerate
+
+// Final carry out and overflow detection
+assign cout = carry[WIDTH];
+
+// Overflow detection for signed addition:
+// Overflow occurs when two positive numbers produce a negative result,
+// or two negative numbers produce a positive result.
+// This is detected by XOR of the last two carry bits (Cin and Cout of MSB).
+// For signed arithmetic, overflow = C_out XOR C_{n-1}
+assign overflow = carry[WIDTH] ^ carry[WIDTH-1];
+
+// Synchronous register update on clock edge
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        sum <= 16'd0;
+        cout <= 1'b0;
+        overflow <= 1'b0;
+    end else begin
+        sum <= sum;
+        cout <= cout;
+        overflow <= overflow;
+    end
+end
+
+endmodule
+14:29:14 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: adder_16bit.v
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1470
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🔍 尝试智能分割内容
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - ✅ 智能分割成功，代码长度: 1470
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1470
+14:29:14 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+14:29:14 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/adder_16bit_v2.v
+14:29:14 - core.file_manager - INFO - 🔄 使用现有文件ID: 3a60f997
+14:29:14 - core.file_manager - INFO - 🔄 覆盖现有文件: adder_16bit.v
+14:29:14 - core.file_manager - INFO - 🔄 更新现有文件引用: 3a60f997
+14:29:14 - core.file_manager - INFO - 💾 文件已保存: adder_16bit.v (ID: 3a60f997, 类型: verilog)
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: adder_16bit.v (ID: 3a60f997)
+14:29:14 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (4.37s)
+14:29:14 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+14:29:14 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射, 保持test_scenarios字符串数组格式
+14:29:14 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+14:29:14 - Agent.enhanced_real_verilog_agent - INFO - 🧪 生成测试台: adder_16bit
+14:29:14 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+14:29:14 - LLMClient-dashscope - INFO - 📋 System Prompt (62 字符):
+14:29:14 - LLMClient-dashscope - INFO - 📋 你是验证工程师，请生成全面的Verilog测试台。记住：只返回纯Verilog代码，不要任何解释文字或Markdown格式。
+14:29:14 - LLMClient-dashscope - INFO - 👤 User Prompt (1505 字符):
+14:29:14 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请为以下Verilog模块生成一个完整的测试台(testbench)：
+
+目标模块: adder_16bit
+```verilog
+module adder_16bit (
+    input  [15:0] a,
+    input  [15:0] b,
+    input         cin,
+    output [15:0] sum,
+    output        cout,
+    output        overflow
+);
+
+    wire [15:0] carry;
+    assign carry[0] = cin;
+    assign sum[0] = a[0] ^ b[0] ^ carry[0];
+    assign carry[1] = (a[0] & b[0]) | (a[0] & carry[0]) | (b[0] & carry[0]);
+    
+    genvar i;
+    generate
+        for (i = 1; i < 16; i = i + 1) begin : carry_chain
+            assign sum[i] = a[i] ^ b[i] ^ carry[i];
+            assign carry[i+1] = (a[i] & b[i]) | (a[i] & carry[i]) | (b[i] & carry[i]);
+        end
+    endgenerate
+
+    assign cout = carry[16];
+    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10ns
+- 仿真时间: 1000 个时钟周期
+- 测试场景: Test case 1: a = 0x7FFF, b = 0x0001, cin = 0 → should not overflow, Test case 2: a = 0x7FFF, b = 0x0001, cin = 1 → should overflow, Test case 3: a = 0x8000, b = 0x8000, cin = 0 → should overflow (negative + negative), Test case 4: a = 0xFFFF, b = 0xFFFF, cin = 1 → max value with carry, Test case 5: a = 0x0000, b = 0x0000, cin = 0 → zero case
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog测试台代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+不要包含功能说明、测试报告示例、文件结构建议等文字内容。
+直接从 `timescale 开始，以 endmodule 结束。
+
+测试台必须包含：
+1. `timescale 声明
+2. testbench模块声明
+3. 信号声明
+4. 时钟和复位生成
+5. 被测模块实例化
+6. 测试激励生成
+7. 结果检查和显示
+8. 适当的$display和$monitor语句
+9. 波形转储设置
+
+确保测试台能够充分验证模块功能，并且是纯Verilog代码。
+
+14:29:14 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:24 - LLMClient-dashscope - INFO - 🤖 LLM响应 (3066 字符, 10.17s):
+14:29:24 - LLMClient-dashscope - INFO - 🤖 `timescale 1ns / 1ps
+
+module tb_adder_16bit;
+
+    reg [15:0] a;
+    reg [15:0] b;
+    reg        cin;
+    wire [15:0] sum;
+    wire        cout;
+    wire        overflow;
+
+    // Instance of the DUT
+    adder_16bit uut (
+        .a(a),
+        .b(b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout),
+        .overflow(overflow)
+    );
+
+    // Clock generation
+    parameter CLK_PERIOD = 10ns;
+    reg clk;
+    always #CLK_PERIOD clk = ~clk;
+
+    // Initial block for testbench
+    initial begin
+        // Initialize inputs
+        a = 16'd0;
+        b = 16'd0;
+        cin = 1'b0;
+
+        // Enable waveform dumping
+        $dumpfile("adder_16bit.vcd");
+        $dumpvars(0, tb_adder_16bit);
+
+        // Monitor signals
+        $monitor("%t | a=16'h%h, b=16'h%h, cin=%b | sum=16'h%h, cout=%b, overflow=%b",
+                 $time, a, b, cin, sum, cout, overflow);
+
+        // Test case 1: a = 0x7FFF, b = 0x0001, cin = 0 → no overflow
+        #20 a = 16'h7FFF; b = 16'h0001; cin = 1'b0;
+        #20;
+        if (sum !== 16'h8000 || cout !== 1'b0 || overflow !== 1'b0) begin
+            $display("ERROR: Test case 1 failed. Expected sum=0x8000, cout=0, overflow=0");
+        end else begin
+            $display("PASS: Test case 1 passed.");
+        end
+
+        // Test case 2: a = 0x7FFF, b = 0x0001, cin = 1 → overflow
+        #20 a = 16'h7FFF; b = 16'h0001; cin = 1'b1;
+        #20;
+        if (sum !== 16'h8000 || cout !== 1'b1 || overflow !== 1'b1) begin
+            $display("ERROR: Test case 2 failed. Expected sum=0x8000, cout=1, overflow=1");
+        end else begin
+            $display("PASS: Test case 2 passed.");
+        end
+
+        // Test case 3: a = 0x8000, b = 0x8000, cin = 0 → overflow (negative + negative)
+        #20 a = 16'h8000; b = 16'h8000; cin = 1'b0;
+        #20;
+        if (sum !== 16'h0000 || cout !== 1'b1 || overflow !== 1'b1) begin
+            $display("ERROR: Test case 3 failed. Expected sum=0x0000, cout=1, overflow=1");
+        end else begin
+            $display("PASS: Test case 3 passed.");
+        end
+
+        // Test case 4: a = 0xFFFF, b = 0xFFFF, cin = 1 → max value with carry
+        #20 a = 16'hFFFF; b = 16'hFFFF; cin = 1'b1;
+        #20;
+        if (sum !== 16'hFFFE || cout !== 1'b1 || overflow !== 1'b0) begin
+            $display("ERROR: Test case 4 failed. Expected sum=0xFFFE, cout=1, overflow=0");
+        end else begin
+            $display("PASS: Test case 4 passed.");
+        end
+
+        // Test case 5: a = 0x0000, b = 0x0000, cin = 0 → zero case
+        #20 a = 16'd0; b = 16'd0; cin = 1'b0;
+        #20;
+        if (sum !== 16'd0 || cout !== 1'b0 || overflow !== 1'b0) begin
+            $display("ERROR: Test case 5 failed. Expected sum=0, cout=0, overflow=0");
+        end else begin
+            $display("PASS: Test case 5 passed.");
+        end
+
+        // Finish simulation after 1000 clock cycles
+        #20000;
+        $display("Simulation completed successfully.");
+        $finish;
+    end
+
+    // Initial block to start clock
+    initial begin
+        clk = 0;
+    end
+
+endmodule
+14:29:24 - LLMClient-dashscope - INFO - ====================================================================================================
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: adder_16bit_tb.v
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 3066
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 尝试智能分割内容
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 智能分割成功，代码长度: 3066
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 3066
+14:29:24 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+14:29:24 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: testbenches/adder_16bit_tb.v
+14:29:24 - core.file_manager - INFO - 🆔 生成新文件ID: 60ad33b1
+14:29:24 - core.file_manager - INFO - 🆕 创建新文件引用: 60ad33b1
+14:29:24 - core.file_manager - INFO - 💾 文件已保存: adder_16bit_tb.v (ID: 60ad33b1, 类型: testbench)
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: adder_16bit_tb.v (ID: 60ad33b1)
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (10.18s)
+14:29:24 - core.schema_system.enhanced_base_agent - WARNING - ⚠️ 工具 write_file 未在增强注册表中，回退到传统方式
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🎯 write_file 参数已标准化
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔄 参数映射: file_path -> filename: adder_16bit.v
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: adder_16bit.v
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 695
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 695
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 695
+14:29:24 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+14:29:24 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/adder_16bit_v3.v
+14:29:24 - core.file_manager - INFO - 🔄 使用现有文件ID: 3a60f997
+14:29:24 - core.file_manager - INFO - 🔄 覆盖现有文件: adder_16bit.v
+14:29:24 - core.file_manager - INFO - 🔄 更新现有文件引用: 3a60f997
+14:29:24 - core.file_manager - INFO - 💾 文件已保存: adder_16bit.v (ID: 3a60f997, 类型: verilog)
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: adder_16bit.v (ID: 3a60f997)
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: write_file
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 4/4 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，支持输入进位cin，输出sum...'[截断，总长度:139], design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    "16位加法运算核心逻辑：实现两个16位输入数A和B的逐位加法，考虑进位cin。",\n    "进位链生成：使用超前进位（Carry Lookahead）或串行进位结构，确保组合逻辑延迟合理。",\n    "溢出检测逻辑：基于有符号数加法规则，比较最高位进位与次高位进位，判断是否发生溢出。",\n    "输出寄存器接口封装：输出sum（16位结果）、cout（进位输出）、overflow（溢出标志）"\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "A",\n        "类型": "input",\n        "宽度": 16,\n        "描述": "第一个16位操作数，有符号整数"\n      },\n      {\n        "名称": "B",\n        "类型": "input",\n        "宽度": 16,\n        "描述": "第二个16位操作数，有符号整数"\n      },\n      {\n        "名称": "cin",\n        "类型": "input",\n        "宽度": 1,\n        "描述": "来自低位的进位输入，用于扩展加法"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "sum",\n        "类型": "output",\n        "宽度": 16,\n        "描述": "16位加法结果，有符号表示"\n      },\n      {\n        "名称": "cout",\n        "类型": "output",\n        "宽度": 1,\n        "描述": "最高位产生的进位输出"\n      },\n      {\n        "名称": "overflow",\n        "类型": "output",\n        "宽度": 1,\n        "描述": "有符号加法溢出标志：当正数+正数<0 或 负数+负数>0时置1"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "本设计为纯组合逻辑模块，不涉及任何时钟信号。所有输入到输出均为即时响应，无寄存器延迟。因此无需时钟域划分或同步处理。"\n  },\n  "设计约束": [\n    "必须使用Verilog-2001标准语法，禁止使用logic类型（应使用reg/wire），避免generate块、assert语句等高级特性。",\n    "仅允许使用基本门级和连续赋值（assign）结构，推荐采用连续赋值方式实现加法器核心逻辑。",\n    "溢出判断必须基于有符号数规则：overflow = (A[15] == B[15]) && (A[15] != sum[15])",\n    "进位输出cout应为最高位的进位，即第16位的进位输出。",\n    "不得引入任何时序元件（如触发器、锁存器）或异步复位/置位信号。",\n    "模块名必须为adder_16bit，且为顶层模块，不可嵌套在其他模块中。"\n  ],\n  "验证要点": [\n    "功能正确性验证：测试所有可能的16位有符号数组合，包括正数、负数、零，以及边界情况（如最大值、最小值）。",\n    "进位输出验证：确认cin=1时，结果正确进位；cin=0时，不影响高位进位计算。",\n    "溢出标志验证：重点测试正+正→负、负+负→正的情况，确保overflow被正确置位。",\n    "边界值测试：A=16\'h7FFF, B=16\'h7FFF → 应产生溢出；A=16\'h8000, B=16\'h8000 → 应产生溢出。",\n    "组合覆盖度：确保所有输入组合至少覆盖一次，尤其关注进位传播路径和溢出条件。",\n    "静态分析检查：确保无未连接端口、无阻塞赋值错误、无非法类型声明。"\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: '设计一个16位加法器模块adder_16bit，实现组合逻辑加法运算，支持输入进位cin，输出sum...'[截断]; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'adder_16bit', requirements: '实现16位二进制加法器，支持有符号数溢出检测。输入a[15:0], b[15:0], cin；输出s...'[截断，总长度:105], input_ports: [{'name': 'a', 'width': 16}, {'name': 'b', 'width': 16}, {'name': 'cin', 'width': 1}], output_ports: [{'name': 'sum', 'width': 16}, {'name': 'cout', 'width': 1}, {'name': 'overflow', 'width': 1}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: adder_16bit; verilog_code: 'module adder_16bit #(
+    parameter WIDTH = 16
+) (...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: 3a60f997; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 3: generate_testbench - 执行成功
+**调用参数**: { module_name: 'adder_16bit', verilog_code: 'module adder_16bit (
+    input  [15:0] a,
+    inpu...'[截断，总长度:695], test_scenarios: list[长度:5], clock_period: 10, simulation_time: 1000 }
+**执行结果**: ✅ 成功; module_name: adder_16bit; testbench_code: '`timescale 1ns / 1ps
+
+module tb_adder_16bit;
+
+    ...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: 60ad33b1; test_scenarios: ['Test case 1: a = 0x7FFF, b = 0x0001, cin = 0 → should not overflow', 'Test case 2: a = 0x7FFF, b = 0x0001, cin = 1 → should overflow', 'Test case 3: a = 0x8000, b = 0x8000, cin = 0 → should overflow (negative + negative)', 'Test case 4: a = 0xFFFF, b = 0xFFFF, cin = 1 → max value with carry', 'Test case 5: a = 0x0000, b = 0x0000, cin = 0 → zero case']; simulation_config: {'clock_period': 10, 'simulation_time': 1000}
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 4: write_file - 执行成功
+**调用参数**: { filename: 'adder_16bit.v', content: 'module adder_16bit (
+    input  [15:0] a,
+    inpu...'[截断，总长度:695], description: '16-bit ripple-carry adder with signed overflow det...'[截断，总长度:117] }
+**执行结果**: ✅ 成功; message: 文件 adder_16bit.v 已成功保存到实验文件夹; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: 3a60f997; file_type: verilog; filename: adder_16bit.v; content_length: 695; experiment_path: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497; subdir: designs; file_reference: {'file_id': '3a60f997', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/designs/adder_16bit_v3.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T14:29:24.771298', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 4
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 3: success=True
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 4: success=True
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 4
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+14:29:24 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+14:29:24 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: conv_1754202529
+14:29:24 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_verilog_agent
+14:29:24 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_verilog_agent
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: adder_16bit.v (模块: adder_16bit)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择测试台文件: adder_16bit_tb.v (模块: adder_16bit)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 1 个测试台文件
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: adder_16bit.v (模块: adder)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v (模块: tb_adder_16bit)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 2 个有效文件引用
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 3
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 找到当前迭代测试台: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第3次迭代，testbench策略: 智能体优化
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第3次迭代，优先使用智能体生成的最新测试台推动TDD循环
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 2
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: adder_16bit_tb.v (类型: testbench, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ⏭️ 跳过文件: adder_16bit_tb.v (文件类型不是verilog (testbench))
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件2: adder_16bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: adder_16bit.v
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v (模块: adder_16bit)
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 0轮对话历史
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': '3a60f997', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T14:29:24.771298', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'adder_16bit'}
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit.v (模块: adder_16bit)
+14:29:24 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit_tb.v (模块: tb_adder_16bit)
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: adder_16bit.v (695 bytes)
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: adder_16bit_tb.v (3076 bytes)
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3433431
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   1. adder_16bit.v (设计)
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO -   2. adder_16bit_tb.v (测试台)
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3433431 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 2
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 编译stderr: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v:23: error: Invalid module item.
+
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析编译错误，stderr长度: 325
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: stderr内容: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v:23: syntax error
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497/artifacts/testbenches/adder_16bit_tb.v:23: err...
+14:29:24 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 匹配错误模式: syntax error -> 语法错误
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 达到最大迭代次数 3
+14:29:24 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 保存完整上下文到: tdd_context_tdd_1754202497.json
+================================================================================
+📊 实验结果分析
+================================================================================
+❌ 实验未能完成
+   📈 已用迭代次数: 3
+   ⏱️ 总耗时: 66.97 秒
+   ❌ 失败原因: 达到最大迭代次数，但测试仍未全部通过
+🔍 迭代历史分析:
+   第1次迭代: ❌ 失败
+   第2次迭代: ❌ 失败
+   第3次迭代: ❌ 失败
+📋 会话详情:
+   会话ID: tdd_1754202497
+   状态: completed
+================================================================================
+   📁 文件已直接保存在实验目录，无需复制
+   ✅ 所有文件已直接保存在实验目录中
+💾 实验报告已保存到: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+   📄 详细报告: experiment_report.json
+   📋 结果摘要: experiment_summary.txt
+
+📁 实验目录检查: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754202497
+   📂 designs: 4 个文件
+      - adder_16bit_v2.v
+      - adder_16bit.v
+      - adder_16bit_v1.v
+      - adder_16bit_v3.v
+   📂 testbenches: 1 个文件
+      - adder_16bit_tb.v
+   📂 artifacts: 5 个文件
+      - temp
+      - reports
+      - testbenches
+      - file_registry.json
+      - designs
+   📂 logs: 1 个文件
+      - files_created.jsonl
+🏁 实验完成
+❌ 设计未能通过所有测试
+🔍 可以查看日志分析迭代改进过程
+📊 实验报告: unified_tdd_report_unified_tdd_adder_16bit_1754202497.json

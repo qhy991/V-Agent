@@ -185,7 +185,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                             }
                         },
                         "additionalProperties": False,
-                        "description": "时钟域配置"
+                        "description": "时钟域配置（可选，纯组合逻辑设计可省略）"
                     },
                     "coding_style": {
                         "type": "string",
@@ -369,6 +369,18 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 - 缺少必需字段时会提供合理默认值
 - 💡 无需担心遗漏参数
 
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+
 🎯 **推荐的工具调用方式**:
 
 ### 方式1: 使用自然字符串格式（推荐）
@@ -468,6 +480,28 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 4. 生成测试台 (generate_testbench)
 
 💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+6. 不能包含任何寄存器或触发器
+
+⚠️ **时序逻辑设计规则**:
+1. 必须包含时钟信号 (clk)
+2. 通常包含复位信号 (rst)
+3. 使用 always @(posedge clk) 语句
+4. 输出端口使用 reg 类型
+5. 可以包含寄存器和触发器
+
+🔍 **智能检测**: 系统会自动检测设计类型并生成相应的代码结构。
 """
         return base_prompt
     
@@ -527,6 +561,129 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             }
     
     # =============================================================================
+    # 新增：智能设计类型检测和动态prompt生成
+    # =============================================================================
+    
+    def _detect_combinational_requirement(self, requirements: str) -> bool:
+        """检测需求是否为纯组合逻辑"""
+        combinational_keywords = [
+            "纯组合逻辑", "combinational", "组合电路", "无时钟", "无时序",
+            "always @(*)", "assign", "组合逻辑", "无寄存器", "纯组合",
+            "不涉及时钟", "不包含时钟", "不包含复位", "不包含寄存器"
+        ]
+        
+        requirements_lower = requirements.lower()
+        for keyword in combinational_keywords:
+            if keyword in requirements_lower:
+                return True
+        
+        # 检查是否明确排除了时序元素
+        sequential_exclusions = [
+            "不能包含时钟", "不能包含复位", "不能包含寄存器",
+            "不包含时钟", "不包含复位", "不包含寄存器",
+            "无需时钟", "无需复位", "无需寄存器"
+        ]
+        for exclusion in sequential_exclusions:
+            if exclusion in requirements_lower:
+                return True
+        
+        return False
+    
+    def _build_port_info(self, ports: List[Dict], port_type: str) -> str:
+        """构建端口信息字符串"""
+        if not ports:
+            return f"// 请根据需求定义{port_type}端口"
+        
+        port_info = ""
+        for port in ports:
+            width = port.get("width", 1)
+            width_str = f"[{width-1}:0] " if width > 1 else ""
+            port_info += f"    {port_type} {width_str}{port['name']},  // {port.get('description', '')}\n"
+        
+        return port_info.rstrip()
+    
+    def _build_dynamic_generation_prompt(self, module_name: str, requirements: str,
+                                       input_ports: List[Dict], output_ports: List[Dict],
+                                       coding_style: str, enhanced_context: Dict) -> str:
+        """构建动态的代码生成prompt"""
+        
+        # 检测设计类型
+        is_combinational = self._detect_combinational_requirement(requirements)
+        
+        # 构建端口信息
+        input_info = self._build_port_info(input_ports, "input")
+        output_info = self._build_port_info(output_ports, "output")
+        
+        # 根据设计类型构建不同的prompt
+        if is_combinational:
+            return f"""
+请生成一个名为 {module_name} 的Verilog模块，要求如下：
+
+功能需求: {enhanced_context.get('basic_requirements', requirements)}
+编码风格: {coding_style}
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+{input_info}
+{output_info}
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
+
+🚨 **关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记
+6. 不要使用```verilog 或 ``` 标记
+7. 不要添加"以下是..."、"说明："等解释性文字
+8. 直接从 module 开始，以 endmodule 结束
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+        else:
+            # 时序逻辑的prompt
+            return f"""
+请生成一个名为 {module_name} 的Verilog模块，要求如下：
+
+功能需求: {enhanced_context.get('basic_requirements', requirements)}
+编码风格: {coding_style}
+
+端口定义:
+{input_info}
+{output_info}
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
+
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明
+2. 端口定义  
+3. 内部信号声明
+4. 功能实现
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+    
+    # =============================================================================
     # 工具实现方法
     # =============================================================================
     
@@ -537,13 +694,26 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         try:
             self.logger.info(f"📊 分析设计需求: {design_type} - {complexity_level}")
             
-            # 构建LLM分析提示
+            # 增强：从requirements中提取错误分析和改进建议
+            enhanced_context = self._extract_enhanced_context_from_requirements(requirements)
+            
+            # 智能检测设计类型
+            detected_type = design_type
+            if self._detect_combinational_requirement(requirements):
+                detected_type = "combinational"
+                self.logger.info(f"🔍 检测到组合逻辑需求，自动调整设计类型为: {detected_type}")
+            
+            # 构建增强的LLM分析提示
             analysis_prompt = f"""
 请分析以下Verilog设计需求：
 
-需求描述: {requirements}
-设计类型: {design_type}
+需求描述: {enhanced_context.get('basic_requirements', requirements)}
+设计类型: {detected_type}
 复杂度级别: {complexity_level}
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
 
 请提供以下分析结果：
 1. 功能模块分解
@@ -551,6 +721,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 3. 时钟域要求
 4. 设计约束
 5. 验证要点
+6. 错误避免策略（如果有历史错误信息）
 
 返回JSON格式的分析结果。
 """
@@ -568,7 +739,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                 # 如果解析失败，创建结构化结果
                 analysis_result = {
                     "analysis_summary": response,
-                    "design_type": design_type,
+                    "design_type": detected_type,
                     "complexity": complexity_level,
                     "estimated_modules": 1,
                     "key_features": []
@@ -578,7 +749,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                 "success": True,
                 "analysis": analysis_result,
                 "requirements": requirements,
-                "design_type": design_type,
+                "design_type": detected_type,
                 "complexity_level": complexity_level
             }
             
@@ -586,106 +757,96 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             self.logger.error(f"❌ 设计需求分析失败: {str(e)}")
             return {
                 "success": False,
-                "error": str(e)
+                "error": f"分析失败: {str(e)}",
+                "requirements": requirements,
+                "design_type": design_type,
+                "complexity_level": complexity_level
             }
+            
+    def _extract_enhanced_context_from_requirements(self, requirements: str) -> Dict[str, str]:
+        """从requirements中提取增强上下文信息"""
+        context = {
+            'basic_requirements': requirements,
+            'error_analysis': '',
+            'improvement_suggestions': '',
+            'historical_context': '',
+            'success_guidance': ''  # 新增：成功经验指导
+        }
+        
+        # 提取成功经验指导（优先级最高）
+        if '🎯 **基于历史迭代的成功经验指导**:' in requirements:
+            success_start = requirements.find('🎯 **基于历史迭代的成功经验指导**:')
+            success_end = requirements.find('📚 **历史迭代经验教训**:') if '📚 **历史迭代经验教训**:' in requirements else requirements.find('🔧 **严格代码验证要求**:')
+            if success_end == -1:
+                success_end = requirements.find('🚨 **上次编译错误详情**:')
+            if success_end == -1:
+                success_end = len(requirements)
+            
+            context['success_guidance'] = requirements[success_start:success_end].strip()
+        
+        # 提取错误分析信息
+        if '🚨 **上次编译错误详情**:' in requirements:
+            error_start = requirements.find('🚨 **上次编译错误详情**:')
+            error_end = requirements.find('💡 **改进建议**:') if '💡 **改进建议**:' in requirements else requirements.find('🎯 **基于历史迭代的成功经验指导**:')
+            if error_end == -1:
+                error_end = requirements.find('📚 **历史迭代经验教训**:')
+            if error_end == -1:
+                error_end = len(requirements)
+            
+            context['error_analysis'] = requirements[error_start:error_end].strip()
+        
+        # 提取改进建议
+        if '💡 **改进建议**:' in requirements:
+            suggestion_start = requirements.find('💡 **改进建议**:')
+            suggestion_end = requirements.find('🎯 **基于历史迭代的成功经验指导**:') if '🎯 **基于历史迭代的成功经验指导**:' in requirements else requirements.find('🔧 **严格代码验证要求**:')
+            if suggestion_end == -1:
+                suggestion_end = requirements.find('📚 **历史迭代经验教训**:')
+            if suggestion_end == -1:
+                suggestion_end = len(requirements)
+            
+            context['improvement_suggestions'] = requirements[suggestion_start:suggestion_end].strip()
+        
+        # 提取历史上下文
+        if '📚 **历史迭代经验教训**:' in requirements:
+            history_start = requirements.find('📚 **历史迭代经验教训**:')
+            history_end = requirements.find('🎯 **基于历史模式的智能建议**:') if '🎯 **基于历史模式的智能建议**:' in requirements else requirements.find('🤖 **AI行为模式分析**:')
+            if history_end == -1:
+                history_end = requirements.find('🔧 **严格代码验证要求**:')
+            if history_end == -1:
+                history_end = len(requirements)
+            
+            context['historical_context'] = requirements[history_start:history_end].strip()
+        
+        # 提取基础需求（去除增强信息）
+        basic_req_end = requirements.find('🎯 **基于历史迭代的成功经验指导**:')
+        if basic_req_end == -1:
+            basic_req_end = requirements.find('🚨 **上次编译错误详情**:')
+        if basic_req_end == -1:
+            basic_req_end = requirements.find('📚 **历史迭代经验教训**:')
+        if basic_req_end == -1:
+            basic_req_end = requirements.find('🔧 **严格代码验证要求**:')
+        
+        if basic_req_end != -1:
+            context['basic_requirements'] = requirements[:basic_req_end].strip()
+        
+        return context
     
-    async def _tool_generate_verilog_code(self, module_name: str, requirements: str,
-                                        input_ports: List[Dict] = None,
-                                        output_ports: List[Dict] = None,
-                                        clock_domain: Dict = None,
-                                        coding_style: str = "rtl") -> Dict[str, Any]:
-        """生成Verilog代码工具实现"""
-        try:
-            self.logger.info(f"🔧 生成Verilog代码: {module_name}")
-            
-            # 构建端口信息
-            input_info = ""
-            if input_ports:
-                for port in input_ports:
-                    width = port.get("width", 1)
-                    width_str = f"[{width-1}:0] " if width > 1 else ""
-                    input_info += f"    input {width_str}{port['name']},  // {port.get('description', '')}\n"
-            
-            output_info = ""
-            if output_ports:
-                for port in output_ports:
-                    width = port.get("width", 1)
-                    width_str = f"[{width-1}:0] " if width > 1 else ""
-                    output_info += f"    output {width_str}{port['name']},  // {port.get('description', '')}\n"
-            
-            # 时钟域信息
-            clock_info = clock_domain or {"clock_name": "clk", "reset_name": "rst", "reset_active": "high"}
-            
-            generation_prompt = f"""
-请生成一个名为 {module_name} 的Verilog模块，要求如下：
-
-功能需求: {requirements}
-编码风格: {coding_style}
-
-端口定义:
-{input_info.rstrip() if input_info else "// 请根据需求定义输入端口"}
-{output_info.rstrip() if output_info else "// 请根据需求定义输出端口"}
-
-时钟域:
-- 时钟信号: {clock_info['clock_name']}
-- 复位信号: {clock_info['reset_name']} (active {clock_info['reset_active']})
-
-🚨 **关键要求 - 请严格遵守**:
-请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
-不要使用```verilog 或 ``` 标记。
-不要添加"以下是..."、"说明："等解释性文字。
-直接从 module 开始，以 endmodule 结束。
-
-代码要求：
-1. 模块声明
-2. 端口定义  
-3. 内部信号声明
-4. 功能实现
-5. 适当的注释
-
-确保代码符合IEEE 1800标准并可被综合工具处理。
-"""
-            
-            response = await self.llm_client.send_prompt(
-                prompt=generation_prompt,
-                system_prompt="你是专业的Verilog工程师，请生成高质量的可综合代码。",
-                temperature=0.1
-            )
-            
-            # 使用Function Calling write_file工具保存代码
-            filename = f"{module_name}.v"
-            write_result = await self._tool_write_file(
-                filename=filename,
-                content=response,
-                description=f"生成的{module_name}模块Verilog代码"
-            )
-            
-            if not write_result.get("success", False):
-                self.logger.error(f"❌ 文件保存失败: {write_result.get('error', 'Unknown error')}")
-                return {
-                    "success": False,
-                    "error": f"文件保存失败: {write_result.get('error', 'Unknown error')}"
-                }
-            
-            return {
-                "success": True,
-                "module_name": module_name,
-                "verilog_code": response,
-                "file_path": write_result.get("file_path"),
-                "file_id": write_result.get("file_id"),
-                "coding_style": coding_style,
-                "port_count": {
-                    "inputs": len(input_ports) if input_ports else 0,
-                    "outputs": len(output_ports) if output_ports else 0
-                }
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ Verilog代码生成失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+    
+    
+    def _build_port_info(self, ports: List[Dict], port_type: str) -> str:
+        """构建端口信息字符串"""
+        if not ports:
+            return ""
+        
+        port_info = ""
+        for port in ports:
+            width = port.get("width", 1)
+            width_str = f"[{width-1}:0] " if width > 1 else ""
+            description = port.get('description', '')
+            port_info += f"    {port_type} {width_str}{port['name']},  // {description}\n"
+        
+        return port_info
+    
     
     async def _tool_search_existing_modules(self, module_type: str = None,
                                           functionality: str = None,
@@ -838,3 +999,144 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                 "success": False,
                 "error": str(e)
             }
+
+
+    async def _tool_generate_verilog_code(self, module_name: str, requirements: str,
+                                        input_ports: List[Dict] = None,
+                                        output_ports: List[Dict] = None,
+                                        clock_domain: Dict = None,
+                                        coding_style: str = "rtl") -> Dict[str, Any]:
+        """生成Verilog代码工具实现"""
+        try:
+            self.logger.info(f"🔧 生成Verilog代码: {module_name}")
+            
+            # 增强：从requirements中提取错误分析和改进建议
+            enhanced_context = self._extract_enhanced_context_from_requirements(requirements)
+            
+            # 智能检测设计类型
+            is_combinational = self._detect_combinational_requirement(requirements)
+            self.logger.info(f"🔍 检测到设计类型: {'组合逻辑' if is_combinational else '时序逻辑'}")
+            
+            # 构建端口信息
+            input_info = self._build_port_info(input_ports, "input")
+            output_info = self._build_port_info(output_ports, "output")
+            
+            # 根据设计类型构建不同的prompt
+            if is_combinational:
+                generation_prompt = f"""
+请生成一个名为 {module_name} 的Verilog模块，要求如下：
+
+功能需求: {enhanced_context.get('basic_requirements', requirements)}
+编码风格: {coding_style}
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+{input_info.rstrip() if input_info else "// 请根据需求定义输入端口"}
+{output_info.rstrip() if output_info else "// 请根据需求定义输出端口"}
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
+
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 不能包含任何寄存器或触发器
+6. 所有输出必须通过组合逻辑直接计算
+
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
+3. 内部信号声明（wire类型）
+4. 组合逻辑功能实现（always @(*) 或 assign）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+            else:
+                # 时序逻辑设计
+                clock_info = clock_domain or {"clock_name": "clk", "reset_name": "rst", "reset_active": "high"}
+                generation_prompt = f"""
+请生成一个名为 {module_name} 的Verilog模块，要求如下：
+
+功能需求: {enhanced_context.get('basic_requirements', requirements)}
+编码风格: {coding_style}
+
+端口定义:
+{input_info.rstrip() if input_info else "// 请根据需求定义输入端口"}
+{output_info.rstrip() if output_info else "// 请根据需求定义输出端口"}
+
+时钟域:
+- 时钟信号: {clock_info['clock_name']}
+- 复位信号: {clock_info['reset_name']} (active {clock_info['reset_active']})
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
+
+🚨 **时序逻辑设计关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（包含时钟和复位端口）
+2. 端口定义（输出使用reg类型）
+3. 内部信号声明
+4. 时序逻辑功能实现（always @(posedge clk)）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+            
+            response = await self.llm_client.send_prompt(
+                prompt=generation_prompt,
+                system_prompt="你是专业的Verilog工程师，请生成高质量的可综合代码。特别注意避免历史错误和改进建议。",
+                temperature=0.1
+            )
+            
+            # 使用Function Calling write_file工具保存代码
+            filename = f"{module_name}.v"
+            write_result = await self._tool_write_file(
+                filename=filename,
+                content=response,
+                description=f"生成的{module_name}模块Verilog代码"
+            )
+            
+            if not write_result.get("success", False):
+                self.logger.error(f"❌ 文件保存失败: {write_result.get('error', 'Unknown error')}")
+                return {
+                    "success": False,
+                    "error": f"文件保存失败: {write_result.get('error', 'Unknown error')}"
+                }
+            
+            return {
+                "success": True,
+                "module_name": module_name,
+                "verilog_code": response,
+                "file_path": write_result.get("file_path"),
+                "file_id": write_result.get("file_id"),
+                "coding_style": coding_style,
+                "port_count": {
+                    "inputs": len(input_ports) if input_ports else 0,
+                    "outputs": len(output_ports) if output_ports else 0
+                }
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ Verilog代码生成失败: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+                
+         

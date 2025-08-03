@@ -1,0 +1,16 @@
+VCD info: dumpfile tb_simple_8bit_adder.vcd opened for output.
+Time	A	B	Cin	Sum	Cout	Expected Sum	Expected Cout
+0	0	0	0	0	0	0	0
+Test case 1 passed: a=0, b=0, cin=0 → sum=0, cout=0
+210000	255	0	0	255	0	255	0
+Test case 2 passed: a=255, b=0, cin=0 → sum=255, cout=0
+320000	255	0	1	0	1	0	1
+Test case 3 passed: a=255, b=0, cin=1 → sum=0, cout=1
+430000	128	127	1	0	1	0	1
+Test case 4 passed: a=128, b=127, cin=1 → sum=0, cout=1
+540000	127	127	1	255	0	255	0
+Test case 5 passed: a=127, b=127, cin=1 → sum=255, cout=0
+650000	128	128	0	0	1	0	1
+Test case 6 passed: a=128, b=128, cin=0 → sum=0, cout=1
+All test cases completed.
+/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/testbenches/simple_8bit_adder_tb.v:102: $finish called at 760000 (1ps)

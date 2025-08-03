@@ -42,21 +42,40 @@ class UnifiedTDDTest:
         "alu": {
             "description": """
 设计一个32位算术逻辑单元(ALU)，支持以下操作：
-- 算术运算：加法(ADD)、减法(SUB)
-- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
-- 比较运算：等于(EQ)、小于(LT)、大于(GT)
 
-模块接口：
+**操作码定义（必须严格按照以下映射）**：
+- 4'b0000: 加法(ADD) - result = a + b
+- 4'b0001: 减法(SUB) - result = a - b  
+- 4'b0010: 逻辑与(AND) - result = a & b
+- 4'b0011: 逻辑或(OR) - result = a | b
+- 4'b0100: 异或(XOR) - result = a ^ b
+- 4'b0101: 逻辑左移(SLL) - result = a << b[4:0]
+- 4'b0110: 逻辑右移(SRL) - result = a >> b[4:0]
+- 其他操作码: result = 32'h00000000
+
+**模块接口（必须完全匹配）**：
 ```verilog
 module alu_32bit (
     input  [31:0] a,        // 操作数A
     input  [31:0] b,        // 操作数B
     input  [3:0]  op,       // 操作码
     output [31:0] result,   // 结果
-    output        zero,     // 零标志
-    output        overflow  // 溢出标志
+    output        zero      // 零标志 (result == 0 时为1)
 );
 ```
+
+**功能要求**：
+1. 实现所有7种基本运算（ADD, SUB, AND, OR, XOR, SLL, SRL）
+2. 移位操作使用b的低5位作为移位量
+3. zero信号在result为0时输出1，否则输出0
+4. 使用组合逻辑实现，无时钟和复位信号
+5. 对于无效操作码，输出全0结果
+
+**严格警告**：
+- 模块名必须是alu_32bit
+- 端口名和位宽必须完全匹配
+- 操作码映射必须严格按照上述定义
+- 移位操作必须使用b[4:0]作为移位量
             """,
             "testbench": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
             "complexity": "standard"
@@ -168,7 +187,7 @@ module simple_8bit_adder (
 - 确保所有边界条件正确处理
 - 代码要简洁清晰，易于理解
             """,
-            "testbench": "test_cases/simple_8bit_adder_tb.v",
+            "testbench": None,
             "complexity": "simple"
         },
         

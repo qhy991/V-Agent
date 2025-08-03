@@ -1,0 +1,999 @@
+{
+  "experiment_id": "unified_tdd_adder_16bit_1754199102",
+  "design_type": "adder_16bit",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 76.5637788772583,
+  "timestamp": 1754199179.3432348,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1754199102",
+    "total_iterations": 3,
+    "final_design": [
+      {
+        "file_id": "fe316db1",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+        "file_type": "testbench",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T13:32:42.546640",
+        "description": "由enhanced_real_verilog_agent创建的testbench文件"
+      },
+      {
+        "file_id": "a1733ccd",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+        "file_type": "verilog",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T13:32:59.254184",
+        "description": "由enhanced_real_verilog_agent创建的verilog文件"
+      }
+    ],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1754199102.8034954,
+        "duration": 27.079442501068115,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "a1733ccd",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:32:09.770926",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3429996 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+            "returncode": 6,
+            "error_details": {
+              "error_count": 6,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 249,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 249,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 250,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 250,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 251,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 251,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 6 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v, 行: 249\n   错误: syntax error\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v, 行: 249\n   错误: error: Malformed statement\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v, 行: 250\n   错误: syntax error\n... 还有 3 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 249,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 249,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 250,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 250,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 251,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 251,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement"
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "📝 检查Verilog语法：分号、括号、关键字拼写等",
+              "🔤 验证标识符命名规则和保留字使用"
+            ],
+            "error_category": "syntax_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1754199129.8850276,
+        "duration": 32.744389295578,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "fe316db1",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+              "file_type": "testbench",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:32:42.546640",
+              "description": "由enhanced_real_verilog_agent创建的testbench文件"
+            },
+            {
+              "file_id": "a1733ccd",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:32:42.554988",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:84: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:84: error: Malformed statement\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3430029 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+            "returncode": 12,
+            "error_details": {
+              "error_count": 12,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 44,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 44,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 52,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 52,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 60,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 60,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 68,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 68,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 76,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 76,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 84,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 84,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 12 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v, 行: 44\n   错误: syntax error\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v, 行: 44\n   错误: error: Malformed statement\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v, 行: 52\n   错误: syntax error\n... 还有 9 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 44,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 44,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 52,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 52,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 60,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 60,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 68,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 68,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 76,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 76,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 84,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 84,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: error: Malformed statement"
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "📝 检查Verilog语法：分号、括号、关键字拼写等",
+              "🔤 验证标识符命名规则和保留字使用"
+            ],
+            "error_category": "syntax_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1754199162.631461,
+        "duration": 16.711529970169067,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "fe316db1",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+              "file_type": "testbench",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:32:42.546640",
+              "description": "由enhanced_real_verilog_agent创建的testbench文件"
+            },
+            {
+              "file_id": "a1733ccd",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:32:59.254184",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:19: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:19: error: Invalid module instantiation\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module item.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module instantiation\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module instantiation\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:26: error: Invalid module instantiation\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:30: error: Invalid module item.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:34: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:34: error: Invalid module instantiation\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:3: error: Invalid module item.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:5: error: 'a' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:6:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:6: error: 'b' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:7:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:7: error: 'cin' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:8:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:8: error: 'sum' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:9:      : It was declared here as a variable.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:9: error: 'cout' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:10:      : It was declared here as a variable.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:10: error: 'overflow' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:11:      : It was declared here as a variable.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:13: error: 'clk' has already been declared in this scope.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:4:      : It was declared here as a net.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:44: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:52: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:60: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:68: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:76: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:84: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v:84: error: Malformed statement\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3430046 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+            "returncode": 31,
+            "error_details": {
+              "error_count": 38,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 19,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 19,
+                  "message": "error: Invalid module instantiation",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 24,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 24,
+                  "message": "error: Invalid module item.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 24,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 24,
+                  "message": "error: Invalid module instantiation",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 24,
+                  "message": "error: Invalid module instantiation",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 26,
+                  "message": "error: Invalid module instantiation",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 30,
+                  "message": "error: Invalid module item.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 34,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 34,
+                  "message": "error: Invalid module instantiation",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 3,
+                  "message": "error: Invalid module item.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 5,
+                  "message": "error: 'a' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 6,
+                  "message": ": It was declared here as a net.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 6,
+                  "message": "error: 'b' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 7,
+                  "message": ": It was declared here as a net.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 7,
+                  "message": "error: 'cin' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 8,
+                  "message": ": It was declared here as a net.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 8,
+                  "message": "error: 'sum' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 9,
+                  "message": ": It was declared here as a variable.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 9,
+                  "message": "error: 'cout' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 10,
+                  "message": ": It was declared here as a variable.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 10,
+                  "message": "error: 'overflow' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 11,
+                  "message": ": It was declared here as a variable.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 13,
+                  "message": "error: 'clk' has already been declared in this scope.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                  "line": 4,
+                  "message": ": It was declared here as a net.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 44,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 44,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 52,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 52,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 60,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 60,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 68,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 68,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 76,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 76,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 84,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 84,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 38 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v, 行: 19\n   错误: syntax error\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v, 行: 19\n   错误: error: Invalid module instantiation\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v, 行: 24\n   错误: syntax error\n... 还有 35 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 19,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 19,
+                "message": "error: Invalid module instantiation",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 24,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 24,
+                "message": "error: Invalid module item.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 24,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 24,
+                "message": "error: Invalid module instantiation",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 24,
+                "message": "error: Invalid module instantiation",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 26,
+                "message": "error: Invalid module instantiation",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 30,
+                "message": "error: Invalid module item.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 34,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 34,
+                "message": "error: Invalid module instantiation",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 3,
+                "message": "error: Invalid module item.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 5,
+                "message": "error: 'a' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 6,
+                "message": ": It was declared here as a net.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 6,
+                "message": "error: 'b' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 7,
+                "message": ": It was declared here as a net.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 7,
+                "message": "error: 'cin' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 8,
+                "message": ": It was declared here as a net.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 8,
+                "message": "error: 'sum' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 9,
+                "message": ": It was declared here as a variable.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 9,
+                "message": "error: 'cout' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 10,
+                "message": ": It was declared here as a variable.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 10,
+                "message": "error: 'overflow' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 11,
+                "message": ": It was declared here as a variable.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 13,
+                "message": "error: 'clk' has already been declared in this scope.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v",
+                "line": 4,
+                "message": ": It was declared here as a net.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 44,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 44,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 52,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 52,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 60,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 60,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 68,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 68,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 76,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 76,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 84,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 84,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:19: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:19: error: Invalid module instantiation",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module item.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module instantiation",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:24: error: Invalid module instantiation",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:26: error: Invalid module instantiation",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:30: error: Invalid module item.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v:34: syntax error"
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "📝 检查Verilog语法：分号、括号、关键字拼写等",
+              "🔤 验证标识符命名规则和保留字使用"
+            ],
+            "error_category": "syntax_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/testbenches/adder_16bit_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754199102/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 3,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}

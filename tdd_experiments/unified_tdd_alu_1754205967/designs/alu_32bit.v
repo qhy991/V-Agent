@@ -1,0 +1,109 @@
+module alu_32bit #(
+    parameter WIDTH = 32
+) (
+    input clk,
+    input rst,
+    input [WIDTH-1:0] a,
+    input [WIDTH-1:0] b,
+    input [3:0] op,
+    output reg [WIDTH-1:0] result,
+    output reg zero,
+    output reg overflow
+);
+
+// 内部信号声明
+reg [WIDTH-1:0] temp_result;
+reg [WIDTH-1:0] a_signed, b_signed;
+reg carry_in, carry_out;
+reg sign_a, sign_b, sign_result;
+
+// 操作码定义
+localparam OP_ADD   = 4'b0000;
+localparam OP_SUB   = 4'b0001;
+localparam OP_AND   = 4'b0010;
+localparam OP_OR    = 4'b0011;
+localparam OP_XOR   = 4'b0100;
+localparam OP_NOT   = 4'b0101;
+localparam OP_EQ    = 4'b0110;
+localparam OP_LT    = 4'b0111;
+localparam OP_GT    = 4'b1000;
+
+// 时序逻辑：在复位或时钟上升沿更新输出
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        result <= 32'd0;
+        zero <= 1'b0;
+        overflow <= 1'b0;
+    end else begin
+        // 根据操作码选择功能
+        case (op)
+            OP_ADD: begin
+                // 加法：a + b
+                {carry_out, temp_result} = {1'b0, a} + {1'b0, b};
+                sign_a = a[WIDTH-1];
+                sign_b = b[WIDTH-1];
+                sign_result = temp_result[WIDTH-1];
+                // 溢出检测：符号位相同但结果符号不同
+                overflow <= (sign_a == sign_b) && (sign_a != sign_result);
+            end
+
+            OP_SUB: begin
+                // 减法：a - b = a + (~b) + 1
+                {carry_out, temp_result} = {1'b0, a} + {1'b0, ~b} + 1;
+                sign_a = a[WIDTH-1];
+                sign_b = b[WIDTH-1];
+                sign_result = temp_result[WIDTH-1];
+                // 溢出检测：减法溢出等价于加法溢出（a + (-b)）
+                overflow <= (sign_a == ~sign_b) && (sign_a != sign_result);
+            end
+
+            OP_AND: begin
+                temp_result = a & b;
+                overflow <= 1'b0; // 逻辑运算无溢出
+            end
+
+            OP_OR: begin
+                temp_result = a | b;
+                overflow <= 1'b0;
+            end
+
+            OP_XOR: begin
+                temp_result = a ^ b;
+                overflow <= 1'b0;
+            end
+
+            OP_NOT: begin
+                temp_result = ~a;
+                overflow <= 1'b0;
+            end
+
+            OP_EQ: begin
+                temp_result = (a == b) ? 32'd1 : 32'd0;
+                overflow <= 1'b0;
+            end
+
+            OP_LT: begin
+                // 有符号比较：a < b
+                temp_result = (a < b) ? 32'd1 : 32'd0;
+                overflow <= 1'b0;
+            end
+
+            OP_GT: begin
+                // 有符号比较：a > b
+                temp_result = (a > b) ? 32'd1 : 32'd0;
+                overflow <= 1'b0;
+            end
+
+            default: begin
+                temp_result = 32'd0;
+                overflow <= 1'b0;
+            end
+        endcase
+
+        // 更新输出
+        result <= temp_result;
+        zero <= (temp_result == 32'd0) ? 1'b1 : 1'b0;
+    end
+end
+
+endmodule

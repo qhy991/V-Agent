@@ -1,0 +1,713 @@
+{
+  "experiment_id": "unified_tdd_adder_16bit_1754197159",
+  "design_type": "adder_16bit",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 110.42064213752747,
+  "timestamp": 1754197270.2221708,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1754197159",
+    "total_iterations": 3,
+    "final_design": [
+      {
+        "file_id": "37983698",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+        "file_type": "testbench",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T13:01:10.127144",
+        "description": "由enhanced_real_verilog_agent创建的testbench文件"
+      },
+      {
+        "file_id": "eb1a1d7d",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+        "file_type": "verilog",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T13:01:10.134316",
+        "description": "由enhanced_real_verilog_agent创建的verilog文件"
+      }
+    ],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1754197159.8281908,
+        "duration": 16.675054788589478,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "eb1a1d7d",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T12:59:36.406415",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:26: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:26: error: Incomprehensible for loop.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:31: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:31: error: Incomprehensible for loop.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3428043 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+            "returncode": 10,
+            "error_details": {
+              "error_count": 10,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 26,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 26,
+                  "message": "error: Incomprehensible for loop.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 31,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 31,
+                  "message": "error: Incomprehensible for loop.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 249,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 249,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 250,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 250,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 251,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                  "line": 251,
+                  "message": "error: Malformed statement",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 10 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 26\n   错误: syntax error\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 26\n   错误: error: Incomprehensible for loop.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 31\n   错误: syntax error\n... 还有 7 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 26,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 26,
+                "message": "error: Incomprehensible for loop.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 31,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 31,
+                "message": "error: Incomprehensible for loop.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 249,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 249,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 250,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 250,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 251,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+                "line": 251,
+                "message": "error: Malformed statement",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:26: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:26: error: Incomprehensible for loop.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:31: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:31: error: Incomprehensible for loop.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:249: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:250: error: Malformed statement",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v:251: error: Malformed statement"
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "📝 检查Verilog语法：分号、括号、关键字拼写等",
+              "🔤 验证标识符命名规则和保留字使用"
+            ],
+            "error_category": "syntax_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1754197176.5048401,
+        "duration": 40.96626138687134,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "37983698",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+              "file_type": "testbench",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:00:17.396167",
+              "description": "由enhanced_real_verilog_agent创建的testbench文件"
+            },
+            {
+              "file_id": "eb1a1d7d",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:00:05.852553",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder\n16 error(s) during elaboration.\n*** These modules were missing:\n        full_adder referenced 16 times.\n***\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3428084 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+            "returncode": 16,
+            "error_details": {
+              "error_count": 16,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 20,
+                  "message": "error: Unknown module type: full_adder",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 16 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 20\n   错误: error: Unknown module type: full_adder\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 20\n   错误: error: Unknown module type: full_adder\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 20\n   错误: error: Unknown module type: full_adder\n... 还有 13 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 20,
+                "message": "error: Unknown module type: full_adder",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:20: error: Unknown module type: full_adder"
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [],
+            "suggestions": [],
+            "error_category": "unknown",
+            "intelligent_error_analysis": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": false,
+              "issues": [
+                "缺失依赖模块: ['full_adder']"
+              ],
+              "suggestions": [
+                "需要提供缺失的模块定义: ['full_adder']",
+                "确保所有子模块都在同一文件中或提供单独的文件"
+              ],
+              "missing_dependencies": [
+                "full_adder"
+              ],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1754197217.473034,
+        "duration": 52.74893927574158,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "37983698",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+              "file_type": "testbench",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:01:10.127144",
+              "description": "由enhanced_real_verilog_agent创建的testbench文件"
+            },
+            {
+              "file_id": "eb1a1d7d",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T13:01:10.134316",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:13: error: Variable declaration in unnamed block requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:12: error: Variable declaration in unnamed block requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:16: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:16: error: Incomprehensible for loop.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v:23: syntax error\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v:23: error: Invalid module item.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3428136 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+            "returncode": 6,
+            "error_details": {
+              "error_count": 6,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 13,
+                  "message": "error: Variable declaration in unnamed block requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 12,
+                  "message": "error: Variable declaration in unnamed block requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 16,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                  "line": 16,
+                  "message": "error: Incomprehensible for loop.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 23,
+                  "message": "syntax error",
+                  "type": "syntax_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+                  "line": 23,
+                  "message": "error: Invalid module item.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 6 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 13\n   错误: error: Variable declaration in unnamed block requires SystemVerilog.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 12\n   错误: error: Variable declaration in unnamed block requires SystemVerilog.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v, 行: 16\n   错误: syntax error\n... 还有 3 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 13,
+                "message": "error: Variable declaration in unnamed block requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 12,
+                "message": "error: Variable declaration in unnamed block requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 16,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "line": 16,
+                "message": "error: Incomprehensible for loop.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 23,
+                "message": "syntax error",
+                "type": "syntax_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+                "line": 23,
+                "message": "error: Invalid module item.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:13: error: Variable declaration in unnamed block requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:12: error: Variable declaration in unnamed block requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:16: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v:16: error: Incomprehensible for loop.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v:23: syntax error",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v:23: error: Invalid module item."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [
+              "语法错误"
+            ],
+            "suggestions": [
+              "📝 检查Verilog语法：分号、括号、关键字拼写等",
+              "🔤 验证标识符命名规则和保留字使用"
+            ],
+            "error_category": "syntax_issue",
+            "intelligent_error_analysis": true,
+            "has_intelligent_suggestions": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/testbenches/adder_16bit_tb.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754197159/artifacts/designs/adder_16bit.v"
+              ],
+              "design_modules": [
+                "adder_16bit"
+              ],
+              "testbench_modules": [
+                "tb_adder_16bit"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 3,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}

@@ -33,9 +33,13 @@ class EnhancedTaskParser:
     
     async def parse_enhanced_task(self, task_description: str,
                                 testbench_path: str = None,
-                                context: Dict[str, Any] = None) -> Dict[str, Any]:
+                                context: Dict[str, Any] = None,
+                                force_tdd: bool = False) -> Dict[str, Any]:
         """
         解析增强任务需求
+        
+        Args:
+            force_tdd: 强制作为TDD任务处理（当从execute_test_driven_task调用时）
         
         返回结构：
         {
@@ -60,9 +64,12 @@ class EnhancedTaskParser:
         }
         
         # 1. 检测是否为测试驱动任务
-        analysis["is_test_driven"] = self._is_test_driven_task(
-            task_description, testbench_path
-        )
+        if force_tdd:
+            analysis["is_test_driven"] = True
+        else:
+            analysis["is_test_driven"] = self._is_test_driven_task(
+                task_description, testbench_path
+            )
         
         if not analysis["is_test_driven"]:
             return analysis

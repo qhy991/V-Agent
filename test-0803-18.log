@@ -1,0 +1,2393 @@
+🧪 统一测试驱动开发(TDD)测试入口
+==================================================
+🧪 统一TDD测试初始化
+   设计类型: alu
+   配置档案: standard
+   实验ID: unified_tdd_alu_1754207940
+   输出目录: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+================================================================================
+🚀 开始统一TDD实验: ALU
+================================================================================
+🔧 设置框架和智能体...
+🔧 实验管理器设置完成:
+   - 基础路径: tdd_experiments
+   - 当前实验: unified_tdd_alu_1754207940
+   - 实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+   - 创建路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+✅ 实验目录创建成功: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+✅ 成功加载环境配置: /home/haiyan/Research/CentralizedAgentFramework/.env
+✅ 增强日志系统初始化成功
+📂 实验目录: logs/experiment_20250803_155900
+📁 工件目录: logs/experiment_20250803_155900/artifacts
+📋 主日志目录: logs
+15:59:00 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+15:59:00 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+15:59:00 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-30b-a3b-instruct-2507
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+15:59:00 - EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+15:59:00 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+15:59:00 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+15:59:00 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-30b-a3b-instruct-2507
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+15:59:00 - Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+15:59:00 - EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+🔧 智能体实验路径设置:
+   - Verilog Agent ID: enhanced_real_verilog_agent
+   - Review Agent ID: enhanced_real_code_review_agent
+   - 实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+15:59:00 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+15:59:00 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+15:59:00 - Agent.centralized_coordinator - INFO - 🛠️ 传统工具调用已启用: 权限=5
+15:59:00 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: write_file
+15:59:00 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: read_file
+15:59:00 - Agent.centralized_coordinator - INFO - ✅ EnhancedCentralizedCoordinator (Function Calling支持) 初始化完成
+15:59:00 - Agent.centralized_coordinator - INFO - 🧠 中心化协调智能体初始化完成
+15:59:00 - Agent.centralized_coordinator - INFO - 🧠⚡ 增强中心化协调智能体初始化完成 - Schema系统支持已启用
+15:59:00 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_verilog_agent (verilog_designer) - Schema工具: 4
+15:59:00 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_code_review_agent (code_reviewer) - Schema工具: 5
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+✅ 框架设置完成
+📋 设计需求已准备
+🎯 测试台: alu_testbench.v
+15:59:00 - core.experiment_manager.ExperimentManager - INFO - 📋 复制依赖: alu_testbench.v
+📋 测试台已复制到: alu_testbench.v
+⚙️ 配置: standard ({'max_iterations': 3, 'timeout_per_iteration': 300, 'deep_analysis': True})
+🔄 启动测试驱动开发循环...
+   最大迭代次数: 3
+   每次迭代超时: 300秒
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🚀 开始测试驱动任务: tdd_1754207940
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 开始TDD循环，最大迭代次数: 3
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 1/3 次迭代
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754207940_iter_1
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 1 次迭代
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 1
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+15:59:00 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 创建持续对话ID: tdd_tdd_1754207940_1754207940
+15:59:00 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754207940
+15:59:00 - Agent.centralized_coordinator - INFO - 🔧 DEBUG: 使用强制指定的任务类型: design
+15:59:00 - Agent.centralized_coordinator - INFO - 🎯 强制任务类型: design, 首选角色: verilog_designer
+15:59:00 - Agent.centralized_coordinator - INFO - ✅⚡ 选择首选角色智能体: enhanced_real_verilog_agent (角色: verilog_designer)
+15:59:00 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754207940
+15:59:00 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_verilog_agent 发言
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+15:59:00 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754207940
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 1):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+-...
+15:59:00 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+15:59:00 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:00 - LLMClient-dashscope - INFO - 📋 System Prompt (4497 字符):
+15:59:00 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+6. 不能包含任何寄存器或触发器
+
+⚠️ **时序逻辑设计规则**:
+1. 必须包含时钟信号 (clk)
+2. 通常包含复位信号 (rst)
+3. 使用 always @(posedge clk) 语句
+4. 输出端口使用 reg 类型
+5. 可以包含寄存器和触发器
+
+🔍 **智能检测**: 系统会自动检测设计类型并生成相应的代码结构。
+
+15:59:00 - LLMClient-dashscope - INFO - 👤 User Prompt (477 字符):
+15:59:00 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 1):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+- 比较运算：等于(EQ)、小于(LT)、大于(GT)
+
+模块接口：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero,     // 零标志
+    output        overflow  // 溢出标志
+);
+```
+
+✨ **首次设计指导**:
+- 请仔细分析需求，设计符合接口规范的代码
+- 注意使用正确的Verilog语法，避免SystemVerilog特性
+- 确保所有端口定义正确匹配
+15:59:00 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:05 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1377 字符, 4.80s):
+15:59:05 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于等操作，接口包含两个32位输入、4位操作码、32位输出结果、零标志和溢出标志。",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "alu_32bit",
+                "requirements": "实现一个32位ALU，支持算术（ADD, SUB）、逻辑（AND, OR, XOR, NOT）和比较（EQ, LT, GT）运算。操作码为4位，对应不同功能。输出包括结果、零标志（zero）和溢出标志（overflow）。所有操作均为组合逻辑，无时钟或复位信号。",
+                "input_ports": [
+                    {"name": "a", "width": 32, "description": "第一个操作数"},
+                    {"name": "b", "width": 32, "description": "第二个操作数"},
+                    {"name": "op", "width": 4, "description": "操作码：0000=ADD, 0001=SUB, 0010=AND, 0011=OR, 0100=XOR, 0101=NOT, 0110=EQ, 0111=LT, 1000=GT"}
+                ],
+                "output_ports": [
+                    {"name": "result", "width": 32, "description": "ALU运算结果"},
+                    {"name": "zero", "width": 1, "description": "结果为零时置高"},
+                    {"name": "overflow", "width": 1, "description": "算术运算中发生溢出时置高"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+15:59:05 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:05 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+15:59:05 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+15:59:05 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+15:59:05 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+15:59:05 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:05 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+15:59:05 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+15:59:05 - LLMClient-dashscope - INFO - 👤 User Prompt (245 字符):
+15:59:05 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于等操作，接口包含两个32位输入、4位操作码、32位输出结果、零标志和溢出标志。
+设计类型: combinational
+复杂度级别: medium
+
+
+
+
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+6. 错误避免策略（如果有历史错误信息）
+
+返回JSON格式的分析结果。
+
+15:59:05 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:16 - LLMClient-dashscope - INFO - 🤖 LLM响应 (2050 字符, 11.57s):
+15:59:16 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    "32位加法器模块：实现32位加法与减法（通过补码运算）",
+    "32位逻辑运算模块：实现与、或、异或、非等基本逻辑操作",
+    "比较运算模块：实现等于、小于、大于判断，基于结果的符号位和零标志",
+    "零标志生成模块：检测32位输出是否为0",
+    "溢出标志生成模块：根据加法/减法操作的符号位和进位位判断溢出",
+    "操作码译码模块：将4位操作码解码为控制信号，选择对应运算路径"
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "a",
+        "位宽": 32,
+        "描述": "ALU第一个32位操作数"
+      },
+      {
+        "名称": "b",
+        "位宽": 32,
+        "描述": "ALU第二个32位操作数"
+      },
+      {
+        "名称": "op",
+        "位宽": 4,
+        "描述": "4位操作码，用于选择具体运算类型"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "result",
+        "位宽": 32,
+        "描述": "32位运算结果输出"
+      },
+      {
+        "名称": "zero_flag",
+        "位宽": 1,
+        "描述": "零标志，当result为0时置1"
+      },
+      {
+        "名称": "overflow_flag",
+        "位宽": 1,
+        "描述": "溢出标志，当加/减法发生溢出时置1"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "该设计为组合逻辑电路（combinational），不涉及时钟信号。所有输入变化后，输出将在传播延迟内稳定，无需时钟同步。",
+    "建议": "在顶层模块中应避免引入时钟，确保所有路径均为纯组合逻辑。若集成到时序系统中，需注意输入信号的建立/保持时间满足时序要求。"
+  },
+  "设计约束": [
+    "必须保证所有运算路径在组合逻辑中完成，无锁存器或寄存器产生。",
+    "操作码（4位）共支持16种操作，需明确定义每种编码对应的运算（如：4'b0000=加法，4'b0001=减法，4'b0010=与，...）。",
+    "溢出标志仅对加法和减法有效；其他操作（如逻辑运算）应将溢出标志置0。",
+    "零标志对所有操作有效，只要结果为0即置1。",
+    "32位加法器需正确处理进位链，推荐使用超前进位（Carry-Lookahead）或流水线结构以减少延迟。",
+    "综合工具应优化关键路径，尤其关注加法器和比较逻辑的延迟。"
+  ],
+  "验证要点": [
+    "功能覆盖测试：对每个操作码进行全量测试，包括边界值（如最大/最小整数、0、-1等）。",
+    "零标志验证：确保当result为0时zero_flag为1，否则为0。",
+    "溢出标志验证：对加法测试正溢出（如2^31-1 + 1）、负溢出（如-2^31 - 1），确认overflow_flag正确置位。",
+    "比较操作验证：测试等于（a==b）、小于（a<b）、大于（a>b）在有符号和无符号下的行为一致性。",
+    "逻辑运算验证：检查与、或、异或、非的输出是否符合预期，特别是非操作（~b）的正确性。",
+    "边界情况测试：如a=0, b=0；a=1, b=-1；a=2^31-1, b=1 等极端值。",
+    "静态时序分析（STA）：确保组合逻辑路径延迟在目标频率下可接受。"
+  ],
+  "错误避免策略": [
+    "避免在组合逻辑中使用未初始化的变量或不完整的case语句，防止生成锁存器。",
+    "在操作码译码中使用default分支，防止意外操作码导致未知状态。",
+    "对于减法操作，应使用 a + (~b) + 1 实现，而非直接减法，以避免综合工具误判。",
+    "溢出标志计算应仅在加法/减法时启用，其他操作应显式赋0，避免残留值影响。",
+    "使用signed关键字声明a、b、result为有符号数，确保比较和溢出判断基于有符号运算。",
+    "避免在组合逻辑中出现循环依赖或反馈路径，确保电路无环。",
+    "历史常见错误：因未处理case default导致综合出锁存器；因未正确处理符号扩展导致溢出判断错误；因忘记对减法使用补码导致结果错误。"
+  ]
+}
+```
+15:59:16 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:16 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (11.57s)
+15:59:16 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+15:59:16 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+15:59:16 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+15:59:16 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: alu_32bit
+15:59:16 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+15:59:16 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:16 - LLMClient-dashscope - INFO - 📋 System Prompt (45 字符):
+15:59:16 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。特别注意避免历史错误和改进建议。
+15:59:16 - LLMClient-dashscope - INFO - 👤 User Prompt (989 字符):
+15:59:16 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 alu_32bit 的Verilog模块，要求如下：
+
+功能需求: 实现一个32位ALU，支持算术（ADD, SUB）、逻辑（AND, OR, XOR, NOT）和比较（EQ, LT, GT）运算。操作码为4位，对应不同功能。输出包括结果、零标志（zero）和溢出标志（overflow）。所有操作均为组合逻辑，无时钟或复位信号。
+编码风格: rtl
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+    input [31:0] a,  // 第一个操作数
+    input [31:0] b,  // 第二个操作数
+    input [3:0] op,  // 操作码：0000=ADD, 0001=SUB, 0010=AND, 0011=OR, 0100=XOR, 0101=NOT, 0110=EQ, 0111=LT, 1000=GT
+    output [31:0] result,  // ALU运算结果
+    output zero,  // 结果为零时置高
+    output overflow,  // 算术运算中发生溢出时置高
+
+
+
+
+
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 不能包含任何寄存器或触发器
+6. 所有输出必须通过组合逻辑直接计算
+
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
+3. 内部信号声明（wire类型）
+4. 组合逻辑功能实现（always @(*) 或 assign）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+15:59:16 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:25 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1888 字符, 8.19s):
+15:59:25 - LLMClient-dashscope - INFO - 🤖 module alu_32bit (
+    input  [31:0] a,
+    input  [31:0] b,
+    input  [3:0] op,
+    output wire [31:0] result,
+    output wire zero,
+    output wire overflow
+);
+
+// 内部信号声明
+wire [31:0] add_result;
+wire [31:0] sub_result;
+wire [31:0] and_result;
+wire [31:0] or_result;
+wire [31:0] xor_result;
+wire [31:0] not_result;
+wire [31:0] eq_result;
+wire [31:0] lt_result;
+wire [31:0] gt_result;
+
+// 算术运算：加法和减法
+assign add_result = a + b;
+assign sub_result = a - b;
+
+// 逻辑运算
+assign and_result = a & b;
+assign or_result  = a | b;
+assign xor_result = a ^ b;
+assign not_result = ~a;
+
+// 比较运算（结果为32位全1或全0）
+assign eq_result = (a == b) ? {32{1'b1}} : {32{1'b0}};
+assign lt_result = (a < b) ? {32{1'b1}} : {32{1'b0}};
+assign gt_result = (a > b) ? {32{1'b1}} : {32{1'b0}};
+
+// 选择最终结果
+assign result = 
+    (op == 4'b0000) ? add_result :
+    (op == 4'b0001) ? sub_result :
+    (op == 4'b0010) ? and_result :
+    (op == 4'b0011) ? or_result :
+    (op == 4'b0100) ? xor_result :
+    (op == 4'b0101) ? not_result :
+    (op == 4'b0110) ? eq_result :
+    (op == 4'b0111) ? lt_result :
+    (op == 4'b1000) ? gt_result :
+                     {32{1'b0}};
+
+// 零标志：结果为0时置高
+assign zero = (result == 32'd0) ? 1'b1 : 1'b0;
+
+// 溢出标志：仅对算术运算有效，基于符号位变化判断
+// ADD: 当两正数相加得负，或两负数相加得正，则溢出
+// SUB: 相当于 A + (-B)，同理判断
+wire a_sign = a[31];
+wire b_sign = b[31];
+wire add_result_sign = add_result[31];
+wire sub_result_sign = sub_result[31];
+
+assign overflow = 
+    (op == 4'b0000) ? // ADD
+        ((a_sign == 1'b1) && (b_sign == 1'b1) && (add_result_sign == 1'b0)) ||
+        ((a_sign == 1'b0) && (b_sign == 1'b0) && (add_result_sign == 1'b1))
+    :
+    (op == 4'b0001) ? // SUB
+        ((a_sign == 1'b1) && (b_sign == 1'b0) && (sub_result_sign == 1'b0)) || // minuend负，subtrahend正 → 结果正（溢出）
+        ((a_sign == 1'b0) && (b_sign == 1'b1) && (sub_result_sign == 1'b1)) // minuend正，subtrahend负 → 结果负（溢出）
+    : 1'b0; // 其他操作无溢出
+
+endmodule
+15:59:25 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: alu_32bit.v
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1888
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 1888
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1888
+15:59:25 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+15:59:25 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/alu_32bit.v
+15:59:25 - core.file_manager - INFO - 🆔 生成新文件ID: d3c7d027
+15:59:25 - core.file_manager - INFO - 🆕 创建新文件引用: d3c7d027
+15:59:25 - core.file_manager - INFO - 💾 文件已保存: alu_32bit.v (ID: d3c7d027, 类型: verilog)
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: alu_32bit.v (ID: d3c7d027)
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (8.20s)
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 2/2 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于等操作，接口包含两个32位输入、4位操作码、32位输出结果、零标志和溢出标志。', design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    "32位加法器模块：实现32位加法与减法（通过补码运算）",\n    "32位逻辑运算模块：实现与、或、异或、非等基本逻辑操作",\n    "比较运算模块：实现等于、小于、大于判断，基于结果的符号位和零标志",\n    "零标志生成模块：检测32位输出是否为0",\n    "溢出标志生成模块：根据加法/减法操作的符号位和进位位判断溢出",\n    "操作码译码模块：将4位操作码解码为控制信号，选择对应运算路径"\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "a",\n        "位宽": 32,\n        "描述": "ALU第一个32位操作数"\n      },\n      {\n        "名称": "b",\n        "位宽": 32,\n        "描述": "ALU第二个32位操作数"\n      },\n      {\n        "名称": "op",\n        "位宽": 4,\n        "描述": "4位操作码，用于选择具体运算类型"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "result",\n        "位宽": 32,\n        "描述": "32位运算结果输出"\n      },\n      {\n        "名称": "zero_flag",\n        "位宽": 1,\n        "描述": "零标志，当result为0时置1"\n      },\n      {\n        "名称": "overflow_flag",\n        "位宽": 1,\n        "描述": "溢出标志，当加/减法发生溢出时置1"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "该设计为组合逻辑电路（combinational），不涉及时钟信号。所有输入变化后，输出将在传播延迟内稳定，无需时钟同步。",\n    "建议": "在顶层模块中应避免引入时钟，确保所有路径均为纯组合逻辑。若集成到时序系统中，需注意输入信号的建立/保持时间满足时序要求。"\n  },\n  "设计约束": [\n    "必须保证所有运算路径在组合逻辑中完成，无锁存器或寄存器产生。",\n    "操作码（4位）共支持16种操作，需明确定义每种编码对应的运算（如：4\'b0000=加法，4\'b0001=减法，4\'b0010=与，...）。",\n    "溢出标志仅对加法和减法有效；其他操作（如逻辑运算）应将溢出标志置0。",\n    "零标志对所有操作有效，只要结果为0即置1。",\n    "32位加法器需正确处理进位链，推荐使用超前进位（Carry-Lookahead）或流水线结构以减少延迟。",\n    "综合工具应优化关键路径，尤其关注加法器和比较逻辑的延迟。"\n  ],\n  "验证要点": [\n    "功能覆盖测试：对每个操作码进行全量测试，包括边界值（如最大/最小整数、0、-1等）。",\n    "零标志验证：确保当result为0时zero_flag为1，否则为0。",\n    "溢出标志验证：对加法测试正溢出（如2^31-1 + 1）、负溢出（如-2^31 - 1），确认overflow_flag正确置位。",\n    "比较操作验证：测试等于（a==b）、小于（a<b）、大于（a>b）在有符号和无符号下的行为一致性。",\n    "逻辑运算验证：检查与、或、异或、非的输出是否符合预期，特别是非操作（~b）的正确性。",\n    "边界情况测试：如a=0, b=0；a=1, b=-1；a=2^31-1, b=1 等极端值。",\n    "静态时序分析（STA）：确保组合逻辑路径延迟在目标频率下可接受。"\n  ],\n  "错误避免策略": [\n    "避免在组合逻辑中使用未初始化的变量或不完整的case语句，防止生成锁存器。",\n    "在操作码译码中使用default分支，防止意外操作码导致未知状态。",\n    "对于减法操作，应使用 a + (~b) + 1 实现，而非直接减法，以避免综合工具误判。",\n    "溢出标志计算应仅在加法/减法时启用，其他操作应显式赋0，避免残留值影响。",\n    "使用signed关键字声明a、b、result为有符号数，确保比较和溢出判断基于有符号运算。",\n    "避免在组合逻辑中出现循环依赖或反馈路径，确保电路无环。",\n    "历史常见错误：因未处理case default导致综合出锁存器；因未正确处理符号扩展导致溢出判断错误；因忘记对减法使用补码导致结果错误。"\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于等操作，接口包含两个32位输入、4位操作码、32位输出结果、零标志和溢出标志。; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'alu_32bit', requirements: '实现一个32位ALU，支持算术（ADD, SUB）、逻辑（AND, OR, XOR, NOT）和比较...'[截断，总长度:131], input_ports: list[长度:3], output_ports: [{'name': 'result', 'width': 32, 'description': 'ALU运算结果'}, {'name': 'zero', 'width': 1, 'description': '结果为零时置高'}, {'name': 'overflow', 'width': 1, 'description': '算术运算中发生溢出时置高'}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: alu_32bit; verilog_code: 'module alu_32bit (
+    input  [31:0] a,
+    input ...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: d3c7d027; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 2
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 2
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: conv_1754207940
+15:59:25 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_verilog_agent
+15:59:25 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_verilog_agent
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: alu_32bit.v (模块: alu_32bit)
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: alu_32bit.v (模块: alu)
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 1
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第1次迭代，testbench策略: 用户基准
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第1次迭代使用用户提供的测试台作为功能基准
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: alu_32bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v)
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: alu_32bit.v
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 0轮对话历史
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': 'd3c7d027', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T15:59:25.070111', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'alu_32bit'}
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_32bit.v (模块: alu_32bit)
+15:59:25 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_testbench.v (模块: alu_testbench)
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: alu_32bit.v (2148 bytes)
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: alu_testbench.v (9299 bytes)
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3438831
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   1. alu_32bit.v (设计)
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO -   2. alu_testbench.v (测试台)
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3438831 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3438831
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: ========================================
+🧪 开始32位ALU功能测试
+========================================
+[0] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+
+📋 测试组1: 加法运算 (OP_ADD = 4'b0000)
+----------------------------------------
+[10000] a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+✅ PASS -                                                                                                                                                                                             : a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+[15000] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+[20000] a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+
+📋 测试组2: 减法运算 (OP_SUB = 4'b0001)
+----------------------------------------
+[25000] a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+✅ PASS -                                                                                                                                                                                             : a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+[30000] a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+[35000] a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+
+📋 测试组3: 逻辑与运算 (OP_AND = 4'b0010)
+----------------------------------------
+[40000] a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+[45000] a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+✅ PASS -                                                                                                                                                                                         : a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+
+📋 测试组4: 逻辑或运算 (OP_OR = 4'b0011)
+----------------------------------------
+[50000] a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+[55000] a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+
+📋 测试组5: 异或运算 (OP_XOR = 4'b0100)
+----------------------------------------
+[60000] a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                             : a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+[65000] a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+
+📋 测试组6: 左移运算 (OP_SLL = 4'b0101)
+----------------------------------------
+[70000] a=12345678, b=00000004, op=0101 → result=edcba987, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0101
+    Expected: result=23456780, zero=0
+    Actual:   result=edcba987, zero=0
+[75000] a=80000000, b=00000001, op=0101 → result=7fffffff, zero=0
+❌ FAIL -                                                                                                                                                                                     : a=80000000, b=00000001, op=0101
+    Expected: result=00000000, zero=1
+    Actual:   result=7fffffff, zero=0
+
+📋 测试组7: 右移运算 (OP_SRL = 4'b0110)
+----------------------------------------
+[80000] a=12345678, b=00000004, op=0110 → result=00000000, zero=1
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0110
+    Expected: result=01234567, zero=0
+    Actual:   result=00000000, zero=1
+[85000] a=00000001, b=00000001, op=0110 → result=ffffffff, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=00000001, b=00000001, op=0110
+    Expected: result=00000000, zero=1
+    Actual:   result=ffffffff, zero=0
+
+📋 测试组8: 边界条件测试
+----------------------------------------
+[90000] a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+✅ PASS -                                                                                                                                                                                         : a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+[95000] a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+
+========================================
+🏁 测试完成统计
+========================================
+总测试用例: 18
+通过测试: 14
+失败测试: 4
+❌ 有 4 个测试失败，需要检查ALU设计
+========================================
+/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v:215: $finish called at 110000 (1ps)
+
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 错误分析使用完整上下文: 0轮对话历史, 0次历史迭代, 0个编译错误
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析测试失败，生成改进建议
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议数量: 2
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 失败类别: logic_error
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议1: 检查设计逻辑，确保满足测试台要求...
+15:59:25 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议2: 确保设计模块名为: task...
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 测试失败，分析错误信息传递
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 test_results keys: ['success', 'stage', 'compile_stdout', 'simulation_stdout', 'simulation_stderr', 'return_code', 'all_tests_passed', 'test_summary', 'detailed_analysis', 'failure_reasons', 'suggestions', 'testbench_path', 'design_files', 'compilation_files', 'dependency_analysis']
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存失败原因: ['测试用例失败']
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: improvement_analysis keys: ['suggestions', 'analysis_timestamp', 'failure_category', 'has_actionable_suggestions', 'test_execution_success']
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 改进建议数量: 2
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议1: 检查设计逻辑，确保满足测试台要求...
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议2: 确保设计模块名为: task...
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 2/3 次迭代
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754207940_iter_2
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 2 次迭代
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 2
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 完整上下文传递: 包含0轮对话，0个代码文件
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 继续持续对话: tdd_tdd_1754207940_1754207940
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 向持续对话智能体发送任务: enhanced_real_verilog_agent
+15:59:25 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 传递完整上下文给enhanced_real_verilog_agent: 0轮对话历史
+15:59:25 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: tdd_tdd_1754207940_1754207940_iter_2
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 2):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+-...
+15:59:25 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+15:59:25 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:25 - LLMClient-dashscope - INFO - 📋 System Prompt (4497 字符):
+15:59:25 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+6. 不能包含任何寄存器或触发器
+
+⚠️ **时序逻辑设计规则**:
+1. 必须包含时钟信号 (clk)
+2. 通常包含复位信号 (rst)
+3. 使用 always @(posedge clk) 语句
+4. 输出端口使用 reg 类型
+5. 可以包含寄存器和触发器
+
+🔍 **智能检测**: 系统会自动检测设计类型并生成相应的代码结构。
+
+15:59:25 - LLMClient-dashscope - INFO - 👤 User Prompt (919 字符):
+15:59:25 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 2):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+- 比较运算：等于(EQ)、小于(LT)、大于(GT)
+
+模块接口：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero,     // 零标志
+    output        overflow  // 溢出标志
+);
+```
+
+
+
+🎯 **基于历史迭代的成功经验指导**:
+
+### 🎯 本次迭代要求:
+请严格按照上述成功模式生成代码，确保：
+1. 使用正确的数组大小
+2. 实现纯组合逻辑
+3. 严格匹配接口规范
+📚 **历史迭代经验教训**:
+
+### 迭代1:
+- 编译成功: False
+- 主要失败原因: 
+- 经验教训: 
+
+
+
+🔧 **严格代码验证要求**:
+1. **编译器兼容性 (iverilog - Verilog-2001标准)**:
+   ❌ 禁止：logic类型、interface、generate内复杂逻辑、assert语句
+   ✅ 只用：wire、reg、assign、always@(*)
+2. **纯组合逻辑验证**:
+   ❌ 严禁：clk、rst、@(posedge)、output reg配合always@(posedge)
+   ✅ 必须：output wire配合assign，或output reg配合always@(*)
+3. **接口严格匹配**:
+   - 模块名必须完全匹配测试台实例化
+   - 端口名必须与测试台连接一致
+
+💡 **改进建议**:
+1. 检查设计逻辑，确保满足测试台要求
+2. 确保设计模块名为: task
+15:59:25 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:29 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1343 字符, 4.56s):
+15:59:29 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "alu_32bit",
+                "requirements": "实现一个32位ALU，支持算术运算（ADD, SUB）、逻辑运算（AND, OR, XOR, NOT）和比较运算（EQ, LT, GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。",
+                "input_ports": [
+                    {"name": "a", "width": 32, "description": "操作数A"},
+                    {"name": "b", "width": 32, "description": "操作数B"},
+                    {"name": "op", "width": 4, "description": "操作码：4'b0000=ADD, 4'b0001=SUB, 4'b0010=AND, 4'b0011=OR, 4'b0100=XOR, 4'b0101=NOT, 4'b0110=EQ, 4'b0111=LT, 4'b1000=GT"}
+                ],
+                "output_ports": [
+                    {"name": "result", "width": 32, "description": "运算结果"},
+                    {"name": "zero", "width": 1, "description": "结果为零时置1"},
+                    {"name": "overflow", "width": 1, "description": "算术运算中发生溢出时置1"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+15:59:29 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:29 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+15:59:29 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+15:59:29 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+15:59:29 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+15:59:29 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到组合逻辑需求，自动调整设计类型为: combinational
+15:59:29 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:29 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+15:59:29 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+15:59:29 - LLMClient-dashscope - INFO - 👤 User Prompt (225 字符):
+15:59:29 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范
+设计类型: combinational
+复杂度级别: medium
+
+
+
+
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+6. 错误避免策略（如果有历史错误信息）
+
+返回JSON格式的分析结果。
+
+15:59:29 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:45 - LLMClient-dashscope - INFO - 🤖 LLM响应 (3234 字符, 15.77s):
+15:59:45 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    {
+      "模块名称": "ALU_Control",
+      "功能描述": "根据操作码（op）生成控制信号，用于选择ALU执行的操作类型。该模块为组合逻辑，输入为op，输出为各操作使能信号。",
+      "子功能": [
+        "解码操作码",
+        "生成加法/减法使能",
+        "生成逻辑运算使能（AND, OR, XOR, NOT）",
+        "生成比较操作使能（EQ, LT, GT）"
+      ]
+    },
+    {
+      "模块名称": "ALU_Core",
+      "功能描述": "核心运算单元，实现所有算术与逻辑操作。接收数据输入、控制信号，并输出结果和状态标志。",
+      "子功能": [
+        "32位加法器（含进位链）",
+        "32位减法器（通过补码实现）",
+        "32位按位逻辑运算（AND, OR, XOR, NOT）",
+        "比较器（EQ, LT, GT）",
+        "结果输出多路选择器"
+      ]
+    },
+    {
+      "模块名称": "ALU_Logic",
+      "功能描述": "处理非算术类操作（如NOT、逻辑运算），并支持比较结果的生成。",
+      "子功能": [
+        "一元操作（NOT）",
+        "二元逻辑运算（AND/OR/XOR）",
+        "比较逻辑（等于、小于、大于）"
+      ]
+    }
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "a",
+        "位宽": 32,
+        "方向": "input",
+        "描述": "ALU第一个操作数，32位有符号或无符号整数"
+      },
+      {
+        "名称": "b",
+        "位宽": 32,
+        "方向": "input",
+        "描述": "ALU第二个操作数，32位有符号或无符号整数"
+      },
+      {
+        "名称": "op",
+        "位宽": 4,
+        "方向": "input",
+        "描述": "操作码，4位编码，用于选择具体操作。建议使用标准编码：0000=ADD, 0001=SUB, 0010=AND, 0011=OR, 0100=XOR, 0101=NOT, 0110=EQ, 0111=LT, 1000=GT"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "result",
+        "位宽": 32,
+        "方向": "output",
+        "描述": "ALU运算结果，32位"
+      },
+      {
+        "名称": "zero",
+        "位宽": 1,
+        "方向": "output",
+        "描述": "零标志，当result为0时置1"
+      },
+      {
+        "名称": "negative",
+        "位宽": 1,
+        "方向": "output",
+        "描述": "负标志，当result最高位为1时置1（有符号比较）"
+      },
+      {
+        "名称": "overflow",
+        "位宽": 1,
+        "方向": "output",
+        "描述": "溢出标志，仅在加法/减法中有效，当符号位变化时置1"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "本设计为纯组合逻辑（combinational），不涉及任何时序元件（如寄存器、触发器）。因此，无需时钟信号，也不受时钟域约束。所有输入到输出均为即时响应，无延迟锁存。"
+  },
+  "设计约束": [
+    "必须为纯组合逻辑设计，禁止使用任何时序元件（如reg、always @ (posedge clk)）",
+    "操作码op必须为4位，且所有编码必须被完整覆盖，未定义编码应默认处理为NOP或报错（建议默认为0）",
+    "所有运算必须在单周期内完成，无流水线或延迟",
+    "结果输出必须满足32位宽度，高位扩展正确",
+    "比较操作（EQ/LT/GT）需基于有符号数进行判断（LT/GT）或无符号（EQ）——建议统一采用有符号比较以兼容性更强",
+    "溢出标志（overflow）仅在ADD/SUB操作中有效，其他操作应置0",
+    "NOT操作应视为一元操作，仅对a操作，b可忽略（但需保留输入）"
+  ],
+  "验证要点": [
+    "功能覆盖率测试：确保所有op码对应的运算均正确实现",
+    "边界值测试：测试最大值、最小值、0、1、-1等极端输入",
+    "溢出检测测试：ADD(2^31-1, 1) → 应产生溢出；SUB(-2^31, -1) → 应产生溢出",
+    "比较操作验证：EQ(5,5)=1, EQ(5,6)=0；LT(5,6)=1, LT(6,5)=0；GT(6,5)=1",
+    "零标志测试：result=0时zero=1，否则为0",
+    "负标志测试：result<0时negative=1",
+    "NOT操作验证：NOT(0)=~0=32'hFFFFFFFF，NOT(1)=~1=32'hFFFFFFFE",
+    "组合输入测试：随机大范围输入，检查结果一致性",
+    "静态时序分析（STA）：虽为组合逻辑，仍需检查路径延迟是否满足建立/保持时间要求（尤其在FPGA中）"
+  ],
+  "错误避免策略": [
+    {
+      "问题": "误将ALU设计为时序逻辑（如使用reg或always块）",
+      "策略": "严格遵循纯组合逻辑规范，使用assign语句或组合式always块（敏感列表包含所有输入）"
+    },
+    {
+      "问题": "操作码未完全覆盖导致未定义行为",
+      "策略": "在顶层添加default case分支，或使用assertion断言确保op在合法范围内"
+    },
+    {
+      "问题": "溢出标志计算错误（如未考虑符号位变化）",
+      "策略": "溢出判断公式：overflow = (a_sign == b_sign) && (a_sign != result_sign)，仅在ADD/SUB中启用"
+    },
+    {
+      "问题": "比较操作未区分有符号/无符号，导致LT/GT错误",
+      "策略": "统一使用有符号比较，即比较最高位作为符号位，避免无符号误解"
+    },
+    {
+      "问题": "NOT操作误用b输入或未正确处理",
+      "策略": "明确NOT为一元操作，仅使用a，b可忽略但不可丢弃，保持接口一致"
+    },
+    {
+      "问题": "未处理高位扩展或截断导致结果错误",
+      "策略": "所有运算使用32位全宽，避免截断；结果输出始终为32位"
+    }
+  ]
+}
+```
+15:59:45 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:45 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (15.77s)
+15:59:45 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+15:59:45 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+15:59:45 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+15:59:45 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: alu_32bit
+15:59:45 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+15:59:45 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:45 - LLMClient-dashscope - INFO - 📋 System Prompt (45 字符):
+15:59:45 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。特别注意避免历史错误和改进建议。
+15:59:45 - LLMClient-dashscope - INFO - 👤 User Prompt (975 字符):
+15:59:45 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 alu_32bit 的Verilog模块，要求如下：
+
+功能需求: 实现一个32位ALU，支持算术运算（ADD, SUB）、逻辑运算（AND, OR, XOR, NOT）和比较运算（EQ, LT, GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。
+编码风格: rtl
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+    input [31:0] a,  // 操作数A
+    input [31:0] b,  // 操作数B
+    input [3:0] op,  // 操作码：4'b0000=ADD, 4'b0001=SUB, 4'b0010=AND, 4'b0011=OR, 4'b0100=XOR, 4'b0101=NOT, 4'b0110=EQ, 4'b0111=LT, 4'b1000=GT
+    output [31:0] result,  // 运算结果
+    output zero,  // 结果为零时置1
+    output overflow,  // 算术运算中发生溢出时置1
+
+
+
+
+
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 不能包含任何寄存器或触发器
+6. 所有输出必须通过组合逻辑直接计算
+
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
+3. 内部信号声明（wire类型）
+4. 组合逻辑功能实现（always @(*) 或 assign）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+15:59:45 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:51 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1495 字符, 6.35s):
+15:59:51 - LLMClient-dashscope - INFO - 🤖 module alu_32bit (
+    input  [31:0] a,
+    input  [31:0] b,
+    input  [3:0]  op,
+    output wire [31:0] result,
+    output wire zero,
+    output wire overflow
+);
+
+// 内部信号声明
+wire [31:0] add_result;
+wire [31:0] sub_result;
+wire [31:0] and_result;
+wire [31:0] or_result;
+wire [31:0] xor_result;
+wire [31:0] not_result;
+wire [31:0] eq_result;
+wire [31:0] lt_result;
+wire [31:0] gt_result;
+
+// 组合逻辑：算术运算
+assign add_result = a + b;
+assign sub_result = a - b;
+
+// 组合逻辑：逻辑运算
+assign and_result = a & b;
+assign or_result  = a | b;
+assign xor_result = a ^ b;
+assign not_result = ~a;
+
+// 组合逻辑：比较运算（结果为32位全1或全0）
+assign eq_result = (a == b) ? 32'b1 : 32'b0;
+assign lt_result = (a < b) ? 32'b1 : 32'b0;
+assign gt_result = (a > b) ? 32'b1 : 32'b0;
+
+// 组合逻辑：选择最终结果
+assign result = 
+    (op == 4'b0000) ? add_result :
+    (op == 4'b0001) ? sub_result :
+    (op == 4'b0010) ? and_result :
+    (op == 4'b0011) ? or_result :
+    (op == 4'b0100) ? xor_result :
+    (op == 4'b0101) ? not_result :
+    (op == 4'b0110) ? eq_result :
+    (op == 4'b0111) ? lt_result :
+    (op == 4'b1000) ? gt_result :
+                     32'd0;
+
+// 零标志：结果为0时置1
+assign zero = (result == 32'd0);
+
+// 溢出标志：仅对ADD和SUB有效，使用符号位检测
+// 对于有符号加法：若两正数相加得负，或两负数相加得正，则溢出
+wire a_sign = a[31];
+wire b_sign = b[31];
+wire res_sign = result[31];
+
+assign overflow = 
+    (op == 4'b0000) ? // ADD
+        (a_sign == b_sign) && (a_sign != res_sign) :
+    (op == 4'b0001) ? // SUB
+        (a_sign != b_sign) && (a_sign != res_sign) :
+        1'b0;
+
+endmodule
+15:59:51 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: alu_32bit.v
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1495
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 1495
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1495
+15:59:51 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+15:59:51 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/alu_32bit_v1.v
+15:59:51 - core.file_manager - INFO - 🔄 使用现有文件ID: d3c7d027
+15:59:51 - core.file_manager - INFO - 🔄 覆盖现有文件: alu_32bit.v
+15:59:51 - core.file_manager - INFO - 🔄 更新现有文件引用: d3c7d027
+15:59:51 - core.file_manager - INFO - 💾 文件已保存: alu_32bit.v (ID: d3c7d027, 类型: verilog)
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: alu_32bit.v (ID: d3c7d027)
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (6.35s)
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 2/2 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范', design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    {\n      "模块名称": "ALU_Control",\n      "功能描述": "根据操作码（op）生成控制信号，用于选择ALU执行的操作类型。该模块为组合逻辑，输入为op，输出为各操作使能信号。",\n      "子功能": [\n        "解码操作码",\n        "生成加法/减法使能",\n        "生成逻辑运算使能（AND, OR, XOR, NOT）",\n        "生成比较操作使能（EQ, LT, GT）"\n      ]\n    },\n    {\n      "模块名称": "ALU_Core",\n      "功能描述": "核心运算单元，实现所有算术与逻辑操作。接收数据输入、控制信号，并输出结果和状态标志。",\n      "子功能": [\n        "32位加法器（含进位链）",\n        "32位减法器（通过补码实现）",\n        "32位按位逻辑运算（AND, OR, XOR, NOT）",\n        "比较器（EQ, LT, GT）",\n        "结果输出多路选择器"\n      ]\n    },\n    {\n      "模块名称": "ALU_Logic",\n      "功能描述": "处理非算术类操作（如NOT、逻辑运算），并支持比较结果的生成。",\n      "子功能": [\n        "一元操作（NOT）",\n        "二元逻辑运算（AND/OR/XOR）",\n        "比较逻辑（等于、小于、大于）"\n      ]\n    }\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "a",\n        "位宽": 32,\n        "方向": "input",\n        "描述": "ALU第一个操作数，32位有符号或无符号整数"\n      },\n      {\n        "名称": "b",\n        "位宽": 32,\n        "方向": "input",\n        "描述": "ALU第二个操作数，32位有符号或无符号整数"\n      },\n      {\n        "名称": "op",\n        "位宽": 4,\n        "方向": "input",\n        "描述": "操作码，4位编码，用于选择具体操作。建议使用标准编码：0000=ADD, 0001=SUB, 0010=AND, 0011=OR, 0100=XOR, 0101=NOT, 0110=EQ, 0111=LT, 1000=GT"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "result",\n        "位宽": 32,\n        "方向": "output",\n        "描述": "ALU运算结果，32位"\n      },\n      {\n        "名称": "zero",\n        "位宽": 1,\n        "方向": "output",\n        "描述": "零标志，当result为0时置1"\n      },\n      {\n        "名称": "negative",\n        "位宽": 1,\n        "方向": "output",\n        "描述": "负标志，当result最高位为1时置1（有符号比较）"\n      },\n      {\n        "名称": "overflow",\n        "位宽": 1,\n        "方向": "output",\n        "描述": "溢出标志，仅在加法/减法中有效，当符号位变化时置1"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "本设计为纯组合逻辑（combinational），不涉及任何时序元件（如寄存器、触发器）。因此，无需时钟信号，也不受时钟域约束。所有输入到输出均为即时响应，无延迟锁存。"\n  },\n  "设计约束": [\n    "必须为纯组合逻辑设计，禁止使用任何时序元件（如reg、always @ (posedge clk)）",\n    "操作码op必须为4位，且所有编码必须被完整覆盖，未定义编码应默认处理为NOP或报错（建议默认为0）",\n    "所有运算必须在单周期内完成，无流水线或延迟",\n    "结果输出必须满足32位宽度，高位扩展正确",\n    "比较操作（EQ/LT/GT）需基于有符号数进行判断（LT/GT）或无符号（EQ）——建议统一采用有符号比较以兼容性更强",\n    "溢出标志（overflow）仅在ADD/SUB操作中有效，其他操作应置0",\n    "NOT操作应视为一元操作，仅对a操作，b可忽略（但需保留输入）"\n  ],\n  "验证要点": [\n    "功能覆盖率测试：确保所有op码对应的运算均正确实现",\n    "边界值测试：测试最大值、最小值、0、1、-1等极端输入",\n    "溢出检测测试：ADD(2^31-1, 1) → 应产生溢出；SUB(-2^31, -1) → 应产生溢出",\n    "比较操作验证：EQ(5,5)=1, EQ(5,6)=0；LT(5,6)=1, LT(6,5)=0；GT(6,5)=1",\n    "零标志测试：result=0时zero=1，否则为0",\n    "负标志测试：result<0时negative=1",\n    "NOT操作验证：NOT(0)=~0=32\'hFFFFFFFF，NOT(1)=~1=32\'hFFFFFFFE",\n    "组合输入测试：随机大范围输入，检查结果一致性",\n    "静态时序分析（STA）：虽为组合逻辑，仍需检查路径延迟是否满足建立/保持时间要求（尤其在FPGA中）"\n  ],\n  "错误避免策略": [\n    {\n      "问题": "误将ALU设计为时序逻辑（如使用reg或always块）",\n      "策略": "严格遵循纯组合逻辑规范，使用assign语句或组合式always块（敏感列表包含所有输入）"\n    },\n    {\n      "问题": "操作码未完全覆盖导致未定义行为",\n      "策略": "在顶层添加default case分支，或使用assertion断言确保op在合法范围内"\n    },\n    {\n      "问题": "溢出标志计算错误（如未考虑符号位变化）",\n      "策略": "溢出判断公式：overflow = (a_sign == b_sign) && (a_sign != result_sign)，仅在ADD/SUB中启用"\n    },\n    {\n      "问题": "比较操作未区分有符号/无符号，导致LT/GT错误",\n      "策略": "统一使用有符号比较，即比较最高位作为符号位，避免无符号误解"\n    },\n    {\n      "问题": "NOT操作误用b输入或未正确处理",\n      "策略": "明确NOT为一元操作，仅使用a，b可忽略但不可丢弃，保持接口一致"\n    },\n    {\n      "问题": "未处理高位扩展或截断导致结果错误",\n      "策略": "所有运算使用32位全宽，避免截断；结果输出始终为32位"\n    }\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'alu_32bit', requirements: '实现一个32位ALU，支持算术运算（ADD, SUB）、逻辑运算（AND, OR, XOR, NOT）和比较运算（EQ, LT, GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。', input_ports: list[长度:3], output_ports: [{'name': 'result', 'width': 32, 'description': '运算结果'}, {'name': 'zero', 'width': 1, 'description': '结果为零时置1'}, {'name': 'overflow', 'width': 1, 'description': '算术运算中发生溢出时置1'}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: alu_32bit; verilog_code: 'module alu_32bit (
+    input  [31:0] a,
+    input ...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: d3c7d027; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 2
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 2
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+15:59:51 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+15:59:51 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: tdd_tdd_1754207940_1754207940_iter_2
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - ✅ 持续对话任务完成: 迭代 2
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: alu_32bit.v (模块: alu_32bit)
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: alu_32bit.v (模块: alu)
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 2
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第2次迭代，testbench策略: 用户备用
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第2次迭代，智能体未生成测试台，使用用户测试台
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: alu_32bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v)
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: alu_32bit.v
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+15:59:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 1轮对话历史
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': 'd3c7d027', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T15:59:51.899331', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'alu_32bit'}
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_32bit.v (模块: alu_32bit)
+15:59:51 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_testbench.v (模块: alu_testbench)
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: alu_32bit.v (1713 bytes)
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: alu_testbench.v (9299 bytes)
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3438858
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   1. alu_32bit.v (设计)
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO -   2. alu_testbench.v (测试台)
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3438858 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3438858
+15:59:51 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: ========================================
+🧪 开始32位ALU功能测试
+========================================
+[0] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+
+📋 测试组1: 加法运算 (OP_ADD = 4'b0000)
+----------------------------------------
+[10000] a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+✅ PASS -                                                                                                                                                                                             : a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+[15000] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+[20000] a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+
+📋 测试组2: 减法运算 (OP_SUB = 4'b0001)
+----------------------------------------
+[25000] a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+✅ PASS -                                                                                                                                                                                             : a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+[30000] a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+[35000] a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+
+📋 测试组3: 逻辑与运算 (OP_AND = 4'b0010)
+----------------------------------------
+[40000] a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+[45000] a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+✅ PASS -                                                                                                                                                                                         : a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+
+📋 测试组4: 逻辑或运算 (OP_OR = 4'b0011)
+----------------------------------------
+[50000] a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+[55000] a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+
+📋 测试组5: 异或运算 (OP_XOR = 4'b0100)
+----------------------------------------
+[60000] a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                             : a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+[65000] a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+
+📋 测试组6: 左移运算 (OP_SLL = 4'b0101)
+----------------------------------------
+[70000] a=12345678, b=00000004, op=0101 → result=edcba987, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0101
+    Expected: result=23456780, zero=0
+    Actual:   result=edcba987, zero=0
+[75000] a=80000000, b=00000001, op=0101 → result=7fffffff, zero=0
+❌ FAIL -                                                                                                                                                                                     : a=80000000, b=00000001, op=0101
+    Expected: result=00000000, zero=1
+    Actual:   result=7fffffff, zero=0
+
+📋 测试组7: 右移运算 (OP_SRL = 4'b0110)
+----------------------------------------
+[80000] a=12345678, b=00000004, op=0110 → result=00000000, zero=1
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0110
+    Expected: result=01234567, zero=0
+    Actual:   result=00000000, zero=1
+[85000] a=00000001, b=00000001, op=0110 → result=00000001, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=00000001, b=00000001, op=0110
+    Expected: result=00000000, zero=1
+    Actual:   result=00000001, zero=0
+
+📋 测试组8: 边界条件测试
+----------------------------------------
+[90000] a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+✅ PASS -                                                                                                                                                                                         : a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+[95000] a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+
+========================================
+🏁 测试完成统计
+========================================
+总测试用例: 18
+通过测试: 14
+失败测试: 4
+❌ 有 4 个测试失败，需要检查ALU设计
+========================================
+/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v:215: $finish called at 110000 (1ps)
+
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 错误分析使用完整上下文: 1轮对话历史, 1次历史迭代, 0个编译错误
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 识别到失败模式: {'repeated_errors': [], 'error_evolution': [{'iteration': 1, 'failures': [], 'lessons': []}], 'success_patterns': [], 'common_fixes': []}
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 识别到AI行为模式: {'tool_usage_patterns': {}, 'decision_patterns': [], 'error_response_patterns': [], 'success_strategies': []}
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 分析测试失败，生成改进建议
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议数量: 2
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 失败类别: logic_error
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议1: 检查设计逻辑，确保满足测试台要求...
+15:59:52 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 DEBUG: 建议2: 确保设计模块名为: task...
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 测试失败，分析错误信息传递
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 test_results keys: ['success', 'stage', 'compile_stdout', 'simulation_stdout', 'simulation_stderr', 'return_code', 'all_tests_passed', 'test_summary', 'detailed_analysis', 'failure_reasons', 'suggestions', 'testbench_path', 'design_files', 'compilation_files', 'dependency_analysis']
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 保存失败原因: ['测试用例失败']
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: improvement_analysis keys: ['suggestions', 'analysis_timestamp', 'failure_category', 'has_actionable_suggestions', 'test_execution_success']
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 改进建议数量: 2
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议1: 检查设计逻辑，确保满足测试台要求...
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 DEBUG: 建议2: 确保设计模块名为: task...
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 第 3/3 次迭代
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 初始化迭代上下文: tdd_1754207940_iter_3
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 执行第 3 次迭代
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 设计阶段 - 迭代 3
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 完整上下文传递: 包含1轮对话，0个代码文件
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 DEBUG: TDD设计阶段 - 强制任务类型为design，优先agent: verilog_designer
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 继续持续对话: tdd_tdd_1754207940_1754207940
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 向持续对话智能体发送任务: enhanced_real_verilog_agent
+15:59:52 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 传递完整上下文给enhanced_real_verilog_agent: 1轮对话历史
+15:59:52 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: tdd_tdd_1754207940_1754207940_iter_3
+15:59:52 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 设计任务 (迭代 3):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+-...
+15:59:52 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+15:59:52 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:52 - LLMClient-dashscope - INFO - 📋 System Prompt (4497 字符):
+15:59:52 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
+                "output_ports": ["sum [7:0]", "cout"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "simple_adder",
+                "requirements": "设计一个8位加法器",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+6. 不能包含任何寄存器或触发器
+
+⚠️ **时序逻辑设计规则**:
+1. 必须包含时钟信号 (clk)
+2. 通常包含复位信号 (rst)
+3. 使用 always @(posedge clk) 语句
+4. 输出端口使用 reg 类型
+5. 可以包含寄存器和触发器
+
+🔍 **智能检测**: 系统会自动检测设计类型并生成相应的代码结构。
+
+15:59:52 - LLMClient-dashscope - INFO - 👤 User Prompt (1102 字符):
+15:59:52 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 设计任务 (迭代 3):
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+- 算术运算：加法(ADD)、减法(SUB)
+- 逻辑运算：与(AND)、或(OR)、异或(XOR)、非(NOT)
+- 比较运算：等于(EQ)、小于(LT)、大于(GT)
+
+模块接口：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero,     // 零标志
+    output        overflow  // 溢出标志
+);
+```
+
+
+
+🎯 **基于历史迭代的成功经验指导**:
+
+### 🎯 本次迭代要求:
+请严格按照上述成功模式生成代码，确保：
+1. 使用正确的数组大小
+2. 实现纯组合逻辑
+3. 严格匹配接口规范
+🗣️ **完整对话历史** (包含所有AI推理过程):
+
+#### 迭代2 - enhanced_real_verilog_agent:
+**AI响应**: ...
+**推理笔记**: 迭代2的持续对话
+
+📚 **历史迭代经验教训**:
+
+### 迭代1:
+- 编译成功: False
+- 主要失败原因: 
+- 经验教训: 
+
+### 迭代2:
+- 编译成功: False
+- 主要失败原因: 
+- 经验教训: 
+
+🎯 **基于历史模式的智能建议**:
+
+🤖 **AI行为模式分析**:
+
+
+🔧 **严格代码验证要求**:
+1. **编译器兼容性 (iverilog - Verilog-2001标准)**:
+   ❌ 禁止：logic类型、interface、generate内复杂逻辑、assert语句
+   ✅ 只用：wire、reg、assign、always@(*)
+2. **纯组合逻辑验证**:
+   ❌ 严禁：clk、rst、@(posedge)、output reg配合always@(posedge)
+   ✅ 必须：output wire配合assign，或output reg配合always@(*)
+3. **接口严格匹配**:
+   - 模块名必须完全匹配测试台实例化
+   - 端口名必须与测试台连接一致
+
+💡 **改进建议**:
+1. 检查设计逻辑，确保满足测试台要求
+2. 确保设计模块名为: task
+15:59:52 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:57 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1346 字符, 5.18s):
+15:59:57 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_design_requirements",
+            "parameters": {
+                "requirements": "设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范",
+                "design_type": "combinational",
+                "complexity_level": "medium"
+            }
+        },
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "alu_32bit",
+                "requirements": "实现一个32位ALU，支持算术运算（ADD、SUB）、逻辑运算（AND、OR、XOR、NOT）和比较运算（EQ、LT、GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。",
+                "input_ports": [
+                    {"name": "a", "width": 32, "description": "操作数A"},
+                    {"name": "b", "width": 32, "description": "操作数B"},
+                    {"name": "op", "width": 4, "description": "操作码：4'b0000=ADD, 4'b0001=SUB, 4'b0010=AND, 4'b0011=OR, 4'b0100=XOR, 4'b0101=NOT, 4'b0110=EQ, 4'b0111=LT, 4'b1000=GT"}
+                ],
+                "output_ports": [
+                    {"name": "result", "width": 32, "description": "ALU运算结果"},
+                    {"name": "zero", "width": 1, "description": "零标志：结果为0时置1"},
+                    {"name": "overflow", "width": 1, "description": "溢出标志：仅对加法/减法有效"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+15:59:57 - LLMClient-dashscope - INFO - ====================================================================================================
+15:59:57 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 使用统一Schema标准化参数
+15:59:57 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_design_requirements 参数适配成功: 应用智能字段映射
+15:59:57 - core.schema_system.enhanced_base_agent - INFO - ✅ analyze_design_requirements 参数验证通过
+15:59:57 - Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+15:59:57 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到组合逻辑需求，自动调整设计类型为: combinational
+15:59:57 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+15:59:57 - LLMClient-dashscope - INFO - 📋 System Prompt (22 字符):
+15:59:57 - LLMClient-dashscope - INFO - 📋 你是Verilog设计专家，请分析设计需求。
+15:59:57 - LLMClient-dashscope - INFO - 👤 User Prompt (225 字符):
+15:59:57 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请分析以下Verilog设计需求：
+
+需求描述: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范
+设计类型: combinational
+复杂度级别: medium
+
+
+
+
+
+请提供以下分析结果：
+1. 功能模块分解
+2. 输入/输出端口需求
+3. 时钟域要求
+4. 设计约束
+5. 验证要点
+6. 错误避免策略（如果有历史错误信息）
+
+返回JSON格式的分析结果。
+
+15:59:57 - LLMClient-dashscope - INFO - ====================================================================================================
+16:00:12 - LLMClient-dashscope - INFO - 🤖 LLM响应 (3571 字符, 15.21s):
+16:00:12 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+  "功能模块分解": [
+    {
+      "模块名称": "ALU_Control",
+      "功能描述": "根据操作码（op）信号生成控制信号，用于选择ALU执行的操作类型。包括加法、减法、逻辑运算（与、或、异或）、位运算（非）、比较操作（等于、小于、大于）的控制逻辑。",
+      "输入": ["op[5:0]"],
+      "输出": [
+        "alu_add",
+        "alu_sub",
+        "alu_and",
+        "alu_or",
+        "alu_xor",
+        "alu_not",
+        "alu_eq",
+        "alu_lt",
+        "alu_gt"
+      ]
+    },
+    {
+      "模块名称": "ALU_Core",
+      "功能描述": "核心组合逻辑单元，实现所有算术和逻辑运算。接收两个32位输入数据（A、B），根据控制信号执行对应操作，并输出结果及标志位。",
+      "输入": [
+        "A[31:0]",
+        "B[31:0]",
+        "alu_add",
+        "alu_sub",
+        "alu_and",
+        "alu_or",
+        "alu_xor",
+        "alu_not",
+        "alu_eq",
+        "alu_lt",
+        "alu_gt"
+      ],
+      "输出": [
+        "result[31:0]",
+        "zero_flag",
+        "negative_flag",
+        "overflow_flag"
+      ]
+    },
+    {
+      "模块名称": "Comparison_Unit",
+      "功能描述": "专门处理比较操作（等于、小于、大于）的逻辑，基于有符号数比较规则，输出相应的比较结果。",
+      "输入": ["A[31:0]", "B[31:0]"],
+      "输出": ["eq", "lt", "gt"]
+    }
+  ],
+  "输入/输出端口需求": {
+    "输入端口": [
+      {
+        "名称": "A",
+        "位宽": 32,
+        "描述": "ALU第一个操作数，32位有符号整数"
+      },
+      {
+        "名称": "B",
+        "位宽": 32,
+        "描述": "ALU第二个操作数，32位有符号整数"
+      },
+      {
+        "名称": "op",
+        "位宽": 6,
+        "描述": "操作码，6位编码，用于选择具体操作：000000=加法, 000001=减法, 000010=与, 000011=或, 000100=异或, 000101=非, 000110=等于, 000111=小于, 001000=大于"
+      }
+    ],
+    "输出端口": [
+      {
+        "名称": "result",
+        "位宽": 32,
+        "描述": "ALU运算结果，32位输出"
+      },
+      {
+        "名称": "zero_flag",
+        "位宽": 1,
+        "描述": "零标志位，当result为0时置1"
+      },
+      {
+        "名称": "negative_flag",
+        "位宽": 1,
+        "描述": "负数标志位，当result最高位为1时置1"
+      },
+      {
+        "名称": "overflow_flag",
+        "位宽": 1,
+        "描述": "溢出标志位，仅在加法/减法中有效，表示有符号运算溢出"
+      }
+    ]
+  },
+  "时钟域要求": {
+    "说明": "本设计为纯组合逻辑（combinational），不涉及任何时序元件（如寄存器、触发器），因此无需时钟域划分。所有输入到输出均为即时响应，无延迟。设计应确保无锁存器产生，避免建立/保持时间问题。"
+  },
+  "设计约束": [
+    "必须使用纯组合逻辑结构，禁止使用任何时序元件（如reg、always @ (posedge clk)等）。",
+    "操作码op[5:0]必须覆盖所有指定操作，且每个编码唯一，未定义编码应视为非法但允许默认行为（如返回0或保留旧值）。",
+    "所有算术运算需按有符号数处理（补码表示），特别是加法、减法和比较操作。",
+    "overflow_flag应在加法和减法后正确计算：当两正数相加得负，或两负数相加得正时，置1。",
+    "zero_flag应由result == 32'b0决定。",
+    "negative_flag应由result[31]决定。",
+    "设计必须通过静态时序分析（STA）验证，确保无路径延迟超限。",
+    "综合工具应配置为最小面积或平衡面积/速度模式，避免流水线插入。"
+  ],
+  "验证要点": [
+    "功能覆盖率：确保每种操作码（op）均被测试，包括边界情况（如A=0, B=0；A=MAX_INT, B=MIN_INT）。",
+    "等价性检查：对相同输入，多次运行结果一致。",
+    "边界值测试：测试最大值（32'h7FFFFFFF）、最小值（32'h80000000）、零、全1、全0等。",
+    "溢出检测：验证加法/减法是否在正确情况下设置overflow_flag（如 0x7FFFFFFF + 1 → overflow）。",
+    "比较操作验证：确保有符号比较正确（如 -1 < 0, 1 > -1, -1 == -1）。",
+    "零标志与负标志验证：确认result为0时zero_flag=1，result[31]=1时negative_flag=1。",
+    "代码覆盖率：语句覆盖、分支覆盖、条件覆盖均需达到100%。",
+    "波形仿真：使用Testbench进行完整激励测试，包含随机+定向测试序列。"
+  ],
+  "错误避免策略": [
+    {
+      "错误类型": "误用时序逻辑",
+      "策略": "严格使用`wire`声明所有内部信号，避免`reg`；使用`assign`而非`always`块；综合前检查RTL代码中是否存在`posedge`或`negedge`敏感列表。"
+    },
+    {
+      "错误类型": "未处理溢出标志",
+      "策略": "在加法和减法路径中显式添加溢出判断逻辑：`overflow_flag = (A[31] == B[31]) && (A[31] != result[31])`。"
+    },
+    {
+      "错误类型": "比较操作有符号/无符号混淆",
+      "策略": "在comparison_unit中明确使用有符号比较（如`$signed(A) < $signed(B)`），避免直接使用`A < B`导致无符号比较。"
+    },
+    {
+      "错误类型": "操作码冲突或未定义",
+      "策略": "在testbench中加入对非法op码的测试，确保设计不会因未定义操作而产生不确定行为（如默认输出0）。"
+    },
+    {
+      "错误类型": "生成锁存器（latch）",
+      "策略": "确保所有if-else分支完整，使用default case；避免部分赋值；综合工具报错提示时立即修复。"
+    },
+    {
+      "错误类型": "标志位计算错误",
+      "策略": "将zero_flag、negative_flag、overflow_flag分别独立计算并用assertion验证其逻辑正确性。"
+    }
+  ]
+}
+```
+16:00:12 - LLMClient-dashscope - INFO - ====================================================================================================
+16:00:12 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_design_requirements 执行成功 (15.21s)
+16:00:12 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+16:00:12 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+16:00:12 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+16:00:12 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: alu_32bit
+16:00:12 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+16:00:12 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-30b-a3b-instruct-2507, JSON模式: False
+16:00:12 - LLMClient-dashscope - INFO - 📋 System Prompt (45 字符):
+16:00:12 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。特别注意避免历史错误和改进建议。
+16:00:12 - LLMClient-dashscope - INFO - 👤 User Prompt (978 字符):
+16:00:12 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 alu_32bit 的Verilog模块，要求如下：
+
+功能需求: 实现一个32位ALU，支持算术运算（ADD、SUB）、逻辑运算（AND、OR、XOR、NOT）和比较运算（EQ、LT、GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。
+编码风格: rtl
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+    input [31:0] a,  // 操作数A
+    input [31:0] b,  // 操作数B
+    input [3:0] op,  // 操作码：4'b0000=ADD, 4'b0001=SUB, 4'b0010=AND, 4'b0011=OR, 4'b0100=XOR, 4'b0101=NOT, 4'b0110=EQ, 4'b0111=LT, 4'b1000=GT
+    output [31:0] result,  // ALU运算结果
+    output zero,  // 零标志：结果为0时置1
+    output overflow,  // 溢出标志：仅对加法/减法有效
+
+
+
+
+
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 不能包含任何寄存器或触发器
+6. 所有输出必须通过组合逻辑直接计算
+
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
+3. 内部信号声明（wire类型）
+4. 组合逻辑功能实现（always @(*) 或 assign）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+16:00:12 - LLMClient-dashscope - INFO - ====================================================================================================
+16:00:19 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1760 字符, 7.03s):
+16:00:19 - LLMClient-dashscope - INFO - 🤖 module alu_32bit (
+    input  [31:0] a,
+    input  [31:0] b,
+    input  [3:0]  op,
+    output wire [31:0] result,
+    output wire zero,
+    output wire overflow
+);
+
+// 内部信号声明
+wire [31:0] add_result;
+wire [31:0] sub_result;
+wire [31:0] and_result;
+wire [31:0] or_result;
+wire [31:0] xor_result;
+wire [31:0] not_result;
+wire [31:0] eq_result;
+wire [31:0] lt_result;
+wire [31:0] gt_result;
+
+// 加法运算：a + b
+assign add_result = a + b;
+
+// 减法运算：a - b
+assign sub_result = a - b;
+
+// 逻辑运算
+assign and_result = a & b;
+assign or_result  = a | b;
+assign xor_result = a ^ b;
+assign not_result = ~a;
+
+// 比较运算（结果为32位全1或全0）
+assign eq_result = (a == b) ? {32{1'b1}} : {32{1'b0}};
+assign lt_result = (a < b) ? {32{1'b1}} : {32{1'b0}};
+assign gt_result = (a > b) ? {32{1'b1}} : {32{1'b0}};
+
+// 选择最终结果
+assign result = 
+    (op == 4'b0000) ? add_result :
+    (op == 4'b0001) ? sub_result :
+    (op == 4'b0010) ? and_result :
+    (op == 4'b0011) ? or_result :
+    (op == 4'b0100) ? xor_result :
+    (op == 4'b0101) ? not_result :
+    (op == 4'b0110) ? eq_result :
+    (op == 4'b0111) ? lt_result :
+    (op == 4'b1000) ? gt_result :
+                     {32{1'b0}};
+
+// 零标志：结果全为0时置1
+assign zero = (result == 32'd0) ? 1'b1 : 1'b0;
+
+// 溢出标志：仅对加法和减法有效
+// 加法溢出：符号位相同但结果符号位不同
+// 减法溢出：等价于 a + (-b)，即加法溢出情况
+wire a_sign = a[31];
+wire b_sign = b[31];
+wire result_sign = result[31];
+
+// 加法溢出检测：a和b同号，但结果与之异号
+wire add_overflow = (a_sign == b_sign) && (a_sign != result_sign);
+
+// 减法溢出：a - b = a + (-b)，所以检查 a 和 (-b) 的符号
+wire neg_b_sign = ~b_sign;
+wire sub_overflow = (a_sign == neg_b_sign) && (a_sign != result_sign);
+
+// 溢出标志：仅当操作为ADD或SUB时有效
+assign overflow = (op == 4'b0000) ? add_overflow :
+                  (op == 4'b0001) ? sub_overflow :
+                                  1'b0;
+
+endmodule
+16:00:19 - LLMClient-dashscope - INFO - ====================================================================================================
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: alu_32bit.v
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1760
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 1760
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1760
+16:00:19 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+16:00:19 - core.experiment_manager.ExperimentManager - INFO - 💾 保存文件: designs/alu_32bit_v2.v
+16:00:19 - core.file_manager - INFO - 🔄 使用现有文件ID: d3c7d027
+16:00:19 - core.file_manager - INFO - 🔄 覆盖现有文件: alu_32bit.v
+16:00:19 - core.file_manager - INFO - 🔄 更新现有文件引用: d3c7d027
+16:00:19 - core.file_manager - INFO - 💾 文件已保存: alu_32bit.v (ID: d3c7d027, 类型: verilog)
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: alu_32bit.v (ID: d3c7d027)
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (7.04s)
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🔨 工具执行结果: ## 🔧 工具执行结果详细报告
+
+📊 **执行摘要**: 2/2 个工具成功执行
+
+### ✅ 工具 1: analyze_design_requirements - 执行成功
+**调用参数**: { requirements: '设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范', design_type: 'combinational', complexity_level: 'medium' }
+**执行结果**: ✅ 成功; analysis: {'analysis_summary': '```json\n{\n  "功能模块分解": [\n    {\n      "模块名称": "ALU_Control",\n      "功能描述": "根据操作码（op）信号生成控制信号，用于选择ALU执行的操作类型。包括加法、减法、逻辑运算（与、或、异或）、位运算（非）、比较操作（等于、小于、大于）的控制逻辑。",\n      "输入": ["op[5:0]"],\n      "输出": [\n        "alu_add",\n        "alu_sub",\n        "alu_and",\n        "alu_or",\n        "alu_xor",\n        "alu_not",\n        "alu_eq",\n        "alu_lt",\n        "alu_gt"\n      ]\n    },\n    {\n      "模块名称": "ALU_Core",\n      "功能描述": "核心组合逻辑单元，实现所有算术和逻辑运算。接收两个32位输入数据（A、B），根据控制信号执行对应操作，并输出结果及标志位。",\n      "输入": [\n        "A[31:0]",\n        "B[31:0]",\n        "alu_add",\n        "alu_sub",\n        "alu_and",\n        "alu_or",\n        "alu_xor",\n        "alu_not",\n        "alu_eq",\n        "alu_lt",\n        "alu_gt"\n      ],\n      "输出": [\n        "result[31:0]",\n        "zero_flag",\n        "negative_flag",\n        "overflow_flag"\n      ]\n    },\n    {\n      "模块名称": "Comparison_Unit",\n      "功能描述": "专门处理比较操作（等于、小于、大于）的逻辑，基于有符号数比较规则，输出相应的比较结果。",\n      "输入": ["A[31:0]", "B[31:0]"],\n      "输出": ["eq", "lt", "gt"]\n    }\n  ],\n  "输入/输出端口需求": {\n    "输入端口": [\n      {\n        "名称": "A",\n        "位宽": 32,\n        "描述": "ALU第一个操作数，32位有符号整数"\n      },\n      {\n        "名称": "B",\n        "位宽": 32,\n        "描述": "ALU第二个操作数，32位有符号整数"\n      },\n      {\n        "名称": "op",\n        "位宽": 6,\n        "描述": "操作码，6位编码，用于选择具体操作：000000=加法, 000001=减法, 000010=与, 000011=或, 000100=异或, 000101=非, 000110=等于, 000111=小于, 001000=大于"\n      }\n    ],\n    "输出端口": [\n      {\n        "名称": "result",\n        "位宽": 32,\n        "描述": "ALU运算结果，32位输出"\n      },\n      {\n        "名称": "zero_flag",\n        "位宽": 1,\n        "描述": "零标志位，当result为0时置1"\n      },\n      {\n        "名称": "negative_flag",\n        "位宽": 1,\n        "描述": "负数标志位，当result最高位为1时置1"\n      },\n      {\n        "名称": "overflow_flag",\n        "位宽": 1,\n        "描述": "溢出标志位，仅在加法/减法中有效，表示有符号运算溢出"\n      }\n    ]\n  },\n  "时钟域要求": {\n    "说明": "本设计为纯组合逻辑（combinational），不涉及任何时序元件（如寄存器、触发器），因此无需时钟域划分。所有输入到输出均为即时响应，无延迟。设计应确保无锁存器产生，避免建立/保持时间问题。"\n  },\n  "设计约束": [\n    "必须使用纯组合逻辑结构，禁止使用任何时序元件（如reg、always @ (posedge clk)等）。",\n    "操作码op[5:0]必须覆盖所有指定操作，且每个编码唯一，未定义编码应视为非法但允许默认行为（如返回0或保留旧值）。",\n    "所有算术运算需按有符号数处理（补码表示），特别是加法、减法和比较操作。",\n    "overflow_flag应在加法和减法后正确计算：当两正数相加得负，或两负数相加得正时，置1。",\n    "zero_flag应由result == 32\'b0决定。",\n    "negative_flag应由result[31]决定。",\n    "设计必须通过静态时序分析（STA）验证，确保无路径延迟超限。",\n    "综合工具应配置为最小面积或平衡面积/速度模式，避免流水线插入。"\n  ],\n  "验证要点": [\n    "功能覆盖率：确保每种操作码（op）均被测试，包括边界情况（如A=0, B=0；A=MAX_INT, B=MIN_INT）。",\n    "等价性检查：对相同输入，多次运行结果一致。",\n    "边界值测试：测试最大值（32\'h7FFFFFFF）、最小值（32\'h80000000）、零、全1、全0等。",\n    "溢出检测：验证加法/减法是否在正确情况下设置overflow_flag（如 0x7FFFFFFF + 1 → overflow）。",\n    "比较操作验证：确保有符号比较正确（如 -1 < 0, 1 > -1, -1 == -1）。",\n    "零标志与负标志验证：确认result为0时zero_flag=1，result[31]=1时negative_flag=1。",\n    "代码覆盖率：语句覆盖、分支覆盖、条件覆盖均需达到100%。",\n    "波形仿真：使用Testbench进行完整激励测试，包含随机+定向测试序列。"\n  ],\n  "错误避免策略": [\n    {\n      "错误类型": "误用时序逻辑",\n      "策略": "严格使用`wire`声明所有内部信号，避免`reg`；使用`assign`而非`always`块；综合前检查RTL代码中是否存在`posedge`或`negedge`敏感列表。"\n    },\n    {\n      "错误类型": "未处理溢出标志",\n      "策略": "在加法和减法路径中显式添加溢出判断逻辑：`overflow_flag = (A[31] == B[31]) && (A[31] != result[31])`。"\n    },\n    {\n      "错误类型": "比较操作有符号/无符号混淆",\n      "策略": "在comparison_unit中明确使用有符号比较（如`$signed(A) < $signed(B)`），避免直接使用`A < B`导致无符号比较。"\n    },\n    {\n      "错误类型": "操作码冲突或未定义",\n      "策略": "在testbench中加入对非法op码的测试，确保设计不会因未定义操作而产生不确定行为（如默认输出0）。"\n    },\n    {\n      "错误类型": "生成锁存器（latch）",\n      "策略": "确保所有if-else分支完整，使用default case；避免部分赋值；综合工具报错提示时立即修复。"\n    },\n    {\n      "错误类型": "标志位计算错误",\n      "策略": "将zero_flag、negative_flag、overflow_flag分别独立计算并用assertion验证其逻辑正确性。"\n    }\n  ]\n}\n```', 'design_type': 'combinational', 'complexity': 'medium', 'estimated_modules': 1, 'key_features': []}; requirements: 设计一个32位算术逻辑单元(ALU)，支持加法、减法、与、或、异或、非、等于、小于、大于操作，纯组合逻辑，接口严格匹配指定规范; design_type: combinational; complexity_level: medium
+**状态**: 成功完成，可进行下一步操作
+
+### ✅ 工具 2: generate_verilog_code - 执行成功
+**调用参数**: { module_name: 'alu_32bit', requirements: '实现一个32位ALU，支持算术运算（ADD、SUB）、逻辑运算（AND、OR、XOR、NOT）和比较运算（EQ、LT、GT），所有操作均为纯组合逻辑，输出包括结果、零标志和溢出标志。', input_ports: list[长度:3], output_ports: [{'name': 'result', 'width': 32, 'description': 'ALU运算结果'}, {'name': 'zero', 'width': 1, 'description': '零标志：结果为0时置1'}, {'name': 'overflow', 'width': 1, 'description': '溢出标志：仅对加法/减法有效'}], coding_style: 'rtl' }
+**执行结果**: ✅ 成功; module_name: alu_32bit; verilog_code: 'module alu_32bit (
+    input  [31:0] a,
+    input ...'[截断]; file_path: '/home/haiyan/Research/CentralizedAgentFramework/td...'[截断]; file_id: d3c7d027; coding_style: rtl; port_count: {'inputs': 3, 'outputs': 3}
+**状态**: 成功完成，可进行下一步操作
+
+## 🎯 下一步行动指导
+
+✅ 所有工具执行成功！请基于执行结果继续完成任务。
+- 检查输出结果是否符合预期
+- 根据结果进行下一步操作
+- 如需进一步处理，请继续调用相应工具
+
+💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果和错误信息，工具结果数量: 2
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 2: success=True
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真相关信息
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - 🔨 仿真结果: None
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查仿真成功状态，工具结果数量: 2
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真未成功完成
+16:00:19 - core.schema_system.enhanced_base_agent - INFO - 🎯 所有工具执行成功，智能体任务完成
+16:00:19 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: tdd_tdd_1754207940_1754207940_iter_3
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - ✅ 持续对话任务完成: 迭代 3
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: alu_32bit.v (模块: alu_32bit)
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: alu_32bit.v (模块: alu)
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试阶段 - 迭代 3
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 第3次迭代，testbench策略: 用户备用
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📝 策略说明: 第3次迭代，智能体未生成测试台，使用用户测试台
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 使用测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 准备设计文件，输入文件总数: 1
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   文件1: alu_32bit.v (类型: verilog, 路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v)
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -   ✅ 选择设计文件: alu_32bit.v
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v (模块: alu_32bit)
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 最终选择的设计文件数量: 1
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 为测试分析器传递完整上下文: 2轮对话历史
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 使用用户测试台运行测试: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 处理文件引用 0: <class 'dict'> = {'file_id': 'd3c7d027', 'file_path': '/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-03T16:00:19.471165', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   字典格式，提取路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   📁 检查路径: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 文件存在: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 添加Verilog文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 📄 成功提取设计文件路径: 1 个文件
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   1. /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 开始Verilog依赖分析...
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_testbench (依赖: ['alu_32bit'])
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 测试台实例化的设计模块: {'alu_32bit'}
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_32bit.v (模块: alu_32bit)
+16:00:19 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_testbench.v (模块: alu_testbench)
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 📊 兼容性分析: 兼容=True
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔍 依赖分析完成，需要编译 1 个文件
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 开始仿真，设计文件: 1 个
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🧪 测试台文件: /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 📋 验证文件存在性:
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 设计文件1: alu_32bit.v (2046 bytes)
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   ✅ 测试台文件: alu_testbench.v (9299 bytes)
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 📁 临时仿真输出: /tmp/tdd_test_analyzer/sim_3438886
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令文件顺序:
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   1. alu_32bit.v (设计)
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO -   2. alu_testbench.v (测试台)
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译命令: iverilog -o /tmp/tdd_test_analyzer/sim_3438886 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 开始iverilog编译...
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 🔨 编译返回码: 0
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 运行仿真: /tmp/tdd_test_analyzer/sim_3438886
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - ⏳ 运行仿真，超时30秒...
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - ▶️ 仿真返回码: 0
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - 📤 仿真stdout: ========================================
+🧪 开始32位ALU功能测试
+========================================
+[0] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+
+📋 测试组1: 加法运算 (OP_ADD = 4'b0000)
+----------------------------------------
+[10000] a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+✅ PASS -                                                                                                                                                                                             : a=12345678, b=87654321, op=0000 → result=99999999, zero=0
+[15000] a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0000 → result=00000000, zero=1
+[20000] a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=ffffffff, b=00000001, op=0000 → result=00000000, zero=1
+
+📋 测试组2: 减法运算 (OP_SUB = 4'b0001)
+----------------------------------------
+[25000] a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+✅ PASS -                                                                                                                                                                                             : a=87654321, b=12345678, op=0001 → result=7530eca9, zero=0
+[30000] a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=12345678, op=0001 → result=00000000, zero=1
+[35000] a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+✅ PASS -                                                                                                                                                                                     : a=12345678, b=87654321, op=0001 → result=8acf1357, zero=0
+
+📋 测试组3: 逻辑与运算 (OP_AND = 4'b0010)
+----------------------------------------
+[40000] a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0010 → result=00000000, zero=1
+[45000] a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+✅ PASS -                                                                                                                                                                                         : a=ffffffff, b=12345678, op=0010 → result=12345678, zero=0
+
+📋 测试组4: 逻辑或运算 (OP_OR = 4'b0011)
+----------------------------------------
+[50000] a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                         : a=f0f0f0f0, b=0f0f0f0f, op=0011 → result=ffffffff, zero=0
+[55000] a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                             : a=00000000, b=00000000, op=0011 → result=00000000, zero=1
+
+📋 测试组5: 异或运算 (OP_XOR = 4'b0100)
+----------------------------------------
+[60000] a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+✅ PASS -                                                                                                                                                                                             : a=f0f0f0f0, b=0f0f0f0f, op=0100 → result=ffffffff, zero=0
+[65000] a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=12345678, op=0100 → result=00000000, zero=1
+
+📋 测试组6: 左移运算 (OP_SLL = 4'b0101)
+----------------------------------------
+[70000] a=12345678, b=00000004, op=0101 → result=edcba987, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0101
+    Expected: result=23456780, zero=0
+    Actual:   result=edcba987, zero=0
+[75000] a=80000000, b=00000001, op=0101 → result=7fffffff, zero=0
+❌ FAIL -                                                                                                                                                                                     : a=80000000, b=00000001, op=0101
+    Expected: result=00000000, zero=1
+    Actual:   result=7fffffff, zero=0
+
+📋 测试组7: 右移运算 (OP_SRL = 4'b0110)
+----------------------------------------
+[80000] a=12345678, b=00000004, op=0110 → result=00000000, zero=1
+❌ FAIL -                                                                                                                                                                                             : a=12345678, b=00000004, op=0110
+    Expected: result=01234567, zero=0
+    Actual:   result=00000000, zero=1
+[85000] a=00000001, b=00000001, op=0110 → result=ffffffff, zero=0
+❌ FAIL -                                                                                                                                                                                             : a=00000001, b=00000001, op=0110
+    Expected: result=00000000, zero=1
+    Actual:   result=ffffffff, zero=0
+
+📋 测试组8: 边界条件测试
+----------------------------------------
+[90000] a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+✅ PASS -                                                                                                                                                                                         : a=7fffffff, b=00000001, op=0000 → result=80000000, zero=0
+[95000] a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+✅ PASS -                                                                                                                                                                                         : a=12345678, b=87654321, op=1111 → result=00000000, zero=1
+
+========================================
+🏁 测试完成统计
+========================================
+总测试用例: 18
+通过测试: 14
+失败测试: 4
+❌ 有 4 个测试失败，需要检查ALU设计
+========================================
+/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v:215: $finish called at 110000 (1ps)
+
+16:00:19 - extensions.test_analyzer.TestAnalyzer - INFO - ✅ 仿真完成，成功: True
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 达到最大迭代次数 3
+16:00:19 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 保存完整上下文到: tdd_context_tdd_1754207940.json
+================================================================================
+📊 实验结果分析
+================================================================================
+❌ 实验未能完成
+   📈 已用迭代次数: 3
+   ⏱️ 总耗时: 79.13 秒
+   ❌ 失败原因: 达到最大迭代次数，但测试仍未全部通过
+🔍 迭代历史分析:
+   第1次迭代: ❌ 失败
+   第2次迭代: ❌ 失败
+   第3次迭代: ❌ 失败
+📋 会话详情:
+   会话ID: tdd_1754207940
+   状态: completed
+================================================================================
+   📁 文件已直接保存在实验目录，无需复制
+   ✅ 所有文件已直接保存在实验目录中
+💾 实验报告已保存到: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+   📄 详细报告: experiment_report.json
+   📋 结果摘要: experiment_summary.txt
+
+📁 实验目录检查: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754207940
+   📂 designs: 3 个文件
+      - alu_32bit.v
+      - alu_32bit_v2.v
+      - alu_32bit_v1.v
+   📂 testbenches: 0 个文件
+   📂 artifacts: 5 个文件
+      - temp
+      - reports
+      - testbenches
+      - file_registry.json
+      - designs
+   📂 logs: 1 个文件
+      - files_created.jsonl
+🏁 实验完成
+❌ 设计未能通过所有测试
+🔍 可以查看日志分析迭代改进过程
+📊 实验报告: unified_tdd_report_unified_tdd_alu_1754207940.json

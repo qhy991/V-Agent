@@ -1,0 +1,79 @@
+{
+  "experiment_id": "unified_tdd_simple_adder_1754200788",
+  "design_type": "simple_adder",
+  "config_profile": "standard",
+  "success": true,
+  "total_duration": 73.63780856132507,
+  "timestamp": 1754200862.2506738,
+  "detailed_result": {
+    "success": true,
+    "session_id": "tdd_1754200788",
+    "total_iterations": 2,
+    "final_design": [
+      {
+        "file_id": "ec90ac01",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/testbenches/simple_8bit_adder_tb.v",
+        "file_type": "testbench",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T14:01:02.138808",
+        "description": "由enhanced_real_verilog_agent创建的testbench文件"
+      },
+      {
+        "file_id": "b8f43cde",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/designs/simple_8bit_adder.v",
+        "file_type": "verilog",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T14:01:02.146576",
+        "description": "由enhanced_real_verilog_agent创建的verilog文件"
+      }
+    ],
+    "test_results": {
+      "success": true,
+      "stage": "simulation",
+      "compile_stdout": "",
+      "simulation_stdout": "VCD info: dumpfile tb_simple_8bit_adder.vcd opened for output.\nTime\tA\tB\tCin\tSum\tCout\tExpected Sum\tExpected Cout\n0\t0\t0\t0\t0\t0\t0\t0\nTest case 1 passed: a=0, b=0, cin=0 → sum=0, cout=0\n210000\t255\t0\t0\t255\t0\t255\t0\nTest case 2 passed: a=255, b=0, cin=0 → sum=255, cout=0\n320000\t255\t0\t1\t0\t1\t0\t1\nTest case 3 passed: a=255, b=0, cin=1 → sum=0, cout=1\n430000\t128\t127\t1\t0\t1\t0\t1\nTest case 4 passed: a=128, b=127, cin=1 → sum=0, cout=1\n540000\t127\t127\t1\t255\t0\t255\t0\nTest case 5 passed: a=127, b=127, cin=1 → sum=255, cout=0\n650000\t128\t128\t0\t0\t1\t0\t1\nTest case 6 passed: a=128, b=128, cin=0 → sum=0, cout=1\nAll test cases completed.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/testbenches/simple_8bit_adder_tb.v:102: $finish called at 760000 (1ps)\n",
+      "simulation_stderr": "",
+      "return_code": 0,
+      "all_tests_passed": true,
+      "test_summary": "✅ 所有测试通过",
+      "detailed_analysis": {
+        "output_analysis": "发现成功指示器"
+      },
+      "failure_reasons": [],
+      "suggestions": [],
+      "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/testbenches/simple_8bit_adder_tb.v",
+      "design_files": [
+        "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/designs/simple_8bit_adder.v"
+      ],
+      "compilation_files": [
+        "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/designs/simple_8bit_adder.v"
+      ],
+      "dependency_analysis": {
+        "success": true,
+        "compatible": true,
+        "issues": [],
+        "suggestions": [],
+        "missing_dependencies": [],
+        "additional_files": [],
+        "compilation_files": [
+          "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_simple_adder_1754200788/artifacts/designs/simple_8bit_adder.v"
+        ],
+        "design_modules": [
+          "simple_8bit_adder"
+        ],
+        "testbench_modules": [
+          "tb_simple_8bit_adder"
+        ]
+      }
+    },
+    "completion_reason": "tests_passed",
+    "context_file": "tdd_context_tdd_1754200788.json"
+  },
+  "summary": {
+    "iterations_used": 2,
+    "efficiency": "成功率: 100%",
+    "files_generated": 2,
+    "completion_reason": "tests_passed",
+    "average_iteration_time": 36.81890428066254
+  }
+}

@@ -582,6 +582,7 @@ class TestAnalyzer:
         
         return cleaned_paths
     
+
     def _search_verilog_files_in_working_dir(self) -> List[str]:
         """在工作目录中搜索Verilog文件"""
         paths = []
@@ -762,7 +763,7 @@ class TestAnalyzer:
                 
                 self.logger.info(f"▶️ 仿真返回码: {run_process.returncode}")
                 if sim_stdout_str:
-                    self.logger.info(f"📤 仿真stdout: {sim_stdout_str[:500]}...")  # 截断长输出
+                    self.logger.info(f"📤 仿真stdout: {sim_stdout_str}")  # 截断长输出
                 if sim_stderr_str:
                     self.logger.info(f"📤 仿真stderr: {sim_stderr_str}")
                 
@@ -956,6 +957,111 @@ class TestAnalyzer:
             suggestions.append("🔍 建议运行依赖分析以识别缺失的模块文件")
         
         return suggestions
+    
+    def _extract_condensed_error_info(self, stderr: str) -> Dict[str, Any]:
+        """提取并精简错误信息"""
+        condensed = {
+            "key_errors": [],
+            "error_count_by_type": {},
+            "critical_files": [],
+            "summary": ""
+        }
+        
+        if not stderr:
+            return condensed
+        
+        # 按行分割错误信息
+        error_lines = [line.strip() for line in stderr.split('\n') if line.strip()]
+        
+        # 提取关键错误（前10个最重要的）
+        key_errors = []
+        error_types = {}
+        critical_files = set()
+        
+        for line in error_lines:
+            # 跳过重复的错误信息
+            if any(skip in line.lower() for skip in ['it was declared here', 'error: malformed statement']):
+                continue
+            
+            # 提取文件名和错误类型
+            file_match = re.search(r'([^\s]+\.s?v):(\d+):', line)
+            if file_match:
+                file_path, line_num = file_match.groups()
+                critical_files.add(Path(file_path).name)
+            
+            # 分类错误类型
+            if 'syntax error' in line.lower():
+                error_types['语法错误'] = error_types.get('语法错误', 0) + 1
+                if len(key_errors) < 5:  # 只保留前5个语法错误
+                    key_errors.append(line)
+            elif 'undeclared' in line.lower():
+                error_types['未声明标识符'] = error_types.get('未声明标识符', 0) + 1
+                if len(key_errors) < 8:
+                    key_errors.append(line)
+            elif 'port' in line.lower() and 'not' in line.lower():
+                error_types['端口错误'] = error_types.get('端口错误', 0) + 1
+                if len(key_errors) < 10:
+                    key_errors.append(line)
+        
+        condensed["key_errors"] = key_errors[:10]  # 最多10个关键错误
+        condensed["error_count_by_type"] = error_types
+        condensed["critical_files"] = list(critical_files)[:5]  # 最多5个文件
+        
+        # 生成摘要
+        if error_types:
+            summary_parts = []
+            for error_type, count in error_types.items():
+                summary_parts.append(f"{error_type}({count}个)")
+            condensed["summary"] = f"主要错误: {', '.join(summary_parts)}"
+        
+        return condensed
+    
+    def _generate_focused_suggestions(self, failure_reasons: List[str], 
+                                    error_category: str, 
+                                    condensed_errors: Dict[str, Any]) -> List[str]:
+        """生成精准的修复建议"""
+        suggestions = []
+        
+        # 基于错误类型的具体建议
+        error_counts = condensed_errors.get("error_count_by_type", {})
+        
+        if "语法错误" in error_counts:
+            count = error_counts["语法错误"]
+            suggestions.append(f"🔧 修复{count}个语法错误：检查分号、括号匹配、关键字拼写")
+            
+            # 从关键错误中提取具体的行号信息
+            syntax_errors = [e for e in condensed_errors.get("key_errors", []) 
+                           if "syntax error" in e.lower()]
+            if syntax_errors:
+                first_error = syntax_errors[0]
+                line_match = re.search(r':(\d+):', first_error)
+                if line_match:
+                    line_num = line_match.group(1)
+                    suggestions.append(f"📍 从第{line_num}行开始检查语法问题")
+        
+        if "端口错误" in error_counts:
+            count = error_counts["端口错误"]
+            suggestions.append(f"🔌 修复{count}个端口连接错误：检查模块实例化和端口名称")
+        
+        if "未声明标识符" in error_counts:
+            count = error_counts["未声明标识符"]
+            suggestions.append(f"📋 修复{count}个未声明变量：添加信号声明语句")
+        
+        # 基于错误类别的策略建议
+        if error_category == "dependency_issue":
+            suggestions.append("🔍 检查模块依赖：确保所有子模块都已定义")
+        elif error_category == "syntax_issue":
+            suggestions.append("📝 推荐：使用Verilog语法检查器验证代码")
+        elif error_category == "interface_issue":
+            suggestions.append("🔌 推荐：检查模块端口定义与测试台实例化是否匹配")
+        
+        # 基于涉及的文件数量给出建议
+        critical_files = condensed_errors.get("critical_files", [])
+        if len(critical_files) > 1:
+            file_names = ", ".join(critical_files[:3])
+            suggestions.append(f"📂 涉及多个文件的错误，重点检查: {file_names}")
+        
+        return suggestions[:5]  # 限制建议数量为5个
     
     def _perform_detailed_error_analysis(self, stderr: str) -> Dict[str, Any]:
         """执行详细的错误分析"""
@@ -1322,3 +1428,393 @@ class TestAnalyzer:
         except Exception as e:
             self.logger.error(f"❌ 验证文件失败: {e}")
             return False
+    
+    async def _check_design_files_separately(self, design_files: List[str]) -> Dict[str, Any]:
+        """独立检查设计文件"""
+        self.logger.info(f"🔍 独立检查设计文件 ({len(design_files)} 个)...")
+        
+        check_result = {
+            "valid": True,
+            "files_checked": len(design_files),
+            "syntax_errors": [],
+            "modules_found": [],
+            "compilation_errors": [],
+            "critical_issues": []
+        }
+        
+        try:
+            for design_file in design_files:
+                self.logger.info(f"  🔍 检查设计文件: {Path(design_file).name}")
+                
+                # 基本语法检查
+                syntax_check = await self._basic_syntax_check_file(design_file)
+                if not syntax_check["valid"]:
+                    check_result["syntax_errors"].extend(syntax_check["errors"])
+                    check_result["valid"] = False
+                
+                # 模块提取
+                modules = self._extract_modules_from_file(design_file)
+                check_result["modules_found"].extend(modules)
+                
+                # 独立编译检查
+                compile_check = await self._compile_single_file(design_file)
+                if not compile_check["success"]:
+                    check_result["compilation_errors"].extend(compile_check["errors"])
+                    if compile_check.get("critical", False):
+                        check_result["critical_issues"].extend(compile_check["errors"])
+                        check_result["valid"] = False
+            
+            self.logger.info(f"  📊 设计文件检查完成: 有效={check_result['valid']}, 模块数={len(check_result['modules_found'])}")
+            return check_result
+            
+        except Exception as e:
+            self.logger.error(f"❌ 设计文件检查异常: {str(e)}")
+            check_result["valid"] = False
+            check_result["critical_issues"].append(f"检查异常: {str(e)}")
+            return check_result
+    
+    async def _check_testbench_file_separately(self, testbench_path: str) -> Dict[str, Any]:
+        """独立检查测试台文件"""
+        self.logger.info(f"🔍 独立检查测试台文件: {Path(testbench_path).name}")
+        
+        check_result = {
+            "valid": True,
+            "syntax_errors": [],
+            "modules_found": [],
+            "dut_instances": [],
+            "compilation_errors": [],
+            "critical_issues": []
+        }
+        
+        try:
+            # 基本语法检查
+            syntax_check = await self._basic_syntax_check_file(testbench_path)
+            if not syntax_check["valid"]:
+                check_result["syntax_errors"].extend(syntax_check["errors"])
+                check_result["valid"] = False
+            
+            # 模块和DUT实例提取
+            modules = self._extract_modules_from_file(testbench_path)
+            check_result["modules_found"].extend(modules)
+            
+            dut_instances = self._extract_dut_instances_from_file(testbench_path)
+            check_result["dut_instances"].extend(dut_instances)
+            
+            # 测试台独立编译检查（忽略外部模块引用）
+            compile_check = await self._compile_testbench_only(testbench_path)
+            if not compile_check["success"]:
+                # 过滤掉外部模块引用错误
+                filtered_errors = self._filter_testbench_errors(compile_check["errors"])
+                check_result["compilation_errors"].extend(filtered_errors)
+                
+                # 只有严重的语法错误才标记为无效
+                critical_errors = [e for e in filtered_errors if "syntax" in e.lower()]
+                if critical_errors:
+                    check_result["critical_issues"].extend(critical_errors)
+                    check_result["valid"] = False
+            
+            self.logger.info(f"  📊 测试台检查完成: 有效={check_result['valid']}, DUT实例数={len(check_result['dut_instances'])}")
+            return check_result
+            
+        except Exception as e:
+            self.logger.error(f"❌ 测试台文件检查异常: {str(e)}")
+            check_result["valid"] = False
+            check_result["critical_issues"].append(f"检查异常: {str(e)}")
+            return check_result
+    
+    async def _basic_syntax_check_file(self, file_path: str) -> Dict[str, Any]:
+        """对单个文件进行基本语法检查"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            errors = []
+            
+            # 检查基本结构
+            if not re.search(r'module\s+\w+', content):
+                errors.append("缺少module声明")
+            
+            if "endmodule" not in content:
+                errors.append("缺少endmodule")
+            
+            # 检查括号匹配
+            if content.count('(') != content.count(')'):
+                errors.append("括号不匹配")
+            
+            # 检查begin/end匹配
+            begin_count = len(re.findall(r'\bbegin\b', content))
+            end_count = len(re.findall(r'\bend\b', content))
+            if begin_count != end_count:
+                errors.append(f"begin/end不匹配 (begin: {begin_count}, end: {end_count})")
+            
+            return {
+                "valid": len(errors) == 0,
+                "errors": errors
+            }
+            
+        except Exception as e:
+            return {
+                "valid": False,
+                "errors": [f"文件读取错误: {str(e)}"]
+            }
+    
+    def _extract_modules_from_file(self, file_path: str) -> List[str]:
+        """从文件中提取模块名称"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            modules = []
+            module_matches = re.findall(r'module\s+(\w+)', content)
+            modules.extend(module_matches)
+            
+            return modules
+            
+        except Exception as e:
+            self.logger.error(f"提取模块名称失败: {e}")
+            return []
+    
+    def _extract_dut_instances_from_file(self, file_path: str) -> List[Dict[str, str]]:
+        """从测试台文件中提取DUT实例"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            instances = []
+            # 匹配模块实例化：module_name instance_name (port_connections);
+            instance_pattern = r'(\w+)\s+(\w+)\s*\([^)]*\)\s*;'
+            matches = re.findall(instance_pattern, content)
+            
+            for module_name, instance_name in matches:
+                # 排除测试台模块自身
+                if not any(tb_keyword in module_name.lower() 
+                          for tb_keyword in ['tb_', 'test', 'bench']):
+                    instances.append({
+                        "module": module_name,
+                        "instance": instance_name
+                    })
+            
+            return instances
+            
+        except Exception as e:
+            self.logger.error(f"提取DUT实例失败: {e}")
+            return []
+    
+    async def _compile_single_file(self, file_path: str) -> Dict[str, Any]:
+        """独立编译单个设计文件"""
+        try:
+            timestamp = int(asyncio.get_event_loop().time())
+            output_file = self.temp_dir / f"design_check_{timestamp}"
+            
+            # 使用iverilog进行语法检查，不生成可执行文件
+            cmd = ["iverilog", "-t", "null", file_path]
+            
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            stderr_str = stderr.decode('utf-8', errors='ignore')
+            
+            errors = []
+            critical = False
+            
+            if process.returncode != 0:
+                error_lines = [line.strip() for line in stderr_str.split('\n') if line.strip()]
+                errors.extend(error_lines)
+                
+                # 检查是否有严重错误
+                for error in error_lines:
+                    if any(critical_keyword in error.lower() 
+                          for critical_keyword in ['syntax error', 'parse error', 'malformed']):
+                        critical = True
+                        break
+            
+            return {
+                "success": process.returncode == 0,
+                "errors": errors,
+                "critical": critical
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "errors": [f"编译检查异常: {str(e)}"],
+                "critical": True
+            }
+    
+    async def _compile_testbench_only(self, testbench_path: str) -> Dict[str, Any]:
+        """仅编译测试台文件（忽略外部模块引用）"""
+        try:
+            # 对于测试台，我们主要关注语法错误，而不是模块引用错误
+            timestamp = int(asyncio.get_event_loop().time())
+            
+            # 使用iverilog进行语法检查
+            cmd = ["iverilog", "-t", "null", testbench_path]
+            
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            stderr_str = stderr.decode('utf-8', errors='ignore')
+            
+            errors = []
+            if process.returncode != 0:
+                error_lines = [line.strip() for line in stderr_str.split('\n') if line.strip()]
+                errors.extend(error_lines)
+            
+            return {
+                "success": process.returncode == 0,
+                "errors": errors
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "errors": [f"测试台编译检查异常: {str(e)}"]
+            }
+    
+    def _filter_testbench_errors(self, errors: List[str]) -> List[str]:
+        """过滤测试台错误，移除外部模块引用错误"""
+        filtered = []
+        
+        for error in errors:
+            # 跳过外部模块未找到的错误
+            if any(skip_keyword in error.lower() 
+                  for skip_keyword in ['module', 'not found', 'undeclared']):
+                continue
+            
+            # 保留语法错误和其他严重错误
+            if any(keep_keyword in error.lower() 
+                  for keep_keyword in ['syntax', 'malformed', 'parse error']):
+                filtered.append(error)
+        
+        return filtered
+    
+    async def _check_interface_compatibility(self, design_files: List[str], 
+                                           testbench_path: str,
+                                           design_check: Dict[str, Any],
+                                           testbench_check: Dict[str, Any]) -> Dict[str, Any]:
+        """检查接口兼容性"""
+        self.logger.info("🔍 检查接口兼容性...")
+        
+        compatibility_result = {
+            "compatible": True,
+            "issues": [],
+            "design_modules": design_check.get("modules_found", []),
+            "testbench_modules": testbench_check.get("modules_found", []),
+            "dut_instances": testbench_check.get("dut_instances", []),
+            "module_matching": {}
+        }
+        
+        try:
+            design_modules = design_check.get("modules_found", [])
+            dut_instances = testbench_check.get("dut_instances", [])
+            
+            # 检查DUT实例是否能找到对应的设计模块
+            for dut in dut_instances:
+                dut_module = dut.get("module", "")
+                if dut_module in design_modules:
+                    compatibility_result["module_matching"][dut_module] = "found"
+                else:
+                    compatibility_result["module_matching"][dut_module] = "missing"
+                    compatibility_result["issues"].append(
+                        f"测试台中的模块 '{dut_module}' 在设计文件中未找到"
+                    )
+                    compatibility_result["compatible"] = False
+            
+            # 检查是否有设计模块但没有对应的测试台实例
+            used_modules = [dut.get("module", "") for dut in dut_instances]
+            for design_module in design_modules:
+                if design_module not in used_modules:
+                    compatibility_result["issues"].append(
+                        f"设计模块 '{design_module}' 在测试台中未被实例化"
+                    )
+            
+            self.logger.info(f"  📊 兼容性检查完成: 兼容={compatibility_result['compatible']}, 问题数={len(compatibility_result['issues'])}")
+            return compatibility_result
+            
+        except Exception as e:
+            self.logger.error(f"❌ 接口兼容性检查异常: {str(e)}")
+            compatibility_result["compatible"] = False
+            compatibility_result["issues"].append(f"兼容性检查异常: {str(e)}")
+            return compatibility_result
+    
+    def _generate_diagnosis_summary(self, design_check: Dict[str, Any], 
+                                  testbench_check: Dict[str, Any],
+                                  interface_check: Dict[str, Any]) -> Tuple[str, List[str], bool]:
+        """生成诊断摘要和建议"""
+        summary_parts = []
+        suggestions = []
+        should_proceed = True
+        
+        # 设计文件诊断
+        if not design_check.get("valid", True):
+            summary_parts.append(f"❌ 设计文件存在{len(design_check.get('critical_issues', []))}个严重问题")
+            suggestions.extend([
+                "🔧 优先修复设计文件中的语法错误",
+                "📝 检查模块定义和endmodule匹配"
+            ])
+            should_proceed = False
+        else:
+            summary_parts.append(f"✅ 设计文件语法检查通过（{len(design_check.get('modules_found', []))}个模块）")
+        
+        # 测试台文件诊断
+        if not testbench_check.get("valid", True):
+            summary_parts.append(f"❌ 测试台文件存在{len(testbench_check.get('critical_issues', []))}个严重问题")
+            suggestions.extend([
+                "🔧 修复测试台文件中的语法错误",
+                "🔍 检查测试台结构和DUT实例化"
+            ])
+            should_proceed = False
+        else:
+            summary_parts.append(f"✅ 测试台文件语法检查通过（{len(testbench_check.get('dut_instances', []))}个DUT实例）")
+        
+        # 接口兼容性诊断
+        if interface_check and not interface_check.get("compatible", True):
+            issue_count = len(interface_check.get("issues", []))
+            summary_parts.append(f"⚠️ 接口兼容性存在{issue_count}个问题")
+            suggestions.extend([
+                "🔌 检查模块名称匹配",
+                "📋 验证端口连接正确性"
+            ])
+            # 接口问题不阻止执行，但需要修复
+        elif interface_check:
+            summary_parts.append("✅ 接口兼容性检查通过")
+        
+        # 生成具体建议
+        if design_check.get("critical_issues"):
+            for issue in design_check["critical_issues"][:2]:  # 只显示前2个
+                suggestions.append(f"🔧 设计文件: {issue}")
+        
+        if testbench_check.get("critical_issues"):
+            for issue in testbench_check["critical_issues"][:2]:  # 只显示前2个
+                suggestions.append(f"🔧 测试台文件: {issue}")
+        
+        summary = " | ".join(summary_parts)
+        
+        return summary, suggestions[:5], should_proceed  # 限制建议数量
+    
+    def _extract_failure_reasons(self, design_check: Dict[str, Any], 
+                               testbench_check: Dict[str, Any]) -> List[str]:
+        """从诊断结果中提取失败原因"""
+        reasons = []
+        
+        if design_check.get("syntax_errors"):
+            reasons.append("设计文件语法错误")
+        
+        if testbench_check.get("syntax_errors"):
+            reasons.append("测试台语法错误")
+        
+        if design_check.get("critical_issues"):
+            reasons.append("设计文件严重问题")
+        
+        if testbench_check.get("critical_issues"):
+            reasons.append("测试台严重问题")
+        
+        return reasons
