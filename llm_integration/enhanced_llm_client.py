@@ -75,7 +75,8 @@ class EnhancedLLMClient:
             self.logger.info(f"📋 {system_prompt}")
         
         self.logger.info(f"👤 User Prompt ({len(prompt)} 字符):")
-        self.logger.info(f"👤 {prompt}")
+        self.logger.info(f"👤 User Prompt: {prompt}")
+        self.logger.info("="*100)
         
         for attempt in range(max_retries):
             try:
@@ -110,6 +111,7 @@ class EnhancedLLMClient:
                     # 详细记录响应内容
                     self.logger.info(f"🤖 LLM响应 ({len(response_content)} 字符, {duration:.2f}s):")
                     self.logger.info(f"🤖 {response_content}")
+                    self.logger.info("="*100)
                     
                     self.logger.debug(f"📊 LLM统计 - 耗时: {duration:.2f}s, 尝试次数: {attempt + 1}, 总Token: {len(prompt) + len(response_content)}")
                     return response_content

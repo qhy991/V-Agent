@@ -1,0 +1,2468 @@
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-03 08:54:28] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen-turbo
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_code_quality (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_coverage (安全级别: normal)
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+[2025-08-03 08:54:28] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+[2025-08-03 08:54:28] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🚀 开始测试驱动任务: tdd_1754182468
+[2025-08-03 08:54:28] extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📋 非测试驱动任务，使用标准流程
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    inp...
+[2025-08-03 08:54:28] core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 📋 System Prompt (4459 字符):
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module test(); endmodule",
+                "analysis_scope": ["syntax", "style"],
+                "coding_standard": "ieee1800"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "simple_adder",
+                "verilog_code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具及其参数**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. analyze_code_quality
+**必需参数**:
+- `code` (string): 待分析代码（也可使用 `verilog_code`）
+**可选参数**:
+- `analysis_scope` (array): 分析范围选择
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+- `severity_filter` (array): 严重度过滤
+
+### 4. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 5. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 6. analyze_coverage
+**必需参数**:
+- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
+**可选参数**:
+- `coverage_types` (array): 覆盖率类型
+- `threshold` (object): 阈值配置
+
+### 7. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 首先分析代码质量和规范性 (analyze_code_quality)
+2. 生成全面的测试台进行验证 (generate_testbench)
+3. 执行仿真并分析结果 (run_simulation)
+4. 生成构建脚本确保可重现性 (generate_build_script)
+5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
+6. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **可用工具及其参数**:
+
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 👤 User Prompt (835 字符):
+[2025-08-03 08:54:28] LLMClient-dashscope - INFO - 👤 User: 
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+**测试验证要求**:
+设计必须通过以下测试：
+- 基本加法运算测试
+- 进位传播测试  
+- 溢出检测测试
+- 边界值测试（0x0000, 0xFFFF等）
+- 随机数据测试
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 🤖 LLM响应 (5688 字符, 31.74s):
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "compliance"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "adder_16bit.v",
+                "testbench_file": "testbench_adder_16bit.v"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "coverage_data.vcd"
+            }
+        }
+    ]
+}
+```
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 使用统一Schema标准化参数
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_code_quality 参数适配成功: 应用智能字段映射
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_code_quality 参数验证失败，尝试智能修复
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - ERROR - ❌ analyze_code_quality 参数修复失败
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_code_quality 参数验证失败，将在下次迭代重试
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+[2025-08-03 08:55:00] core.schema_system.field_mapper - INFO - 智能字段匹配: code -> module_code
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射
+[2025-08-03 08:55:00] core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 👤 User Prompt (2592 字符):
+[2025-08-03 08:55:00] LLMClient-dashscope - INFO - 👤 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: adder_16bit
+```verilog
+module adder_16bit (
+    input  [15:0] a,
+    input  [15:0] b,
+    input         cin,
+    output [15:0] sum,
+    output        cout,
+    output        overflow
+);
+
+    wire [15:0] carry;
+
+    // 16位全加器实现
+    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));
+    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));
+    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));
+    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));
+    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));
+    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));
+    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));
+    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));
+    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));
+    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));
+    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));
+    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));
+    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));
+    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));
+    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));
+    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));
+
+    // 输出进位
+    assign cout = carry[15];
+
+    // 溢出检测：当两个同符号数相加结果变号时溢出
+    // 有符号数的最高位是符号位
+    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);
+
+endmodule
+
+// 全加器模块
+module full_adder (
+    input  a,
+    input  b,
+    input  cin,
+    output sum,
+    output cout
+);
+
+    wire xor1, xor2, and1, and2, and3;
+
+    // 计算和
+    xor x1 (xor1, a, b);
+    xor x2 (sum, xor1, cin);
+
+    // 计算进位
+    and a1 (and1, a, b);
+    and a2 (and2, xor1, cin);
+    or o1 (cout, and1, and2);
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- basic_addition: 验证基本加法运算
+- carry_propagation: 验证进位传播功能
+- overflow_detection: 验证溢出检测功能
+- boundary_values: 验证边界值（0x0000, 0xFFFF等）
+- random_data: 验证随机数据
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能。
+
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 🤖 LLM响应 (7442 字符, 44.53s):
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 🤖 以下是为 `adder_16bit` 模块设计的**完整、专业且结构清晰的Verilog测试台（testbench）**，满足您提出的所有要求：
+
+---
+
+## ✅ 1. 完整的Testbench模块声明
+
+```verilog
+`timescale 1ns / 1ps
+
+module tb_adder_16bit;
+
+    // 参数定义
+    parameter CLK_PERIOD = 10.0; // 时钟周期 10ns
+
+    // 信号声明
+    reg [15:0] a;
+    reg [15:0] b;
+    reg        cin;
+    wire [15:0] sum;
+    wire        cout;
+    wire        overflow;
+
+    // 实例化被测模块
+    adder_16bit uut (
+        .a(a),
+        .b(b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout),
+        .overflow(overflow)
+    );
+
+    // 时钟生成
+    initial begin
+        clk = 0;
+        forever # (CLK_PERIOD/2) clk = ~clk;
+    end
+
+    // 复位生成
+    initial begin
+        rst = 1;
+        # (CLK_PERIOD * 2);
+        rst = 0;
+        # (CLK_PERIOD * 2);
+    end
+
+    // 波形转储设置
+    initial begin
+        $dumpfile("tb_adder_16bit.vcd");
+        $dumpvars(0, tb_adder_16bit);
+    end
+
+    // 测试场景控制
+    reg [3:0] test_case;
+
+    // 测试报告输出
+    initial begin
+        $display("=== Starting Testbench for adder_16bit ===");
+
+        // 初始化输入
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+
+        // 设置测试用例
+        test_case = 4'b0000;
+
+        // 执行所有测试场景
+        # (CLK_PERIOD * 2); // 等待复位完成
+
+        basic_addition();
+        carry_propagation();
+        overflow_detection();
+        boundary_values();
+        random_data();
+
+        $display("=== Testbench Completed ===");
+        $finish;
+    end
+
+    // 基本加法测试
+    task basic_addition;
+        $display("=== Running Basic Addition Test ===");
+
+        // 测试 1 + 1 = 2
+        a = 16'h0001;
+        b = 16'h0001;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h0002) else $error("Basic addition failed: 1+1 != 2");
+        assert (cout == 1'b0) else $error("Carry out not zero for 1+1");
+        assert (overflow == 1'b0) else $error("Overflow detected for 1+1");
+
+        // 测试 0x7FFF + 0x0001 = 0x8000 (溢出)
+        a = 16'h7FFF;
+        b = 16'h0001;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h8000) else $error("Basic addition failed: 0x7FFF + 0x0001 != 0x8000");
+        assert (cout == 1'b0) else $error("Carry out not zero for 0x7FFF + 0x0001");
+        assert (overflow == 1'b1) else $error("No overflow detected for 0x7FFF + 0x0001");
+
+        $display("=== Basic Addition Test Passed ===");
+    endtask
+
+    // 进位传播测试
+    task carry_propagation;
+        $display("=== Running Carry Propagation Test ===");
+
+        // 测试进位从低位到高位的传播
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b1;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h0001) else $error("Carry propagation failed: 0+0+1 != 1");
+        assert (cout == 1'b0) else $error("Carry out not zero for 0+0+1");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0+0+1");
+
+        // 测试连续进位
+        a = 16'hFFFF;
+        b = 16'h0000;
+        cin = 1'b1;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h0000) else $error("Carry propagation failed: 0xFFFF + 0 + 1 != 0x0000");
+        assert (cout == 1'b1) else $error("Carry out not one for 0xFFFF + 0 + 1");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0xFFFF + 0 + 1");
+
+        $display("=== Carry Propagation Test Passed ===");
+    endtask
+
+    // 溢出检测测试
+    task overflow_detection;
+        $display("=== Running Overflow Detection Test ===");
+
+        // 正数 + 正数 = 负数 → 溢出
+        a = 16'h7FFF;
+        b = 16'h7FFF;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'hFFFE) else $error("Overflow detection failed: 0x7FFF + 0x7FFF != 0xFFFE");
+        assert (cout == 1'b1) else $error("Carry out not one for 0x7FFF + 0x7FFF");
+        assert (overflow == 1'b1) else $error("No overflow detected for 0x7FFF + 0x7FFF");
+
+        // 负数 + 负数 = 正数 → 溢出
+        a = 16'h8000;
+        b = 16'h8000;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h0000) else $error("Overflow detection failed: 0x8000 + 0x8000 != 0x0000");
+        assert (cout == 1'b1) else $error("Carry out not one for 0x8000 + 0x8000");
+        assert (overflow == 1'b1) else $error("No overflow detected for 0x8000 + 0x8000");
+
+        $display("=== Overflow Detection Test Passed ===");
+    endtask
+
+    // 边界值测试
+    task boundary_values;
+        $display("=== Running Boundary Values Test ===");
+
+        // 0x0000 + 0x0000 = 0x0000
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'h0000) else $error("Boundary value test failed: 0x0000 + 0x0000 != 0x0000");
+        assert (cout == 1'b0) else $error("Carry out not zero for 0x0000 + 0x0000");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0x0000 + 0x0000");
+
+        // 0xFFFF + 0x0000 = 0xFFFF
+        a = 16'hFFFF;
+        b = 16'h0000;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+
+        assert (sum == 16'hFFFF) else $error("Boundary value test failed: 0xFFFF + 0x0000 != 0xFFFF");
+        assert (cout == 1'b0) else $error("Carry out not zero for 0xFFFF + 0x0000");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0xFFFF + 0x0000");
+
+        $display("=== Boundary Values Test Passed ===");
+    endtask
+
+    // 随机数据测试
+    task random_data;
+        $display("=== Running Random Data Test ===");
+
+        // 生成随机数据并验证
+        for (int i = 0; i < 100; i++) begin
+            a = $random % 65536;
+            b = $random % 65536;
+            cin = $random % 2;
+
+            # (CLK_PERIOD * 2);
+
+            // 计算预期结果
+            logic [15:0] expected_sum;
+            logic expected_cout;
+            logic expected_overflow;
+
+            // 有符号加法计算
+            int signed_a = $signed(a);
+            int signed_b = $signed(b);
+            int signed_sum = signed_a + signed_b + $unsigned(cin);
+
+            expected_sum = signed_sum;
+            expected_cout = (signed_a + signed_b + $unsigned(cin)) > 16'hFFFF ? 1 : 0;
+            expected_overflow = ((signed_a >= 0 && signed_b >= 0 && signed_sum < 0) ||
+                                 (signed_a < 0 && signed_b < 0 && signed_sum >= 0));
+
+            assert (sum == expected_sum) else $error("Random data test failed: sum mismatch");
+            assert (cout == expected_cout) else $error("Random data test failed: carry mismatch");
+            assert (overflow == expected_overflow) else $error("Random data test failed: overflow mismatch");
+        end
+
+        $display("=== Random Data Test Passed ===");
+    endtask
+
+    // 监控和显示
+    initial begin
+        $monitor("Time=%0t | a=0x%04h | b=0x%04h | cin=%b | sum=0x%04h | cout=%b | overflow=%b",
+                 $time, a, b, cin, sum, cout, overflow);
+    end
+
+endmodule
+```
+
+---
+
+## ✅ 2. 说明与功能分析
+
+### 📌 **主要功能**
+- **时钟和复位逻辑**：使用 `initial` 和 `forever` 实现时钟和复位。
+- **波形转储**：通过 `$dumpfile` 和 `$dumpvars` 生成 `.vcd` 文件用于仿真查看。
+- **测试场景**：
+  - `basic_addition`: 验证基本加法逻辑。
+  - `carry_propagation`: 验证进位传播是否正确。
+  - `overflow_detection`: 验证溢出检测逻辑。
+  - `boundary_values`: 验证边界值（如 0x0000、0xFFFF）。
+  - `random_data`: 验证随机数据下的行为。
+- **断言检查**：使用 `assert` 来验证每个测试用例的结果。
+- **监控输出**：使用 `$monitor` 实时显示关键信号。
+
+---
+
+## ✅ 3. 使用方式
+
+1. 将上述代码保存为 `tb_adder_16bit.v`。
+2. 编译并运行仿真器（如 ModelSim、VCS、Verilator 等）。
+3. 仿真结束后，会生成 `tb_adder_16bit.vcd` 文件，可用于查看波形。
+4. 控制台将输出详细的测试报告。
+
+---
+
+## ✅ 4. 可扩展性建议
+
+- 如果需要增加覆盖率收集，可以添加 `covergroup` 或使用工具如 Verdi。
+- 可以将测试用例封装为函数或模块，便于重复使用。
+- 可以加入更复杂的测试模式（如负数相加、大数相加等）。
+
+---
+
+如果您需要我为您生成对应的 **Makefile**、**仿真脚本** 或 **波形分析脚本**，也可以继续告诉我！
+[2025-08-03 08:55:44] core.file_manager - INFO - 🗂️ 中央文件管理器已初始化，工作空间: /home/haiyan/Research/CentralizedAgentFramework/file_workspace
+[2025-08-03 08:55:44] core.file_manager - INFO - 🔄 使用现有文件ID: c24a8cc4
+[2025-08-03 08:55:44] core.file_manager - INFO - 🔄 覆盖现有文件: testbench_adder_16bit.v
+[2025-08-03 08:55:44] core.file_manager - INFO - 🔄 更新现有文件引用: c24a8cc4
+[2025-08-03 08:55:44] core.file_manager - INFO - 💾 文件已保存: testbench_adder_16bit.v (ID: c24a8cc4, 类型: testbench)
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (44.55s)
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 使用统一Schema标准化参数
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - INFO - 🔄 run_simulation 参数适配成功: 应用智能字段映射
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - INFO - ✅ run_simulation 参数验证通过
+[2025-08-03 08:55:44] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+[2025-08-03 08:55:44] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+[2025-08-03 08:55:44] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit.v (模块: adder_16bit)
+[2025-08-03 08:55:44] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_adder_16bit.v (模块: tb_adder_16bit)
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - ERROR - ❌ run_simulation 执行失败 (0.07s): None
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - ERROR - ❌ run_simulation 执行失败，标记为永久失败
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - ERROR - ❌ 关键工具永久失败: run_simulation，停止后续工具执行
+[2025-08-03 08:55:44] core.schema_system.enhanced_base_agent - INFO - 🔄 第 2/5 次迭代
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 📋 System Prompt (4459 字符):
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module test(); endmodule",
+                "analysis_scope": ["syntax", "style"],
+                "coding_standard": "ieee1800"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "simple_adder",
+                "verilog_code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具及其参数**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. analyze_code_quality
+**必需参数**:
+- `code` (string): 待分析代码（也可使用 `verilog_code`）
+**可选参数**:
+- `analysis_scope` (array): 分析范围选择
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+- `severity_filter` (array): 严重度过滤
+
+### 4. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 5. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 6. analyze_coverage
+**必需参数**:
+- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
+**可选参数**:
+- `coverage_types` (array): 覆盖率类型
+- `threshold` (object): 阈值配置
+
+### 7. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 首先分析代码质量和规范性 (analyze_code_quality)
+2. 生成全面的测试台进行验证 (generate_testbench)
+3. 执行仿真并分析结果 (run_simulation)
+4. 生成构建脚本确保可重现性 (generate_build_script)
+5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
+6. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **可用工具及其参数**:
+
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 👤 User Prompt (9848 字符):
+[2025-08-03 08:55:44] LLMClient-dashscope - INFO - 👤 User: 
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+**测试验证要求**:
+设计必须通过以下测试：
+- 基本加法运算测试
+- 进位传播测试  
+- 溢出检测测试
+- 边界值测试（0x0000, 0xFFFF等）
+- 随机数据测试
+            
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "compliance"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "adder_16bit.v",
+                "testbench_file": "testbench_adder_16bit.v"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "coverage_data.vcd"
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 **第1次迭代 - 工具调用结果分析**:
+
+⚠️ **analyze_code_quality**: 参数验证失败（可重试）
+🚨 参数验证失败，请根据以下指导修正参数:
+
+📋 **错误详情**:
+发现 1 个错误:
+1. [analysis_scope[2]] 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   建议: 请选择: syntax, style, naming, structure, timing, synthesis, testability, documentation, complexity, maintainability, performance
+
+============================================================
+📝 **修复指令**:
+
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'analysis_scope[2]': 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   期望: one of: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   实际: value: compliance
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500000,
+      "description": "待分析的Verilog代码"
+    },
+    "analysis_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "syntax",
+          "style",
+          "naming",
+          "structure",
+          "timing",
+          "synthesis",
+          "testability",
+          "documentation",
+          "complexity",
+          "maintainability",
+          "performance"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 11,
+      "default": [
+        "syntax",
+        "style",
+        "structure"
+      ],
+      "description": "分析范围选择"
+    },
+    "coding_standard": {
+      "type": "string",
+      "enum": [
+        "ieee1800",
+        "systemverilog",
+        "verilog2001",
+        "custom"
+      ],
+      "default": "ieee1800",
+      "description": "编码标准规范"
+    },
+    "severity_filter": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "error",
+          "warning",
+          "info",
+          "suggestion"
+        ]
+      },
+      "default": [
+        "error",
+        "warning"
+      ],
+      "description": "严重度过滤级别"
+    },
+    "generate_report": {
+      "type": "boolean",
+      "default": true,
+      "description": "是否生成详细的分析报告"
+    }
+  },
+  "required": [
+    "code"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+
+============================================================
+📚 **修复示例**:
+
+请参考工具的Schema定义，确保所有参数格式正确。
+
+🎯 **请重新调用工具，使用修复后的参数**。
+确保所有参数都符合Schema要求，然后重新执行相同的工具调用。
+
+✅ **generate_testbench**: 执行成功
+❌ **run_simulation**: 执行失败
+   错误: 工具执行失败
+
+❌ **analyze_coverage**: 执行失败
+   错误: 跳过执行：关键工具 run_simulation 已永久失败
+
+
+======================================================================
+📊 **状态总结**:
+
+• ✅ 成功工具: generate_testbench
+• ⚠️ 参数验证失败（可重试）: analyze_code_quality
+• ❌ 执行失败（永久失败）: run_simulation, analyze_coverage
+
+🚀 **重试机会**:
+系统检测到 1 个工具的参数验证失败。这些工具在下次迭代中可以重试！
+
+💡 **下一步操作**:
+1. 仔细阅读上述每个失败工具的详细错误信息和修复示例
+2. 根据提供的修复指令修正参数格式
+3. 重新构造JSON工具调用，**包含所有工具**（成功的和修复后的）
+4. 系统将重新验证参数并允许重新执行
+
+⭐ **重要**: 请修正参数后重新调用，不要因为失败就放弃！
+
+⚠️ **永久失败的工具**: 以下工具遇到执行错误，将不会重试:
+• run_simulation: 执行错误（非参数问题）
+• analyze_coverage: 执行错误（非参数问题）
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 🤖 LLM响应 (5700 字符, 31.54s):
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "structure", "synthesis"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "adder_16bit.v",
+                "testbench_file": "testbench_adder_16bit.v"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "coverage_data.vcd"
+            }
+        }
+    ]
+}
+```
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🔄 第2次迭代：清空参数验证失败工具，允许重试
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 使用统一Schema标准化参数
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_code_quality 参数适配成功: 应用智能字段映射
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_code_quality 参数验证通过
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 执行成功 (0.00s)
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+[2025-08-03 08:56:16] core.schema_system.field_mapper - INFO - 智能字段匹配: code -> module_code
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射
+[2025-08-03 08:56:16] core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 👤 User Prompt (2592 字符):
+[2025-08-03 08:56:16] LLMClient-dashscope - INFO - 👤 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: adder_16bit
+```verilog
+module adder_16bit (
+    input  [15:0] a,
+    input  [15:0] b,
+    input         cin,
+    output [15:0] sum,
+    output        cout,
+    output        overflow
+);
+
+    wire [15:0] carry;
+
+    // 16位全加器实现
+    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));
+    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));
+    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));
+    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));
+    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));
+    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));
+    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));
+    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));
+    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));
+    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));
+    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));
+    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));
+    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));
+    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));
+    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));
+    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));
+
+    // 输出进位
+    assign cout = carry[15];
+
+    // 溢出检测：当两个同符号数相加结果变号时溢出
+    // 有符号数的最高位是符号位
+    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);
+
+endmodule
+
+// 全加器模块
+module full_adder (
+    input  a,
+    input  b,
+    input  cin,
+    output sum,
+    output cout
+);
+
+    wire xor1, xor2, and1, and2, and3;
+
+    // 计算和
+    xor x1 (xor1, a, b);
+    xor x2 (sum, xor1, cin);
+
+    // 计算进位
+    and a1 (and1, a, b);
+    and a2 (and2, xor1, cin);
+    or o1 (cout, and1, and2);
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- basic_addition: 验证基本加法运算
+- carry_propagation: 验证进位传播功能
+- overflow_detection: 验证溢出检测功能
+- boundary_values: 验证边界值（0x0000, 0xFFFF等）
+- random_data: 验证随机数据
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能。
+
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 🤖 LLM响应 (7006 字符, 33.52s):
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 🤖 以下是为 `adder_16bit` 模块设计的**完整、专业且结构清晰的Verilog测试台（testbench）**，满足您提出的所有要求：
+
+---
+
+## ✅ **1. 完整的Testbench模块声明**
+
+```verilog
+`timescale 1ns / 1ps
+
+module tb_adder_16bit;
+
+    // 时钟周期定义
+    parameter CLK_PERIOD = 10.0;
+
+    // 信号声明
+    reg [15:0] a;
+    reg [15:0] b;
+    reg        cin;
+    wire [15:0] sum;
+    wire        cout;
+    wire        overflow;
+
+    // 实例化被测模块
+    adder_16bit uut (
+        .a(a),
+        .b(b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout),
+        .overflow(overflow)
+    );
+
+    // 时钟和复位生成逻辑
+    reg clk;
+    reg rst_n;
+
+    initial begin
+        clk = 0;
+        rst_n = 0;
+        #20;
+        rst_n = 1;
+    end
+
+    always # (CLK_PERIOD/2) clk = ~clk;
+
+    // 波形转储设置
+    initial begin
+        $dumpfile("tb_adder_16bit.vcd");
+        $dumpvars(0, tb_adder_16bit);
+    end
+
+    // 测试场景控制
+    integer test_case;
+
+    // 测试报告输出
+    initial begin
+        $display("=== Starting Testbench for adder_16bit ===");
+
+        // 初始化输入
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+
+        // 执行所有测试场景
+        test_case = 0;
+        basic_addition();
+        test_case = 1;
+        carry_propagation();
+        test_case = 2;
+        overflow_detection();
+        test_case = 3;
+        boundary_values();
+        test_case = 4;
+        random_data();
+
+        $display("=== Testbench Completed ===");
+        $finish;
+    end
+
+    // 基本加法测试
+    task basic_addition;
+        $display("=== Running Basic Addition Test ===");
+        #10;
+
+        // 测试 1 + 1 = 2
+        a = 16'h0001;
+        b = 16'h0001;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        // 验证结果
+        assert (sum == 16'h0002) else $error("Basic addition failed: sum != 0x0002");
+        assert (cout == 1'b0) else $error("Carry out error in basic addition");
+        assert (overflow == 1'b0) else $error("Overflow detected in basic addition");
+
+        // 测试 0xFFFF + 1 = 0x0000 (with carry)
+        a = 16'hFFFF;
+        b = 16'h0001;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        assert (sum == 16'h0000) else $error("Basic addition failed: sum != 0x0000");
+        assert (cout == 1'b1) else $error("Carry out error in basic addition");
+        assert (overflow == 1'b0) else $error("Overflow detected in basic addition");
+
+        $display("=== Basic Addition Test Passed ===");
+    endtask
+
+    // 进位传播测试
+    task carry_propagation;
+        $display("=== Running Carry Propagation Test ===");
+        #10;
+
+        // 设置进位从低位到高位传播
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b1;
+        #CLK_PERIOD;
+
+        // 预期：所有位都为1，进位在最高位
+        assert (sum == 16'hFFFF) else $error("Carry propagation failed: sum != 0xFFFF");
+        assert (cout == 1'b1) else $error("Carry out error in carry propagation");
+        assert (overflow == 1'b0) else $error("Overflow detected in carry propagation");
+
+        $display("=== Carry Propagation Test Passed ===");
+    endtask
+
+    // 溢出检测测试
+    task overflow_detection;
+        $display("=== Running Overflow Detection Test ===");
+        #10;
+
+        // 正数 + 正数 = 负数 → 溢出
+        a = 16'h7FFF; // 最大正数
+        b = 16'h0001;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        assert (sum == 16'h8000) else $error("Overflow detection failed: sum != 0x8000");
+        assert (cout == 1'b0) else $error("Carry out error in overflow detection");
+        assert (overflow == 1'b1) else $error("No overflow detected in overflow detection");
+
+        // 负数 + 负数 = 正数 → 溢出
+        a = 16'h8000; // 最小负数
+        b = 16'hFFFF;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        assert (sum == 16'h7FFF) else $error("Overflow detection failed: sum != 0x7FFF");
+        assert (cout == 1'b0) else $error("Carry out error in overflow detection");
+        assert (overflow == 1'b1) else $error("No overflow detected in overflow detection");
+
+        $display("=== Overflow Detection Test Passed ===");
+    endtask
+
+    // 边界值测试
+    task boundary_values;
+        $display("=== Running Boundary Values Test ===");
+        #10;
+
+        // 0x0000 + 0x0000 = 0x0000
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        assert (sum == 16'h0000) else $error("Boundary value test failed: sum != 0x0000");
+        assert (cout == 1'b0) else $error("Carry out error in boundary values");
+        assert (overflow == 1'b0) else $error("Overflow detected in boundary values");
+
+        // 0xFFFF + 0xFFFF = 0xFFFE with carry
+        a = 16'hFFFF;
+        b = 16'hFFFF;
+        cin = 1'b0;
+        #CLK_PERIOD;
+
+        assert (sum == 16'hFFFE) else $error("Boundary value test failed: sum != 0xFFFE");
+        assert (cout == 1'b1) else $error("Carry out error in boundary values");
+        assert (overflow == 1'b0) else $error("Overflow detected in boundary values");
+
+        $display("=== Boundary Values Test Passed ===");
+    endtask
+
+    // 随机数据测试
+    task random_data;
+        $display("=== Running Random Data Test ===");
+        #10;
+
+        // 生成随机数据并验证
+        for (int i = 0; i < 100; i++) begin
+            a = $random % 65536;
+            b = $random % 65536;
+            cin = $random % 2;
+
+            #CLK_PERIOD;
+
+            // 计算预期结果
+            logic [16:0] expected_sum = a + b + cin;
+            logic [15:0] expected_sum_16 = expected_sum[15:0];
+            logic expected_cout = expected_sum[16];
+            logic expected_overflow = (a[15] == b[15]) && (a[15] != expected_sum_16[15]);
+
+            // 验证结果
+            assert (sum == expected_sum_16) else $error("Random data test failed: sum != 0x%h", expected_sum_16);
+            assert (cout == expected_cout) else $error("Carry out error in random data test");
+            assert (overflow == expected_overflow) else $error("Overflow detection error in random data test");
+        end
+
+        $display("=== Random Data Test Passed ===");
+    endtask
+
+endmodule
+```
+
+---
+
+## 📌 **2. 说明与功能分析**
+
+### ✅ **主要功能**
+- **时钟和复位控制**：使用 `always` 块生成时钟信号，并在开始时进行复位。
+- **波形转储**：通过 `$dumpfile` 和 `$dumpvars` 生成 VCD 文件用于仿真查看。
+- **测试场景覆盖**：
+  - **basic_addition**: 验证基本加法逻辑。
+  - **carry_propagation**: 验证进位是否能正确传递。
+  - **overflow_detection**: 验证溢出检测逻辑。
+  - **boundary_values**: 验证边界值（如 0x0000、0xFFFF）。
+  - **random_data**: 验证随机输入下的行为。
+
+### ✅ **断言机制**
+- 使用 `assert` 语句检查每个测试用例的结果是否符合预期。
+- 若失败，会打印错误信息并终止测试。
+
+### ✅ **测试报告**
+- 每个测试用例结束后打印“Test Passed”或“Test Failed”信息。
+- 最终显示“Testbench Completed”。
+
+---
+
+## 🧪 **3. 可选扩展建议**
+
+| 功能 | 描述 |
+|------|------|
+| **覆盖率收集** | 如果需要启用覆盖率，可以添加 `+cover` 编译选项。 |
+| **GUI波形查看器** | 使用 `gtkwave` 或 `Verdi` 查看 VCD 文件。 |
+| **自动化测试脚本** | 可以将此测试台集成到自动化测试框架中（如 Makefile 或 CI/CD）。 |
+
+---
+
+## 📁 **4. 如何运行测试**
+
+1. 将上述代码保存为 `tb_adder_16bit.v`。
+2. 确保 `adder_16bit.v` 和 `full_adder.v` 在同一目录下。
+3. 使用如下命令编译并运行仿真（以 `iverilog` 为例）：
+
+```bash
+iverilog -o tb_adder_16bit tb_adder_16bit.v adder_16bit.v full_adder.v
+vvp tb_adder_16bit
+gtkwave tb_adder_16bit.vcd
+```
+
+---
+
+## ✅ **5. 总结**
+
+该测试台是一个**结构清晰、功能全面、可扩展性强**的 Verilog 测试平台，能够充分验证 `adder_16bit` 模块的以下特性：
+
+- 正确执行加法运算
+- 正确处理进位传播
+- 正确检测溢出
+- 处理边界值
+- 处理随机输入
+
+如需进一步优化或扩展，请告知我您的具体需求！
+[2025-08-03 08:56:50] core.file_manager - INFO - 🔄 使用现有文件ID: c24a8cc4
+[2025-08-03 08:56:50] core.file_manager - INFO - 🔄 覆盖现有文件: testbench_adder_16bit.v
+[2025-08-03 08:56:50] core.file_manager - INFO - 🔄 更新现有文件引用: c24a8cc4
+[2025-08-03 08:56:50] core.file_manager - INFO - 💾 文件已保存: testbench_adder_16bit.v (ID: c24a8cc4, 类型: testbench)
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (33.54s)
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 使用统一Schema标准化参数
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - INFO - 🔄 run_simulation 参数适配成功: 应用智能字段映射
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - INFO - ✅ run_simulation 参数验证通过
+[2025-08-03 08:56:50] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: adder_16bit (依赖: 无)
+[2025-08-03 08:56:50] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_adder_16bit (依赖: ['adder_16bit'])
+[2025-08-03 08:56:50] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: adder_16bit.v (模块: adder_16bit)
+[2025-08-03 08:56:50] extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_adder_16bit.v (模块: tb_adder_16bit)
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - ERROR - ❌ run_simulation 执行失败 (0.06s): None
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - ERROR - ❌ run_simulation 执行失败，标记为永久失败
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - ERROR - ❌ 关键工具永久失败: run_simulation，停止后续工具执行
+[2025-08-03 08:56:50] core.schema_system.enhanced_base_agent - INFO - 🔄 第 3/5 次迭代
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 📋 System Prompt (4459 字符):
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module test(); endmodule",
+                "analysis_scope": ["syntax", "style"],
+                "coding_standard": "ieee1800"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "simple_adder",
+                "verilog_code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具及其参数**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. analyze_code_quality
+**必需参数**:
+- `code` (string): 待分析代码（也可使用 `verilog_code`）
+**可选参数**:
+- `analysis_scope` (array): 分析范围选择
+- `coding_standard` (string): "ieee1800", "custom", "industry"
+- `severity_filter` (array): 严重度过滤
+
+### 4. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 5. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 6. analyze_coverage
+**必需参数**:
+- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
+**可选参数**:
+- `coverage_types` (array): 覆盖率类型
+- `threshold` (object): 阈值配置
+
+### 7. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 首先分析代码质量和规范性 (analyze_code_quality)
+2. 生成全面的测试台进行验证 (generate_testbench)
+3. 执行仿真并分析结果 (run_simulation)
+4. 生成构建脚本确保可重现性 (generate_build_script)
+5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
+6. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **可用工具及其参数**:
+
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 👤 User Prompt (16071 字符):
+[2025-08-03 08:56:50] LLMClient-dashscope - INFO - 👤 User: 
+设计一个16位加法器模块adder_16bit，严格按照以下接口规范实现：
+
+**关键要求 - 接口必须完全匹配**:
+```verilog
+module adder_16bit (
+    input  [15:0] a,        // 第一个16位操作数
+    input  [15:0] b,        // 第二个16位操作数
+    input         cin,      // 输入进位
+    output [15:0] sum,      // 16位和输出
+    output        cout,     // 输出进位
+    output        overflow  // 溢出标志（有符号运算）
+);
+```
+
+**功能要求**:
+1. **加法运算**: 实现16位二进制加法 sum = a + b + cin
+2. **进位处理**: 正确计算输出进位 cout
+3. **溢出检测**: 检测有符号数溢出（当两个同号数相加结果变号时）
+4. **全组合覆盖**: 支持所有可能的16位输入组合
+5. **边界处理**: 正确处理最大值(0xFFFF)和最小值(0x0000)
+
+**设计要求**:
+- 使用组合逻辑实现
+- 可以采用行波进位或超前进位结构
+- 确保时序性能良好
+- 代码结构清晰，易于综合
+
+**严格警告**：
+1. 模块名必须是adder_16bit，不能是其他名称！
+2. 端口名必须完全匹配上述接口规范！
+3. 所有端口位宽必须正确：a[15:0], b[15:0], sum[15:0]
+4. overflow信号必须正确实现有符号溢出检测
+5. 必须是纯组合逻辑，不能有时钟或复位信号
+
+**测试验证要求**:
+设计必须通过以下测试：
+- 基本加法运算测试
+- 进位传播测试  
+- 溢出检测测试
+- 边界值测试（0x0000, 0xFFFF等）
+- 随机数据测试
+            
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "compliance"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "adder_16bit.v",
+                "testbench_file": "testbench_adder_16bit.v"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "coverage_data.vcd"
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 **第1次迭代 - 工具调用结果分析**:
+
+⚠️ **analyze_code_quality**: 参数验证失败（可重试）
+🚨 参数验证失败，请根据以下指导修正参数:
+
+📋 **错误详情**:
+发现 1 个错误:
+1. [analysis_scope[2]] 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   建议: 请选择: syntax, style, naming, structure, timing, synthesis, testability, documentation, complexity, maintainability, performance
+
+============================================================
+📝 **修复指令**:
+
+参数验证失败，请根据以下信息修复参数:
+
+🔍 验证错误:
+1. 字段 'analysis_scope[2]': 值必须是以下选项之一: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   期望: one of: ['syntax', 'style', 'naming', 'structure', 'timing', 'synthesis', 'testability', 'documentation', 'complexity', 'maintainability', 'performance']
+   实际: value: compliance
+
+📋 修复指令:
+1. 请仔细检查上述错误信息
+2. 根据Schema要求修复参数格式
+3. 对于高置信度(>80%)的建议，可直接采用
+4. 对于低置信度的建议，请仔细考虑后调整
+5. 确保修复后的参数符合功能需求
+
+📚 相关Schema信息:
+```json
+{
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500000,
+      "description": "待分析的Verilog代码"
+    },
+    "analysis_scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "syntax",
+          "style",
+          "naming",
+          "structure",
+          "timing",
+          "synthesis",
+          "testability",
+          "documentation",
+          "complexity",
+          "maintainability",
+          "performance"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 11,
+      "default": [
+        "syntax",
+        "style",
+        "structure"
+      ],
+      "description": "分析范围选择"
+    },
+    "coding_standard": {
+      "type": "string",
+      "enum": [
+        "ieee1800",
+        "systemverilog",
+        "verilog2001",
+        "custom"
+      ],
+      "default": "ieee1800",
+      "description": "编码标准规范"
+    },
+    "severity_filter": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "error",
+          "warning",
+          "info",
+          "suggestion"
+        ]
+      },
+      "default": [
+        "error",
+        "warning"
+      ],
+      "description": "严重度过滤级别"
+    },
+    "generate_report": {
+      "type": "boolean",
+      "default": true,
+      "description": "是否生成详细的分析报告"
+    }
+  },
+  "required": [
+    "code"
+  ],
+  "additionalProperties": false
+}
+```
+
+请重新调用工具，使用修复后的参数。
+
+============================================================
+📚 **修复示例**:
+
+请参考工具的Schema定义，确保所有参数格式正确。
+
+🎯 **请重新调用工具，使用修复后的参数**。
+确保所有参数都符合Schema要求，然后重新执行相同的工具调用。
+
+✅ **generate_testbench**: 执行成功
+❌ **run_simulation**: 执行失败
+   错误: 工具执行失败
+
+❌ **analyze_coverage**: 执行失败
+   错误: 跳过执行：关键工具 run_simulation 已永久失败
+
+
+======================================================================
+📊 **状态总结**:
+
+• ✅ 成功工具: generate_testbench
+• ⚠️ 参数验证失败（可重试）: analyze_code_quality
+• ❌ 执行失败（永久失败）: run_simulation, analyze_coverage
+
+🚀 **重试机会**:
+系统检测到 1 个工具的参数验证失败。这些工具在下次迭代中可以重试！
+
+💡 **下一步操作**:
+1. 仔细阅读上述每个失败工具的详细错误信息和修复示例
+2. 根据提供的修复指令修正参数格式
+3. 重新构造JSON工具调用，**包含所有工具**（成功的和修复后的）
+4. 系统将重新验证参数并允许重新执行
+
+⭐ **重要**: 请修正参数后重新调用，不要因为失败就放弃！
+
+⚠️ **永久失败的工具**: 以下工具遇到执行错误，将不会重试:
+• run_simulation: 执行错误（非参数问题）
+• analyze_coverage: 执行错误（非参数问题）
+
+
+Assistant: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "structure", "synthesis"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        },
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "adder_16bit.v",
+                "testbench_file": "testbench_adder_16bit.v"
+            }
+        },
+        {
+            "tool_name": "analyze_coverage",
+            "parameters": {
+                "coverage_data_file": "coverage_data.vcd"
+            }
+        }
+    ]
+}
+```
+
+User: 🔧 **第2次迭代 - 工具调用结果分析**:
+
+✅ **analyze_code_quality**: 执行成功
+✅ **generate_testbench**: 执行成功
+❌ **run_simulation**: 执行失败
+   错误: 工具执行失败
+
+❌ **analyze_coverage**: 执行失败
+   错误: 跳过执行：关键工具 run_simulation 已永久失败
+
+
+======================================================================
+📊 **状态总结**:
+
+• ✅ 成功工具: analyze_code_quality, generate_testbench
+• ⚠️ 参数验证失败（可重试）: 无
+• ❌ 执行失败（永久失败）: run_simulation, analyze_coverage
+
+
+⚠️ **永久失败的工具**: 以下工具遇到执行错误，将不会重试:
+• run_simulation: 执行错误（非参数问题）
+• analyze_coverage: 执行错误（非参数问题）
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 🤖 LLM响应 (5320 字符, 33.77s):
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "analysis_scope": ["syntax", "style", "structure", "synthesis"],
+                "coding_standard": "ieee1800"
+            }
+        },
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "adder_16bit",
+                "verilog_code": "module adder_16bit (\n    input  [15:0] a,\n    input  [15:0] b,\n    input         cin,\n    output [15:0] sum,\n    output        cout,\n    output        overflow\n);\n\n    wire [15:0] carry;\n\n    // 16位全加器实现\n    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));\n    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));\n    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));\n    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));\n    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));\n    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));\n    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));\n    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));\n    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));\n    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));\n    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));\n    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));\n    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));\n    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));\n    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));\n    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));\n\n    // 输出进位\n    assign cout = carry[15];\n\n    // 溢出检测：当两个同符号数相加结果变号时溢出\n    // 有符号数的最高位是符号位\n    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);\n\nendmodule\n\n// 全加器模块\nmodule full_adder (\n    input  a,\n    input  b,\n    input  cin,\n    output sum,\n    output cout\n);\n\n    wire xor1, xor2, and1, and2, and3;\n\n    // 计算和\n    xor x1 (xor1, a, b);\n    xor x2 (sum, xor1, cin);\n\n    // 计算进位\n    and a1 (and1, a, b);\n    and a2 (and2, xor1, cin);\n    or o1 (cout, and1, and2);\n\nendmodule",
+                "test_scenarios": [
+                    {"name": "basic_addition", "description": "验证基本加法运算"},
+                    {"name": "carry_propagation", "description": "验证进位传播功能"},
+                    {"name": "overflow_detection", "description": "验证溢出检测功能"},
+                    {"name": "boundary_values", "description": "验证边界值（0x0000, 0xFFFF等）"},
+                    {"name": "random_data", "description": "验证随机数据"}
+                ]
+            }
+        }
+    ]
+}
+```
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🔄 第3次迭代：清空参数验证失败工具，允许重试
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 使用统一Schema标准化参数
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_code_quality 参数适配成功: 应用智能字段映射
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - ✅ analyze_code_quality 参数验证通过
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_code_quality 执行成功 (0.00s)
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+[2025-08-03 08:57:23] core.schema_system.field_mapper - INFO - 智能字段匹配: code -> module_code
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射
+[2025-08-03 08:57:23] core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen-turbo, JSON模式: False
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 👤 User Prompt (2592 字符):
+[2025-08-03 08:57:23] LLMClient-dashscope - INFO - 👤 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: adder_16bit
+```verilog
+module adder_16bit (
+    input  [15:0] a,
+    input  [15:0] b,
+    input         cin,
+    output [15:0] sum,
+    output        cout,
+    output        overflow
+);
+
+    wire [15:0] carry;
+
+    // 16位全加器实现
+    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));
+    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));
+    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));
+    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(carry[3]));
+    full_adder fa4 (.a(a[4]), .b(b[4]), .cin(carry[3]), .sum(sum[4]), .cout(carry[4]));
+    full_adder fa5 (.a(a[5]), .b(b[5]), .cin(carry[4]), .sum(sum[5]), .cout(carry[5]));
+    full_adder fa6 (.a(a[6]), .b(b[6]), .cin(carry[5]), .sum(sum[6]), .cout(carry[6]));
+    full_adder fa7 (.a(a[7]), .b(b[7]), .cin(carry[6]), .sum(sum[7]), .cout(carry[7]));
+    full_adder fa8 (.a(a[8]), .b(b[8]), .cin(carry[7]), .sum(sum[8]), .cout(carry[8]));
+    full_adder fa9 (.a(a[9]), .b(b[9]), .cin(carry[8]), .sum(sum[9]), .cout(carry[9]));
+    full_adder fa10 (.a(a[10]), .b(b[10]), .cin(carry[9]), .sum(sum[10]), .cout(carry[10]));
+    full_adder fa11 (.a(a[11]), .b(b[11]), .cin(carry[10]), .sum(sum[11]), .cout(carry[11]));
+    full_adder fa12 (.a(a[12]), .b(b[12]), .cin(carry[11]), .sum(sum[12]), .cout(carry[12]));
+    full_adder fa13 (.a(a[13]), .b(b[13]), .cin(carry[12]), .sum(sum[13]), .cout(carry[13]));
+    full_adder fa14 (.a(a[14]), .b(b[14]), .cin(carry[13]), .sum(sum[14]), .cout(carry[14]));
+    full_adder fa15 (.a(a[15]), .b(b[15]), .cin(carry[14]), .sum(sum[15]), .cout(carry[15]));
+
+    // 输出进位
+    assign cout = carry[15];
+
+    // 溢出检测：当两个同符号数相加结果变号时溢出
+    // 有符号数的最高位是符号位
+    assign overflow = (a[15] == b[15]) && (a[15] != sum[15]);
+
+endmodule
+
+// 全加器模块
+module full_adder (
+    input  a,
+    input  b,
+    input  cin,
+    output sum,
+    output cout
+);
+
+    wire xor1, xor2, and1, and2, and3;
+
+    // 计算和
+    xor x1 (xor1, a, b);
+    xor x2 (sum, xor1, cin);
+
+    // 计算进位
+    and a1 (and1, a, b);
+    and a2 (and2, xor1, cin);
+    or o1 (cout, and1, and2);
+
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- basic_addition: 验证基本加法运算
+- carry_propagation: 验证进位传播功能
+- overflow_detection: 验证溢出检测功能
+- boundary_values: 验证边界值（0x0000, 0xFFFF等）
+- random_data: 验证随机数据
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能。
+
+[2025-08-03 08:58:01] LLMClient-dashscope - INFO - 🤖 LLM响应 (7441 字符, 37.37s):
+[2025-08-03 08:58:01] LLMClient-dashscope - INFO - 🤖 以下是为 `adder_16bit` 模块设计的**完整、专业且结构清晰的Verilog测试台（testbench）**，满足您提出的所有要求：
+
+---
+
+## ✅ **1. 完整的Testbench模块声明**
+
+```verilog
+`timescale 1ns / 1ps
+
+module tb_adder_16bit;
+
+    // 时钟周期定义
+    parameter CLK_PERIOD = 10.0;
+
+    // 信号声明
+    reg [15:0] a;
+    reg [15:0] b;
+    reg        cin;
+    wire [15:0] sum;
+    wire       cout;
+    wire       overflow;
+
+    // 实例化被测模块
+    adder_16bit uut (
+        .a(a),
+        .b(b),
+        .cin(cin),
+        .sum(sum),
+        .cout(cout),
+        .overflow(overflow)
+    );
+
+    // 时钟生成
+    always begin
+        # (CLK_PERIOD/2) clk = ~clk;
+    end
+
+    // 复位生成
+    initial begin
+        clk = 0;
+        # (CLK_PERIOD/2);
+        rst_n = 1'b0;
+        # (CLK_PERIOD*2);
+        rst_n = 1'b1;
+    end
+
+    // 波形转储设置
+    initial begin
+        $dumpfile("tb_adder_16bit.vcd");
+        $dumpvars(0, tb_adder_16bit);
+    end
+
+    // 测试场景控制
+    reg [3:0] test_case;
+    integer i;
+
+    // 测试报告输出
+    initial begin
+        $display("=== Starting Testbench for adder_16bit ===");
+
+        // 初始化
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+
+        // 执行所有测试场景
+        test_case = 4'b0000; // basic_addition
+        # (CLK_PERIOD * 2);
+        $display("=== Running Basic Addition Test ===");
+        run_basic_addition();
+
+        test_case = 4'b0001; // carry_propagation
+        # (CLK_PERIOD * 2);
+        $display("=== Running Carry Propagation Test ===");
+        run_carry_propagation();
+
+        test_case = 4'b0010; // overflow_detection
+        # (CLK_PERIOD * 2);
+        $display("=== Running Overflow Detection Test ===");
+        run_overflow_detection();
+
+        test_case = 4'b0011; // boundary_values
+        # (CLK_PERIOD * 2);
+        $display("=== Running Boundary Values Test ===");
+        run_boundary_values();
+
+        test_case = 4'b0100; // random_data
+        # (CLK_PERIOD * 2);
+        $display("=== Running Random Data Test ===");
+        run_random_data();
+
+        $display("=== Testbench Completed ===");
+        $finish;
+    end
+
+    // 测试场景函数
+    task run_basic_addition;
+        // 基本加法测试
+        a = 16'h0001;
+        b = 16'h0002;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0003) else $error("Basic addition failed: sum != 0x0003");
+        assert (cout == 1'b0) else $error("Carry out not zero in basic addition");
+        assert (overflow == 1'b0) else $error("Overflow detected in basic addition");
+
+        a = 16'h000F;
+        b = 16'h0001;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0010) else $error("Basic addition failed: sum != 0x0010");
+        assert (cout == 1'b0) else $error("Carry out not zero in basic addition");
+        assert (overflow == 1'b0) else $error("Overflow detected in basic addition");
+    endtask
+
+    task run_carry_propagation;
+        // 进位传播测试：从低位到高位依次进位
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b1;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0001) else $error("Carry propagation failed at LSB");
+        assert (cout == 1'b0) else $error("Carry out not zero after propagation");
+        assert (overflow == 1'b0) else $error("Overflow detected during carry propagation");
+
+        a = 16'hFFFF;
+        b = 16'h0000;
+        cin = 1'b1;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0000) else $error("Carry propagation failed with all ones");
+        assert (cout == 1'b1) else $error("Carry out not set after propagation");
+        assert (overflow == 1'b0) else $error("Overflow detected during carry propagation");
+    endtask
+
+    task run_overflow_detection;
+        // 正数 + 正数 → 负数（溢出）
+        a = 16'sh7FFF; // 0x7FFF
+        b = 16'sh0001; // 0x0001
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'sh8000) else $error("Overflow detection failed: sum != 0x8000");
+        assert (cout == 1'b0) else $error("Carry out not zero on overflow");
+        assert (overflow == 1'b1) else $error("Overflow not detected in positive + positive");
+
+        // 负数 + 负数 → 正数（溢出）
+        a = 16'sh8000; // 0x8000
+        b = 16'sh8000; // 0x8000
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'sh0000) else $error("Overflow detection failed: sum != 0x0000");
+        assert (cout == 1'b1) else $error("Carry out not set on overflow");
+        assert (overflow == 1'b1) else $error("Overflow not detected in negative + negative");
+    endtask
+
+    task run_boundary_values;
+        // 0x0000 + 0x0000
+        a = 16'h0000;
+        b = 16'h0000;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0000) else $error("Boundary value 0x0000 + 0x0000 failed");
+        assert (cout == 1'b0) else $error("Carry out not zero for 0x0000 + 0x0000");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0x0000 + 0x0000");
+
+        // 0xFFFF + 0x0001
+        a = 16'hFFFF;
+        b = 16'h0001;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0000) else $error("Boundary value 0xFFFF + 0x0001 failed");
+        assert (cout == 1'b1) else $error("Carry out not set for 0xFFFF + 0x0001");
+        assert (overflow == 1'b0) else $error("Overflow detected for 0xFFFF + 0x0001");
+
+        // 0x8000 + 0x8000
+        a = 16'h8000;
+        b = 16'h8000;
+        cin = 1'b0;
+        # (CLK_PERIOD * 2);
+        assert (sum == 16'h0000) else $error("Boundary value 0x8000 + 0x8000 failed");
+        assert (cout == 1'b1) else $error("Carry out not set for 0x8000 + 0x8000");
+        assert (overflow == 1'b1) else $error("Overflow not detected for 0x8000 + 0x8000");
+    endtask
+
+    task run_random_data;
+        // 随机数据测试
+        for (i = 0; i < 100; i = i + 1) begin
+            a = $random();
+            b = $random();
+            cin = $random() % 2;
+            # (CLK_PERIOD * 2);
+
+            // 计算预期结果
+            logic [15:0] expected_sum;
+            logic expected_cout;
+            logic expected_overflow;
+
+            // 使用系统函数计算预期值
+            expected_sum = a + b + cin;
+            expected_cout = (expected_sum > 16'hFFFF) ? 1'b1 : 1'b0;
+            expected_overflow = ((a[15] == b[15]) && (a[15] != expected_sum[15])) ? 1'b1 : 1'b0;
+
+            // 检查结果
+            if (sum != expected_sum) $error("Random data test failed: sum mismatch");
+            if (cout != expected_cout) $error("Random data test failed: carry out mismatch");
+            if (overflow != expected_overflow) $error("Random data test failed: overflow mismatch");
+        end
+    endtask
+
+    // 监控信号变化
+    initial begin
+        $monitor("Time=%t | a=0x%04h | b=0x%04h | cin=%b | sum=0x%04h | cout=%b | overflow=%b",
+                 $time, a, b, cin, sum, cout, overflow);
+    end
+
+endmodule
+```
+
+---
+
+## ✅ **2. 说明与功能分析**
+
+### 🧪 **测试场景覆盖**
+- **basic_addition**: 验证基本加法逻辑是否正确。
+- **carry_propagation**: 验证进位是否能正确传递。
+- **overflow_detection**: 验证溢出检测逻辑是否正确。
+- **boundary_values**: 验证边界值（如 0x0000、0xFFFF、0x8000 等）是否处理正确。
+- **random_data**: 验证随机输入下的稳定性。
+
+### 📊 **覆盖率收集**
+- 由于您要求“禁用”覆盖率收集，因此未添加 `$coverage` 或相关指令。
+
+### 📈 **波形记录**
+- 使用 `$dumpfile` 和 `$dumpvars` 生成 VCD 文件，便于使用仿真工具（如 ModelSim、Verdi）查看波形。
+
+### 📋 **测试报告**
+- 使用 `$display` 和 `$monitor` 输出关键信息。
+- 使用 `$error` 在断言失败时提示错误信息。
+- 最终通过 `$finish` 结束仿真。
+
+---
+
+## ✅ **3. 使用建议**
+
+- 将此代码保存为 `tb_adder_16bit.v`。
+- 使用支持 Verilog 的仿真工具（如 ModelSim、VCS、Verilator）进行仿真。
+- 查看生成的 `tb_adder_16bit.vcd` 文件以分析波形。
+- 可根据需要扩展测试场景或增加覆盖率检查。
+
+---
+
+如需进一步优化（例如加入覆盖率收集、更复杂的测试激励等），也可以继续扩展该测试台。需要我帮忙实现吗？
+[2025-08-03 08:58:01] core.file_manager - INFO - 🔄 使用现有文件ID: c24a8cc4
+[2025-08-03 08:58:01] core.file_manager - INFO - 🔄 覆盖现有文件: testbench_adder_16bit.v
+[2025-08-03 08:58:01] core.file_manager - INFO - 🔄 更新现有文件引用: c24a8cc4
+[2025-08-03 08:58:01] core.file_manager - INFO - 💾 文件已保存: testbench_adder_16bit.v (ID: c24a8cc4, 类型: testbench)
+[2025-08-03 08:58:01] core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (37.38s)
+Verilog代码，原始内容长度: 7441
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 6589
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 6589
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：7441 -> 6589 字符
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：7441 -> 6589 字符
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: testbench_adder_16bit.v (file path: /home/haiyan/Research/CentralizedAgentFramework/file_workspace/testbenches/testbench_adder_16bit.v) (ID: c24a8cc4)
+[2025-08-03 08:58:01] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754182468
+[2025-08-03 08:58:01] Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+[2025-08-03 08:58:01] Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent

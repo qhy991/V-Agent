@@ -231,62 +231,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             }
         )
         
-        # 3. 代码质量分析工具
-        self.register_enhanced_tool(
-            name="analyze_code_quality",
-            func=self._tool_analyze_code_quality,
-            description="深度分析Verilog代码质量、规范性和可维护性",
-            security_level="normal",
-            category="quality_assurance",
-            schema={
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "string",
-                        "minLength": 10,
-                        "maxLength": 500000,
-                        "description": "待分析的Verilog代码"
-                    },
-                    "analysis_scope": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": [
-                                "syntax", "style", "naming", "structure", 
-                                "timing", "synthesis", "testability", "documentation",
-                                "complexity", "maintainability", "performance"
-                            ]
-                        },
-                        "minItems": 1,
-                        "maxItems": 11,
-                        "default": ["syntax", "style", "structure"],
-                        "description": "分析范围选择"
-                    },
-                    "coding_standard": {
-                        "type": "string",
-                        "enum": ["ieee1800", "systemverilog", "verilog2001", "custom"],
-                        "default": "ieee1800",
-                        "description": "编码标准规范"
-                    },
-                    "severity_filter": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": ["error", "warning", "info", "suggestion"]
-                        },
-                        "default": ["error", "warning"],
-                        "description": "严重度过滤级别"
-                    },
-                    "generate_report": {
-                        "type": "boolean",
-                        "default": True,
-                        "description": "是否生成详细的分析报告"
-                    }
-                },
-                "required": ["code"],
-                "additionalProperties": False
-            }
-        )
+
         
         # 4. 构建脚本生成工具
         self.register_enhanced_tool(
@@ -432,71 +377,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             }
         )
         
-        # 6. 覆盖率分析工具
-        self.register_enhanced_tool(
-            name="analyze_coverage",
-            func=self._tool_analyze_coverage,
-            description="分析代码覆盖率和测试完整性",
-            security_level="normal",
-            category="verification",
-            schema={
-                "type": "object",
-                "properties": {
-                    "coverage_data_file": {
-                        "type": "string",
-                        "pattern": r"^[a-zA-Z0-9_./\-]+\.(dat|xml|json|vcd|txt|log)$",
-                        "maxLength": 500,
-                        "description": "覆盖率数据文件路径"
-                    },
-                    "coverage_types": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": ["line", "toggle", "branch", "condition", "fsm", "expression"]
-                        },
-                        "minItems": 1,
-                        "default": ["line", "toggle", "branch"],
-                        "description": "覆盖率类型分析"
-                    },
-                    "threshold": {
-                        "type": "object",
-                        "properties": {
-                            "line_coverage": {
-                                "type": "number",
-                                "minimum": 0,
-                                "maximum": 100,
-                                "default": 80,
-                                "description": "行覆盖率阈值(%)"
-                            },
-                            "branch_coverage": {
-                                "type": "number",
-                                "minimum": 0,
-                                "maximum": 100,
-                                "default": 70,
-                                "description": "分支覆盖率阈值(%)"
-                            },
-                            "toggle_coverage": {
-                                "type": "number",
-                                "minimum": 0,
-                                "maximum": 100,
-                                "default": 60,
-                                "description": "翻转覆盖率阈值(%)"
-                            }
-                        },
-                        "additionalProperties": False,
-                        "description": "覆盖率阈值配置"
-                    },
-                    "report_format": {
-                        "type": "string",
-                        "enum": ["text", "html", "xml", "json"],
-                        "default": "html",
-                        "description": "报告格式"
-                    }
-                },
-                "required": ["coverage_data_file"],
-                "additionalProperties": False
-            }
-        )
+
         
         # 7. 测试失败分析工具 - 专门用于分析TDD循环中的失败模式
         self.register_enhanced_tool(
@@ -643,11 +524,14 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 {
     "tool_calls": [
         {
-            "tool_name": "analyze_code_quality",
+            "tool_name": "generate_testbench",
             "parameters": {
-                "code": "module test(); endmodule",
-                "analysis_scope": ["syntax", "style"],
-                "coding_standard": "ieee1800"
+                "module_name": "simple_adder",
+                "code": "module simple_adder(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
             }
         }
     ]
@@ -692,15 +576,8 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 - `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
 - `simulation_options` (object): 仿真选项配置
 
-### 3. analyze_code_quality
-**必需参数**:
-- `code` (string): 待分析代码（也可使用 `verilog_code`）
-**可选参数**:
-- `analysis_scope` (array): 分析范围选择
-- `coding_standard` (string): "ieee1800", "custom", "industry"
-- `severity_filter` (array): 严重度过滤
 
-### 4. generate_build_script
+### 3. generate_build_script
 **必需参数**:
 - `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
 - `testbench_files` (array): 测试台文件列表
@@ -708,21 +585,14 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 - `script_type` (string): "makefile", "bash", "tcl", "python"
 - `build_options` (object): 构建选项配置
 
-### 5. execute_build_script
+### 4. execute_build_script
 **必需参数**:
 - `script_name` (string): 脚本文件名
 **可选参数**:
 - `action` (string): "all", "compile", "simulate", "clean"
 - `timeout` (integer): 超时时间(秒)
 
-### 6. analyze_coverage
-**必需参数**:
-- `coverage_data_file` (string): 覆盖率数据文件路径 (支持 .vcd, .dat, .xml, .json, .txt, .log)
-**可选参数**:
-- `coverage_types` (array): 覆盖率类型
-- `threshold` (object): 阈值配置
-
-### 7. analyze_test_failures ⭐ **TDD专用**
+### 5. analyze_test_failures ⭐ **TDD专用**
 **必需参数**:
 - `design_code` (string): 需要分析的设计代码
 **可选参数**:
@@ -741,25 +611,90 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 
 📊 **推荐工作流程**:
 收到代码审查任务时，建议流程：
-1. 首先分析代码质量和规范性 (analyze_code_quality)
-2. 生成全面的测试台进行验证 (generate_testbench)
-3. 执行仿真并分析结果 (run_simulation)
-4. 生成构建脚本确保可重现性 (generate_build_script)
-5. 分析测试覆盖率并提出改进建议 (analyze_coverage)
-6. 提供详细的审查报告和建议
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
 
 💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **可用工具及其参数**:
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
 """
         return base_prompt
     
     def get_capabilities(self) -> Set[AgentCapability]:
         return {
             AgentCapability.CODE_REVIEW,
-            AgentCapability.QUALITY_ANALYSIS,
             AgentCapability.SPECIFICATION_ANALYSIS,
             AgentCapability.TEST_GENERATION,
-            AgentCapability.VERIFICATION,
-            AgentCapability.COVERAGE_ANALYSIS
+            AgentCapability.VERIFICATION
         }
         
     def get_specialty_description(self) -> str:
@@ -850,6 +785,13 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 测试场景:
 {scenarios_desc}
 
+**重要要求**：
+1. 使用标准Verilog语法，不要使用SystemVerilog特性
+2. 避免使用task/function中的多语句结构
+3. 使用标准的for循环语法
+4. 确保所有语句都有正确的分号
+5. 使用标准的begin/end块结构
+
 请生成包含以下内容的专业测试台：
 1. 完整的testbench模块声明
 2. 所有必要的信号声明
@@ -861,7 +803,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 8. 波形转储设置（VCD文件）
 9. 测试报告生成
 
-确保测试台能够充分验证模块的所有功能。
+确保测试台能够充分验证模块的所有功能，并使用标准Verilog语法。
 """
             
             response = await self.llm_client.send_prompt(
@@ -870,8 +812,31 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 temperature=0.1
             )
             
+            # 首先保存设计代码（如果提供了module_code）
+            design_filename = f"{module_name}.v"
+            design_saved = False
+            
+            if module_code and module_code.strip():
+                design_write_result = await self._tool_write_file(
+                    filename=design_filename,
+                    content=module_code,
+                    description=f"生成的{module_name}模块设计代码"
+                )
+                design_saved = design_write_result.get("success", False)
+                if design_saved:
+                    self.logger.info(f"✅ 设计代码已保存: {design_filename}")
+                else:
+                    self.logger.warning(f"⚠️ 设计代码保存失败: {design_write_result.get('error', 'Unknown error')}")
+            
             # 使用Function Calling write_file工具保存测试台
-            tb_filename = f"{module_name}_tb.v"
+            # 统一命名规范：testbench_{module_name}.v
+            tb_filename = f"testbench_{module_name}.v"
+            
+            # 验证生成的测试台语法
+            if not await self._validate_verilog_file_content(response):
+                self.logger.warning(f"⚠️ 生成的测试台可能存在语法问题，尝试修复...")
+                response = await self._fix_testbench_syntax(response, module_name)
+            
             write_result = await self._tool_write_file(
                 filename=tb_filename,
                 content=response,
@@ -888,7 +853,12 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             return {
                 "success": True,
                 "module_name": module_name,
+                "design_code": module_code,
+                "design_filename": design_filename if design_saved else None,
+                "design_file_path": design_write_result.get("file_path") if design_saved else None,
+                "design_file_id": design_write_result.get("file_id") if design_saved else None,
                 "testbench_code": response,
+                "testbench_filename": tb_filename,  # 添加文件名信息
                 "file_path": write_result.get("file_path"),
                 "file_id": write_result.get("file_id"),
                 "test_scenarios": test_scenarios,
@@ -896,7 +866,8 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                     "clock_period": clock_period,
                     "simulation_time": simulation_time,
                     "coverage_enabled": coverage_options.get('enable_coverage', False)
-                }
+                },
+                "message": f"✅ 成功生成测试台: {tb_filename}" + (f" 和设计代码: {design_filename}" if design_saved else "")
             }
             
         except Exception as e:
@@ -911,6 +882,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                                  simulator: str = "iverilog",
                                  simulation_options: Dict = None) -> Dict[str, Any]:
         """运行仿真工具实现 - 集成智能依赖分析"""
+        self.logger.info(f"🔍 运行仿真: {module_file} {testbench_file} {module_code} {testbench_code} {simulator} {simulation_options}")
         try:
             self.logger.info(f"🔬 运行仿真: {simulator}")
             simulation_options = simulation_options or {}
@@ -922,19 +894,94 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 mod_file = Path(module_file)
                 tb_file = Path(testbench_file)
                 
-                # 验证文件存在
+                # 智能文件搜索和验证
+                # 首先尝试直接路径
                 if not mod_file.exists():
-                    return {
-                        "success": False,
-                        "error": f"模块文件不存在: {module_file}",
-                        "stage": "file_validation"
-                    }
+                    # 搜索多个可能的路径
+                    search_paths = [
+                        Path(module_file),
+                        Path("file_workspace/designs") / module_file,
+                        Path("file_workspace") / module_file,
+                        Path.cwd() / "file_workspace/designs" / module_file,
+                        Path.cwd() / "file_workspace" / module_file,
+                    ]
+                    
+                    mod_file_found = False
+                    for path in search_paths:
+                        if path.exists():
+                            mod_file = path
+                            mod_file_found = True
+                            self.logger.info(f"📁 找到模块文件: {mod_file}")
+                            break
+                    
+                    if not mod_file_found:
+                        return {
+                            "success": False,
+                            "error": f"模块文件不存在: {module_file}，已搜索路径: {[str(p) for p in search_paths]}",
+                            "stage": "file_validation"
+                        }
+                
                 if not tb_file.exists():
-                    return {
-                        "success": False,
-                        "error": f"测试台文件不存在: {testbench_file}",
-                        "stage": "file_validation"
-                    }
+                    # 智能文件搜索 - 支持多种命名格式，优先新格式
+                    module_name = Path(module_file).stem  # 获取模块名（不含扩展名）
+                    
+                    # 生成可能的测试台文件名（按优先级排序）
+                    possible_tb_names = [
+                        f"testbench_{module_name}.v",  # 新格式：testbench_module.v（最高优先级）
+                        f"{module_name}_tb.v",  # 标准格式：module_tb.v
+                        f"{module_name}_testbench.v",  # 后缀格式：module_testbench.v
+                        f"tb_{module_name}.v",  # 短前缀格式：tb_module.v
+                        testbench_file,  # 原始文件名（最低优先级）
+                    ]
+                    
+                    # 搜索多个可能的路径
+                    search_paths = []
+                    for tb_name in possible_tb_names:
+                        search_paths.extend([
+                            Path(tb_name),
+                            Path("file_workspace/testbenches") / tb_name,
+                            Path("file_workspace") / tb_name,
+                            Path.cwd() / "file_workspace/testbenches" / tb_name,
+                            Path.cwd() / "file_workspace" / tb_name,
+                        ])
+                    
+                    tb_file_found = False
+                    for path in search_paths:
+                        if path.exists():
+                            # 验证文件语法（简单检查）
+                            if await self._validate_verilog_file(path):
+                                tb_file = path
+                                tb_file_found = True
+                                self.logger.info(f"📁 找到有效测试台文件: {tb_file}")
+                                break
+                            else:
+                                self.logger.warning(f"⚠️ 跳过语法错误的文件: {path}")
+                    
+                    if not tb_file_found:
+                        # 如果找不到文件，尝试从文件管理器获取最新生成的文件
+                        try:
+                            from core.file_manager import get_file_manager
+                            file_manager = get_file_manager()
+                            testbench_files = file_manager.get_files_by_type("testbench")
+                            
+                            # 查找匹配模块名的测试台文件
+                            for file_ref in testbench_files:
+                                filename = Path(file_ref.file_path).stem
+                                if module_name.lower() in filename.lower():
+                                    if await self._validate_verilog_file(Path(file_ref.file_path)):
+                                        tb_file = Path(file_ref.file_path)
+                                        tb_file_found = True
+                                        self.logger.info(f"📁 从文件管理器找到测试台文件: {tb_file}")
+                                        break
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ 从文件管理器查找文件失败: {str(e)}")
+                    
+                    if not tb_file_found:
+                        return {
+                            "success": False,
+                            "error": f"测试台文件不存在或语法错误: {testbench_file}，已搜索路径: {[str(p) for p in search_paths[:10]]}...",
+                            "stage": "file_validation"
+                        }
                 
                 # 🔍 应用智能依赖分析
                 try:
@@ -990,7 +1037,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             # 使用智能仿真执行
             sim_result = await self._run_iverilog_simulation_with_deps(files_to_compile, simulation_options)
-            
+            self.logger.info(f"🔍 仿真结果: {sim_result}")
             # ✅ 修复错误处理 - 准确反映仿真状态
             actual_success = sim_result.get("success", False)
             
@@ -1012,7 +1059,10 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "warnings": sim_result.get("warnings", []),
                 "stage": sim_result.get("stage", "complete"),
                 "files_compiled": [str(f) for f in files_to_compile],
-                "dependency_analysis": sim_result.get("dependency_analysis", {})
+                "dependency_analysis": sim_result.get("dependency_analysis", {}),
+                "error_message": sim_result.get("error", ""),  # 添加错误信息字段
+                "compilation_errors": sim_result.get("compilation_output", ""),  # 添加编译错误字段
+                "simulation_errors": sim_result.get("simulation_output", "")  # 添加仿真错误字段
             }
             
         except Exception as e:
@@ -1020,6 +1070,9 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             return {
                 "success": False,
                 "error": f"仿真执行异常: {str(e)}",
+                "error_message": f"仿真执行异常: {str(e)}",
+                "compilation_errors": "",
+                "simulation_errors": "",
                 "stage": "exception"
             }
     
@@ -1096,12 +1149,15 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             self.logger.info(f"🔨 编译命令: {' '.join(compile_cmd)}")
             
-            # 编译
+            # 编译 - 使用项目根目录作为工作目录
+            project_root = Path.cwd()
+            self.logger.info(f"🔨 编译工作目录: {project_root}")
+            
             compile_result = await asyncio.create_subprocess_exec(
                 *compile_cmd, 
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=self.artifacts_dir
+                cwd=project_root
             )
             
             compile_stdout, compile_stderr = await compile_result.communicate()
@@ -1131,11 +1187,12 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             # 运行仿真 - 使用vvp执行编译后的仿真文件
             run_cmd = ["vvp", str(output_file)]
+            self.logger.info(f"🔨 运行仿真命令: {' '.join(run_cmd)}")
             run_result = await asyncio.create_subprocess_exec(
                 *run_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=self.artifacts_dir
+                cwd=project_root
             )
             
             run_stdout, run_stderr = await run_result.communicate()
@@ -1194,12 +1251,15 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 str(testbench_file)
             ]
             
-            # 编译
+            # 编译 - 使用项目根目录作为工作目录
+            project_root = Path.cwd()
+            self.logger.info(f"🔨 编译工作目录: {project_root}")
+            
             compile_result = await asyncio.create_subprocess_exec(
                 *compile_cmd, 
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=self.artifacts_dir
+                cwd=project_root
             )
             
             compile_stdout, compile_stderr = await compile_result.communicate()
@@ -1217,7 +1277,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 *run_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                cwd=self.artifacts_dir
+                cwd=project_root
             )
             
             run_stdout, run_stderr = await run_result.communicate()
@@ -1254,241 +1314,19 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "error": str(e)
             }
     
-    async def _tool_analyze_code_quality(self, code: str, analysis_scope: List[str] = None,
-                                       coding_standard: str = "ieee1800",
-                                       severity_filter: List[str] = None,
-                                       generate_report: bool = True) -> Dict[str, Any]:
-        """代码质量分析工具实现"""
-        try:
-            self.logger.info(f"🔍 分析代码质量: {coding_standard} 标准")
-            
-            analysis_scope = analysis_scope or ["syntax", "style", "structure"]
-            severity_filter = severity_filter or ["error", "warning"]
-            
-            issues = []
-            metrics = {
-                "lines_of_code": len(code.splitlines()),
-                "modules_count": code.count("module "),
-                "complexity_score": 0,
-                "maintainability_index": 0
-            }
-            
-            # 多维度代码分析
-            if "syntax" in analysis_scope:
-                syntax_issues = self._analyze_syntax(code)
-                issues.extend(syntax_issues)
-            
-            if "style" in analysis_scope:
-                style_issues = self._analyze_style(code)
-                issues.extend(style_issues)
-            
-            if "structure" in analysis_scope:
-                structure_issues = self._analyze_structure(code)
-                issues.extend(structure_issues)
-                
-            if "naming" in analysis_scope:
-                naming_issues = self._analyze_naming_conventions(code)
-                issues.extend(naming_issues)
-            
-            # 过滤严重度
-            filtered_issues = [
-                issue for issue in issues 
-                if issue["severity"] in severity_filter
-            ]
-            
-            # 计算质量评分
-            metrics["complexity_score"] = max(0, 100 - len(filtered_issues) * 5)
-            metrics["maintainability_index"] = self._calculate_maintainability_index(code, filtered_issues)
-            
-            # 生成报告
-            report = None
-            if generate_report:
-                report = self._generate_quality_report(code, filtered_issues, metrics, analysis_scope)
-                report_file = self.artifacts_dir / "code_quality_report.html"
-                with open(report_file, 'w', encoding='utf-8') as f:
-                    f.write(report)
-            
-            return {
-                "success": True,
-                "quality_score": metrics["complexity_score"],
-                "maintainability_index": metrics["maintainability_index"],
-                "metrics": metrics,
-                "issues": filtered_issues,
-                "analysis_scope": analysis_scope,
-                "coding_standard": coding_standard,
-                "report_file": str(report_file) if generate_report else None,
-                "recommendations": self._generate_recommendations(filtered_issues)
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 代码质量分析失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+
     
-    def _analyze_syntax(self, code: str) -> List[Dict]:
-        """语法分析"""
-        issues = []
-        
-        if "module " not in code:
-            issues.append({
-                "type": "syntax",
-                "severity": "error",
-                "line": 0,
-                "message": "No module declaration found"
-            })
-        
-        if "endmodule" not in code:
-            issues.append({
-                "type": "syntax",
-                "severity": "error", 
-                "line": 0,
-                "message": "Missing endmodule statement"
-            })
-        
-        # 检查括号匹配
-        paren_count = code.count('(') - code.count(')')
-        if paren_count != 0:
-            issues.append({
-                "type": "syntax",
-                "severity": "error",
-                "line": 0,
-                "message": f"Unmatched parentheses: {abs(paren_count)} {'opening' if paren_count > 0 else 'closing'}"
-            })
-        
-        return issues
+
     
-    def _analyze_style(self, code: str) -> List[Dict]:
-        """编码风格分析"""
-        issues = []
-        lines = code.splitlines()
-        
-        for i, line in enumerate(lines, 1):
-            # 行长度检查
-            if len(line) > 120:
-                issues.append({
-                    "type": "style",
-                    "severity": "warning",
-                    "line": i,
-                    "message": f"Line exceeds 120 characters ({len(line)} chars)"
-                })
-            
-            # 缩进检查
-            if line.strip() and not line.startswith(' ') and not line.startswith('\t'):
-                if any(keyword in line for keyword in ['always', 'if', 'case', 'for']):
-                    issues.append({
-                        "type": "style",
-                        "severity": "info",
-                        "line": i,
-                        "message": "Consider proper indentation for control structures"
-                    })
-        
-        return issues
+
     
-    def _analyze_structure(self, code: str) -> List[Dict]:
-        """结构分析"""
-        issues = []
-        
-        # 检查always块的敏感列表
-        always_blocks = re.findall(r'always\s*@\s*\([^)]+\)', code)
-        for block in always_blocks:
-            if 'posedge' not in block and 'negedge' not in block and '*' not in block:
-                issues.append({
-                    "type": "structure",
-                    "severity": "warning",
-                    "line": 0,
-                    "message": "Always block without edge sensitivity may cause synthesis issues"
-                })
-        
-        return issues
+
     
-    def _analyze_naming_conventions(self, code: str) -> List[Dict]:
-        """命名规范分析"""
-        issues = []
-        
-        # 检查模块名
-        module_matches = re.findall(r'module\s+(\w+)', code)
-        for module_name in module_matches:
-            if not re.match(r'^[a-z][a-z0-9_]*$', module_name):
-                issues.append({
-                    "type": "naming",
-                    "severity": "suggestion",
-                    "line": 0,
-                    "message": f"Module name '{module_name}' should follow snake_case convention"
-                })
-        
-        return issues
+
     
-    def _calculate_maintainability_index(self, code: str, issues: List[Dict]) -> float:
-        """计算维护性指数"""
-        lines = len(code.splitlines())
-        error_count = sum(1 for issue in issues if issue["severity"] == "error")
-        warning_count = sum(1 for issue in issues if issue["severity"] == "warning")
-        
-        # 简化的维护性指数计算
-        base_score = 100
-        error_penalty = error_count * 10
-        warning_penalty = warning_count * 5
-        complexity_penalty = max(0, lines - 100) * 0.1
-        
-        return max(0, base_score - error_penalty - warning_penalty - complexity_penalty)
+
     
-    def _generate_quality_report(self, code: str, issues: List[Dict], 
-                               metrics: Dict, analysis_scope: List[str]) -> str:
-        """生成HTML质量报告"""
-        html_template = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Code Quality Report</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        .header {{ background-color: #f0f0f0; padding: 10px; }}
-        .metrics {{ display: flex; gap: 20px; margin: 20px 0; }}
-        .metric {{ background-color: #e8f4f8; padding: 10px; border-radius: 5px; }}
-        .issues {{ margin: 20px 0; }}
-        .issue {{ margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; }}
-        .error {{ border-left-color: red; }}
-        .warning {{ border-left-color: orange; }}
-        .info {{ border-left-color: blue; }}
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Code Quality Analysis Report</h1>
-        <p>Analysis completed: {analysis_scope}</p>
-    </div>
-    
-    <div class="metrics">
-        <div class="metric">
-            <h3>Quality Score</h3>
-            <p>{metrics['complexity_score']}/100</p>
-        </div>
-        <div class="metric">
-            <h3>Lines of Code</h3>
-            <p>{metrics['lines_of_code']}</p>
-        </div>
-        <div class="metric">
-            <h3>Maintainability</h3>
-            <p>{metrics['maintainability_index']:.1f}/100</p>
-        </div>
-    </div>
-    
-    <div class="issues">
-        <h2>Issues Found ({len(issues)})</h2>
-        {''.join([f'''
-        <div class="issue {issue['severity']}">
-            <strong>{issue['severity'].upper()}</strong>
-            {f" (Line {issue['line']})" if issue.get('line') else ""}
-            : {issue['message']}
-        </div>
-        ''' for issue in issues])}
-    </div>
-</body>
-</html>
-"""
-        return html_template
+
     
     def _generate_recommendations(self, issues: List[Dict]) -> List[str]:
         """生成改进建议"""
@@ -1742,119 +1580,11 @@ esac
                 "error": str(e)
             }
     
-    async def _tool_analyze_coverage(self, coverage_data_file: str, coverage_types: List[str] = None,
-                                   threshold: Dict = None, report_format: str = "html") -> Dict[str, Any]:
-        """覆盖率分析工具实现"""
-        try:
-            self.logger.info(f"📊 分析覆盖率: {coverage_data_file}")
-            
-            coverage_types = coverage_types or ["line", "toggle", "branch"]
-            threshold = threshold or {
-                "line_coverage": 80,
-                "branch_coverage": 70,
-                "toggle_coverage": 60
-            }
-            
-            # 模拟覆盖率数据分析（实际实现中会解析真实的覆盖率文件）
-            coverage_results = {
-                "line_coverage": 85.5,
-                "branch_coverage": 78.2,
-                "toggle_coverage": 65.8,
-                "condition_coverage": 72.1
-            }
-            
-            # 检查阈值
-            threshold_check = {}
-            for cov_type, value in coverage_results.items():
-                threshold_key = f"{cov_type}"
-                if threshold_key in threshold:
-                    threshold_check[cov_type] = {
-                        "value": value,
-                        "threshold": threshold[threshold_key],
-                        "passed": value >= threshold[threshold_key]
-                    }
-            
-            # 生成报告
-            report_file = None
-            if report_format == "html":
-                report_content = self._generate_coverage_html_report(coverage_results, threshold_check)
-                report_file = self.artifacts_dir / "coverage_report.html"
-                with open(report_file, 'w', encoding='utf-8') as f:
-                    f.write(report_content)
-            
-            return {
-                "success": True,
-                "coverage_results": coverage_results,
-                "threshold_check": threshold_check,
-                "overall_passed": all(check["passed"] for check in threshold_check.values()),
-                "report_file": str(report_file) if report_file else None,
-                "coverage_types": coverage_types,
-                "recommendations": self._generate_coverage_recommendations(coverage_results, threshold)
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 覆盖率分析失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+
     
-    def _generate_coverage_html_report(self, results: Dict, threshold_check: Dict) -> str:
-        """生成HTML覆盖率报告"""
-        html_content = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Coverage Analysis Report</title>
-    <style>
-        body {{ font-family: Arial, sans-serif; margin: 20px; }}
-        .header {{ background-color: #f0f0f0; padding: 15px; }}
-        .coverage-item {{ margin: 10px 0; padding: 10px; border: 1px solid #ddd; }}
-        .passed {{ background-color: #d4edda; }}
-        .failed {{ background-color: #f8d7da; }}
-        .progress-bar {{ width: 100%; height: 20px; background-color: #f0f0f0; }}
-        .progress-fill {{ height: 100%; background-color: #28a745; }}
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>Coverage Analysis Report</h1>
-    </div>
+
     
-    <div class="coverage-results">
-        <h2>Coverage Results</h2>
-        {''.join([f'''
-        <div class="coverage-item {'passed' if check['passed'] else 'failed'}">
-            <h3>{cov_type.replace('_', ' ').title()}</h3>
-            <p>Coverage: {check['value']:.1f}% (Threshold: {check['threshold']}%)</p>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: {check['value']}%;"></div>
-            </div>
-            <p>Status: {'PASSED' if check['passed'] else 'FAILED'}</p>
-        </div>
-        ''' for cov_type, check in threshold_check.items()])}
-    </div>
-</body>
-</html>
-"""
-        return html_content
-    
-    def _generate_coverage_recommendations(self, results: Dict, threshold: Dict) -> List[str]:
-        """生成覆盖率改进建议"""
-        recommendations = []
-        
-        for cov_type, value in results.items():
-            threshold_key = f"{cov_type}"
-            if threshold_key in threshold:
-                if value < threshold[threshold_key]:
-                    recommendations.append(
-                        f"提高{cov_type.replace('_', ' ')}覆盖率: 当前{value:.1f}%, 目标{threshold[threshold_key]}%"
-                    )
-        
-        if not recommendations:
-            recommendations.append("所有覆盖率目标均已达成，测试质量良好！")
-        
-        return recommendations
+
     
     async def _tool_analyze_test_failures(self, design_code: str, 
                                          compilation_errors: str = "", 
@@ -1954,35 +1684,52 @@ esac
         analysis = {
             "failure_types": [],
             "root_causes": [],
-            "fix_suggestions": []
+            "fix_suggestions": [],
+            "error_patterns": {}
         }
         
-        error_lines = errors.lower()
+        error_lines = errors.split('\n')
         
-        # 常见编译错误模式识别
-        if "undefined" in error_lines and "macro" in error_lines:
-            analysis["failure_types"].append("未定义宏错误")
-            analysis["root_causes"].append("代码中包含未定义的宏或预处理指令")
-            analysis["fix_suggestions"].append("移除或正确定义所有宏（如 `define）指令")
-            analysis["fix_suggestions"].append("检查是否错误使用了C/C++风格的宏定义")
+        # 分析SystemVerilog相关错误
+        sv_errors = [line for line in error_lines if "SystemVerilog" in line]
+        if sv_errors:
+            analysis["failure_types"].append("SystemVerilog语法错误")
+            analysis["root_causes"].append("使用了SystemVerilog特性但编译器不支持")
+            analysis["fix_suggestions"].append("将SystemVerilog语法转换为标准Verilog语法")
+            analysis["fix_suggestions"].append("检查task/function定义，确保符合Verilog标准")
+            analysis["error_patterns"]["systemverilog"] = sv_errors
         
-        if "unknown module" in error_lines or "not found" in error_lines:
-            analysis["failure_types"].append("模块引用错误")
-            analysis["root_causes"].append("引用了不存在的模块或子模块")
-            analysis["fix_suggestions"].append("检查所有模块实例化，确保被调用的模块已定义")
-            analysis["fix_suggestions"].append("验证模块名称拼写和大小写")
-        
-        if "syntax error" in error_lines or "parse error" in error_lines:
+        # 分析语法错误
+        syntax_errors = [line for line in error_lines if "syntax error" in line.lower()]
+        if syntax_errors:
             analysis["failure_types"].append("语法错误")
-            analysis["root_causes"].append("Verilog语法不符合规范")
-            analysis["fix_suggestions"].append("检查语法：括号匹配、分号、begin/end配对")
-            analysis["fix_suggestions"].append("验证端口声明和信号定义格式")
+            analysis["root_causes"].append("代码语法不符合Verilog标准")
+            analysis["fix_suggestions"].append("检查括号匹配、分号使用、关键字拼写")
+            analysis["error_patterns"]["syntax"] = syntax_errors
         
-        if "width mismatch" in error_lines or "size mismatch" in error_lines:
-            analysis["failure_types"].append("位宽不匹配")
-            analysis["root_causes"].append("信号位宽不匹配或赋值错误")
-            analysis["fix_suggestions"].append("检查所有信号的位宽定义和连接")
-            analysis["fix_suggestions"].append("确保assign语句两侧位宽匹配")
+        # 分析语句错误
+        statement_errors = [line for line in error_lines if "malformed statement" in line.lower()]
+        if statement_errors:
+            analysis["failure_types"].append("语句格式错误")
+            analysis["root_causes"].append("语句结构不正确")
+            analysis["fix_suggestions"].append("检查语句语法，确保正确的begin/end结构")
+            analysis["error_patterns"]["statements"] = statement_errors
+        
+        # 分析循环错误
+        loop_errors = [line for line in error_lines if "for loop" in line.lower() or "incomprehensible" in line.lower()]
+        if loop_errors:
+            analysis["failure_types"].append("循环结构错误")
+            analysis["root_causes"].append("for循环语法不正确")
+            analysis["fix_suggestions"].append("检查for循环的初始化、条件和增量表达式")
+            analysis["error_patterns"]["loops"] = loop_errors
+        
+        # 分析赋值错误
+        assignment_errors = [line for line in error_lines if "assignment statement" in line.lower()]
+        if assignment_errors:
+            analysis["failure_types"].append("赋值语句错误")
+            analysis["root_causes"].append("赋值语句的左侧值不正确")
+            analysis["fix_suggestions"].append("检查变量声明和赋值语句的语法")
+            analysis["error_patterns"]["assignments"] = assignment_errors
         
         return analysis
     
@@ -2090,3 +1837,86 @@ esac
         steps.append("8. 运行修复后的完整测试验证")
         
         return steps
+
+    async def _validate_verilog_file_content(self, content: str) -> bool:
+        """验证Verilog代码内容的基本语法"""
+        try:
+            # 基本语法检查
+            if not content.strip():
+                return False
+            
+            # 检查是否包含基本的Verilog结构
+            if not any(keyword in content for keyword in ['module', 'endmodule']):
+                return False
+            
+            # 检查是否有明显的语法错误（如未闭合的括号）
+            open_braces = content.count('{')
+            close_braces = content.count('}')
+            if abs(open_braces - close_braces) > 2:  # 允许少量不匹配
+                return False
+            
+            open_parens = content.count('(')
+            close_parens = content.count(')')
+            if abs(open_parens - close_parens) > 2:
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 内容验证失败: {str(e)}")
+            return False
+
+    async def _fix_testbench_syntax(self, content: str, module_name: str) -> str:
+        """修复测试台语法错误"""
+        try:
+            # 简单的语法修复
+            fixed_content = content
+            
+            # 修复常见的语法问题
+            fixed_content = fixed_content.replace('`', '')  # 移除宏定义符号
+            fixed_content = fixed_content.replace('``', '')  # 移除双宏定义符号
+            
+            # 确保模块名正确
+            if f"module {module_name}_tb" in fixed_content:
+                fixed_content = fixed_content.replace(f"module {module_name}_tb", f"module tb_{module_name}")
+            
+            # 确保实例化名称正确
+            if f"{module_name}_tb uut" in fixed_content:
+                fixed_content = fixed_content.replace(f"{module_name}_tb uut", f"tb_{module_name} uut")
+            
+            return fixed_content
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 语法修复失败: {str(e)}")
+            return content
+
+    async def _validate_verilog_file(self, file_path: Path) -> bool:
+        """验证Verilog文件的基本语法"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # 基本语法检查
+            if not content.strip():
+                return False
+            
+            # 检查是否包含基本的Verilog结构
+            if not any(keyword in content for keyword in ['module', 'endmodule']):
+                return False
+            
+            # 检查是否有明显的语法错误（如未闭合的括号）
+            open_braces = content.count('{')
+            close_braces = content.count('}')
+            if abs(open_braces - close_braces) > 2:  # 允许少量不匹配
+                return False
+            
+            open_parens = content.count('(')
+            close_parens = content.count(')')
+            if abs(open_parens - close_parens) > 2:
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 文件验证失败 {file_path}: {str(e)}")
+            return False

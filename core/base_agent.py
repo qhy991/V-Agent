@@ -758,7 +758,7 @@ class BaseAgent(ABC):
             return None
     
     async def save_result_to_file(self, content: str, file_path: str, 
-                                file_type: str = "unknown") -> FileReference:
+                                file_type: str = "verilog") -> FileReference:
         """保存结果到文件"""
         try:
             # 确保目录存在
@@ -794,21 +794,22 @@ class BaseAgent(ABC):
         """清理文件内容，移除不必要的格式标记"""
         cleaned_content = content.strip()
         
-        # 对于代码文件，移除markdown代码块标记
-        if file_type in ["verilog", "systemverilog", "python", "cpp", "c"]:
-            lines = cleaned_content.split('\n')
+        # 对于Verilog文件，使用智能代码提取
+        if file_type in ["verilog", "systemverilog"]:
+            self.logger.info(f"🧹 使用智能代码提取处理Verilog文件")
+            extracted_code = self.extract_verilog_code(cleaned_content)
             
-            # 移除开头的```标记
-            if lines and lines[0].strip().startswith('```'):
-                lines = lines[1:]
-                self.logger.debug(f"🧹 移除开头的markdown标记")
-            
-            # 移除结尾的```标记
-            if lines and lines[-1].strip() == '```':
-                lines = lines[:-1]
-                self.logger.debug(f"🧹 移除结尾的markdown标记")
-            
-            cleaned_content = '\n'.join(lines)
+            if extracted_code != cleaned_content:
+                self.logger.info(f"🧹 Verilog代码提取成功：{len(cleaned_content)} -> {len(extracted_code)} 字符")
+                cleaned_content = extracted_code
+            else:
+                self.logger.warning(f"⚠️ Verilog代码提取失败，使用传统清理方法")
+                # 回退到传统清理方法
+                cleaned_content = self._traditional_clean_content(cleaned_content)
+        
+        # 对于其他代码文件，使用传统清理方法
+        elif file_type in ["python", "cpp", "c"]:
+            cleaned_content = self._traditional_clean_content(cleaned_content)
         
         # 移除多余的空行（保留文件结构）
         lines = cleaned_content.split('\n')
@@ -828,6 +829,148 @@ class BaseAgent(ABC):
         
         return result
     
+    def _traditional_clean_content(self, content: str) -> str:
+        """传统的文件内容清理方法"""
+        cleaned_content = content.strip()
+        lines = cleaned_content.split('\n')
+        
+        # 移除开头的```标记
+        if lines and lines[0].strip().startswith('```'):
+            lines = lines[1:]
+            self.logger.debug(f"🧹 移除开头的markdown标记")
+        
+        # 移除结尾的```标记
+        if lines and lines[-1].strip() == '```':
+            lines = lines[:-1]
+            self.logger.debug(f"🧹 移除结尾的markdown标记")
+        
+        return '\n'.join(lines)
+    def extract_verilog_code(self, content: str) -> str:
+        """
+        智能提取Verilog代码，从LLM响应中分离出纯代码部分
+        
+        Args:
+            content: LLM的完整响应内容
+            
+        Returns:
+            提取出的纯Verilog代码
+        """
+        self.logger.info(f"🔍 开始提取Verilog代码，原始内容长度: {len(content)}")
+        
+        # 方法1: 查找```verilog代码块
+        verilog_blocks = []
+        
+        # 匹配```verilog或```v开头的代码块
+        import re
+        verilog_pattern = r'```(?:verilog|v)\s*\n(.*?)\n```'
+        matches = re.findall(verilog_pattern, content, re.DOTALL)
+        
+        if matches:
+            self.logger.info(f"✅ 找到 {len(matches)} 个Verilog代码块")
+            for i, match in enumerate(matches):
+                code = match.strip()
+                if self._is_valid_verilog_code(code):
+                    verilog_blocks.append(code)
+                    self.logger.info(f"✅ 代码块 {i+1} 验证通过，长度: {len(code)}")
+                else:
+                    self.logger.warning(f"⚠️ 代码块 {i+1} 验证失败")
+        
+        # 方法2: 如果没有找到代码块，尝试提取module声明
+        if not verilog_blocks:
+            self.logger.info("🔍 未找到代码块，尝试提取module声明")
+            module_pattern = r'module\s+\w+\s*\([^)]*\)[^;]*;.*?endmodule'
+            module_matches = re.findall(module_pattern, content, re.DOTALL | re.IGNORECASE)
+            
+            if module_matches:
+                self.logger.info(f"✅ 找到 {len(module_matches)} 个module声明")
+                for i, match in enumerate(module_matches):
+                    code = match.strip()
+                    if self._is_valid_verilog_code(code):
+                        verilog_blocks.append(code)
+                        self.logger.info(f"✅ module {i+1} 验证通过，长度: {len(code)}")
+                    else:
+                        self.logger.warning(f"⚠️ module {i+1} 验证失败")
+        
+        # 方法3: 如果还是没有，尝试智能分割
+        if not verilog_blocks:
+            self.logger.info("🔍 尝试智能分割内容")
+            lines = content.split('\n')
+            code_lines = []
+            in_code_section = False
+            
+            for line in lines:
+                # 检测代码开始标记
+                if any(marker in line.lower() for marker in ['module', '`timescale', '`include']):
+                    in_code_section = True
+                
+                # 如果在代码段中，收集代码行
+                if in_code_section:
+                    # 跳过明显的非代码行
+                    if not any(skip in line.lower() for skip in ['##', '---', '###', '**', '```']):
+                        code_lines.append(line)
+                
+                # 检测代码结束标记
+                if 'endmodule' in line.lower():
+                    in_code_section = False
+            
+            if code_lines:
+                code = '\n'.join(code_lines).strip()
+                if self._is_valid_verilog_code(code):
+                    verilog_blocks.append(code)
+                    self.logger.info(f"✅ 智能分割成功，代码长度: {len(code)}")
+        
+        # 返回最长的有效代码块
+        if verilog_blocks:
+            best_code = max(verilog_blocks, key=len)
+            self.logger.info(f"✅ 成功提取Verilog代码，长度: {len(best_code)}")
+            return best_code
+        else:
+            self.logger.warning("⚠️ 未能提取到有效的Verilog代码")
+            return content  # 返回原始内容作为后备
+    
+    def _is_valid_verilog_code(self, code: str) -> bool:
+        """
+        验证是否为有效的Verilog代码
+        
+        Args:
+            code: 待验证的代码
+            
+        Returns:
+            是否为有效代码
+        """
+        if not code or len(code.strip()) < 10:
+            return False
+        
+        # 检查是否包含基本的Verilog语法元素
+        verilog_keywords = [
+            'module', 'endmodule', 'input', 'output', 'wire', 'reg',
+            'assign', 'always', 'initial', 'begin', 'end', 'if', 'else',
+            'case', 'default', 'parameter', 'localparam'
+        ]
+        
+        code_lower = code.lower()
+        keyword_count = sum(1 for keyword in verilog_keywords if keyword in code_lower)
+        
+        # 至少包含3个Verilog关键字
+        if keyword_count < 3:
+            return False
+        
+        # 检查是否包含module声明
+        if 'module' not in code_lower:
+            return False
+        
+        # 检查是否包含endmodule
+        if 'endmodule' not in code_lower:
+            return False
+        
+        # 检查是否包含过多的非代码内容
+        non_code_indicators = ['##', '---', '###', '**', '```', '---', '===']
+        non_code_count = sum(1 for indicator in non_code_indicators if indicator in code)
+        
+        if non_code_count > 5:  # 如果包含太多非代码标记，可能不是纯代码
+            return False
+        
+        return True
     # ==========================================================================
     # 🎯 任务处理方法
     # ==========================================================================
@@ -1129,6 +1272,10 @@ class BaseAgent(ABC):
                     from core.experiment_manager import get_experiment_manager
                     exp_manager = get_experiment_manager()
                     
+                    self.logger.info(f"🔍 实验管理器检查:")
+                    self.logger.info(f"   - 实验管理器存在: {exp_manager is not None}")
+                    self.logger.info(f"   - 当前实验路径: {exp_manager.current_experiment_path}")
+                    
                     if exp_manager.current_experiment_path:
                         # 清理内容
                         cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
@@ -1207,12 +1354,15 @@ class BaseAgent(ABC):
                 # 回退到纯中央文件管理器
                 from core.file_manager import get_file_manager
                 file_manager = get_file_manager()
+                self.logger.info(f"🔍 filename: {filename}")
+                self.logger.info(f"🔍 file type: {self._detect_file_type(filename)}")
                 
                 # 清理内容（移除markdown标记等）
                 cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
                 
                 # 确定文件类型
                 file_type = self._determine_file_type(filename, cleaned_content)
+
                 
                 # 使用中央文件管理器保存文件
                 file_ref = file_manager.save_file(
@@ -1223,7 +1373,7 @@ class BaseAgent(ABC):
                     description=f"由{self.agent_id}创建的{file_type}文件"
                 )
                 
-                self.logger.info(f"✅ 文件已通过中央管理器保存: {filename} (ID: {file_ref.file_id})")
+                self.logger.info(f"✅ 文件已通过中央管理器保存: {filename} (file path: {file_ref.file_path}) (ID: {file_ref.file_id})")
                 
                 return {
                     "success": True,

@@ -1254,8 +1254,8 @@ testbench应该：
                     # 尝试智能分析和修复编译错误
                     fix_suggestion = await self._analyze_compilation_error(
                         error_message, 
-                        module_content, 
-                        testbench_content
+                        module_code, 
+                        testbench_code
                     )
                     result['fix_suggestion'] = fix_suggestion
                     result['needs_fix'] = True
@@ -1639,16 +1639,28 @@ endmodule
                     self.logger.info(f"📄 从文件读取模块: {module_path}")
                     
                 except FileNotFoundError:
-                    # 尝试其他路径
-                    alt_path = Path(module_file)
-                    if alt_path.exists():
-                        with open(alt_path, 'r', encoding='utf-8') as f:
-                            module_code = f.read()
-                    else:
+                    # 尝试多个可能的路径
+                    search_paths = [
+                        Path(module_file),  # 当前目录
+                        self.artifacts_dir / module_file,  # artifacts目录
+                        Path("file_workspace/designs") / module_file,  # 中央文件管理器设计目录
+                        Path("file_workspace") / module_file,  # 中央文件管理器根目录
+                    ]
+                    
+                    module_found = False
+                    for path in search_paths:
+                        if path.exists():
+                            with open(path, 'r', encoding='utf-8') as f:
+                                module_code = f.read()
+                            self.logger.info(f"📄 在路径找到模块: {path}")
+                            module_found = True
+                            break
+                    
+                    if not module_found:
                         return {
                             "success": False,
-                            "error": f"模块文件不存在: {module_file}",
-                            "simulation_output": None
+                            "error": f"模块文件不存在: {module_file}，已搜索路径: {[str(p) for p in search_paths]}",
+                            "stage": "file_validation"
                         }
             elif not module_code:
                 return {
@@ -1669,16 +1681,28 @@ endmodule
                     self.logger.info(f"📄 从文件读取测试台: {testbench_path}")
                     
                 except FileNotFoundError:
-                    # 尝试其他路径
-                    alt_path = Path(testbench_file)
-                    if alt_path.exists():
-                        with open(alt_path, 'r', encoding='utf-8') as f:
-                            testbench_code = f.read()
-                    else:
+                    # 尝试多个可能的路径
+                    search_paths = [
+                        Path(testbench_file),  # 当前目录
+                        self.artifacts_dir / testbench_file,  # artifacts目录
+                        Path("file_workspace/testbenches") / testbench_file,  # 中央文件管理器测试台目录
+                        Path("file_workspace") / testbench_file,  # 中央文件管理器根目录
+                    ]
+                    
+                    testbench_found = False
+                    for path in search_paths:
+                        if path.exists():
+                            with open(path, 'r', encoding='utf-8') as f:
+                                testbench_code = f.read()
+                            self.logger.info(f"📄 在路径找到测试台: {path}")
+                            testbench_found = True
+                            break
+                    
+                    if not testbench_found:
                         return {
                             "success": False,
-                            "error": f"测试台文件不存在: {testbench_file}",
-                            "simulation_output": None
+                            "error": f"测试台文件不存在: {testbench_file}，已搜索路径: {[str(p) for p in search_paths]}",
+                            "stage": "file_validation"
                         }
             elif not testbench_code:
                 # 尝试自动生成基础测试台

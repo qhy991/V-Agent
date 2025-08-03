@@ -238,42 +238,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             }
         )
         
-        # 4. 代码质量分析工具
-        self.register_enhanced_tool(
-            name="analyze_code_quality",
-            func=self._tool_analyze_code_quality,
-            description="分析Verilog代码质量和合规性",
-            security_level="normal",
-            category="quality_assurance", 
-            schema={
-                "type": "object",
-                "properties": {
-                    "verilog_code": {
-                        "type": "string",
-                        "minLength": 10,
-                        "maxLength": 100000,
-                        "description": "待分析的Verilog代码"
-                    },
-                    "analysis_scope": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "enum": ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
-                        },
-                        "default": ["syntax", "style"],
-                        "description": "分析范围选择"
-                    },
-                    "coding_standard": {
-                        "type": "string",
-                        "enum": ["ieee1800", "custom", "industry"],
-                        "default": "ieee1800",
-                        "description": "编码标准规范"
-                    }
-                },
-                "required": ["verilog_code"],
-                "additionalProperties": False
-            }
-        )
+
         
         # 5. 测试台生成工具
         self.register_enhanced_tool(
@@ -469,12 +434,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 - `complexity_filter` (可选): "simple", "medium", "complex", "any"
 - `max_results` (可选): 最大返回结果数，1-50
 
-### 4. analyze_code_quality
-- `verilog_code` (必需): 待分析的Verilog代码（也可使用 `code`）
-- `analysis_scope` (可选): ["syntax", "style", "timing", "synthesis", "simulation", "coverage"]
-- `coding_standard` (可选): "ieee1800", "custom", "industry"
-
-### 5. generate_testbench
+### 4. generate_testbench
 - `module_name` (必需): 目标模块名称
 - `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
 - `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
@@ -491,8 +451,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 1. 分析设计需求 (analyze_design_requirements)
 2. 搜索现有模块 (可选，search_existing_modules)  
 3. 生成Verilog代码 (generate_verilog_code)
-4. 分析代码质量 (analyze_code_quality)
-5. 生成测试台 (generate_testbench)
+4. 生成测试台 (generate_testbench)
 
 💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
 """
@@ -779,72 +738,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                 "error": str(e)
             }
     
-    async def _tool_analyze_code_quality(self, verilog_code: str,
-                                       analysis_scope: List[str] = None,
-                                       coding_standard: str = "ieee1800") -> Dict[str, Any]:
-        """代码质量分析工具实现"""
-        try:
-            self.logger.info(f"🔍 分析代码质量: {coding_standard} 标准")
-            
-            analysis_scope = analysis_scope or ["syntax", "style"]
-            issues = []
-            metrics = {
-                "lines_of_code": len(verilog_code.splitlines()),
-                "modules_count": verilog_code.count("module "),
-                "complexity_score": 0
-            }
-            
-            # 基础语法检查
-            if "syntax" in analysis_scope:
-                if "module " not in verilog_code:
-                    issues.append({
-                        "type": "syntax",
-                        "severity": "error",
-                        "message": "No module declaration found"
-                    })
-                
-                if "endmodule" not in verilog_code:
-                    issues.append({
-                        "type": "syntax", 
-                        "severity": "error",
-                        "message": "Missing endmodule statement"
-                    })
-            
-            # 编码风格检查
-            if "style" in analysis_scope:
-                lines = verilog_code.splitlines()
-                for i, line in enumerate(lines, 1):
-                    if len(line) > 120:
-                        issues.append({
-                            "type": "style",
-                            "severity": "warning",
-                            "line": i,
-                            "message": "Line exceeds 120 characters"
-                        })
-            
-            # 计算复杂度评分
-            metrics["complexity_score"] = min(100, max(0, 100 - len(issues) * 5))
-            
-            return {
-                "success": True,
-                "quality_score": metrics["complexity_score"],
-                "metrics": metrics,
-                "issues": issues,
-                "analysis_scope": analysis_scope,
-                "coding_standard": coding_standard,
-                "recommendations": [
-                    "Consider adding more detailed comments",
-                    "Ensure consistent indentation",
-                    "Add assertion checks for critical signals"
-                ] if metrics["complexity_score"] < 90 else []
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 代码质量分析失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+
     
     async def _tool_generate_testbench(self, module_name: str, verilog_code: str,
                                      test_scenarios: List[str] = None,
@@ -869,21 +763,30 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 - 仿真时间: {simulation_time} 个时钟周期
 - 测试场景: {', '.join(test_scenarios)}
 
-请生成包含以下内容的测试台：
-1. testbench模块声明
-2. 信号声明
-3. 时钟和复位生成
-4. 被测模块实例化
-5. 测试激励生成
-6. 结果检查和显示
-7. 适当的$display和$monitor语句
+🚨 **关键要求 - 请严格遵守**:
+请只返回纯净的Verilog测试台代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+不要包含功能说明、测试报告示例、文件结构建议等文字内容。
+直接从 `timescale 开始，以 endmodule 结束。
 
-确保测试台能够充分验证模块功能。
+测试台必须包含：
+1. `timescale 声明
+2. testbench模块声明
+3. 信号声明
+4. 时钟和复位生成
+5. 被测模块实例化
+6. 测试激励生成
+7. 结果检查和显示
+8. 适当的$display和$monitor语句
+9. 波形转储设置
+
+确保测试台能够充分验证模块功能，并且是纯Verilog代码。
 """
             
             response = await self.llm_client.send_prompt(
                 prompt=testbench_prompt,
-                system_prompt="你是验证工程师，请生成全面的Verilog测试台。",
+                system_prompt="你是验证工程师，请生成全面的Verilog测试台。记住：只返回纯Verilog代码，不要任何解释文字或Markdown格式。",
                 temperature=0.1
             )
             

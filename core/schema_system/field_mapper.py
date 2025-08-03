@@ -48,7 +48,9 @@ class FieldMapper:
             'run_simulation': {
                 'design_files': 'verilog_files',
                 'tb_files': 'testbench_files',
-                'testbench': 'testbench_files'
+                'testbench': 'testbench_files',
+                'testbench_file': 'testbench_file',  # 保持原字段名
+                'module_file': 'module_file'  # 保持原字段名
             }
         }
         

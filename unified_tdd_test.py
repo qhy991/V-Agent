@@ -138,7 +138,7 @@ module adder_16bit (
 - 边界值测试（0x0000, 0xFFFF等）
 - 随机数据测试
             """,
-            "testbench": None,  # 将创建专门的测试台
+            "testbench": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_adder_16bit_1754187911/testbenches/testbench_adder_16bit.v",  # 将创建专门的测试台
             "complexity": "medium"
         },
         
@@ -276,36 +276,112 @@ module carry_lookahead_adder_16bit (
         return None
     
     async def setup_framework(self):
-        """设置TDD框架"""
-        print("🏗️ 初始化TDD框架...")
-        
-        # 1. 创建增强版标准组件
-        config = FrameworkConfig.from_env()
-        self.coordinator = EnhancedCentralizedCoordinator(config)
-        
-        # 2. 注册增强版智能体
-        self.verilog_agent = EnhancedRealVerilogAgent(config)
-        self.reviewer_agent = EnhancedRealCodeReviewAgent(config)
-        
-        self.coordinator.register_agent(self.verilog_agent)
-        self.coordinator.register_agent(self.reviewer_agent)
-        
-        print("   ✅ 增强版协调器和智能体初始化完成")
-        
-        # 3. 创建测试驱动配置
-        tdd_config = TestDrivenConfig(
-            max_iterations=self.experiment_config.get("max_iterations", 2),
-            enable_deep_analysis=self.experiment_config.get("deep_analysis", True),
-            timeout_per_iteration=self.experiment_config.get("timeout_per_iteration", 300),
-            save_iteration_logs=True
-        )
-        
-        # 4. 升级为测试驱动协调器
-        self.tdd_coordinator = create_test_driven_coordinator(self.coordinator, tdd_config)
-        
-        print("   ✅ 测试驱动扩展启用成功")
-        
-        return True
+        """设置框架和智能体"""
+        try:
+            print("🔧 设置框架和智能体...")
+            
+            # 创建输出目录
+            self.output_dir.mkdir(parents=True, exist_ok=True)
+            artifacts_dir = self.output_dir / "artifacts"
+            logs_dir = self.output_dir / "logs"
+            artifacts_dir.mkdir(exist_ok=True)
+            logs_dir.mkdir(exist_ok=True)
+            
+            # 🔧 设置实验管理器 - 使用已创建的实验目录
+            from core.experiment_manager import ExperimentManager
+            exp_manager = ExperimentManager(base_workspace=Path("tdd_experiments"))
+            
+            # 直接设置当前实验为已存在的目录
+            experiment_name = self.output_dir.name
+            exp_manager.current_experiment = experiment_name
+            exp_manager.current_experiment_path = self.output_dir
+            
+            # 确保实验目录结构存在
+            subdirs = ["designs", "testbenches", "outputs", "logs", "artifacts", "dependencies"]
+            for subdir in subdirs:
+                (self.output_dir / subdir).mkdir(exist_ok=True)
+            
+            # 创建实验元数据（如果不存在）
+            metadata_file = self.output_dir / "experiment_metadata.json"
+            if not metadata_file.exists():
+                import json
+                from datetime import datetime
+                metadata = {
+                    "experiment_name": experiment_name,
+                    "description": f"统一TDD实验: {self.design_type} 设计",
+                    "created_at": datetime.now().isoformat(),
+                    "status": "active",
+                    "iterations": 0,
+                    "files_created": 0,
+                    "last_updated": datetime.now().isoformat()
+                }
+                with open(metadata_file, 'w', encoding='utf-8') as f:
+                    json.dump(metadata, f, indent=2, ensure_ascii=False)
+            
+            exp_path = self.output_dir
+            
+            # 🔧 优化：初始化文件管理器时直接设置目标路径
+            from core.file_manager import initialize_file_manager
+            self.file_manager = initialize_file_manager(workspace_root=artifacts_dir)
+            
+            # 设置全局实验管理器实例
+            import core.experiment_manager as exp_module
+            exp_module._experiment_manager = exp_manager
+            
+            # 验证实验管理器设置
+            print(f"🔧 实验管理器设置完成:")
+            print(f"   - 基础路径: {exp_manager.base_workspace}")
+            print(f"   - 当前实验: {exp_manager.current_experiment}")
+            print(f"   - 实验路径: {exp_manager.current_experiment_path}")
+            print(f"   - 创建路径: {exp_path}")
+            
+            # 确保实验目录存在
+            if exp_path.exists():
+                print(f"✅ 实验目录创建成功: {exp_path}")
+            else:
+                print(f"❌ 实验目录创建失败: {exp_path}")
+            
+            # 从环境变量创建配置
+            self.config = FrameworkConfig.from_env()
+            
+            # 如果API密钥没有设置，手动设置
+            if not self.config.llm.api_key:
+                self.config.llm.api_key = "sk-66ed80a639194920a3840f7013960171"
+                print("🔑 API密钥已手动设置")
+            
+            # 创建智能体
+            self.verilog_agent = EnhancedRealVerilogAgent(self.config)
+            self.review_agent = EnhancedRealCodeReviewAgent(self.config)
+            
+            # 确保智能体知道实验路径
+            print(f"🔧 智能体实验路径设置:")
+            print(f"   - Verilog Agent ID: {self.verilog_agent.agent_id}")
+            print(f"   - Review Agent ID: {self.review_agent.agent_id}")
+            print(f"   - 实验路径: {exp_manager.current_experiment_path}")
+            
+            # 创建基础协调器
+            from core.enhanced_centralized_coordinator import EnhancedCentralizedCoordinator
+            base_coordinator = EnhancedCentralizedCoordinator(self.config)
+            base_coordinator.register_agent(self.verilog_agent)
+            base_coordinator.register_agent(self.review_agent)
+            
+            # 创建测试驱动协调器
+            self.coordinator = create_test_driven_coordinator(
+                base_coordinator=base_coordinator,
+                config=TestDrivenConfig(
+                    max_iterations=self.experiment_config.get('max_iterations', 5),
+                    timeout_per_iteration=self.experiment_config.get('timeout_per_iteration', 300),
+                    enable_deep_analysis=True,
+                    auto_fix_suggestions=True,
+                    save_iteration_logs=True
+                )
+            )
+            
+            print("✅ 框架设置完成")
+            
+        except Exception as e:
+            print(f"❌ 框架设置失败: {str(e)}")
+            raise
     
     async def run_experiment(self) -> Dict[str, Any]:
         """运行完整的TDD实验"""
@@ -336,7 +412,7 @@ module carry_lookahead_adder_16bit (
             print(f"   最大迭代次数: {self.experiment_config.get('max_iterations', 2)}")
             print(f"   每次迭代超时: {self.experiment_config.get('timeout_per_iteration', 300)}秒")
             
-            result = await self.tdd_coordinator.execute_test_driven_task(
+            result = await self.coordinator.execute_test_driven_task(
                 task_description=design_requirements,
                 testbench_path=testbench_path
             )
@@ -347,6 +423,24 @@ module carry_lookahead_adder_16bit (
             
             # 5. 保存实验报告
             await self._save_experiment_report(analysis)
+            
+            # 6. 检查实验目录中的文件
+            from core.experiment_manager import get_experiment_manager
+            exp_manager = get_experiment_manager()
+            if exp_manager.current_experiment_path:
+                print(f"\n📁 实验目录检查: {exp_manager.current_experiment_path}")
+                if exp_manager.current_experiment_path.exists():
+                    for subdir in ["designs", "testbenches", "artifacts", "logs"]:
+                        subdir_path = exp_manager.current_experiment_path / subdir
+                        if subdir_path.exists():
+                            files = list(subdir_path.glob("*"))
+                            print(f"   📂 {subdir}: {len(files)} 个文件")
+                            for file in files:
+                                print(f"      - {file.name}")
+                        else:
+                            print(f"   📂 {subdir}: 目录不存在")
+                else:
+                    print(f"   ❌ 实验目录不存在: {exp_manager.current_experiment_path}")
             
             return analysis
             
@@ -500,7 +594,7 @@ module carry_lookahead_adder_16bit (
                 f.write(f"- 错误: {error}\n")
     
     async def _copy_experiment_files(self, result: Dict[str, Any]):
-        """复制实验生成的文件到输出目录"""
+        """复制实验生成的文件到输出目录（优化版本）"""
         try:
             # 创建子目录
             artifacts_dir = self.output_dir / "artifacts"
@@ -508,7 +602,12 @@ module carry_lookahead_adder_16bit (
             artifacts_dir.mkdir(exist_ok=True)
             logs_dir.mkdir(exist_ok=True)
             
-            # 复制设计文件
+            copied_files = []
+            
+            # 🔧 优化：文件已经直接保存在artifacts_dir，只需要处理日志文件
+            print("   📁 文件已直接保存在实验目录，无需复制")
+            
+            # 1. 复制标准result中的文件引用（如果存在）
             final_design = result.get('final_design', [])
             for file_ref in final_design:
                 if isinstance(file_ref, str):
@@ -523,24 +622,16 @@ module carry_lookahead_adder_16bit (
                     file_path = str(file_ref)
                 
                 source_path = Path(file_path)
-                if source_path.exists():
+                if source_path.exists() and source_path.parent != artifacts_dir:
+                    # 只有当文件不在artifacts_dir时才复制
                     dest_path = artifacts_dir / source_path.name
                     import shutil
                     shutil.copy2(source_path, dest_path)
-                    print(f"   📁 复制文件: {source_path.name}")
+                    copied_files.append(source_path.name)
+                    print(f"   📁 复制外部文件: {source_path.name}")
             
-            # 复制测试结果中的设计文件
+            # 2. 保存仿真输出
             test_results = result.get('test_results', {})
-            design_files = test_results.get('design_files', [])
-            for file_path in design_files:
-                source_path = Path(file_path)
-                if source_path.exists():
-                    dest_path = artifacts_dir / source_path.name
-                    import shutil
-                    shutil.copy2(source_path, dest_path)
-                    print(f"   📁 复制设计文件: {source_path.name}")
-            
-            # 保存仿真输出
             if test_results.get('simulation_stdout'):
                 sim_output_path = logs_dir / "simulation_output.log"
                 with open(sim_output_path, 'w', encoding='utf-8') as f:
@@ -553,6 +644,19 @@ module carry_lookahead_adder_16bit (
                 with open(compile_output_path, 'w', encoding='utf-8') as f:
                     f.write(test_results['compile_stdout'])
                 print(f"   📝 保存编译输出: {compile_output_path.name}")
+            
+            # 保存错误输出
+            if test_results.get('simulation_stderr'):
+                error_output_path = logs_dir / "simulation_errors.log"
+                with open(error_output_path, 'w', encoding='utf-8') as f:
+                    f.write(test_results['simulation_stderr'])
+                print(f"   📝 保存错误输出: {error_output_path.name}")
+            
+            # 总结复制结果
+            if copied_files:
+                print(f"   ✅ 成功复制 {len(copied_files)} 个外部文件到实验目录")
+            else:
+                print(f"   ✅ 所有文件已直接保存在实验目录中")
                 
         except Exception as e:
             print(f"⚠️ 复制文件时出现警告: {str(e)}")

@@ -206,26 +206,38 @@ class EnhancedBaseAgent(BaseAgent):
                                 break
                 
                 # 4. 处理工具调用结果
-                if all_tools_successful:
-                    # 所有工具调用成功
-                    results_summary = self._format_tool_results(tool_calls, tool_results)
-                    
-                    # 如果是最后一次迭代或用户只需要工具执行结果
-                    if iteration_count >= max_iterations or self._is_final_result(tool_results):
-                        return {
-                            "success": True,
-                            "response": results_summary,
-                            "tool_results": [r.result for r in tool_results],
-                            "iterations": iteration_count,
-                            "conversation_history": conversation_history
-                        }
-                    
-                    # 继续对话，让LLM基于结果生成最终响应
+                results_summary = self._format_tool_results(tool_calls, tool_results)
+                self.logger.info(f"🔨 工具执行结果: {results_summary}")
+                
+                # 提取仿真结果和错误信息（包括成功和失败的情况）
+                simulation_info = self._extract_simulation_and_error_info(tool_results)
+                self.logger.info(f"🔨 仿真结果: {simulation_info}")
+                
+                # 检查是否有仿真成功完成
+                simulation_success = self._check_simulation_success(tool_results)
+                
+                if simulation_success:
+                    # 仿真成功完成，立即结束任务
+                    logger.info("🎯 仿真成功完成，任务结束")
+                    return {
+                        "success": True,
+                        "response": f"🎉 **任务完成**！\n\n仿真成功通过，所有测试用例执行完成。\n\n工具执行结果:\n{results_summary}\n\n🎯 **仿真结果分析**:\n{simulation_info}",
+                        "iterations": iteration_count,
+                        "conversation_history": conversation_history,
+                        "completion_reason": "simulation_success"
+                    }
+                elif simulation_info:
+                    # 有仿真相关信息，传递给agent进行分析
                     conversation_history.append({
                         "role": "user",
-                        "content": f"工具执行结果:\n{results_summary}"
+                        "content": f"工具执行结果:\n{results_summary}\n\n🎯 **仿真结果分析**:\n{simulation_info}\n\n⚠️ **重要指导**：\n\n如果仿真失败，你必须按照以下步骤执行：\n\n1. **第一步：调用 analyze_test_failures 分析错误**\n   - 将编译错误、仿真错误等信息传递给该工具\n   - 获取详细的错误分析和修复建议\n\n2. **第二步：根据分析结果修复代码**\n   - 如果测试台有语法错误，重新生成测试台\n   - 如果设计代码有问题，修改设计代码\n   - 不要只是重新执行相同的工具\n\n3. **第三步：验证修复效果**\n   - 重新运行仿真验证修复是否成功\n   - 如果仍有问题，重复分析-修复-验证流程\n\n请严格按照这个流程执行，确保进行实际的代码修复而不是简单的工具重试。"
                     })
-                
+                elif all_tools_successful:
+                    # 所有工具成功但没有仿真信息
+                    conversation_history.append({
+                        "role": "user",
+                        "content": f"工具执行结果:\n{results_summary}\n\n请分析工具执行结果并决定下一步操作。"
+                    })
                 else:
                     # 有工具调用失败，构建错误反馈
                     error_feedback = self._build_enhanced_error_feedback(
@@ -399,14 +411,67 @@ class EnhancedBaseAgent(BaseAgent):
                 result = tool_def.func(**tool_call.parameters)
             
             execution_time = time.time() - start_time
-            logger.info(f"🎯 {tool_def.name} 执行成功 ({execution_time:.2f}s)")
             
-            return ToolResult(
-                call_id=tool_call.call_id,
-                success=True,
-                error=None,
-                result=result
-            )
+            # 检查工具返回的结果
+            if isinstance(result, dict):
+                # 如果工具返回字典，检查success字段
+                tool_success = result.get('success', True)
+                tool_error = result.get('error', None)
+                
+                # 构建完整的错误信息
+                error_message = None
+                if not tool_success:
+                    # 收集所有可能的错误信息
+                    error_parts = []
+                    if tool_error:
+                        error_parts.append(f"错误: {tool_error}")
+                    
+                    # 添加编译错误
+                    compilation_errors = result.get('compilation_errors', '')
+                    if compilation_errors:
+                        error_parts.append(f"编译错误:\n{compilation_errors}")
+                    
+                    # 添加仿真错误
+                    simulation_errors = result.get('simulation_errors', '')
+                    if simulation_errors:
+                        error_parts.append(f"仿真错误:\n{simulation_errors}")
+                    
+                    # 添加错误消息
+                    error_msg = result.get('error_message', '')
+                    if error_msg:
+                        error_parts.append(f"错误消息: {error_msg}")
+                    
+                    # 如果没有具体错误信息，使用默认消息
+                    if not error_parts:
+                        error_parts.append("工具执行失败，但未提供具体错误信息")
+                    
+                    error_message = "\n\n".join(error_parts)
+                
+                if tool_success:
+                    logger.info(f"🎯 {tool_def.name} 执行成功 ({execution_time:.2f}s)")
+                    return ToolResult(
+                        call_id=tool_call.call_id,
+                        success=True,
+                        error=None,
+                        result=result
+                    )
+                else:
+                    logger.error(f"❌ {tool_def.name} 执行失败 ({execution_time:.2f}s): {error_message}")
+                    return ToolResult(
+                        call_id=tool_call.call_id,
+                        success=False,
+                        error=error_message,
+                        result=result
+                    )
+            else:
+                # 如果工具返回非字典，假设成功
+                logger.info(f"🎯 {tool_def.name} 执行成功 ({execution_time:.2f}s)")
+                return ToolResult(
+                    call_id=tool_call.call_id,
+                    success=True,
+                    error=None,
+                    result=result
+                )
             
         except Exception as e:
             execution_time = time.time() - start_time
@@ -656,6 +721,35 @@ class EnhancedBaseAgent(BaseAgent):
     
     def _is_final_result(self, tool_results: List[ToolResult]) -> bool:
         """判断是否为最终结果"""
+        # 检查是否有测试成功的结果
+        for result in tool_results:
+            if result.success and result.result:
+                # 检查run_simulation工具是否成功
+                if isinstance(result.result, dict):
+                    # 检查仿真是否成功完成
+                    if result.result.get('success', False):
+                        # 检查是否有仿真输出，表明测试已完成
+                        simulation_output = result.result.get('simulation_output', '')
+                        if simulation_output:
+                            # 检查多种可能的完成标志
+                            completion_flags = [
+                                'Simulation Finished',
+                                'Testbench Finished', 
+                                '$finish called',
+                                '=== Testbench Finished ===',
+                                '=== Simulation Finished ==='
+                            ]
+                            
+                            for flag in completion_flags:
+                                if flag in simulation_output:
+                                    logger.info(f"🎯 检测到测试成功完成标志: {flag}")
+                                    return True
+                        
+                        # 检查是否有成功的仿真结果
+                        if result.result.get('return_code', 1) == 0:
+                            logger.info("🎯 检测到仿真成功完成（返回码为0）")
+                            return True
+        
         # 简单的启发式规则：如果所有工具都成功执行，可能是最终结果
         return all(result.success for result in tool_results)
     
@@ -738,13 +832,175 @@ class EnhancedBaseAgent(BaseAgent):
         
         # 定义工具依赖关系
         dependencies = {
-            "analyze_code_quality": {"generate_verilog_code"},    # 代码质量分析依赖代码生成
             "generate_testbench": {"generate_verilog_code"},      # 测试台生成依赖代码生成
             "run_simulation": {"generate_verilog_code", "generate_testbench", "write_file"},  # 仿真依赖代码和测试台
-            "analyze_coverage": {"run_simulation"},               # 覆盖率分析依赖仿真
             "execute_build_script": {"generate_build_script"}     # 脚本执行依赖脚本生成
         }
         
         tool_deps = dependencies.get(tool_name, set())
         # 检查是否有依赖的关键工具已失败
         return bool(tool_deps.intersection(failed_critical_tools))
+
+    def _extract_simulation_result(self, tool_results: List[ToolResult]) -> Optional[str]:
+        """从工具结果中提取仿真结果，判断任务是否完成"""
+        logger.info(f"🔍 开始提取仿真结果，工具结果数量: {len(tool_results)}")
+        
+        for i, result in enumerate(tool_results):
+            logger.info(f"🔍 检查工具结果 {i+1}: success={result.success}")
+            
+            if result.success and result.result:
+                if isinstance(result.result, dict):
+                    logger.info(f"🔍 工具结果 {i+1} 是字典类型")
+                    
+                    # 检查仿真是否成功完成
+                    if result.result.get('success', False):
+                        logger.info(f"🔍 工具结果 {i+1} 仿真成功")
+                        
+                        # 检查是否有仿真输出，表明测试已完成
+                        simulation_output = result.result.get('simulation_output', '')
+                        if simulation_output:
+                            logger.info(f"🔍 找到仿真输出，长度: {len(simulation_output)}")
+                            logger.info(f"🔍 仿真输出前100字符: {simulation_output[:100]}")
+                            
+                            # 检查多种可能的完成标志
+                            completion_flags = [
+                                'Simulation Finished',
+                                'Testbench Finished', 
+                                '$finish called',
+                                '=== Testbench Finished ===',
+                                '=== Simulation Finished ==='
+                            ]
+                            
+                            for flag in completion_flags:
+                                if flag in simulation_output:
+                                    logger.info(f"🎯 检测到测试成功完成标志: {flag}")
+                                    return f"🎯 **仿真结果分析**:\n\n✅ 仿真成功完成！\n\n输出信息:\n{simulation_output}"
+                            
+                            logger.info("🔍 未检测到完成标志")
+                        
+                        # 检查是否有成功的仿真结果
+                        if result.result.get('return_code', 1) == 0:
+                            logger.info("🎯 检测到仿真成功完成（返回码为0）")
+                            return f"🎯 **仿真结果分析**:\n\n✅ 仿真成功完成！\n\n返回码: {result.result.get('return_code', 1)}"
+        
+        logger.info("🔍 未找到仿真结果")
+        return None
+
+    def _extract_simulation_and_error_info(self, tool_results: List[ToolResult]) -> Optional[str]:
+        """从工具结果中提取仿真结果和错误信息，包括成功和失败的情况"""
+        logger.info(f"🔍 开始提取仿真结果和错误信息，工具结果数量: {len(tool_results)}")
+        
+        simulation_info = []
+        
+        for i, result in enumerate(tool_results):
+            logger.info(f"🔍 检查工具结果 {i+1}: success={result.success}")
+            
+            # 检查是否是仿真相关的工具（通过错误信息或结果内容判断）
+            is_simulation_tool = False
+            if result.error and ('编译错误' in result.error or '仿真' in result.error or 'simulation' in result.error.lower()):
+                is_simulation_tool = True
+            elif result.result and isinstance(result.result, dict):
+                if 'simulation_output' in result.result or 'compilation_output' in result.result:
+                    is_simulation_tool = True
+            
+            if is_simulation_tool:
+                if result.success and result.result:
+                    if isinstance(result.result, dict):
+                        # 仿真成功的情况
+                        if result.result.get('success', False):
+                            simulation_output = result.result.get('simulation_output', '')
+                            if simulation_output:
+                                completion_flags = [
+                                    'Simulation Finished',
+                                    'Testbench Finished', 
+                                    '$finish called',
+                                    '=== Testbench Finished ===',
+                                    '=== Simulation Finished ==='
+                                ]
+                                
+                                for flag in completion_flags:
+                                    if flag in simulation_output:
+                                        logger.info(f"🎯 检测到测试成功完成标志: {flag}")
+                                        simulation_info.append(f"🎯 **仿真成功**:\n\n✅ 仿真成功完成！\n\n输出信息:\n{simulation_output}")
+                                        break
+                                else:
+                                    # 没有检测到完成标志，但仍然有输出
+                                    simulation_info.append(f"🎯 **仿真执行**:\n\n仿真已执行，输出信息:\n{simulation_output}")
+                        
+                        # 检查返回码
+                        if result.result.get('return_code', 1) == 0:
+                            simulation_info.append(f"🎯 **仿真成功**:\n\n返回码: {result.result.get('return_code', 1)}")
+                
+                elif not result.success:
+                    # 仿真失败的情况
+                    error_message = result.error or "未知错误"
+                    logger.info(f"🔍 检测到仿真失败: {error_message}")
+                    
+                    # 提取详细的错误信息
+                    detailed_errors = []
+                    if result.result and isinstance(result.result, dict):
+                        compilation_errors = result.result.get('compilation_errors', '')
+                        simulation_errors = result.result.get('simulation_errors', '')
+                        error_msg = result.result.get('error_message', '')
+                        
+                        if compilation_errors:
+                            detailed_errors.append(f"编译错误:\n{compilation_errors}")
+                        if simulation_errors:
+                            detailed_errors.append(f"仿真错误:\n{simulation_errors}")
+                        if error_msg:
+                            detailed_errors.append(f"错误消息:\n{error_msg}")
+                    
+                    if detailed_errors:
+                        error_summary = "\n\n".join(detailed_errors)
+                        simulation_info.append(f"❌ **仿真失败**:\n\n{error_summary}")
+                    else:
+                        simulation_info.append(f"❌ **仿真失败**:\n\n{error_message}")
+        
+        if simulation_info:
+            return "\n\n" + "\n\n".join(simulation_info)
+        
+        logger.info("🔍 未找到仿真相关信息")
+        return None
+
+    def _check_simulation_success(self, tool_results: List[ToolResult]) -> bool:
+        """检查仿真是否成功完成"""
+        logger.info(f"🔍 检查仿真成功状态，工具结果数量: {len(tool_results)}")
+        
+        for result in tool_results:
+            # 检查是否是仿真相关的工具
+            is_simulation_tool = False
+            if result.error and ('编译错误' in result.error or '仿真' in result.error or 'simulation' in result.error.lower()):
+                is_simulation_tool = True
+            elif result.result and isinstance(result.result, dict):
+                if 'simulation_output' in result.result or 'compilation_output' in result.result:
+                    is_simulation_tool = True
+            
+            if is_simulation_tool and result.success and result.result:
+                if isinstance(result.result, dict):
+                    # 检查仿真是否成功完成
+                    if result.result.get('success', False):
+                        simulation_output = result.result.get('simulation_output', '')
+                        if simulation_output:
+                            # 检查多种可能的完成标志
+                            completion_flags = [
+                                'Simulation Finished',
+                                'Testbench Finished', 
+                                '$finish called',
+                                '=== Testbench Finished ===',
+                                '=== Simulation Finished ===',
+                                'Testbench Simulation Completed',
+                                'All test cases executed'
+                            ]
+                            
+                            for flag in completion_flags:
+                                if flag in simulation_output:
+                                    logger.info(f"🎯 检测到仿真成功完成标志: {flag}")
+                                    return True
+                        
+                        # 检查返回码
+                        if result.result.get('return_code', 1) == 0:
+                            logger.info("🎯 检测到仿真成功完成（返回码为0）")
+                            return True
+        
+        logger.info("🔍 仿真未成功完成")
+        return False

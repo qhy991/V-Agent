@@ -82,8 +82,20 @@ class CentralFileManager:
         Returns:
             文件引用对象
         """
-        # 生成唯一的文件ID
-        file_id = str(uuid.uuid4())[:8]
+        # 检查是否已存在同名文件
+        existing_file_id = None
+        for fid, file_ref in self.file_registry.items():
+            if Path(file_ref.file_path).name == filename and file_ref.file_type == file_type:
+                existing_file_id = fid
+                break
+        
+        # 如果存在同名文件，使用相同ID；否则生成新ID
+        if existing_file_id:
+            file_id = existing_file_id
+            self.logger.info(f"🔄 使用现有文件ID: {file_id}")
+        else:
+            file_id = str(uuid.uuid4())[:8]
+            self.logger.info(f"🆔 生成新文件ID: {file_id}")
         
         # 确定保存目录
         target_dir = self._get_target_directory(file_type)
@@ -93,13 +105,9 @@ class CentralFileManager:
         if not filename.endswith(file_extension):
             filename = f"{filename}{file_extension}"
         
-        # 避免文件名冲突
-        base_name = Path(filename).stem
-        extension = Path(filename).suffix
-        counter = 1
-        while (target_dir / filename).exists():
-            filename = f"{base_name}_{counter}{extension}"
-            counter += 1
+        # 直接覆盖同名文件，不创建新文件
+        if (target_dir / filename).exists():
+            self.logger.info(f"🔄 覆盖现有文件: {filename}")
         
         file_path = target_dir / filename
         
@@ -109,22 +117,111 @@ class CentralFileManager:
         # 计算内容哈希
         content_hash = str(hash(content))
         
-        # 创建文件引用
-        file_ref = FileReference(
-            file_id=file_id,
-            file_path=str(file_path),
-            file_type=file_type,
-            content_hash=content_hash,
-            created_by=created_by,
-            created_at=datetime.now().isoformat(),
-            description=description
-        )
-        
-        # 注册文件
-        self.file_registry[file_id] = file_ref
+        # 创建或更新文件引用
+        if existing_file_id:
+            # 更新现有文件引用
+            file_ref = self.file_registry[file_id]
+            file_ref.file_path = str(file_path)
+            file_ref.content_hash = content_hash
+            file_ref.created_by = created_by
+            file_ref.created_at = datetime.now().isoformat()
+            file_ref.description = description
+            self.logger.info(f"🔄 更新现有文件引用: {file_id}")
+        else:
+            # 创建新文件引用
+            file_ref = FileReference(
+                file_id=file_id,
+                file_path=str(file_path),
+                file_type=file_type,
+                content_hash=content_hash,
+                created_by=created_by,
+                created_at=datetime.now().isoformat(),
+                description=description
+            )
+            self.file_registry[file_id] = file_ref
+            self.logger.info(f"🆕 创建新文件引用: {file_id}")
         self._save_registry()
         
         self.logger.info(f"💾 文件已保存: {filename} (ID: {file_id}, 类型: {file_type})")
+        return file_ref
+    
+    def save_file_to_path(self, content: str, filename: str, target_path: Path, 
+                         file_type: str, created_by: str, description: str = "") -> FileReference:
+        """
+        保存文件到指定路径并返回文件引用
+        
+        Args:
+            content: 文件内容
+            filename: 文件名
+            target_path: 目标保存路径
+            file_type: 文件类型 (verilog, testbench, report, etc.)
+            created_by: 创建者ID
+            description: 文件描述
+            
+        Returns:
+            文件引用对象
+        """
+        # 确保目标目录存在
+        target_path.mkdir(parents=True, exist_ok=True)
+        
+        # 检查是否已存在同名文件
+        existing_file_id = None
+        for fid, file_ref in self.file_registry.items():
+            if Path(file_ref.file_path).name == filename and file_ref.file_type == file_type:
+                existing_file_id = fid
+                break
+        
+        # 如果存在同名文件，使用相同ID；否则生成新ID
+        if existing_file_id:
+            file_id = existing_file_id
+            self.logger.info(f"🔄 使用现有文件ID: {file_id}")
+        else:
+            file_id = str(uuid.uuid4())[:8]
+            self.logger.info(f"🆔 生成新文件ID: {file_id}")
+        
+        # 生成完整的文件路径
+        file_extension = self._get_file_extension(file_type)
+        if not filename.endswith(file_extension):
+            filename = f"{filename}{file_extension}"
+        
+        file_path = target_path / filename
+        
+        # 直接覆盖同名文件，不创建新文件
+        if file_path.exists():
+            self.logger.info(f"🔄 覆盖现有文件: {filename}")
+        
+        # 保存文件
+        file_path.write_text(content, encoding='utf-8')
+        
+        # 计算内容哈希
+        content_hash = str(hash(content))
+        
+        # 创建或更新文件引用
+        if existing_file_id:
+            # 更新现有文件引用
+            file_ref = self.file_registry[file_id]
+            file_ref.file_path = str(file_path)
+            file_ref.content_hash = content_hash
+            file_ref.created_by = created_by
+            file_ref.created_at = datetime.now().isoformat()
+            file_ref.description = description
+            self.logger.info(f"🔄 更新现有文件引用: {file_id}")
+        else:
+            # 创建新文件引用
+            file_ref = FileReference(
+                file_id=file_id,
+                file_path=str(file_path),
+                file_type=file_type,
+                content_hash=content_hash,
+                created_by=created_by,
+                created_at=datetime.now().isoformat(),
+                description=description
+            )
+            self.file_registry[file_id] = file_ref
+            self.logger.info(f"🆕 创建新文件引用: {file_id}")
+        self._save_registry()
+        
+        self.logger.info(f"💾 文件已保存到指定路径: {file_path} (ID: {file_id}, 类型: {file_type})")
         return file_ref
     
     def get_file(self, file_id: str) -> Optional[FileReference]:
