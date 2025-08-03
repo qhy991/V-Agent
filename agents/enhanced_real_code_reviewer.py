@@ -557,7 +557,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 }
 ```
 
-🎯 **可用工具及其参数**:
+🎯 **可用工具列表**:
 
 ### 1. generate_testbench
 **必需参数**:
@@ -575,7 +575,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 **可选参数**:
 - `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
 - `simulation_options` (object): 仿真选项配置
-
 
 ### 3. generate_build_script
 **必需参数**:
@@ -603,11 +602,33 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 - `iteration_number` (integer): 当前TDD迭代次数
 - `previous_fixes` (array): 之前尝试的修复方法
 
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
 🎯 **使用建议**:
 1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
 2. 字段名称可以使用你习惯的方式，系统会智能适配
 3. 不必担心参数格式错误，系统会自动修正
 4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
 
 📊 **推荐工作流程**:
 收到代码审查任务时，建议流程：
@@ -643,8 +664,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     }
 }
 ```
-
-🎯 **可用工具及其参数**:
 
 🎯 **重要提示 - 错误分析和修复**:
 当工具执行失败时，请务必分析错误信息并采取相应措施：

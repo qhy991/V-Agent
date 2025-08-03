@@ -58,7 +58,7 @@ module alu_32bit (
 );
 ```
             """,
-            "testbench": "test_cases/alu_testbench.v",
+            "testbench": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
             "complexity": "standard"
         },
         
@@ -222,6 +222,8 @@ module carry_lookahead_adder_16bit (
                  testbench_path: str = None,
                  custom_requirements: str = None,
                  output_dir: str = None):
+        # 保存设计类型为实例属性
+        self.design_type = design_type
         """初始化统一TDD测试"""
         self.design_type = design_type
         self.config_profile = config_profile
@@ -402,6 +404,18 @@ module carry_lookahead_adder_16bit (
             print(f"📋 设计需求已准备")
             if testbench_path:
                 print(f"🎯 测试台: {Path(testbench_path).name}")
+                # 复制测试台文件到实验目录
+                from core.experiment_manager import get_experiment_manager
+                exp_manager = get_experiment_manager()
+                if exp_manager.current_experiment_path:
+                    copied_path = exp_manager.copy_dependency(
+                        testbench_path, 
+                        f"用户提供的{self.design_type}测试台文件"
+                    )
+                    if copied_path:
+                        print(f"📋 测试台已复制到: {copied_path.name}")
+                    else:
+                        print(f"⚠️ 测试台复制失败")
             else:
                 print("🎯 测试台: 将由AI生成")
             
@@ -527,12 +541,15 @@ module carry_lookahead_adder_16bit (
         
         # 显示会话信息
         session_id = result.get("session_id")
-        if session_id:
-            session_info = self.tdd_coordinator.get_session_info(session_id)
-            if session_info:
-                print(f"📋 会话详情:")
-                print(f"   会话ID: {session_id}")
-                print(f"   状态: {session_info.get('status', 'unknown')}")
+        if session_id and hasattr(self, 'coordinator'):
+            try:
+                session_info = self.coordinator.get_session_info(session_id)
+                if session_info:
+                    print(f"📋 会话详情:")
+                    print(f"   会话ID: {session_id}")
+                    print(f"   状态: {session_info.get('status', 'unknown')}")
+            except Exception as e:
+                print(f"⚠️ 无法获取会话信息: {e}")
         
         print("=" * 80)
         

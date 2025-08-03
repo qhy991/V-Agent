@@ -234,10 +234,16 @@ class EnhancedBaseAgent(BaseAgent):
                     })
                 elif all_tools_successful:
                     # 所有工具成功但没有仿真信息
-                    conversation_history.append({
-                        "role": "user",
-                        "content": f"工具执行结果:\n{results_summary}\n\n请分析工具执行结果并决定下一步操作。"
-                    })
+                    # 智能体任务完成，立即返回结果给协调器判断
+                    logger.info("🎯 所有工具执行成功，智能体任务完成")
+                    return {
+                        "success": True,
+                        "response": f"🎉 **智能体任务完成**！\n\n所有工具成功执行。\n\n工具执行结果:\n{results_summary}",
+                        "iterations": iteration_count,
+                        "conversation_history": conversation_history,
+                        "tool_results": tool_results,
+                        "completion_reason": "all_tools_successful"
+                    }
                 else:
                     # 有工具调用失败，构建错误反馈
                     error_feedback = self._build_enhanced_error_feedback(
@@ -1004,3 +1010,4 @@ class EnhancedBaseAgent(BaseAgent):
         
         logger.info("🔍 仿真未成功完成")
         return False
+

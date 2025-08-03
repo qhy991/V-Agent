@@ -130,7 +130,8 @@ class BaseAgent(ABC):
             func=self._tool_write_file,
             description="将内容写入到文件",
             parameters={
-                "filename": {"type": "string", "description": "文件名", "required": True},
+                "filename": {"type": "string", "description": "文件名", "required": False},
+                "file_path": {"type": "string", "description": "文件路径（filename的别名）", "required": False},
                 "content": {"type": "string", "description": "文件内容", "required": True},
                 "directory": {"type": "string", "description": "目录路径", "required": False}
             }
@@ -484,8 +485,7 @@ class BaseAgent(ABC):
             call_id=tool_call.call_id or "unknown",
             success=False,
             result=None,
-            error=f"工具执行失败 (已重试{self.max_tool_retry_attempts}次): {last_error}",
-            context={"failure_chain": self.tool_failure_contexts}
+            error=f"工具执行失败 (已重试{self.max_tool_retry_attempts}次): {last_error}"
         )
     
     def _format_tool_results(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> str:
@@ -1260,9 +1260,26 @@ class BaseAgent(ABC):
     # 🔧 基础Function Calling工具实现
     # ==========================================================================
     
-    async def _tool_write_file(self, filename: str, content: str, directory: str = None, **kwargs) -> Dict[str, Any]:
+    async def _tool_write_file(self, filename: str = None, content: str = None, directory: str = None, file_path: str = None, **kwargs) -> Dict[str, Any]:
         """基础工具：写入文件（增强版，支持中央文件管理）"""
         try:
+            # 支持file_path参数作为filename的别名
+            if file_path is not None and filename is None:
+                filename = file_path
+                self.logger.info(f"🔄 参数映射: file_path -> filename: {filename}")
+            
+            if filename is None:
+                return {
+                    "success": False,
+                    "error": "缺少必需参数: filename 或 file_path"
+                }
+            
+            if content is None:
+                return {
+                    "success": False,
+                    "error": "缺少必需参数: content"
+                }
+            
             self.logger.info(f"📝 写入文件: {filename}")
             
             # 尝试使用实验管理器 + 中央文件管理器
@@ -1307,8 +1324,7 @@ class BaseAgent(ABC):
                                     filename=filename,
                                     file_type=file_type,
                                     created_by=self.agent_id,
-                                    description=f"由{self.agent_id}创建的{file_type}文件",
-                                    file_path=str(exp_file_path)
+                                    description=f"由{self.agent_id}创建的{file_type}文件"
                                 )
                                 
                                 self.logger.info(f"✅ 文件已保存到实验文件夹: {filename} (ID: {file_ref.file_id})")

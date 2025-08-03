@@ -1,0 +1,428 @@
+{
+  "experiment_id": "unified_tdd_alu_1754192422",
+  "design_type": "alu",
+  "config_profile": "standard",
+  "success": false,
+  "total_duration": 84.94273042678833,
+  "timestamp": 1754192507.628194,
+  "detailed_result": {
+    "success": false,
+    "session_id": "tdd_1754192422",
+    "total_iterations": 3,
+    "final_design": [
+      {
+        "file_id": "595bd3be",
+        "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+        "file_type": "verilog",
+        "created_by": "enhanced_real_verilog_agent",
+        "created_at": "2025-08-03T11:41:47.546761",
+        "description": "由enhanced_real_verilog_agent创建的verilog文件"
+      }
+    ],
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_results": [
+      {
+        "iteration": 1,
+        "start_time": 1754192422.7073214,
+        "duration": 25.059074640274048,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "595bd3be",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T11:40:47.693289",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:97: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:97: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:103: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:103: error: Signing cast requires SystemVerilog.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3423314 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "returncode": 4,
+            "error_details": {
+              "error_count": 4,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 97,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 97,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 103,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 103,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 4 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 97\n   错误: error: Signing cast requires SystemVerilog.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 97\n   错误: error: Signing cast requires SystemVerilog.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 103\n   错误: error: Signing cast requires SystemVerilog.\n... 还有 1 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 97,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 97,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 103,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 103,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:97: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:97: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:103: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:103: error: Signing cast requires SystemVerilog."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [],
+            "suggestions": [],
+            "error_category": "unknown",
+            "intelligent_error_analysis": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "design_modules": [
+                "alu_32bit"
+              ],
+              "testbench_modules": [
+                "alu_testbench"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 1
+        }
+      },
+      {
+        "iteration": 2,
+        "start_time": 1754192447.7683327,
+        "duration": 30.41935396194458,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "595bd3be",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T11:41:18.107766",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:85: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:85: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:91: error: Signing cast requires SystemVerilog.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:91: error: Signing cast requires SystemVerilog.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3423344 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "returncode": 4,
+            "error_details": {
+              "error_count": 4,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 85,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 85,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 91,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 91,
+                  "message": "error: Signing cast requires SystemVerilog.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 4 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 85\n   错误: error: Signing cast requires SystemVerilog.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 85\n   错误: error: Signing cast requires SystemVerilog.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 91\n   错误: error: Signing cast requires SystemVerilog.\n... 还有 1 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 85,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 85,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 91,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 91,
+                "message": "error: Signing cast requires SystemVerilog.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:85: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:85: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:91: error: Signing cast requires SystemVerilog.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:91: error: Signing cast requires SystemVerilog."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [],
+            "suggestions": [],
+            "error_category": "unknown",
+            "intelligent_error_analysis": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "design_modules": [
+                "alu_32bit"
+              ],
+              "testbench_modules": [
+                "alu_testbench"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 2
+        }
+      },
+      {
+        "iteration": 3,
+        "start_time": 1754192478.1900086,
+        "duration": 29.437992334365845,
+        "result": {
+          "success": true,
+          "design_files": [
+            {
+              "file_id": "595bd3be",
+              "file_path": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+              "file_type": "verilog",
+              "created_by": "enhanced_real_verilog_agent",
+              "created_at": "2025-08-03T11:41:47.546761",
+              "description": "由enhanced_real_verilog_agent创建的verilog文件"
+            }
+          ],
+          "test_results": {
+            "success": false,
+            "stage": "compilation",
+            "compile_stdout": "",
+            "compile_stderr": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:107: error: variable sign_a; cannot be driven by a primitive or continuous assignment.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:108: error: variable sign_b; cannot be driven by a primitive or continuous assignment.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:109: error: variable sign_sum; cannot be driven by a primitive or continuous assignment.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:112: error: variable signed_a; cannot be driven by a primitive or continuous assignment.\n/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:113: error: variable signed_b; cannot be driven by a primitive or continuous assignment.\n5 error(s) during elaboration.\n",
+            "command": "iverilog -o /tmp/tdd_test_analyzer/sim_3423374 /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v /home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "returncode": 5,
+            "error_details": {
+              "error_count": 5,
+              "precise_errors": [
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 107,
+                  "message": "error: variable sign_a; cannot be driven by a primitive or continuous assignment.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 108,
+                  "message": "error: variable sign_b; cannot be driven by a primitive or continuous assignment.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 109,
+                  "message": "error: variable sign_sum; cannot be driven by a primitive or continuous assignment.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 112,
+                  "message": "error: variable signed_a; cannot be driven by a primitive or continuous assignment.",
+                  "type": "other_error"
+                },
+                {
+                  "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                  "line": 113,
+                  "message": "error: variable signed_b; cannot be driven by a primitive or continuous assignment.",
+                  "type": "other_error"
+                }
+              ],
+              "summary": "发现 5 个编译错误:\n1. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 107\n   错误: error: variable sign_a; cannot be driven by a primitive or continuous assignment.\n2. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 108\n   错误: error: variable sign_b; cannot be driven by a primitive or continuous assignment.\n3. 文件: /home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v, 行: 109\n   错误: error: variable sign_sum; cannot be driven by a primitive or continuous assignment.\n... 还有 2 个错误\n"
+            },
+            "precise_errors": [
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 107,
+                "message": "error: variable sign_a; cannot be driven by a primitive or continuous assignment.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 108,
+                "message": "error: variable sign_b; cannot be driven by a primitive or continuous assignment.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 109,
+                "message": "error: variable sign_sum; cannot be driven by a primitive or continuous assignment.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 112,
+                "message": "error: variable signed_a; cannot be driven by a primitive or continuous assignment.",
+                "type": "other_error"
+              },
+              {
+                "file": "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v",
+                "line": 113,
+                "message": "error: variable signed_b; cannot be driven by a primitive or continuous assignment.",
+                "type": "other_error"
+              }
+            ],
+            "all_tests_passed": false,
+            "test_summary": "❌ 编译失败",
+            "detailed_analysis": {
+              "error_lines": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:107: error: variable sign_a; cannot be driven by a primitive or continuous assignment.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:108: error: variable sign_b; cannot be driven by a primitive or continuous assignment.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:109: error: variable sign_sum; cannot be driven by a primitive or continuous assignment.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:112: error: variable signed_a; cannot be driven by a primitive or continuous assignment.",
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v:113: error: variable signed_b; cannot be driven by a primitive or continuous assignment.",
+                "5 error(s) during elaboration."
+              ],
+              "module_references": [],
+              "file_references": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "suggestions_context": {}
+            },
+            "failure_reasons": [],
+            "suggestions": [],
+            "error_category": "unknown",
+            "intelligent_error_analysis": true,
+            "testbench_path": "/home/haiyan/Research/CentralizedAgentFramework/test_cases/alu_testbench.v",
+            "design_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "compilation_files": [
+              "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+            ],
+            "dependency_analysis": {
+              "success": true,
+              "compatible": true,
+              "issues": [],
+              "suggestions": [],
+              "missing_dependencies": [],
+              "additional_files": [],
+              "compilation_files": [
+                "/home/haiyan/Research/CentralizedAgentFramework/tdd_experiments/unified_tdd_alu_1754192422/artifacts/designs/alu_32bit.v"
+              ],
+              "design_modules": [
+                "alu_32bit"
+              ],
+              "testbench_modules": [
+                "alu_testbench"
+              ]
+            }
+          },
+          "all_tests_passed": false,
+          "iteration": 3
+        }
+      }
+    ]
+  },
+  "summary": {
+    "iterations_used": 3,
+    "completion_reason": "max_iterations_reached",
+    "error": "达到最大迭代次数，但测试仍未全部通过",
+    "partial_progress": true
+  }
+}
