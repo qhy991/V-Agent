@@ -1,0 +1,469 @@
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - DEBUG - 📝 System prompt 长度: 4497 字符
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+[2025-08-04 12:09:25] EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5401 字符
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 12:09:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 12:09:25] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754280565
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 🔗 从任务消息获取到0轮对话历史
+[2025-08-04 12:09:25] Agent.enhanced_real_verilog_agent - INFO - 📝 当前对话总长度: 5056 字符, 2 轮
+[2025-08-04 12:09:27] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: simple_8bit_adder
+[2025-08-04 12:09:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 时序逻辑
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: simple_8bit_adder.v
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 517
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 517
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 517
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: simple_8bit_adder.v (ID: c4ddbdb5)
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:09:29] Agent.enhanced_real_verilog_agent - INFO - 📝 当前对话总长度: 5287 字符, 4 轮
+[2025-08-04 12:09:31] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: simple_8bit_adder
+[2025-08-04 12:09:31] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 时序逻辑
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: simple_8bit_adder.v
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 517
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 517
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 517
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: simple_8bit_adder.v (ID: c4ddbdb5)
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:09:33] Agent.enhanced_real_verilog_agent - INFO - 📝 当前对话总长度: 6022 字符, 6 轮
+[2025-08-04 12:09:34] Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - medium
+[2025-08-04 12:09:40] Agent.enhanced_real_verilog_agent - ERROR - ❌ 任务失败: conv_1754280565 - 'ToolCall' object has no attribute 'to_dict'
+[2025-08-04 12:09:40] Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:09:40] Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754280580
+[2025-08-04 12:09:40] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5529 字符, 2 轮
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 327
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 294
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 294
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：327 -> 294 字符
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：327 -> 294 字符
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:09:42] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6163 字符, 4 轮
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:09:44] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6744 字符, 6 轮
+[2025-08-04 12:09:46] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: design_module
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: design_module.v
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_design_module.v
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 5350
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 5335
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 5335
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：5350 -> 5335 字符
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：5350 -> 5335 字符
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_design_module.v (ID: 313afe29)
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加6轮历史对话到当前对话
+[2025-08-04 12:09:58] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 7797 字符, 8 轮
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加8轮历史对话到当前对话
+[2025-08-04 12:10:00] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 8435 字符, 10 轮
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: testbench_design_module.v
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_design_module.v
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 946
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 776
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 776
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：946 -> 776 字符
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：946 -> 776 字符
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_design_module.v (ID: 313afe29)
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - ERROR - ❌ 代码审查任务失败: conv_1754280580 - 'ToolCall' object has no attribute 'to_dict'
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754280610
+[2025-08-04 12:10:10] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5466 字符, 2 轮
+[2025-08-04 12:10:11] Agent.enhanced_real_code_review_agent - INFO - 🔍 分析第1次迭代的测试失败
+[2025-08-04 12:10:11] Agent.enhanced_real_code_review_agent - INFO - ✅ 测试失败分析完成，发现 0 种失败类型
+[2025-08-04 12:10:11] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:10:11] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5916 字符, 4 轮
+[2025-08-04 12:10:13] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: simple_adder
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_adder.v
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 91
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 91
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 91
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_adder.v (ID: 80d3293c)
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: simple_adder.v
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_simple_adder.v
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 2325
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 2310
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 2310
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：2325 -> 2310 字符
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：2325 -> 2310 字符
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_simple_adder.v (ID: d0f2097f)
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:10:23] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6542 字符, 6 轮
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: simple_adder.v
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_adder.v
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 91
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 91
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 91
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_adder.v (ID: 80d3293c)
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加6轮历史对话到当前对话
+[2025-08-04 12:10:24] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6910 字符, 8 轮
+[2025-08-04 12:10:32] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754280610
+[2025-08-04 12:10:32] Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:10:32] Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754280632
+[2025-08-04 12:10:32] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5867 字符, 2 轮
+[2025-08-04 12:10:34] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: simple_8bit_adder
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_8bit_adder.v
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 145
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 145
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 145
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_8bit_adder.v (ID: c4ddbdb5)
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: simple_8bit_adder.v
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_simple_8bit_adder.v
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 7455
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 7440
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 7440
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：7455 -> 7440 字符
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：7455 -> 7440 字符
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_simple_8bit_adder.v (ID: 1ad14e00)
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:10:50] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6227 字符, 4 轮
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: simple_8bit_adder.v
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_8bit_adder.v
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 204
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 204
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 204
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_8bit_adder.v (ID: c4ddbdb5)
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:10:52] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6862 字符, 6 轮
+[2025-08-04 12:11:03] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754280632
+[2025-08-04 12:11:03] Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:11:03] Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754280663
+[2025-08-04 12:11:03] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5529 字符, 2 轮
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:11:05] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6042 字符, 4 轮
+[2025-08-04 12:11:07] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: design_module
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: design_module.v
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_design_module.v
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 6034
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 6019
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 6019
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：6034 -> 6019 字符
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：6034 -> 6019 字符
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_design_module.v (ID: 313afe29)
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:11:22] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 7085 字符, 6 轮
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加6轮历史对话到当前对话
+[2025-08-04 12:11:23] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 7625 字符, 8 轮
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加8轮历史对话到当前对话
+[2025-08-04 12:11:25] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 8165 字符, 10 轮
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: design_module.v
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: design_module.v
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 252
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 252
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 252
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: design_module.v (ID: 6b6b0a73)
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - ERROR - ❌ 代码审查任务失败: conv_1754280663 - 'ToolCall' object has no attribute 'to_dict'
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754280686
+[2025-08-04 12:11:26] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5466 字符, 2 轮
+[2025-08-04 12:11:28] Agent.enhanced_real_code_review_agent - INFO - 🔍 分析第1次迭代的测试失败
+[2025-08-04 12:11:28] Agent.enhanced_real_code_review_agent - INFO - ✅ 测试失败分析完成，发现 0 种失败类型
+[2025-08-04 12:11:28] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加2轮历史对话到当前对话
+[2025-08-04 12:11:28] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5916 字符, 4 轮
+[2025-08-04 12:11:29] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: simple_adder
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_adder.v
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 91
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 91
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 91
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_adder.v (ID: 80d3293c)
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: simple_adder.v
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_simple_adder.v
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 3729
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 3714
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 3714
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：3729 -> 3714 字符
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：3729 -> 3714 字符
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_simple_adder.v (ID: d0f2097f)
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加4轮历史对话到当前对话
+[2025-08-04 12:11:39] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6542 字符, 6 轮
+[2025-08-04 12:11:41] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加6轮历史对话到当前对话
+[2025-08-04 12:11:41] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 15114 字符, 8 轮
+[2025-08-04 12:11:43] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: simple_adder
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_adder.v
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 91
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 91
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 91
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_adder.v (ID: 80d3293c)
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: simple_adder.v
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_simple_adder.v
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 3159
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 3144
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 3144
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：3159 -> 3144 字符
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：3159 -> 3144 字符
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_simple_adder.v (ID: d0f2097f)
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 🔗 添加8轮历史对话到当前对话
+[2025-08-04 12:11:54] Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 11777 字符, 10 轮
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: file_path -> filename: simple_adder.v
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: simple_adder.v
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_simple_adder_1754280565
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 91
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 91
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 91
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: simple_adder.v (ID: 80d3293c)
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 12:11:55] Agent.enhanced_real_code_review_agent - ERROR - ❌ 代码审查任务失败: conv_1754280686 - 'ToolCall' object has no attribute 'to_dict'

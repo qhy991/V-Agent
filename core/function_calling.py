@@ -15,6 +15,14 @@ class ToolCall:
     tool_name: str
     parameters: Dict[str, Any]
     call_id: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典格式"""
+        return {
+            "tool_name": self.tool_name,
+            "parameters": self.parameters,
+            "call_id": self.call_id
+        }
 
 
 @dataclass
@@ -24,3 +32,12 @@ class ToolResult:
     success: bool
     result: Any
     error: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """转换为字典格式"""
+        return {
+            "call_id": self.call_id,
+            "success": self.success,
+            "result": self.result,
+            "error": self.error
+        }

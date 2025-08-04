@@ -104,18 +104,23 @@ class EnhancedBaseAgent(BaseAgent):
             raise
     
     async def process_with_enhanced_validation(self, user_request: str, 
-                                             max_iterations: int = 10) -> Dict[str, Any]:
+                                             max_iterations: int = 10,
+                                             conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
         """
-        使用增强验证处理用户请求
+        使用增强验证处理用户请求 - 支持多轮对话
         
         Args:
             user_request: 用户请求
             max_iterations: 最大迭代次数
+            conversation_history: 外部传入的对话历史（支持多轮对话）
             
         Returns:
             处理结果
         """
-        conversation_history = []
+        # 🎯 新增：支持外部传入的对话历史
+        if conversation_history is None:
+            conversation_history = []
+        
         iteration_count = 0
         
         # 跟踪失败的工具，区分参数验证失败和真正的执行失败
@@ -123,20 +128,23 @@ class EnhancedBaseAgent(BaseAgent):
         param_validation_failed_tools = set()  # 参数验证失败的工具（可在下次迭代重试）
         
         logger.info(f"🚀 开始增强验证处理: {user_request[:100]}...")
+        logger.info(f"🔗 初始对话历史长度: {len(conversation_history)} 轮")
         
         while iteration_count < max_iterations:
             iteration_count += 1
             logger.info(f"🔄 第 {iteration_count}/{max_iterations} 次迭代")
             
             try:
-                # 1. 调用LLM获取响应
+                # 1. 调用LLM获取响应 - 使用完整的对话历史
                 conversation = self._build_conversation_with_history(user_request, conversation_history)
                 llm_response = await self._call_llm_for_function_calling(conversation)
                 
+                # 🎯 新增：将AI响应添加到对话历史
                 conversation_history.append({
                     "role": "assistant", 
                     "content": llm_response,
-                    "iteration": iteration_count
+                    "iteration": iteration_count,
+                    "timestamp": time.time()
                 })
                 
                 # 2. 解析工具调用
@@ -148,7 +156,8 @@ class EnhancedBaseAgent(BaseAgent):
                         "success": True,
                         "response": llm_response,
                         "iterations": iteration_count,
-                        "conversation_history": conversation_history
+                        "conversation_history": conversation_history,
+                        "content": llm_response
                     }
                 
                 # 3. 执行工具调用（带智能重试机制）
@@ -205,74 +214,104 @@ class EnhancedBaseAgent(BaseAgent):
                                     tool_results.append(skipped_result)
                                 break
                 
-                # 4. 处理工具调用结果
-                results_summary = self._format_tool_results(tool_calls, tool_results)
-                self.logger.info(f"🔨 工具执行结果: {results_summary}")
-                
-                # 提取仿真结果和错误信息（包括成功和失败的情况）
-                simulation_info = self._extract_simulation_and_error_info(tool_results)
-                self.logger.info(f"🔨 仿真结果: {simulation_info}")
-                
-                # 检查是否有仿真成功完成
-                simulation_success = self._check_simulation_success(tool_results)
-                
-                if simulation_success:
-                    # 仿真成功完成，立即结束任务
-                    logger.info("🎯 仿真成功完成，任务结束")
+                # 4. 检查是否所有工具都成功
+                if all_tools_successful:
+                    logger.info(f"✅ 所有工具执行成功，任务完成")
+                    
+                    # 🎯 新增：检查是否为最终结果
+                    if self._is_final_result(tool_results):
+                        final_response = self._extract_simulation_result(tool_results)
+                        if final_response:
+                            # 将最终结果添加到对话历史
+                            conversation_history.append({
+                                "role": "assistant",
+                                "content": final_response,
+                                "iteration": iteration_count,
+                                "timestamp": time.time(),
+                                "is_final_result": True
+                            })
+                            
+                            return {
+                                "success": True,
+                                "response": final_response,
+                                "iterations": iteration_count,
+                                "conversation_history": conversation_history,
+                                "tool_calls": [call.to_dict() for call in tool_calls],
+                                "tool_results": [result.to_dict() for result in tool_results],
+                                "content": final_response
+                            }
+                    
+                    # 普通成功结果
                     return {
                         "success": True,
-                        "response": f"🎉 **任务完成**！\n\n仿真成功通过，所有测试用例执行完成。\n\n工具执行结果:\n{results_summary}\n\n🎯 **仿真结果分析**:\n{simulation_info}",
+                        "response": llm_response,
                         "iterations": iteration_count,
                         "conversation_history": conversation_history,
-                        "completion_reason": "simulation_success"
+                        "tool_calls": [call.to_dict() for call in tool_calls],
+                        "tool_results": [result.to_dict() for result in tool_results],
+                        "content": llm_response
                     }
-                elif simulation_info:
-                    # 有仿真相关信息，传递给agent进行分析
-                    conversation_history.append({
-                        "role": "user",
-                        "content": f"工具执行结果:\n{results_summary}\n\n🎯 **仿真结果分析**:\n{simulation_info}\n\n⚠️ **重要指导**：\n\n如果仿真失败，你必须按照以下步骤执行：\n\n1. **第一步：调用 analyze_test_failures 分析错误**\n   - 将编译错误、仿真错误等信息传递给该工具\n   - 获取详细的错误分析和修复建议\n\n2. **第二步：根据分析结果修复代码**\n   - 如果测试台有语法错误，重新生成测试台\n   - 如果设计代码有问题，修改设计代码\n   - 不要只是重新执行相同的工具\n\n3. **第三步：验证修复效果**\n   - 重新运行仿真验证修复是否成功\n   - 如果仍有问题，重复分析-修复-验证流程\n\n请严格按照这个流程执行，确保进行实际的代码修复而不是简单的工具重试。"
-                    })
-                elif all_tools_successful:
-                    # 所有工具成功但没有仿真信息
-                    # 智能体任务完成，立即返回结果给协调器判断
-                    logger.info("🎯 所有工具执行成功，智能体任务完成")
-                    return {
-                        "success": True,
-                        "response": f"🎉 **智能体任务完成**！\n\n所有工具成功执行。\n\n工具执行结果:\n{results_summary}",
-                        "iterations": iteration_count,
-                        "conversation_history": conversation_history,
-                        "tool_results": tool_results,
-                        "completion_reason": "all_tools_successful"
-                    }
-                else:
-                    # 有工具调用失败，构建错误反馈
-                    error_feedback = self._build_enhanced_error_feedback(
-                        tool_calls, tool_results, 
-                        param_validation_failed_tools, 
-                        permanently_failed_tools,
-                        iteration_count
-                    )
-                    conversation_history.append({
-                        "role": "user", 
-                        "content": error_feedback
-                    })
+                
+                # 5. 处理工具执行失败，准备下一次迭代
+                logger.warning(f"⚠️ 第 {iteration_count} 次迭代有工具执行失败，准备重试")
+                
+                # 🎯 新增：构建错误反馈并添加到对话历史
+                error_feedback = self._build_enhanced_error_feedback(
+                    tool_calls, tool_results, param_validation_failed_tools, 
+                    permanently_failed_tools, iteration_count
+                )
+                
+                # 将错误反馈作为用户输入添加到对话历史
+                conversation_history.append({
+                    "role": "user",
+                    "content": error_feedback,
+                    "iteration": iteration_count,
+                    "timestamp": time.time(),
+                    "is_error_feedback": True
+                })
+                
+                # 更新用户请求为错误反馈
+                user_request = error_feedback
+                
+                # 检查是否应该继续
+                if len(permanently_failed_tools) > 3:
+                    logger.error(f"❌ 永久失败的工具过多，停止重试")
+                    break
                 
             except Exception as e:
-                logger.error(f"❌ 迭代 {iteration_count} 处理异常: {str(e)}")
-                return {
-                    "success": False,
-                    "error": f"处理异常: {str(e)}",
-                    "iterations": iteration_count,
-                    "conversation_history": conversation_history
-                }
+                logger.error(f"❌ 第 {iteration_count} 次迭代异常: {str(e)}")
+                
+                # 🎯 新增：将异常信息添加到对话历史
+                error_msg = f"处理过程中发生异常: {str(e)}"
+                conversation_history.append({
+                    "role": "user",
+                    "content": error_msg,
+                    "iteration": iteration_count,
+                    "timestamp": time.time(),
+                    "is_error": True
+                })
+                
+                # 如果是最后一次迭代，返回错误
+                if iteration_count >= max_iterations:
+                    return {
+                        "success": False,
+                        "error": str(e),
+                        "iterations": iteration_count,
+                        "conversation_history": conversation_history
+                    }
+                
+                # 继续下一次迭代
+                user_request = error_msg
         
         # 达到最大迭代次数
-        logger.warning(f"⚠️ 达到最大迭代次数 {max_iterations}")
+        logger.warning(f"⚠️ 达到最大迭代次数 {max_iterations}，任务未完成")
         return {
             "success": False,
-            "error": f"达到最大迭代次数 {max_iterations}",
-            "iterations": max_iterations,
-            "conversation_history": conversation_history
+            "error": f"达到最大迭代次数 {max_iterations}，任务未完成",
+            "iterations": iteration_count,
+            "conversation_history": conversation_history,
+            "permanently_failed_tools": list(permanently_failed_tools),
+            "param_validation_failed_tools": list(param_validation_failed_tools)
         }
     
     async def _execute_enhanced_tool_call(self, tool_call: ToolCall) -> ToolResult:
@@ -810,14 +849,31 @@ class EnhancedBaseAgent(BaseAgent):
         }
     
     def _build_conversation_with_history(self, user_request: str, conversation_history: list) -> list:
-        """构建包含历史的对话"""
-        conversation = [{"role": "user", "content": user_request}]
+        """构建包含历史的对话 - 改进版本支持真正的多轮对话"""
+        # 🎯 改进：构建真正的多轮对话
+        conversation = []
         
-        # 添加历史对话
-        for entry in conversation_history:
-            role = entry.get("role", "user")
-            content = entry.get("content", "")
-            conversation.append({"role": role, "content": content})
+        # 添加系统提示
+        system_prompt = self._build_enhanced_system_prompt()
+        conversation.append({"role": "system", "content": system_prompt})
+        
+        # 🎯 新增：添加完整的对话历史
+        if conversation_history:
+            # 过滤掉系统消息，避免重复
+            filtered_history = [
+                entry for entry in conversation_history 
+                if entry.get("role") != "system"
+            ]
+            conversation.extend(filtered_history)
+            
+            self.logger.info(f"🔗 添加{len(filtered_history)}轮历史对话到当前对话")
+        
+        # 添加当前用户请求
+        conversation.append({"role": "user", "content": user_request})
+        
+        # 🎯 新增：记录对话长度
+        total_length = sum(len(msg.get("content", "")) for msg in conversation)
+        self.logger.info(f"📝 当前对话总长度: {total_length} 字符, {len(conversation)} 轮")
         
         return conversation
     

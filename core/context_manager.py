@@ -59,36 +59,29 @@ class ConversationTurn:
 
 @dataclass
 class IterationContext:
-    """单次迭代的完整上下文"""
+    """迭代上下文信息"""
     iteration_id: str
     iteration_number: int
     timestamp: float
-    
-    # 代码状态
     code_files: Dict[str, CodeContext]
     testbench_files: Dict[str, CodeContext]
-    
-    # 对话历史
     conversation_turns: List[ConversationTurn]
-    
-    # 编译和仿真结果
+    # 🎯 新增：端口信息管理
+    port_info: Dict[str, Dict[str, Any]] = None  # module_name -> port_info
+    agent_assignments: Dict[str, str] = None  # role -> agent_id
+    # 🎯 修复：添加缺失的compilation_errors属性
     compilation_errors: List[Dict[str, Any]] = None
-    simulation_results: Dict[str, Any] = None
-    test_failures: List[Dict[str, Any]] = None
+    simulation_errors: List[Dict[str, Any]] = None
     
-    # 分析结果
-    failure_analysis: Dict[str, Any] = None
-    improvement_suggestions: List[str] = None
-    
-    # 状态标记
-    compilation_success: bool = False
-    simulation_success: bool = False
-    all_tests_passed: bool = False
-    
-    # 🎯 新增：成功经验累积
-    success_patterns: Dict[str, Any] = None  # 成功模式
-    error_lessons: List[str] = None  # 错误教训
-    code_improvements: List[str] = None  # 代码改进点
+    def __post_init__(self):
+        if self.port_info is None:
+            self.port_info = {}
+        if self.agent_assignments is None:
+            self.agent_assignments = {}
+        if self.compilation_errors is None:
+            self.compilation_errors = []
+        if self.simulation_errors is None:
+            self.simulation_errors = []
 
 
 class FullContextManager:
@@ -123,7 +116,83 @@ class FullContextManager:
             },
             "error_lessons": [],
             "successful_code_snippets": [],
-            "failure_patterns": []
+            "failure_patterns": [],
+            # 🎯 新增：端口信息全局缓存
+            "global_port_info": {}  # module_name -> port_info
+        }
+    
+    def add_port_info(self, module_name: str, port_info: Dict[str, Any]) -> None:
+        """添加端口信息到当前迭代和全局缓存"""
+        if self.current_iteration:
+            self.current_iteration.port_info[module_name] = port_info
+        
+        # 同时更新全局缓存
+        self.global_context["global_port_info"][module_name] = port_info
+    
+    def get_port_info(self, module_name: str) -> Optional[Dict[str, Any]]:
+        """获取模块的端口信息"""
+        # 优先从当前迭代获取
+        if self.current_iteration and module_name in self.current_iteration.port_info:
+            return self.current_iteration.port_info[module_name]
+        
+        # 从全局缓存获取
+        return self.global_context["global_port_info"].get(module_name)
+    
+    def get_all_port_info(self) -> Dict[str, Dict[str, Any]]:
+        """获取所有端口信息"""
+        all_ports = {}
+        
+        # 合并当前迭代和全局缓存的端口信息
+        if self.current_iteration:
+            all_ports.update(self.current_iteration.port_info)
+        
+        all_ports.update(self.global_context["global_port_info"])
+        
+        return all_ports
+    
+    def validate_port_consistency(self, module_name: str, testbench_content: str) -> Dict[str, Any]:
+        """验证测试台端口与设计端口的一致性"""
+        design_ports = self.get_port_info(module_name)
+        if not design_ports:
+            return {"valid": False, "error": f"未找到模块 {module_name} 的端口信息"}
+        
+        import re
+        
+        # 提取测试台中的模块实例化
+        instance_pattern = rf'{module_name}\s+\w+\s*\(([^)]+)\);'
+        match = re.search(instance_pattern, testbench_content, re.DOTALL)
+        
+        if not match:
+            return {"valid": False, "error": f"未找到模块 {module_name} 的实例化"}
+        
+        instance_ports = match.group(1)
+        port_connections = []
+        
+        # 解析端口连接
+        for line in instance_ports.split(','):
+            line = line.strip()
+            if not line:
+                continue
+            
+            port_match = re.search(r'\.(\w+)\s*\(\s*(\w+)\s*\)', line)
+            if port_match:
+                port_name = port_match.group(1)
+                signal_name = port_match.group(2)
+                port_connections.append({"port": port_name, "signal": signal_name})
+        
+        # 验证端口连接
+        design_port_names = {port["name"] for port in design_ports["ports"]}
+        testbench_port_names = {conn["port"] for conn in port_connections}
+        
+        missing_ports = design_port_names - testbench_port_names
+        extra_ports = testbench_port_names - design_port_names
+        
+        return {
+            "valid": len(missing_ports) == 0 and len(extra_ports) == 0,
+            "missing_ports": list(missing_ports),
+            "extra_ports": list(extra_ports),
+            "design_ports": design_ports,
+            "testbench_connections": port_connections
         }
     
     def start_new_iteration(self, iteration_number: int) -> str:
@@ -241,7 +310,10 @@ class FullContextManager:
             "complete_conversation_history": self._get_complete_conversation_history(),
             "detailed_error_context": self._get_detailed_error_context(),
             "previous_iterations_summary": self._get_previous_iterations_summary(),
-            "agent_collaboration_history": self._get_agent_collaboration_history()
+            "agent_collaboration_history": self._get_agent_collaboration_history(),
+            # 🎯 新增：端口信息传递
+            "port_info": self.get_all_port_info(),
+            "current_iteration_port_info": self.current_iteration.port_info if self.current_iteration else {}
         }
         
         return context

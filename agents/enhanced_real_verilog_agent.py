@@ -390,10 +390,10 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         {
             "tool_name": "generate_verilog_code",
             "parameters": {
-                "module_name": "simple_adder",
-                "requirements": "设计一个8位加法器",
-                "input_ports": ["a [7:0]", "b [7:0]", "cin"],
-                "output_ports": ["sum [7:0]", "cout"],
+                "module_name": "target_module",
+                "requirements": "设计目标模块",
+                "input_ports": ["input1 [7:0]", "input2 [7:0]", "ctrl"],
+                "output_ports": ["output1 [7:0]", "status"],
                 "coding_style": "rtl"
             }
         }
@@ -408,8 +408,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         {
             "tool_name": "generate_verilog_code", 
             "parameters": {
-                "module_name": "simple_adder",
-                "requirements": "设计一个8位加法器",
+                "module_name": "target_module",
+                "requirements": "设计目标模块",
                 "input_ports": [
                     {"name": "a", "width": 8, "description": "第一个操作数"},
                     {"name": "b", "width": 8, "description": "第二个操作数"},
@@ -519,15 +519,27 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     async def execute_enhanced_task(self, enhanced_prompt: str,
                                   original_message: TaskMessage,
                                   file_contents: Dict[str, Dict]) -> Dict[str, Any]:
-        """执行增强的Verilog设计任务"""
+        """执行增强的Verilog设计任务 - 支持多轮对话"""
         task_id = original_message.task_id
         self.logger.info(f"🎯 开始执行增强Verilog设计任务: {task_id}")
         
+        # 🎯 新增：从任务消息中获取对话历史
+        conversation_history = []
+        if original_message.metadata:
+            # 从元数据中获取对话历史
+            conversation_history = original_message.metadata.get("conversation_history", [])
+            self.logger.info(f"🔗 从任务消息获取到{len(conversation_history)}轮对话历史")
+            
+            # 检查是否为持续对话
+            if original_message.metadata.get("persistent_conversation", False):
+                self.logger.info(f"🔗 检测到持续对话模式: {original_message.metadata.get('conversation_id', 'unknown')}")
+        
         try:
-            # 使用增强验证处理流程，但限制最大迭代次数为3，避免无限循环
+            # 🎯 新增：使用增强验证处理流程，传递对话历史
             result = await self.process_with_enhanced_validation(
                 user_request=enhanced_prompt,
-                max_iterations=3  # 减少最大迭代次数，避免无限循环
+                max_iterations=3,  # 减少最大迭代次数，避免无限循环
+                conversation_history=conversation_history  # 传递对话历史
             )
             
             if result["success"]:
@@ -536,11 +548,15 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                     "success": True,
                     "task_id": task_id,
                     "response": result.get("response", ""),
+                    "content": result.get("content", result.get("response", "")),
                     "tool_results": result.get("tool_results", []),
+                    "tool_calls": result.get("tool_calls", []),
                     "iterations": result.get("iterations", 1),
+                    "conversation_history": result.get("conversation_history", []),
                     "quality_metrics": {
                         "schema_validation_passed": True,
-                        "parameter_errors_fixed": result.get("iterations", 1) > 1
+                        "parameter_errors_fixed": result.get("iterations", 1) > 1,
+                        "conversation_rounds": len(result.get("conversation_history", []))
                     }
                 }
             else:
@@ -549,7 +565,10 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                     "success": False,
                     "task_id": task_id,
                     "error": result.get("error", "Unknown error"),
-                    "iterations": result.get("iterations", 1)
+                    "iterations": result.get("iterations", 1),
+                    "conversation_history": result.get("conversation_history", []),
+                    "permanently_failed_tools": result.get("permanently_failed_tools", []),
+                    "param_validation_failed_tools": result.get("param_validation_failed_tools", [])
                 }
                 
         except Exception as e:
@@ -557,7 +576,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             return {
                 "success": False,
                 "task_id": task_id,
-                "error": f"执行异常: {str(e)}"
+                "error": f"执行异常: {str(e)}",
+                "conversation_history": conversation_history
             }
     
     # =============================================================================
@@ -569,7 +589,9 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         combinational_keywords = [
             "纯组合逻辑", "combinational", "组合电路", "无时钟", "无时序",
             "always @(*)", "assign", "组合逻辑", "无寄存器", "纯组合",
-            "不涉及时钟", "不包含时钟", "不包含复位", "不包含寄存器"
+            "不涉及时钟", "不包含时钟", "不包含复位", "不包含寄存器",
+            "使用组合逻辑实现", "无时钟和复位信号", "组合逻辑实现",
+            "wire类型", "assign语句", "always @(*)语句"
         ]
         
         requirements_lower = requirements.lower()
@@ -581,11 +603,28 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         sequential_exclusions = [
             "不能包含时钟", "不能包含复位", "不能包含寄存器",
             "不包含时钟", "不包含复位", "不包含寄存器",
-            "无需时钟", "无需复位", "无需寄存器"
+            "无需时钟", "无需复位", "无需寄存器",
+            "无时钟和复位信号", "无时钟需求", "无复位需求"
         ]
         for exclusion in sequential_exclusions:
             if exclusion in requirements_lower:
                 return True
+        
+        # 检查ALU特定需求
+        alu_combinational_indicators = [
+            "算术逻辑单元", "alu", "运算单元", "算术运算", "逻辑运算",
+            "加法", "减法", "与运算", "或运算", "异或运算", "移位运算"
+        ]
+        
+        # 如果包含ALU相关词汇且没有时序相关词汇，倾向于组合逻辑
+        has_alu_keywords = any(keyword in requirements_lower for keyword in alu_combinational_indicators)
+        has_sequential_keywords = any(keyword in requirements_lower for keyword in [
+            "时钟", "clk", "复位", "rst", "寄存器", "reg", "触发器", "flip-flop",
+            "同步", "synchronous", "时序", "sequential", "always @(posedge"
+        ])
+        
+        if has_alu_keywords and not has_sequential_keywords:
+            return True
         
         return False
     
@@ -605,82 +644,66 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     def _build_dynamic_generation_prompt(self, module_name: str, requirements: str,
                                        input_ports: List[Dict], output_ports: List[Dict],
                                        coding_style: str, enhanced_context: Dict) -> str:
-        """构建动态的代码生成prompt"""
+        """构建动态代码生成提示"""
         
         # 检测设计类型
         is_combinational = self._detect_combinational_requirement(requirements)
         
         # 构建端口信息
-        input_info = self._build_port_info(input_ports, "input")
-        output_info = self._build_port_info(output_ports, "output")
+        input_port_info = self._build_port_info(input_ports, "input")
+        output_port_info = self._build_port_info(output_ports, "output")
         
-        # 根据设计类型构建不同的prompt
+        # 根据设计类型选择不同的提示模板
         if is_combinational:
-            return f"""
-请生成一个名为 {module_name} 的Verilog模块，要求如下：
-
-功能需求: {enhanced_context.get('basic_requirements', requirements)}
-编码风格: {coding_style}
-
-🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
-
-端口定义:
-{input_info}
-{output_info}
-
-{enhanced_context.get('error_analysis', '')}
-{enhanced_context.get('improvement_suggestions', '')}
-{enhanced_context.get('historical_context', '')}
-
-🚨 **关键要求 - 请严格遵守**:
-1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
-2. 只能使用 always @(*) 或 assign 语句
-3. 输出端口使用 wire 类型，不能使用 reg 类型
-4. 不要包含时钟和复位端口
-5. 请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记
-6. 不要使用```verilog 或 ``` 标记
-7. 不要添加"以下是..."、"说明："等解释性文字
-8. 直接从 module 开始，以 endmodule 结束
-
-代码要求：
-1. 模块声明
-2. 端口定义  
-3. 内部信号声明
-4. 功能实现
-5. 适当的注释
-
-确保代码符合IEEE 1800标准并可被综合工具处理。
-"""
-        else:
-            # 时序逻辑的prompt
-            return f"""
-请生成一个名为 {module_name} 的Verilog模块，要求如下：
-
-功能需求: {enhanced_context.get('basic_requirements', requirements)}
-编码风格: {coding_style}
-
-端口定义:
-{input_info}
-{output_info}
-
-{enhanced_context.get('error_analysis', '')}
-{enhanced_context.get('improvement_suggestions', '')}
-{enhanced_context.get('historical_context', '')}
-
-🚨 **关键要求 - 请严格遵守**:
+            design_type_instruction = """
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
 请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
 不要使用```verilog 或 ``` 标记。
 不要添加"以下是..."、"说明："等解释性文字。
 直接从 module 开始，以 endmodule 结束。
 
 代码要求：
-1. 模块声明
-2. 端口定义  
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
 3. 内部信号声明
-4. 功能实现
+4. 组合逻辑功能实现（使用always @(*)或assign）
 5. 适当的注释
 
 确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+        else:
+            design_type_instruction = """
+🚨 **时序逻辑设计关键要求 - 请严格遵守**:
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（包含时钟和复位端口）
+2. 端口定义（输出使用reg类型）
+3. 内部信号声明
+4. 时序逻辑功能实现（always @(posedge clk)）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+"""
+        
+        return f"""
+请生成一个名为 {module_name} 的Verilog模块，要求如下：
+
+功能需求: {enhanced_context.get('basic_requirements', requirements)}
+编码风格: {coding_style}
+
+端口定义:
+{input_port_info}
+{output_port_info}
+
+{enhanced_context.get('error_analysis', '')}
+{enhanced_context.get('improvement_suggestions', '')}
+{enhanced_context.get('historical_context', '')}
+
+{design_type_instruction}
 """
     
     # =============================================================================

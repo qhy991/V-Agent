@@ -1,0 +1,3229 @@
+统一测试驱动开发(TDD)测试入口
+==================================================
+[TDD] 统一TDD测试初始化
+   设计类型: alu
+   配置档案: standard
+   实验ID: unified_tdd_alu_1754296630
+   输出目录: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+================================================================================
+[START] 开始统一TDD实验: ALU
+================================================================================
+设置框架和智能体...
+实验管理器设置完成:
+   - 基础路径: tdd_experiments
+   - 当前实验: unified_tdd_alu_1754296630
+   - 实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+   - 创建路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+[OK] 实验目录创建成功: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+✅ 成功加载环境配置: C:\Users\84672\Documents\Research\V-Agent\.env
+✅ 增强日志系统初始化成功
+📂 实验目录: logs\experiment_20250804_163710
+📁 工件目录: logs\experiment_20250804_163710\artifacts
+📋 主日志目录: logs
+16:37:10 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+16:37:10 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_verilog_agent
+16:37:10 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-coder-30b-a3b-instruct
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_design_requirements (安全级别: normal)
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_verilog_code (安全级别: high)
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: search_existing_modules (安全级别: normal)
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+16:37:10 - EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+16:37:10 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+16:37:10 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+16:37:10 - LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-coder-30b-a3b-instruct
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+16:37:10 - Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+16:37:10 - EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+智能体实验路径设置:
+   - Verilog Agent ID: enhanced_real_verilog_agent
+   - Review Agent ID: enhanced_real_code_review_agent
+   - 实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+16:37:10 - ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+16:37:10 - ToolRegistry - INFO - 🛠️ 基础工具注册完成
+16:37:10 - Agent.centralized_coordinator - INFO - 🛠️ 传统工具调用已启用: 权限=5
+16:37:10 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: write_file
+16:37:10 - Agent.centralized_coordinator - INFO - 🔧 注册Function Calling工具: read_file
+16:37:10 - Agent.centralized_coordinator - INFO - ✅ EnhancedCentralizedCoordinator (Function Calling支持) 初始化完成
+16:37:10 - Agent.centralized_coordinator - INFO - 🧠 中心化协调智能体初始化完成
+16:37:10 - Agent.centralized_coordinator - INFO - 🧠⚡ 增强中心化协调智能体初始化完成 - Schema系统支持已启用
+16:37:10 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_verilog_agent (verilog_designer) - Schema工具: 4
+16:37:10 - Agent.centralized_coordinator - INFO - ✅⚡ 增强智能体注册成功: enhanced_real_code_review_agent (code_reviewer) - Schema工具: 5
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 测试驱动协调器扩展已初始化
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔗 持续对话模式: 启用
+框架设置完成
+设计需求已准备
+测试台: 将由AI生成
+配置: standard ({'max_iterations': 2, 'timeout_per_iteration': 300, 'deep_analysis': True})
+🔍 验证实验配置...
+🔍 验证实验配置...
+✅ 实验配置验证通过
+✅ 实验配置验证完成
+启动测试驱动开发循环...
+   最大迭代次数: 2
+   每次迭代超时: 300秒
+   持续对话模式: 已启用
+   强制测试台生成: 已启用
+   强制仿真验证: 已启用
+   智能参数处理: 已启用
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🚀 开始执行测试驱动任务
+16:37:10 - core.experiment_manager - INFO - 🧪 创建实验: tdd_1754296630_1754296630
+16:37:10 - core.experiment_manager - INFO -    工作目录: tdd_experiments\tdd_1754296630_1754296630
+16:37:10 - core.experiment_manager - INFO -    任务描述: 
+🎨 强制设计阶段
+
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+
+**操作码定义（必须严格按照以下映射）**：
+- 4'b0000: 加法(ADD) - result = a + b
+-...
+16:37:10 - core.file_manager - INFO - 🗂️ 中央文件管理器已初始化，工作空间: tdd_experiments\tdd_1754296630_1754296630
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 创建实验会话: tdd_1754296630_1754296630
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO -    工作目录: tdd_experiments\tdd_1754296630_1754296630
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 开始TDD循环: tdd_session_tdd_1754296630_1754296630
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 开始第 1 次迭代
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔄 执行第 1 次TDD迭代
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎨 执行设计阶段: 迭代 1
+16:37:10 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 首次选择设计智能体
+16:37:10 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296630
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '
+🎨 第1次迭代 - 初始设计阶段
+
+请根据以下需求设计Verilog模块：
+
+
+🎨 强制设计阶段
+
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+
+**操作码定义（必须严格按照以下映射）**：
+- 4'b0000: 加法(ADD) - result = a + b
+- 4'b0001: 减法(SUB) - result = a - b  
+- 4'b0010: 逻辑与(AND) - result = a & b
+- 4'b0011: 逻辑或(OR) - result = a | b
+- 4'b0100: 异或(XOR) - result = a ^ b
+- 4'b0101: 逻辑左移(SLL) - result = a << b[4:0]
+- 4'b0110: 逻辑右移(SRL) - result = a >> b[4:0]
+- 其他操作码: result = 32'h00000000
+
+**模块接口（必须完全匹配）**：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero      // 零标志 (result == 0 时为1)
+);
+```
+
+**功能要求**：
+1. 实现所有7种基本运算（ADD, SUB, AND, OR, XOR, SLL, SRL）
+2. 移位操作使用b的低5位作为移位量
+3. zero信号在result为0时输出1，否则输出0
+4. 使用组合逻辑实现，无时钟和复位信号
+5. 对于无效操作码，输出全0结果
+
+**严格警告**：
+- 模块名必须是alu_32bit
+- 端口名和位宽必须完全匹配
+- 操作码映射必须严格按照上述定义
+- 移位操作必须使用b[4:0]作为移位量
+            
+
+强制要求：
+1. 必须使用 generate_verilog_code 工具生成完整的Verilog代码
+2. 必须保存代码文件到实验目录
+3. 必须确保代码符合所有需求规范
+4. 必须生成可编译的代码文件
+5. 不要只分析需求，必须实际生成代码
+
+请立即执行代码生成，不要跳过此步骤。
+
+
+设计要求：
+1. 严格按照需求规范实现
+2. 确保模块名、端口名和位宽完全匹配
+3. 使用清晰的代码结构和注释
+4. 考虑边界条件和异常情况
+5. 生成完整的Verilog代码文件
+
+请生成完整的Verilog设计文件。
+'
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '
+🎨 第1次迭代 - 初始设计阶段
+
+请根据以下需求设计verilog模块：
+
+
+🎨 强制设计阶段
+
+
+设计一个32位算术逻辑单元(alu)，支持以下操作：
+
+**操作码定义（必须严格按照以下映射）**：
+- 4'b0000: 加法(add) - result = a + b
+- 4'b0001: 减法(sub) - result = a - b  
+- 4'b0010: 逻辑与(and) - result = a & b
+- 4'b0011: 逻辑或(or) - result = a | b
+- 4'b0100: 异或(xor) - result = a ^ b
+- 4'b0101: 逻辑左移(sll) - result = a << b[4:0]
+- 4'b0110: 逻辑右移(srl) - result = a >> b[4:0]
+- 其他操作码: result = 32'h00000000
+
+**模块接口（必须完全匹配）**：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数a
+    input  [31:0] b,        // 操作数b
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero      // 零标志 (result == 0 时为1)
+);
+```
+
+**功能要求**：
+1. 实现所有7种基本运算（add, sub, and, or, xor, sll, srl）
+2. 移位操作使用b的低5位作为移位量
+3. zero信号在result为0时输出1，否则输出0
+4. 使用组合逻辑实现，无时钟和复位信号
+5. 对于无效操作码，输出全0结果
+
+**严格警告**：
+- 模块名必须是alu_32bit
+- 端口名和位宽必须完全匹配
+- 操作码映射必须严格按照上述定义
+- 移位操作必须使用b[4:0]作为移位量
+            
+
+强制要求：
+1. 必须使用 generate_verilog_code 工具生成完整的verilog代码
+2. 必须保存代码文件到实验目录
+3. 必须确保代码符合所有需求规范
+4. 必须生成可编译的代码文件
+5. 不要只分析需求，必须实际生成代码
+
+请立即执行代码生成，不要跳过此步骤。
+
+
+设计要求：
+1. 严格按照需求规范实现
+2. 确保模块名、端口名和位宽完全匹配
+3. 使用清晰的代码结构和注释
+4. 考虑边界条件和异常情况
+5. 生成完整的verilog代码文件
+
+请生成完整的verilog设计文件。
+'
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected design keywords: ['设计', '实现', '生成', 'generate']
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: design
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 9
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['code_generation', 'module_design']
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "design",
+  "complexity": 9,
+  "required_capabilities": [
+    "code_generation",
+    "module_design"
+  ],
+  "estimated_hours": 4.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 83.0
+16:37:10 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 45.0
+16:37:10 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_verilog_agent (得分: 83.0)
+16:37:10 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296630
+16:37:10 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_verilog_agent 发言
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 📨 收到任务消息: task_execution
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🎯 开始执行增强Verilog设计任务: conv_1754296630
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 🔗 从任务消息获取到0轮对话历史
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 
+🎨 第1次迭代 - 初始设计阶段
+
+请根据以下需求设计Verilog模块：
+
+
+🎨 强制设计阶段
+
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+
+**操作码定义（必须严格按照以下映射）*...
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:10 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/3 次迭代
+16:37:10 - Agent.enhanced_real_verilog_agent - INFO - 📝 当前对话总长度: 5667 字符, 2 轮
+16:37:10 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:10 - LLMClient-dashscope - INFO - 📋 System Prompt (4510 字符):
+16:37:10 - LLMClient-dashscope - INFO - 📋 你是一位专业的Verilog HDL设计专家，具备以下能力：
+
+🔧 **核心能力**:
+- Verilog/SystemVerilog代码设计和生成
+- 数字电路架构设计
+- 时序分析和优化
+- 可综合代码编写
+- 测试台(Testbench)开发
+
+📋 **工作原则**:
+1. 严格遵循IEEE 1800标准
+2. 编写可综合、可仿真的代码
+3. 注重代码可读性和维护性
+4. 确保时序收敛和功能正确性
+5. 使用标准化的命名规范
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",  
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **端口定义灵活格式**:
+- ✅ 字符串格式: `["a [7:0]", "b [7:0]", "cin"]`
+- ✅ 对象格式: `[{"name": "a", "width": 8}, {"name": "b", "width": 8}, {"name": "cin", "width": 1}]`
+- 💡 系统会自动转换字符串格式为对象格式
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `design_files` → `verilog_files`
+- `test_cases` → `test_scenarios`
+- 💡 使用任一格式都会被智能识别
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从需求描述中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "target_module",
+                "requirements": "设计目标模块",
+                "input_ports": ["input1 [7:0]", "input2 [7:0]", "ctrl"],
+                "output_ports": ["output1 [7:0]", "status"],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code", 
+            "parameters": {
+                "module_name": "target_module",
+                "requirements": "设计目标模块",
+                "input_ports": [
+                    {"name": "a", "width": 8, "description": "第一个操作数"},
+                    {"name": "b", "width": 8, "description": "第二个操作数"},
+                    {"name": "cin", "width": 1, "description": "输入进位"}
+                ],
+                "output_ports": [
+                    {"name": "sum", "width": 8, "description": "加法结果"},
+                    {"name": "cout", "width": 1, "description": "输出进位"}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. analyze_design_requirements
+- `requirements` (必需): 设计需求描述
+- `design_type` (可选): "combinational", "sequential", "mixed", "custom"
+- `complexity_level` (可选): "simple", "medium", "complex", "advanced"
+
+### 2. generate_verilog_code  
+- `module_name` (必需): 模块名称
+- `requirements` (必需): 设计需求和功能描述
+- `input_ports` (可选): 输入端口定义（支持字符串或对象数组）
+- `output_ports` (可选): 输出端口定义（支持字符串或对象数组）
+- `coding_style` (可选): "behavioral", "structural", "rtl", "mixed"
+
+### 3. search_existing_modules
+- `module_type` (可选): "arithmetic", "memory", "interface", "controller", "dsp", "custom"
+- `functionality` (可选): 功能关键词描述
+- `complexity_filter` (可选): "simple", "medium", "complex", "any"
+- `max_results` (可选): 最大返回结果数，1-50
+
+### 4. generate_testbench
+- `module_name` (必需): 目标模块名称
+- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
+- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
+- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
+
+### 5. write_file
+- `filename` (必需): 文件名
+- `content` (必需): 文件内容
+- `description` (可选): 文件描述
+
+### 6. read_file
+- `filepath` (必需): 文件路径
+- `encoding` (可选): 文件编码，默认"utf-8"
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字符串格式定义端口，如 `"a [7:0]"`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于设计逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+**当收到设计任务时，建议流程**:
+1. 分析设计需求 (analyze_design_requirements)
+2. 搜索现有模块 (可选，search_existing_modules)  
+3. 生成Verilog代码 (generate_verilog_code)
+4. 生成测试台 (generate_testbench)
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **设计类型识别指导**:
+- 如果需求明确提到"纯组合逻辑"、"combinational"、"无时钟"等关键词，使用组合逻辑设计
+- 组合逻辑设计：使用 always @(*) 或 assign，输出使用 wire 类型
+- 时序逻辑设计：使用 always @(posedge clk)，输出使用 reg 类型
+
+⚠️ **组合逻辑设计规则**:
+1. 不能包含时钟信号 (clk)
+2. 不能包含复位信号 (rst)  
+3. 不能使用 always @(posedge clk) 语句
+4. 输出端口使用 wire 类型，不能使用 reg 类型
+5. 只能使用 always @(*) 或 assign 语句
+6. 不能包含任何寄存器或触发器
+
+⚠️ **时序逻辑设计规则**:
+1. 必须包含时钟信号 (clk)
+2. 通常包含复位信号 (rst)
+3. 使用 always @(posedge clk) 语句
+4. 输出端口使用 reg 类型
+5. 可以包含寄存器和触发器
+
+🔍 **智能检测**: 系统会自动检测设计类型并生成相应的代码结构。
+
+16:37:10 - LLMClient-dashscope - INFO - 👤 User Prompt (1162 字符):
+16:37:10 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 
+🎨 第1次迭代 - 初始设计阶段
+
+请根据以下需求设计Verilog模块：
+
+
+🎨 强制设计阶段
+
+
+设计一个32位算术逻辑单元(ALU)，支持以下操作：
+
+**操作码定义（必须严格按照以下映射）**：
+- 4'b0000: 加法(ADD) - result = a + b
+- 4'b0001: 减法(SUB) - result = a - b  
+- 4'b0010: 逻辑与(AND) - result = a & b
+- 4'b0011: 逻辑或(OR) - result = a | b
+- 4'b0100: 异或(XOR) - result = a ^ b
+- 4'b0101: 逻辑左移(SLL) - result = a << b[4:0]
+- 4'b0110: 逻辑右移(SRL) - result = a >> b[4:0]
+- 其他操作码: result = 32'h00000000
+
+**模块接口（必须完全匹配）**：
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero      // 零标志 (result == 0 时为1)
+);
+```
+
+**功能要求**：
+1. 实现所有7种基本运算（ADD, SUB, AND, OR, XOR, SLL, SRL）
+2. 移位操作使用b的低5位作为移位量
+3. zero信号在result为0时输出1，否则输出0
+4. 使用组合逻辑实现，无时钟和复位信号
+5. 对于无效操作码，输出全0结果
+
+**严格警告**：
+- 模块名必须是alu_32bit
+- 端口名和位宽必须完全匹配
+- 操作码映射必须严格按照上述定义
+- 移位操作必须使用b[4:0]作为移位量
+            
+
+强制要求：
+1. 必须使用 generate_verilog_code 工具生成完整的Verilog代码
+2. 必须保存代码文件到实验目录
+3. 必须确保代码符合所有需求规范
+4. 必须生成可编译的代码文件
+5. 不要只分析需求，必须实际生成代码
+
+请立即执行代码生成，不要跳过此步骤。
+
+
+设计要求：
+1. 严格按照需求规范实现
+2. 确保模块名、端口名和位宽完全匹配
+3. 使用清晰的代码结构和注释
+4. 考虑边界条件和异常情况
+5. 生成完整的Verilog代码文件
+
+请生成完整的Verilog设计文件。
+16:37:10 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:12 - LLMClient-dashscope - INFO - 🤖 LLM响应 (720 字符, 2.34s):
+16:37:12 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_verilog_code",
+            "parameters": {
+                "module_name": "alu_32bit",
+                "requirements": "32位算术逻辑单元(ALU)，支持加法、减法、逻辑与、逻辑或、异或、逻辑左移、逻辑右移等7种基本运算，操作码严格按指定映射，移位操作使用b的低5位作为移位量，zero标志在result为0时输出1。",
+                "input_ports": [
+                    {"name": "a", "width": 32},
+                    {"name": "b", "width": 32},
+                    {"name": "op", "width": 4}
+                ],
+                "output_ports": [
+                    {"name": "result", "width": 32},
+                    {"name": "zero", "width": 1}
+                ],
+                "coding_style": "rtl"
+            }
+        }
+    ]
+}
+```
+16:37:12 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:12 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 使用统一Schema标准化参数
+16:37:12 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_verilog_code 参数适配成功: 应用智能字段映射
+16:37:12 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_verilog_code 参数验证通过
+16:37:12 - Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: alu_32bit
+16:37:12 - Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+16:37:12 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:12 - LLMClient-dashscope - INFO - 📋 System Prompt (45 字符):
+16:37:12 - LLMClient-dashscope - INFO - 📋 你是专业的Verilog工程师，请生成高质量的可综合代码。特别注意避免历史错误和改进建议。
+16:37:12 - LLMClient-dashscope - INFO - 👤 User Prompt (803 字符):
+16:37:12 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请生成一个名为 alu_32bit 的Verilog模块，要求如下：
+
+功能需求: 32位算术逻辑单元(ALU)，支持加法、减法、逻辑与、逻辑或、异或、逻辑左移、逻辑右移等7种基本运算，操作码严格按指定映射，移位操作使用b的低5位作为移位量，zero标志在result为0时输出1。
+编码风格: rtl
+
+🚨 **重要约束**: 这是纯组合逻辑设计，不能包含任何时序元件（时钟、复位、寄存器）
+
+端口定义:
+    input [31:0] a,  // 
+    input [31:0] b,  // 
+    input [3:0] op,  //
+    output [31:0] result,  // 
+    output zero,  //
+
+
+
+
+
+🚨 **组合逻辑设计关键要求 - 请严格遵守**:
+1. 使用纯组合逻辑，不能包含 always @(posedge clk) 或 always @(posedge rst)
+2. 只能使用 always @(*) 或 assign 语句
+3. 输出端口使用 wire 类型，不能使用 reg 类型
+4. 不要包含时钟和复位端口
+5. 不能包含任何寄存器或触发器
+6. 所有输出必须通过组合逻辑直接计算
+
+请只返回纯净的Verilog代码，不要包含任何解释文字、Markdown格式或代码块标记。
+不要使用```verilog 或 ``` 标记。
+不要添加"以下是..."、"说明："等解释性文字。
+直接从 module 开始，以 endmodule 结束。
+
+代码要求：
+1. 模块声明（不包含时钟和复位端口）
+2. 端口定义（输出使用wire类型）
+3. 内部信号声明（wire类型）
+4. 组合逻辑功能实现（always @(*) 或 assign）
+5. 适当的注释
+
+确保代码符合IEEE 1800标准并可被综合工具处理。
+
+16:37:12 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:17 - LLMClient-dashscope - INFO - 🤖 LLM响应 (1214 字符, 4.35s):
+16:37:17 - LLMClient-dashscope - INFO - 🤖 module alu_32bit (
+    input [31:0] a,
+    input [31:0] b,
+    input [3:0] op,
+    output [31:0] result,
+    output zero
+);
+
+    wire [31:0] add_result;
+    wire [31:0] sub_result;
+    wire [31:0] and_result;
+    wire [31:0] or_result;
+    wire [31:0] xor_result;
+    wire [31:0] shl_result;
+    wire [31:0] shr_result;
+
+    // 加法运算
+    assign add_result = a + b;
+
+    // 减法运算
+    assign sub_result = a - b;
+
+    // 逻辑与运算
+    assign and_result = a & b;
+
+    // 逻辑或运算
+    assign or_result = a | b;
+
+    // 异或运算
+    assign xor_result = a ^ b;
+
+    // 逻辑左移运算
+    assign shl_result = a << b[4:0];
+
+    // 逻辑右移运算
+    assign shr_result = a >> b[4:0];
+
+    // 根据操作码选择结果
+    always @(*) begin
+        case (op)
+            4'b0000: result = add_result;   // 加法
+            4'b0001: result = sub_result;   // 减法
+            4'b0010: result = and_result;   // 逻辑与
+            4'b0011: result = or_result;    // 逻辑或
+            4'b0100: result = xor_result;   // 异或
+            4'b0101: result = shl_result;   // 左移
+            4'b0110: result = shr_result;   // 右移
+            default: result = 32'h0;        // 默认值
+        endcase
+    end
+
+    // 零标志位：当结果为0时输出1
+    assign zero = (result == 32'h0) ? 1'b1 : 1'b0;
+
+endmodule
+16:37:17 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: alu_32bit.v
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 1214
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 1214
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 1214
+16:37:17 - Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+16:37:17 - core.file_manager - INFO - 🆔 生成新文件ID: 70502857
+16:37:17 - core.file_manager - INFO - 🆕 创建新文件引用: 70502857 (版本: 1)
+16:37:17 - core.file_manager - INFO - 💾 文件已保存: alu_32bit.v (ID: 70502857, 类型: verilog, 版本: 1)
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已保存到实验文件夹: alu_32bit.v (ID: 70502857)
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_verilog_code 执行成功 (4.36s)
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真结果
+16:37:17 - Agent.enhanced_real_verilog_agent - INFO - ✅ 任务完成: conv_1754296630
+16:37:17 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_verilog_agent
+16:37:17 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_verilog_agent
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 工具结果中未找到文件引用，尝试从中央文件管理器获取
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择设计文件: alu_32bit.v (模块: alu_32bit)
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔍 智能选择: 1 个设计文件, 0 个测试台文件
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 选择最新设计文件: alu_32bit.v (模块: alu)
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 端口信息验证: 模块 alu_32bit 有 5 个端口
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧠 上下文管理器: 添加设计文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\artifacts\designs\alu_32bit.v (模块: alu_32bit)
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 最终提取到 1 个有效文件引用
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 执行测试阶段: 迭代 1
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 开始全面测试验证流程
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🧪 开始强制生成测试台
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🎯 获取到设计端口信息: alu_32bit - 5 个端口
+16:37:17 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - ✅ 找到设计文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v (在 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs)
+16:37:17 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296637
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '
+🧪 强制测试台生成任务
+
+你必须为以下设计生成测试台文件：
+
+- 文件名: alu_32bit.v
+  路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+
+
+**端口信息（必须严格匹配）**：
+模块名: alu_32bit
+端口列表:
+- input [31:0] a
+- input [31:0] b
+- input [3:0] op
+- output [31:0] result
+- output [0:0] zero
+
+**重要要求**：
+1. 必须使用 generate_testbench 工具生成测试台
+2. 必须包含所有功能的测试用例
+3. 必须包含边界条件测试
+4. 必须生成完整的测试台文件
+5. 必须保存测试台文件到实验目录
+6. **端口连接必须与设计文件完全一致**
+
+请立即执行测试台生成，不要跳过此步骤。
+'
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '
+🧪 强制测试台生成任务
+
+你必须为以下设计生成测试台文件：
+
+- 文件名: alu_32bit.v
+  路径: c:\users\84672\documents\research\v-agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+
+
+**端口信息（必须严格匹配）**：
+模块名: alu_32bit
+端口列表:
+- input [31:0] a
+- input [31:0] b
+- input [3:0] op
+- output [31:0] result
+- output [0:0] zero
+
+**重要要求**：
+1. 必须使用 generate_testbench 工具生成测试台
+2. 必须包含所有功能的测试用例
+3. 必须包含边界条件测试
+4. 必须生成完整的测试台文件
+5. 必须保存测试台文件到实验目录
+6. **端口连接必须与设计文件完全一致**
+
+请立即执行测试台生成，不要跳过此步骤。
+'
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected testing keywords: ['测试', 'testbench', 'test']
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: testing
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 9
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['test_generation', 'verification']
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "testing",
+  "complexity": 9,
+  "required_capabilities": [
+    "test_generation",
+    "verification"
+  ],
+  "estimated_hours": 4.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 63.0
+16:37:17 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 85.0
+16:37:17 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_code_review_agent (得分: 85.0)
+16:37:17 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296637
+16:37:17 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_code_review_agent 发言
+16:37:17 - Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+16:37:17 - Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754296637
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 
+🧪 强制测试台生成任务
+
+你必须为以下设计生成测试台文件：
+
+- 文件名: alu_32bit.v
+  路径: C:\Users\84672\Documents\Research\V-Agent\t...
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:17 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+16:37:17 - Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5857 字符, 2 轮
+16:37:17 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:17 - LLMClient-dashscope - INFO - 📋 System Prompt (5405 字符):
+16:37:17 - LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+
+16:37:17 - LLMClient-dashscope - INFO - 👤 User Prompt (457 字符):
+16:37:17 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 
+🧪 强制测试台生成任务
+
+你必须为以下设计生成测试台文件：
+
+- 文件名: alu_32bit.v
+  路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+
+
+**端口信息（必须严格匹配）**：
+模块名: alu_32bit
+端口列表:
+- input [31:0] a
+- input [31:0] b
+- input [3:0] op
+- output [31:0] result
+- output [0:0] zero
+
+**重要要求**：
+1. 必须使用 generate_testbench 工具生成测试台
+2. 必须包含所有功能的测试用例
+3. 必须包含边界条件测试
+4. 必须生成完整的测试台文件
+5. 必须保存测试台文件到实验目录
+6. **端口连接必须与设计文件完全一致**
+
+请立即执行测试台生成，不要跳过此步骤。
+16:37:17 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:20 - LLMClient-dashscope - INFO - 🤖 LLM响应 (2017 字符, 3.80s):
+16:37:20 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "alu_32bit",
+                "verilog_code": "module alu_32bit(\n    input [31:0] a,\n    input [31:0] b,\n    input [3:0] op,\n    output [31:0] result,\n    output [0:0] zero\n);\nendmodule",
+                "test_scenarios": [
+                    {
+                        "name": "addition_test",
+                        "description": "加法运算测试"
+                    },
+                    {
+                        "name": "subtraction_test",
+                        "description": "减法运算测试"
+                    },
+                    {
+                        "name": "multiplication_test",
+                        "description": "乘法运算测试"
+                    },
+                    {
+                        "name": "division_test",
+                        "description": "除法运算测试"
+                    },
+                    {
+                        "name": "logical_and_test",
+                        "description": "逻辑与运算测试"
+                    },
+                    {
+                        "name": "logical_or_test",
+                        "description": "逻辑或运算测试"
+                    },
+                    {
+                        "name": "logical_xor_test",
+                        "description": "逻辑异或运算测试"
+                    },
+                    {
+                        "name": "shift_left_test",
+                        "description": "左移运算测试"
+                    },
+                    {
+                        "name": "shift_right_test",
+                        "description": "右移运算测试"
+                    },
+                    {
+                        "name": "zero_flag_test",
+                        "description": "零标志位测试"
+                    },
+                    {
+                        "name": "boundary_test",
+                        "description": "边界条件测试"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+16:37:20 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:20 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 使用统一Schema标准化参数
+16:37:20 - core.schema_system.field_mapper - INFO - 智能字段匹配: code -> module_code
+16:37:20 - core.schema_system.enhanced_base_agent - INFO - 🔄 generate_testbench 参数适配成功: 应用智能字段映射
+16:37:20 - core.schema_system.enhanced_base_agent - INFO - ✅ generate_testbench 参数验证通过
+16:37:20 - Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: alu_32bit
+16:37:20 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:20 - LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+16:37:20 - LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+16:37:20 - LLMClient-dashscope - INFO - 👤 User Prompt (882 字符):
+16:37:20 - LLMClient-dashscope - INFO - 👤 User Prompt: 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: alu_32bit
+```verilog
+module alu_32bit(
+    input [31:0] a,
+    input [31:0] b,
+    input [3:0] op,
+    output [31:0] result,
+    output [0:0] zero
+);
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- addition_test: 加法运算测试
+- subtraction_test: 减法运算测试
+- multiplication_test: 乘法运算测试
+- division_test: 除法运算测试
+- logical_and_test: 逻辑与运算测试
+- logical_or_test: 逻辑或运算测试
+- logical_xor_test: 逻辑异或运算测试
+- shift_left_test: 左移运算测试
+- shift_right_test: 右移运算测试
+- zero_flag_test: 零标志位测试
+- boundary_test: 边界条件测试
+
+**重要要求**：
+1. 使用标准Verilog语法，不要使用SystemVerilog特性
+2. 避免使用task/function中的多语句结构
+3. 使用标准的for循环语法
+4. 确保所有语句都有正确的分号
+5. 使用标准的begin/end块结构
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能，并使用标准Verilog语法。
+
+16:37:20 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:46 - LLMClient-dashscope - INFO - 🤖 LLM响应 (11418 字符, 26.06s):
+16:37:46 - LLMClient-dashscope - INFO - 🤖 ```verilog
+`timescale 1ns/1ps
+
+module tb_alu_32bit;
+
+    // 信号声明
+    reg [31:0] a;
+    reg [31:0] b;
+    reg [3:0] op;
+    wire [31:0] result;
+    wire [0:0] zero;
+    
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+    
+    // 测试结果变量
+    integer test_passed;
+    integer test_failed;
+    integer i;
+    
+    // 实例化被测模块
+    alu_32bit uut (
+        .a(a),
+        .b(b),
+        .op(op),
+        .result(result),
+        .zero(zero)
+    );
+    
+    // 时钟生成
+    always #5 clk = ~clk;
+    
+    // 测试开始
+    initial begin
+        // 初始化信号
+        clk = 0;
+        rst_n = 0;
+        a = 0;
+        b = 0;
+        op = 0;
+        
+        // 显示测试开始信息
+        $display("===================================");
+        $display("ALU 32BIT Testbench Started");
+        $display("===================================");
+        
+        // 设置波形转储
+        $dumpfile("alu_32bit.vcd");
+        $dumpvars(0, tb_alu_32bit);
+        
+        // 复位序列
+        #10 rst_n = 1;
+        
+        // 运行所有测试场景
+        addition_test();
+        subtraction_test();
+        multiplication_test();
+        division_test();
+        logical_and_test();
+        logical_or_test();
+        logical_xor_test();
+        shift_left_test();
+        shift_right_test();
+        zero_flag_test();
+        boundary_test();
+        
+        // 显示测试报告
+        $display("===================================");
+        $display("Test Report:");
+        $display("Passed Tests: %d", test_passed);
+        $display("Failed Tests: %d", test_failed);
+        $display("Total Tests: %d", test_passed + test_failed);
+        $display("===================================");
+        
+        if (test_failed == 0) begin
+            $display("All tests PASSED!");
+        end else begin
+            $display("Some tests FAILED!");
+        end
+        
+        // 结束仿真
+        #100 $finish;
+    end
+    
+    // 监控信号变化
+    initial begin
+        $monitor("Time=%0t: a=0x%08h, b=0x%08h, op=%b, result=0x%08h, zero=%b",
+                 $time, a, b, op, result, zero);
+    end
+    
+    // 加法运算测试
+    task addition_test;
+        integer j;
+        begin
+            $display("Running Addition Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = j * 100;
+                b = j * 50;
+                op = 4'b0000;
+                #10;
+                if (result != (a + b)) begin
+                    $display("Addition Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a + b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Addition Test Completed.");
+        end
+    endtask
+    
+    // 减法运算测试
+    task subtraction_test;
+        integer j;
+        begin
+            $display("Running Subtraction Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = j * 200;
+                b = j * 75;
+                op = 4'b0001;
+                #10;
+                if (result != (a - b)) begin
+                    $display("Subtraction Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a - b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Subtraction Test Completed.");
+        end
+    endtask
+    
+    // 乘法运算测试
+    task multiplication_test;
+        integer j;
+        begin
+            $display("Running Multiplication Test...");
+            for (j = 1; j <= 10; j = j + 1) begin
+                a = j * 10;
+                b = j * 5;
+                op = 4'b0010;
+                #10;
+                if (result != (a * b)) begin
+                    $display("Multiplication Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a * b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Multiplication Test Completed.");
+        end
+    endtask
+    
+    // 除法运算测试
+    task division_test;
+        integer j;
+        begin
+            $display("Running Division Test...");
+            for (j = 1; j <= 10; j = j + 1) begin
+                a = j * 100;
+                b = j * 10;
+                op = 4'b0011;
+                #10;
+                if ((b != 0) && (result != (a / b))) begin
+                    $display("Division Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a / b), result);
+                    test_failed = test_failed + 1;
+                end else if (b == 0) begin
+                    // 除零情况应该返回0
+                    if (result != 0) begin
+                        $display("Division by Zero Test Failed at cycle %0d: Expected 0x00000000, Got 0x%08h", 
+                                 j, result);
+                        test_failed = test_failed + 1;
+                    end else begin
+                        test_passed = test_passed + 1;
+                    end
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Division Test Completed.");
+        end
+    endtask
+    
+    // 逻辑与运算测试
+    task logical_and_test;
+        integer j;
+        begin
+            $display("Running Logical AND Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = j * 100;
+                b = j * 50;
+                op = 4'b0100;
+                #10;
+                if (result != (a & b)) begin
+                    $display("Logical AND Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a & b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Logical AND Test Completed.");
+        end
+    endtask
+    
+    // 逻辑或运算测试
+    task logical_or_test;
+        integer j;
+        begin
+            $display("Running Logical OR Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = j * 100;
+                b = j * 50;
+                op = 4'b0101;
+                #10;
+                if (result != (a | b)) begin
+                    $display("Logical OR Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a | b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Logical OR Test Completed.");
+        end
+    endtask
+    
+    // 逻辑异或运算测试
+    task logical_xor_test;
+        integer j;
+        begin
+            $display("Running Logical XOR Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = j * 100;
+                b = j * 50;
+                op = 4'b0110;
+                #10;
+                if (result != (a ^ b)) begin
+                    $display("Logical XOR Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a ^ b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Logical XOR Test Completed.");
+        end
+    endtask
+    
+    // 左移运算测试
+    task shift_left_test;
+        integer j;
+        begin
+            $display("Running Shift Left Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = 1 << j;
+                b = j;
+                op = 4'b0111;
+                #10;
+                if (result != (a << b)) begin
+                    $display("Shift Left Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a << b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Shift Left Test Completed.");
+        end
+    endtask
+    
+    // 右移运算测试
+    task shift_right_test;
+        integer j;
+        begin
+            $display("Running Shift Right Test...");
+            for (j = 0; j < 10; j = j + 1) begin
+                a = 1 << (j + 5);
+                b = j;
+                op = 4'b1000;
+                #10;
+                if (result != (a >> b)) begin
+                    $display("Shift Right Test Failed at cycle %0d: Expected 0x%08h, Got 0x%08h", 
+                             j, (a >> b), result);
+                    test_failed = test_failed + 1;
+                end else begin
+                    test_passed = test_passed + 1;
+                end
+            end
+            $display("Shift Right Test Completed.");
+        end
+    endtask
+    
+    // 零标志位测试
+    task zero_flag_test;
+        integer j;
+        begin
+            $display("Running Zero Flag Test...");
+            // 测试结果为0的情况
+            a = 100;
+            b = 100;
+            op = 4'b0001; // 减法
+            #10;
+            if (result != 0) begin
+                $display("Zero Flag Test Failed: Expected zero flag but got non-zero result");
+                test_failed = test_failed + 1;
+            end else begin
+                test_passed = test_passed + 1;
+            end
+            
+            // 测试非零结果的情况
+            a = 100;
+            b = 50;
+            op = 4'b0001; // 减法
+            #10;
+            if (result == 0) begin
+                $display("Zero Flag Test Failed: Expected non-zero result but got zero");
+                test_failed = test_failed + 1;
+            end else begin
+                test_passed = test_passed + 1;
+            end
+            
+            $display("Zero Flag Test Completed.");
+        end
+    endtask
+    
+    // 边界条件测试
+    task boundary_test;
+        integer j;
+        begin
+            $display("Running Boundary Test...");
+            
+            // 测试最大值
+            a = 32'h7FFFFFFF;
+            b = 32'h00000001;
+            op = 4'b0000; // 加法
+            #10;
+            if (result != 32'h80000000) begin
+                $display("Boundary Test Failed: Max Value Addition");
+                test_failed = test_failed + 1;
+            end else begin
+                test_passed = test_passed + 1;
+            end
+            
+            // 测试最小值
+            a = 32'h80000000;
+            b = 32'h00000001;
+            op = 4'b0001; // 减法
+            #10;
+            if (result != 32'h7FFFFFFF) begin
+                $display("Boundary Test Failed: Min Value Subtraction");
+                test_failed = test_failed + 1;
+            end else begin
+                test_passed = test_passed + 1;
+            end
+            
+            // 测试全零
+            a = 32'h00000000;
+            b = 32'h00000000;
+            op = 4'b0000; // 加法
+            #10;
+            if (result != 32'h00000000) begin
+                $display("Boundary Test Failed: Zero Addition");
+                test_failed = test_failed + 1;
+            end else begin
+                test_passed = test_passed + 1;
+            end
+            
+            $display("Boundary Test Completed.");
+        end
+    endtask
+
+endmodule
+```
+16:37:46 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: alu_32bit.v
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 138
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 138
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 138
+16:37:46 - Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+16:37:46 - core.file_manager - INFO - 🔄 使用现有文件ID: 70502857
+16:37:46 - core.file_manager - INFO - 🔄 更新现有文件引用: 70502857
+16:37:46 - core.file_manager - INFO - 💾 文件已保存: alu_32bit.v (ID: 70502857, 类型: verilog, 版本: 1)
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: alu_32bit.v (ID: 70502857)
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: alu_32bit.v
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_alu_32bit.v
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 11418
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 11403
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 11403
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：11418 -> 11403 字符
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：11418 -> 11403 字符
+16:37:46 - core.file_manager - INFO - 🆔 生成新文件ID: fa9af962
+16:37:46 - core.file_manager - INFO - 🆕 创建新文件引用: fa9af962 (版本: 1)
+16:37:46 - core.file_manager - INFO - 💾 文件已保存: testbench_alu_32bit.v (ID: fa9af962, 类型: testbench, 版本: 1)
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已保存到实验文件夹: testbench_alu_32bit.v (ID: fa9af962)
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🎯 generate_testbench 执行成功 (26.07s)
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真结果
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754296637
+16:37:46 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+16:37:46 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent
+16:37:46 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 测试台端口不一致: {'valid': False, 'error': '未找到模块 alu_32bit 的实例化'}
+16:37:46 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 🔧 强制运行仿真 - 迭代 1
+16:37:46 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - ✅ 找到设计文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v (在 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs)
+16:37:46 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 读取设计文件内容: 138 字符
+16:37:46 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - 📄 读取测试台文件内容: 11403 字符
+16:37:46 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296666
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '🧪 智能仿真运行任务
+
+你必须运行仿真验证以下设计：
+
+设计文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+测试台文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+
+设计代码内容（已提供）:
+```verilog
+module alu_32bit(
+    input [31:0] a,
+    input [31:0] b,
+    input [3:0] op,
+    output [31:0] result,
+    output [0:0] zero
+);
+endmodule
+```
+
+测试台代码内容（已提供）:
+```verilog
+`timescale 1ns/1ps
+
+module tb_alu_32bit;
+
+    // 信号声明
+    reg [31:0] a;
+    reg [31:0] b;
+    reg [3:0] op;
+    wire [31:0] result;
+    wire [0:0] zero;
+    
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+    
+    // 测试结果变量
+    integer test_passed;
+    integer test_failed;
+    integer i;
+    
+    // 实例化被测模块
+    alu_32bit uut (
+        .a(a),
+        .b(b),
+        .op(op),
+        .result(result),
+        .zero(zero)
+    );
+    
+    // 时钟生成
+    always #5 clk = ~clk;
+    
+    // 测试开始
+    initial begi...
+```
+
+🧠 智能参数处理策略：
+1. 优先使用文件路径参数（module_file, testbench_file）
+2. 如果文件路径参数失败，使用代码内容参数（module_code, testbench_code）
+3. 如果代码内容也没有，尝试从文件管理器获取
+
+强制要求：
+1. 必须使用 run_simulation 工具运行仿真
+2. 必须尝试多种参数组合直到成功
+3. 必须编译设计文件和测试台
+4. 必须执行所有测试用例
+5. 必须分析仿真结果
+6. 必须提供详细的测试报告
+
+请立即执行仿真，不要跳过此步骤。'
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '🧪 智能仿真运行任务
+
+你必须运行仿真验证以下设计：
+
+设计文件: c:\users\84672\documents\research\v-agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+测试台文件: c:\users\84672\documents\research\v-agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+
+设计代码内容（已提供）:
+```verilog
+module alu_32bit(
+    input [31:0] a,
+    input [31:0] b,
+    input [3:0] op,
+    output [31:0] result,
+    output [0:0] zero
+);
+endmodule
+```
+
+测试台代码内容（已提供）:
+```verilog
+`timescale 1ns/1ps
+
+module tb_alu_32bit;
+
+    // 信号声明
+    reg [31:0] a;
+    reg [31:0] b;
+    reg [3:0] op;
+    wire [31:0] result;
+    wire [0:0] zero;
+    
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+    
+    // 测试结果变量
+    integer test_passed;
+    integer test_failed;
+    integer i;
+    
+    // 实例化被测模块
+    alu_32bit uut (
+        .a(a),
+        .b(b),
+        .op(op),
+        .result(result),
+        .zero(zero)
+    );
+    
+    // 时钟生成
+    always #5 clk = ~clk;
+    
+    // 测试开始
+    initial begi...
+```
+
+🧠 智能参数处理策略：
+1. 优先使用文件路径参数（module_file, testbench_file）
+2. 如果文件路径参数失败，使用代码内容参数（module_code, testbench_code）
+3. 如果代码内容也没有，尝试从文件管理器获取
+
+强制要求：
+1. 必须使用 run_simulation 工具运行仿真
+2. 必须尝试多种参数组合直到成功
+3. 必须编译设计文件和测试台
+4. 必须执行所有测试用例
+5. 必须分析仿真结果
+6. 必须提供详细的测试报告
+
+请立即执行仿真，不要跳过此步骤。'
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected testing keywords: ['测试', '验证', 'testbench', 'test', 'simulation']
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: testing
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 9
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['test_generation', 'verification']
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "testing",
+  "complexity": 9,
+  "required_capabilities": [
+    "test_generation",
+    "verification"
+  ],
+  "estimated_hours": 4.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 63.0
+16:37:46 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 85.0
+16:37:46 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_code_review_agent (得分: 85.0)
+16:37:46 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296666
+16:37:46 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_code_review_agent 发言
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754296666
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 🧪 智能仿真运行任务
+
+你必须运行仿真验证以下设计：
+
+设计文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_...
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:46 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+16:37:46 - Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 6633 字符, 2 轮
+16:37:46 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:46 - LLMClient-dashscope - INFO - 📋 System Prompt (5405 字符):
+16:37:46 - LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+
+16:37:46 - LLMClient-dashscope - INFO - 👤 User Prompt (1234 字符):
+16:37:46 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 🧪 智能仿真运行任务
+
+你必须运行仿真验证以下设计：
+
+设计文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v
+测试台文件: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+
+设计代码内容（已提供）:
+```verilog
+module alu_32bit(
+    input [31:0] a,
+    input [31:0] b,
+    input [3:0] op,
+    output [31:0] result,
+    output [0:0] zero
+);
+endmodule
+```
+
+测试台代码内容（已提供）:
+```verilog
+`timescale 1ns/1ps
+
+module tb_alu_32bit;
+
+    // 信号声明
+    reg [31:0] a;
+    reg [31:0] b;
+    reg [3:0] op;
+    wire [31:0] result;
+    wire [0:0] zero;
+    
+    // 时钟和复位信号
+    reg clk;
+    reg rst_n;
+    
+    // 测试结果变量
+    integer test_passed;
+    integer test_failed;
+    integer i;
+    
+    // 实例化被测模块
+    alu_32bit uut (
+        .a(a),
+        .b(b),
+        .op(op),
+        .result(result),
+        .zero(zero)
+    );
+    
+    // 时钟生成
+    always #5 clk = ~clk;
+    
+    // 测试开始
+    initial begi...
+```
+
+🧠 智能参数处理策略：
+1. 优先使用文件路径参数（module_file, testbench_file）
+2. 如果文件路径参数失败，使用代码内容参数（module_code, testbench_code）
+3. 如果代码内容也没有，尝试从文件管理器获取
+
+强制要求：
+1. 必须使用 run_simulation 工具运行仿真
+2. 必须尝试多种参数组合直到成功
+3. 必须编译设计文件和测试台
+4. 必须执行所有测试用例
+5. 必须分析仿真结果
+6. 必须提供详细的测试报告
+
+请立即执行仿真，不要跳过此步骤。
+16:37:46 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:48 - LLMClient-dashscope - INFO - 🤖 LLM响应 (458 字符, 1.83s):
+16:37:48 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "C:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\designs\\alu_32bit.v",
+                "testbench_file": "C:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\testbenches\\testbench_alu_32bit.v"
+            }
+        }
+    ]
+}
+```
+16:37:48 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:48 - core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 使用统一Schema标准化参数
+16:37:48 - core.schema_system.enhanced_base_agent - INFO - 🔄 run_simulation 参数适配成功: 应用智能字段映射
+16:37:48 - core.schema_system.enhanced_base_agent - INFO - ✅ run_simulation 参数验证通过
+16:37:48 - Agent.enhanced_real_code_review_agent - INFO - 🔍 运行仿真: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v None None iverilog None
+16:37:48 - Agent.enhanced_real_code_review_agent - INFO - 🔬 运行仿真: iverilog
+16:37:48 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+16:37:48 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_alu_32bit (依赖: ['alu_32bit'])
+16:37:48 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_32bit.v (模块: alu_32bit)
+16:37:48 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_alu_32bit.v (模块: tb_alu_32bit)
+16:37:48 - Agent.enhanced_real_code_review_agent - INFO - 🔨 开始编译 2 个文件
+16:37:48 - Agent.enhanced_real_code_review_agent - INFO - 🔨 编译命令: iverilog -o logs\experiment_20250804_163710\artifacts\simulation C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+16:37:48 - Agent.enhanced_real_code_review_agent - INFO - 🔨 编译工作目录: C:\Users\84672\Documents\Research\V-Agent
+16:37:50 - Agent.enhanced_real_code_review_agent - INFO - 🔨 运行仿真命令: vvp logs\experiment_20250804_163710\artifacts\simulation
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - 🔍 仿真结果: {'success': True, 'output': '===================================\r\nALU 32BIT Testbench Started\r\n===================================\r\nVCD info: dumpfile alu_32bit.vcd opened for output.\r\nTime=0: a=0x00000000, b=0x00000000, op=0000, result=0xzzzzzzzz, zero=z\r\nRunning Addition Test...\r\nTime=20000: a=0x00000064, b=0x00000032, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=30000: a=0x000000c8, b=0x00000064, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=40000: a=0x0000012c, b=0x00000096, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=50000: a=0x00000190, b=0x000000c8, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=60000: a=0x000001f4, b=0x000000fa, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=70000: a=0x00000258, b=0x0000012c, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=80000: a=0x000002bc, b=0x0000015e, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=90000: a=0x00000320, b=0x00000190, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=100000: a=0x00000384, b=0x000001c2, op=0000, result=0xzzzzzzzz, zero=z\r\nAddition Test Completed.\r\nRunning Subtraction Test...\r\nTime=110000: a=0x00000000, b=0x00000000, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=120000: a=0x000000c8, b=0x0000004b, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=130000: a=0x00000190, b=0x00000096, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=140000: a=0x00000258, b=0x000000e1, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=150000: a=0x00000320, b=0x0000012c, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=160000: a=0x000003e8, b=0x00000177, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=170000: a=0x000004b0, b=0x000001c2, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=180000: a=0x00000578, b=0x0000020d, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=190000: a=0x00000640, b=0x00000258, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=200000: a=0x00000708, b=0x000002a3, op=0001, result=0xzzzzzzzz, zero=z\r\nSubtraction Test Completed.\r\nRunning Multiplication Test...\r\nTime=210000: a=0x0000000a, b=0x00000005, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=220000: a=0x00000014, b=0x0000000a, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=230000: a=0x0000001e, b=0x0000000f, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=240000: a=0x00000028, b=0x00000014, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=250000: a=0x00000032, b=0x00000019, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=260000: a=0x0000003c, b=0x0000001e, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=270000: a=0x00000046, b=0x00000023, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=280000: a=0x00000050, b=0x00000028, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=290000: a=0x0000005a, b=0x0000002d, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=300000: a=0x00000064, b=0x00000032, op=0010, result=0xzzzzzzzz, zero=z\r\nMultiplication Test Completed.\r\nRunning Division Test...\r\nTime=310000: a=0x00000064, b=0x0000000a, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=320000: a=0x000000c8, b=0x00000014, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=330000: a=0x0000012c, b=0x0000001e, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=340000: a=0x00000190, b=0x00000028, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=350000: a=0x000001f4, b=0x00000032, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=360000: a=0x00000258, b=0x0000003c, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=370000: a=0x000002bc, b=0x00000046, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=380000: a=0x00000320, b=0x00000050, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=390000: a=0x00000384, b=0x0000005a, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=400000: a=0x000003e8, b=0x00000064, op=0011, result=0xzzzzzzzz, zero=z\r\nDivision Test Completed.\r\nRunning Logical AND Test...\r\nTime=410000: a=0x00000000, b=0x00000000, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=420000: a=0x00000064, b=0x00000032, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=430000: a=0x000000c8, b=0x00000064, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=440000: a=0x0000012c, b=0x00000096, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=450000: a=0x00000190, b=0x000000c8, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=460000: a=0x000001f4, b=0x000000fa, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=470000: a=0x00000258, b=0x0000012c, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=480000: a=0x000002bc, b=0x0000015e, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=490000: a=0x00000320, b=0x00000190, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=500000: a=0x00000384, b=0x000001c2, op=0100, result=0xzzzzzzzz, zero=z\r\nLogical AND Test Completed.\r\nRunning Logical OR Test...\r\nTime=510000: a=0x00000000, b=0x00000000, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=520000: a=0x00000064, b=0x00000032, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=530000: a=0x000000c8, b=0x00000064, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=540000: a=0x0000012c, b=0x00000096, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=550000: a=0x00000190, b=0x000000c8, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=560000: a=0x000001f4, b=0x000000fa, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=570000: a=0x00000258, b=0x0000012c, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=580000: a=0x000002bc, b=0x0000015e, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=590000: a=0x00000320, b=0x00000190, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=600000: a=0x00000384, b=0x000001c2, op=0101, result=0xzzzzzzzz, zero=z\r\nLogical OR Test Completed.\r\nRunning Logical XOR Test...\r\nTime=610000: a=0x00000000, b=0x00000000, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=620000: a=0x00000064, b=0x00000032, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=630000: a=0x000000c8, b=0x00000064, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=640000: a=0x0000012c, b=0x00000096, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=650000: a=0x00000190, b=0x000000c8, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=660000: a=0x000001f4, b=0x000000fa, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=670000: a=0x00000258, b=0x0000012c, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=680000: a=0x000002bc, b=0x0000015e, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=690000: a=0x00000320, b=0x00000190, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=700000: a=0x00000384, b=0x000001c2, op=0110, result=0xzzzzzzzz, zero=z\r\nLogical XOR Test Completed.\r\nRunning Shift Left Test...\r\nTime=710000: a=0x00000001, b=0x00000000, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=720000: a=0x00000002, b=0x00000001, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=730000: a=0x00000004, b=0x00000002, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=740000: a=0x00000008, b=0x00000003, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=750000: a=0x00000010, b=0x00000004, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=760000: a=0x00000020, b=0x00000005, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=770000: a=0x00000040, b=0x00000006, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=780000: a=0x00000080, b=0x00000007, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=790000: a=0x00000100, b=0x00000008, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=800000: a=0x00000200, b=0x00000009, op=0111, result=0xzzzzzzzz, zero=z\r\nShift Left Test Completed.\r\nRunning Shift Right Test...\r\nTime=810000: a=0x00000020, b=0x00000000, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=820000: a=0x00000040, b=0x00000001, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=830000: a=0x00000080, b=0x00000002, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=840000: a=0x00000100, b=0x00000003, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=850000: a=0x00000200, b=0x00000004, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=860000: a=0x00000400, b=0x00000005, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=870000: a=0x00000800, b=0x00000006, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=880000: a=0x00001000, b=0x00000007, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=890000: a=0x00002000, b=0x00000008, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=900000: a=0x00004000, b=0x00000009, op=1000, result=0xzzzzzzzz, zero=z\r\nShift Right Test Completed.\r\nRunning Zero Flag Test...\r\nTime=910000: a=0x00000064, b=0x00000064, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=920000: a=0x00000064, b=0x00000032, op=0001, result=0xzzzzzzzz, zero=z\r\nZero Flag Test Completed.\r\nRunning Boundary Test...\r\nTime=930000: a=0x7fffffff, b=0x00000001, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=940000: a=0x80000000, b=0x00000001, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=950000: a=0x00000000, b=0x00000000, op=0000, result=0xzzzzzzzz, zero=z\r\nBoundary Test Completed.\r\n===================================\r\nTest Report:\r\nPassed Tests:           x\r\nFailed Tests:           x\r\nTotal Tests:           x\r\n===================================\r\nSome tests FAILED!\r\nC:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\testbenches\\testbench_alu_32bit.v:82: $finish called at 1060000 (1ps)\r\n', 'compilation_output': '', 'waveform_file': None, 'errors': [], 'warnings': [], 'return_code': 0, 'command': 'vvp logs\\experiment_20250804_163710\\artifacts\\simulation', 'stage': 'simulation'}
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 执行成功 (2.42s)
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🎯 检测到测试成功完成标志: $finish called
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 找到仿真输出，长度: 8420
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真输出前100字符: ===================================
+ALU 32BIT Testbench Started
+==================================
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🎯 检测到测试成功完成标志: $finish called
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754296666
+16:37:51 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+16:37:51 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent
+16:37:51 - extensions.test_driven_coordinator.TestDrivenCoordinator - WARNING - ⚠️ 智能体未运行仿真，强制运行仿真
+16:37:51 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296671
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '运行仿真验证：设计文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v，测试台文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v'
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '运行仿真验证：设计文件 c:\users\84672\documents\research\v-agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v，测试台文件 c:\users\84672\documents\research\v-agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v'
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected testing keywords: ['测试', '验证', 'testbench', 'test']
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: testing
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 9
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['test_generation', 'verification']
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "testing",
+  "complexity": 9,
+  "required_capabilities": [
+    "test_generation",
+    "verification"
+  ],
+  "estimated_hours": 4.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 63.0
+16:37:51 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 85.0
+16:37:51 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_code_review_agent (得分: 85.0)
+16:37:51 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296671
+16:37:51 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_code_review_agent 发言
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754296671
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 运行仿真验证：设计文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\des...
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:51 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+16:37:51 - Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5646 字符, 2 轮
+16:37:51 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:51 - LLMClient-dashscope - INFO - 📋 System Prompt (5405 字符):
+16:37:51 - LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+
+16:37:51 - LLMClient-dashscope - INFO - 👤 User Prompt (247 字符):
+16:37:51 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 运行仿真验证：设计文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v，测试台文件 C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+16:37:51 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:52 - LLMClient-dashscope - INFO - 🤖 LLM响应 (458 字符, 1.75s):
+16:37:52 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "run_simulation",
+            "parameters": {
+                "module_file": "C:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\designs\\alu_32bit.v",
+                "testbench_file": "C:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\testbenches\\testbench_alu_32bit.v"
+            }
+        }
+    ]
+}
+```
+16:37:52 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:52 - core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 使用统一Schema标准化参数
+16:37:52 - core.schema_system.enhanced_base_agent - INFO - 🔄 run_simulation 参数适配成功: 应用智能字段映射
+16:37:52 - core.schema_system.enhanced_base_agent - INFO - ✅ run_simulation 参数验证通过
+16:37:52 - Agent.enhanced_real_code_review_agent - INFO - 🔍 运行仿真: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v None None iverilog None
+16:37:52 - Agent.enhanced_real_code_review_agent - INFO - 🔬 运行仿真: iverilog
+16:37:52 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: alu_32bit (依赖: 无)
+16:37:52 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 发现模块: tb_alu_32bit (依赖: ['alu_32bit'])
+16:37:52 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: alu_32bit.v (模块: alu_32bit)
+16:37:52 - extensions.verilog_dependency_analyzer.VerilogDependencyAnalyzer - INFO - 添加文件: testbench_alu_32bit.v (模块: tb_alu_32bit)
+16:37:52 - Agent.enhanced_real_code_review_agent - INFO - 🔨 开始编译 2 个文件
+16:37:52 - Agent.enhanced_real_code_review_agent - INFO - 🔨 编译命令: iverilog -o logs\experiment_20250804_163710\artifacts\simulation C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\designs\alu_32bit.v C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630\testbenches\testbench_alu_32bit.v
+16:37:52 - Agent.enhanced_real_code_review_agent - INFO - 🔨 编译工作目录: C:\Users\84672\Documents\Research\V-Agent
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - 🔨 运行仿真命令: vvp logs\experiment_20250804_163710\artifacts\simulation
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - 🔍 仿真结果: {'success': True, 'output': '===================================\r\nALU 32BIT Testbench Started\r\n===================================\r\nVCD info: dumpfile alu_32bit.vcd opened for output.\r\nTime=0: a=0x00000000, b=0x00000000, op=0000, result=0xzzzzzzzz, zero=z\r\nRunning Addition Test...\r\nTime=20000: a=0x00000064, b=0x00000032, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=30000: a=0x000000c8, b=0x00000064, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=40000: a=0x0000012c, b=0x00000096, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=50000: a=0x00000190, b=0x000000c8, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=60000: a=0x000001f4, b=0x000000fa, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=70000: a=0x00000258, b=0x0000012c, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=80000: a=0x000002bc, b=0x0000015e, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=90000: a=0x00000320, b=0x00000190, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=100000: a=0x00000384, b=0x000001c2, op=0000, result=0xzzzzzzzz, zero=z\r\nAddition Test Completed.\r\nRunning Subtraction Test...\r\nTime=110000: a=0x00000000, b=0x00000000, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=120000: a=0x000000c8, b=0x0000004b, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=130000: a=0x00000190, b=0x00000096, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=140000: a=0x00000258, b=0x000000e1, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=150000: a=0x00000320, b=0x0000012c, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=160000: a=0x000003e8, b=0x00000177, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=170000: a=0x000004b0, b=0x000001c2, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=180000: a=0x00000578, b=0x0000020d, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=190000: a=0x00000640, b=0x00000258, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=200000: a=0x00000708, b=0x000002a3, op=0001, result=0xzzzzzzzz, zero=z\r\nSubtraction Test Completed.\r\nRunning Multiplication Test...\r\nTime=210000: a=0x0000000a, b=0x00000005, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=220000: a=0x00000014, b=0x0000000a, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=230000: a=0x0000001e, b=0x0000000f, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=240000: a=0x00000028, b=0x00000014, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=250000: a=0x00000032, b=0x00000019, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=260000: a=0x0000003c, b=0x0000001e, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=270000: a=0x00000046, b=0x00000023, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=280000: a=0x00000050, b=0x00000028, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=290000: a=0x0000005a, b=0x0000002d, op=0010, result=0xzzzzzzzz, zero=z\r\nTime=300000: a=0x00000064, b=0x00000032, op=0010, result=0xzzzzzzzz, zero=z\r\nMultiplication Test Completed.\r\nRunning Division Test...\r\nTime=310000: a=0x00000064, b=0x0000000a, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=320000: a=0x000000c8, b=0x00000014, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=330000: a=0x0000012c, b=0x0000001e, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=340000: a=0x00000190, b=0x00000028, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=350000: a=0x000001f4, b=0x00000032, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=360000: a=0x00000258, b=0x0000003c, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=370000: a=0x000002bc, b=0x00000046, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=380000: a=0x00000320, b=0x00000050, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=390000: a=0x00000384, b=0x0000005a, op=0011, result=0xzzzzzzzz, zero=z\r\nTime=400000: a=0x000003e8, b=0x00000064, op=0011, result=0xzzzzzzzz, zero=z\r\nDivision Test Completed.\r\nRunning Logical AND Test...\r\nTime=410000: a=0x00000000, b=0x00000000, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=420000: a=0x00000064, b=0x00000032, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=430000: a=0x000000c8, b=0x00000064, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=440000: a=0x0000012c, b=0x00000096, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=450000: a=0x00000190, b=0x000000c8, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=460000: a=0x000001f4, b=0x000000fa, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=470000: a=0x00000258, b=0x0000012c, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=480000: a=0x000002bc, b=0x0000015e, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=490000: a=0x00000320, b=0x00000190, op=0100, result=0xzzzzzzzz, zero=z\r\nTime=500000: a=0x00000384, b=0x000001c2, op=0100, result=0xzzzzzzzz, zero=z\r\nLogical AND Test Completed.\r\nRunning Logical OR Test...\r\nTime=510000: a=0x00000000, b=0x00000000, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=520000: a=0x00000064, b=0x00000032, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=530000: a=0x000000c8, b=0x00000064, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=540000: a=0x0000012c, b=0x00000096, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=550000: a=0x00000190, b=0x000000c8, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=560000: a=0x000001f4, b=0x000000fa, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=570000: a=0x00000258, b=0x0000012c, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=580000: a=0x000002bc, b=0x0000015e, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=590000: a=0x00000320, b=0x00000190, op=0101, result=0xzzzzzzzz, zero=z\r\nTime=600000: a=0x00000384, b=0x000001c2, op=0101, result=0xzzzzzzzz, zero=z\r\nLogical OR Test Completed.\r\nRunning Logical XOR Test...\r\nTime=610000: a=0x00000000, b=0x00000000, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=620000: a=0x00000064, b=0x00000032, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=630000: a=0x000000c8, b=0x00000064, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=640000: a=0x0000012c, b=0x00000096, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=650000: a=0x00000190, b=0x000000c8, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=660000: a=0x000001f4, b=0x000000fa, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=670000: a=0x00000258, b=0x0000012c, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=680000: a=0x000002bc, b=0x0000015e, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=690000: a=0x00000320, b=0x00000190, op=0110, result=0xzzzzzzzz, zero=z\r\nTime=700000: a=0x00000384, b=0x000001c2, op=0110, result=0xzzzzzzzz, zero=z\r\nLogical XOR Test Completed.\r\nRunning Shift Left Test...\r\nTime=710000: a=0x00000001, b=0x00000000, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=720000: a=0x00000002, b=0x00000001, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=730000: a=0x00000004, b=0x00000002, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=740000: a=0x00000008, b=0x00000003, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=750000: a=0x00000010, b=0x00000004, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=760000: a=0x00000020, b=0x00000005, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=770000: a=0x00000040, b=0x00000006, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=780000: a=0x00000080, b=0x00000007, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=790000: a=0x00000100, b=0x00000008, op=0111, result=0xzzzzzzzz, zero=z\r\nTime=800000: a=0x00000200, b=0x00000009, op=0111, result=0xzzzzzzzz, zero=z\r\nShift Left Test Completed.\r\nRunning Shift Right Test...\r\nTime=810000: a=0x00000020, b=0x00000000, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=820000: a=0x00000040, b=0x00000001, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=830000: a=0x00000080, b=0x00000002, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=840000: a=0x00000100, b=0x00000003, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=850000: a=0x00000200, b=0x00000004, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=860000: a=0x00000400, b=0x00000005, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=870000: a=0x00000800, b=0x00000006, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=880000: a=0x00001000, b=0x00000007, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=890000: a=0x00002000, b=0x00000008, op=1000, result=0xzzzzzzzz, zero=z\r\nTime=900000: a=0x00004000, b=0x00000009, op=1000, result=0xzzzzzzzz, zero=z\r\nShift Right Test Completed.\r\nRunning Zero Flag Test...\r\nTime=910000: a=0x00000064, b=0x00000064, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=920000: a=0x00000064, b=0x00000032, op=0001, result=0xzzzzzzzz, zero=z\r\nZero Flag Test Completed.\r\nRunning Boundary Test...\r\nTime=930000: a=0x7fffffff, b=0x00000001, op=0000, result=0xzzzzzzzz, zero=z\r\nTime=940000: a=0x80000000, b=0x00000001, op=0001, result=0xzzzzzzzz, zero=z\r\nTime=950000: a=0x00000000, b=0x00000000, op=0000, result=0xzzzzzzzz, zero=z\r\nBoundary Test Completed.\r\n===================================\r\nTest Report:\r\nPassed Tests:           x\r\nFailed Tests:           x\r\nTotal Tests:           x\r\n===================================\r\nSome tests FAILED!\r\nC:\\Users\\84672\\Documents\\Research\\V-Agent\\tdd_experiments\\unified_tdd_alu_1754296630\\testbenches\\testbench_alu_32bit.v:82: $finish called at 1060000 (1ps)\r\n', 'compilation_output': '', 'waveform_file': None, 'errors': [], 'warnings': [], 'return_code': 0, 'command': 'vvp logs\\experiment_20250804_163710\\artifacts\\simulation', 'stage': 'simulation'}
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🎯 run_simulation 执行成功 (2.65s)
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🎯 检测到测试成功完成标志: $finish called
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 找到仿真输出，长度: 8420
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔍 仿真输出前100字符: ===================================
+ALU 32BIT Testbench Started
+==================================
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🎯 检测到测试成功完成标志: $finish called
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754296671
+16:37:55 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+16:37:55 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent
+16:37:55 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296675
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '
+分析仿真结果：
+
+仿真状态: 成功
+测试通过: 是
+测试摘要: 基础仿真完成
+返回码: 0
+
+请分析仿真结果并提供改进建议。
+'
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '
+分析仿真结果：
+
+仿真状态: 成功
+测试通过: 是
+测试摘要: 基础仿真完成
+返回码: 0
+
+请分析仿真结果并提供改进建议。
+'
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected testing keywords: ['测试']
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: testing
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 5
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['test_generation', 'verification']
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "testing",
+  "complexity": 5,
+  "required_capabilities": [
+    "test_generation",
+    "verification"
+  ],
+  "estimated_hours": 2.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 63.0
+16:37:55 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 85.0
+16:37:55 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_code_review_agent (得分: 85.0)
+16:37:55 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296675
+16:37:55 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_code_review_agent 发言
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754296675
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 
+分析仿真结果：
+
+仿真状态: 成功
+测试通过: 是
+测试摘要: 基础仿真完成
+返回码: 0
+
+请分析仿真结果并提供改进建议。
+...
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:55 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+16:37:55 - Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5469 字符, 2 轮
+16:37:55 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:55 - LLMClient-dashscope - INFO - 📋 System Prompt (5405 字符):
+16:37:55 - LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+
+16:37:55 - LLMClient-dashscope - INFO - 👤 User Prompt (69 字符):
+16:37:55 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 
+分析仿真结果：
+
+仿真状态: 成功
+测试通过: 是
+测试摘要: 基础仿真完成
+返回码: 0
+
+请分析仿真结果并提供改进建议。
+16:37:55 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:56 - LLMClient-dashscope - INFO - 🤖 LLM响应 (386 字符, 1.07s):
+16:37:56 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_test_failures",
+            "parameters": {
+                "design_code": "",
+                "compilation_errors": "",
+                "simulation_errors": "",
+                "test_assertions": "",
+                "testbench_code": "",
+                "iteration_number": 0
+            }
+        }
+    ]
+}
+```
+16:37:56 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_test_failures 使用统一Schema标准化参数
+16:37:56 - core.schema_system.field_mapper - INFO - 智能字段匹配: code -> design_code
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_test_failures 参数适配成功: 应用智能字段映射
+16:37:56 - core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_test_failures 参数验证失败，尝试智能修复
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔧 analyze_test_failures 参数修复成功
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - 🔍 分析第1次迭代的测试失败
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - ✅ 测试失败分析完成，发现 0 种失败类型
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_test_failures 执行成功 (0.00s)
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真结果
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754296675
+16:37:56 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+16:37:56 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent
+16:37:56 - Agent.centralized_coordinator - INFO - 🚀 开始任务协调: conv_1754296676
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Simple Task Analysis
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Task description: '
+基于第0次迭代的结果，分析改进建议：
+
+设计结果: False
+测试结果: False
+
+请分析失败原因并提供具体的改进建议。
+'
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Description (lowercase): '
+基于第0次迭代的结果，分析改进建议：
+
+设计结果: false
+测试结果: false
+
+请分析失败原因并提供具体的改进建议。
+'
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Detected testing keywords: ['测试']
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Determined task type: testing
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Calculated complexity: 5
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Required capabilities: ['test_generation', 'verification']
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 DEBUG: Final task analysis: {
+  "task_type": "testing",
+  "complexity": 5,
+  "required_capabilities": [
+    "test_generation",
+    "verification"
+  ],
+  "estimated_hours": 2.5,
+  "priority": "medium",
+  "dependencies": []
+}
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍⚡ 增强智能体选择开始
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 总注册智能体: 2, 增强智能体: 2
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 优先选择增强智能体: True
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍⚡ 在 2 个增强智能体中选择
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_verilog_agent = 63.0
+16:37:56 - Agent.centralized_coordinator - INFO - 🔍 智能体评分: enhanced_real_code_review_agent = 85.0
+16:37:56 - Agent.centralized_coordinator - INFO - ✅⚡ 选择增强智能体: enhanced_real_code_review_agent (得分: 85.0)
+16:37:56 - Agent.centralized_coordinator - INFO - 💬 启动多轮对话: conv_1754296676
+16:37:56 - Agent.centralized_coordinator - INFO - 🔄 对话轮次 1: enhanced_real_code_review_agent 发言
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - 📨 收到任务消息: task_execution
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - 🎯 开始执行增强代码审查任务: conv_1754296676
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🚀 开始增强验证处理: 
+基于第0次迭代的结果，分析改进建议：
+
+设计结果: False
+测试结果: False
+
+请分析失败原因并提供具体的改进建议。
+...
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔗 初始对话历史长度: 0 轮
+16:37:56 - core.schema_system.enhanced_base_agent - INFO - 🔄 第 1/5 次迭代
+16:37:56 - Agent.enhanced_real_code_review_agent - INFO - 📝 当前对话总长度: 5470 字符, 2 轮
+16:37:56 - LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+16:37:56 - LLMClient-dashscope - INFO - 📋 System Prompt (5405 字符):
+16:37:56 - LLMClient-dashscope - INFO - 📋 你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 使用自然字符串格式（推荐）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **推荐工作流程**:
+收到代码审查任务时，建议流程：
+1. 生成全面的测试台进行验证 (generate_testbench)
+2. 执行仿真并分析结果 (run_simulation)
+3. 生成构建脚本确保可重现性 (generate_build_script)
+4. 提供详细的审查报告和建议
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "verilog_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+
+16:37:56 - LLMClient-dashscope - INFO - 👤 User Prompt (70 字符):
+16:37:56 - LLMClient-dashscope - INFO - 👤 User Prompt: User: 
+基于第0次迭代的结果，分析改进建议：
+
+设计结果: False
+测试结果: False
+
+请分析失败原因并提供具体的改进建议。
+16:37:56 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:57 - LLMClient-dashscope - INFO - 🤖 LLM响应 (366 字符, 1.08s):
+16:37:57 - LLMClient-dashscope - INFO - 🤖 ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_test_failures",
+            "parameters": {
+                "design_code": "",
+                "compilation_errors": "设计未通过编译",
+                "simulation_errors": "仿真未通过",
+                "test_assertions": "测试断言失败",
+                "iteration_number": 0
+            }
+        }
+    ]
+}
+```
+16:37:57 - LLMClient-dashscope - INFO - ====================================================================================================
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_test_failures 使用统一Schema标准化参数
+16:37:57 - core.schema_system.field_mapper - INFO - 智能字段匹配: code -> design_code
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔄 analyze_test_failures 参数适配成功: 应用智能字段映射
+16:37:57 - core.schema_system.enhanced_base_agent - WARNING - ⚠️ analyze_test_failures 参数验证失败，尝试智能修复
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔧 analyze_test_failures 参数修复成功
+16:37:57 - Agent.enhanced_real_code_review_agent - INFO - 🔍 分析第1次迭代的测试失败
+16:37:57 - Agent.enhanced_real_code_review_agent - INFO - ✅ 测试失败分析完成，发现 0 种失败类型
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🎯 analyze_test_failures 执行成功 (0.00s)
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - ✅ 所有工具执行成功，任务完成
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔍 开始提取仿真结果，工具结果数量: 1
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔍 检查工具结果 1: success=True
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 是字典类型
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔍 工具结果 1 仿真成功
+16:37:57 - core.schema_system.enhanced_base_agent - INFO - 🔍 未找到仿真结果
+16:37:57 - Agent.enhanced_real_code_review_agent - INFO - ✅ 代码审查任务完成: conv_1754296676
+16:37:57 - Agent.centralized_coordinator - INFO - 📄 使用传统响应格式: enhanced_real_code_review_agent
+16:37:57 - Agent.centralized_coordinator - INFO - ✅ 任务完成: enhanced_real_code_review_agent
+16:37:57 - extensions.test_driven_coordinator.TestDrivenCoordinator - INFO - ✅ TDD循环在第 1 次迭代成功完成
+16:37:57 - core.experiment_manager - INFO - 🧪 更新实验状态: tdd_1754296630_1754296630 -> completed
+================================================================================
+实验结果分析
+================================================================================
+实验成功完成！
+   总迭代次数: 1
+   总耗时: 47.45 秒
+   最终设计文件: 1 个
+   上下文文件数: 0 个
+生成的设计文件:
+   1. alu_32bit.v', 'file_type': 'verilog', 'created_by': 'enhanced_real_verilog_agent', 'created_at': '2025-08-04T16:37:17.064898', 'description': '由enhanced_real_verilog_agent创建的verilog文件'}
+[WARNING] 无法获取会话信息: 'TestDrivenCoordinator' object has no attribute 'get_session_info'
+================================================================================
+   文件已直接保存在实验目录，无需复制
+   [OK] 所有文件已直接保存在实验目录中
+实验报告已保存到: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+   详细报告: experiment_report.json
+   结果摘要: experiment_summary.txt
+
+实验目录检查: C:\Users\84672\Documents\Research\V-Agent\tdd_experiments\unified_tdd_alu_1754296630
+   designs: 1 个文件
+      - alu_32bit.v
+   testbenches: 1 个文件
+      - testbench_alu_32bit.v
+   artifacts: 5 个文件
+      - designs
+      - file_registry.json
+      - reports
+      - temp
+      - testbenches
+   logs: 0 个文件
+实验完成
+设计成功完成并通过所有测试！
+测试驱动开发功能验证成功

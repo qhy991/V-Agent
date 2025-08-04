@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-🧪 统一测试驱动开发(TDD)入口
+统一测试驱动开发(TDD)入口
 ==================================================
 
 这个脚本提供了一个完整、易用的TDD测试入口，支持：
-✅ 多轮迭代结果完整保存
-✅ 配置化的实验参数
-✅ 详细的进度跟踪和结果分析
-✅ 通用的测试台模板支持
+- 多轮迭代结果完整保存
+- 配置化的实验参数
+- 详细的进度跟踪和结果分析
+- 通用的测试台模板支持
+- 动态上下文传递机制
 
 使用方法:
     python unified_tdd_test.py --design alu --iterations 5
@@ -20,8 +21,52 @@ import sys
 import argparse
 import json
 import time
+import os
+import codecs
+import locale
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+
+# 设置编码环境变量
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+# 检测操作系统并设置适当的编码
+def setup_encoding():
+    """设置适当的编码以处理不同操作系统的输出"""
+    if os.name == 'nt':  # Windows
+        # Windows系统特殊处理
+        try:
+            # 尝试设置控制台代码页为UTF-8
+            os.system('chcp 65001 > nul 2>&1')
+        except:
+            pass
+        
+        # 设置环境变量
+        os.environ['PYTHONIOENCODING'] = 'utf-8'
+        
+        # 对于Python 3.7+，使用reconfigure
+        if hasattr(sys.stdout, 'reconfigure'):
+            try:
+                sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+                sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+            except:
+                pass
+        else:
+            # 对于较老的Python版本，使用codecs包装
+            try:
+                sys.stdout = codecs.getwriter('utf-8')(sys.stdout.detach())
+                sys.stderr = codecs.getwriter('utf-8')(sys.stderr.detach())
+            except:
+                pass
+    else:
+        # Unix/Linux系统
+        os.environ['PYTHONIOENCODING'] = 'utf-8'
+        if hasattr(sys.stdout, 'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+
+# 应用编码设置
+setup_encoding()
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent
@@ -176,13 +221,13 @@ module simple_8bit_adder (
 );
 ```
 
-🎯 功能要求：
+功能要求：
 1. 实现8位二进制加法运算：sum = a + b + cin
 2. 正确计算输出进位：cout
 3. 支持所有可能的输入组合（0到255）
 4. 处理进位传播
 
-💡 设计提示：
+设计提示：
 - 可以使用简单的行波进位链
 - 确保所有边界条件正确处理
 - 代码要简洁清晰，易于理解
@@ -206,13 +251,13 @@ module carry_lookahead_adder_16bit (
 );
 ```
 
-🎯 功能要求：
+功能要求：
 1. 实现16位二进制加法运算：sum = a + b + cin
 2. 正确计算输出进位：cout
 3. 使用超前进位技术提高性能，而不是简单的行波进位
 4. 支持所有可能的输入组合
 
-📊 超前进位加法器设计要点：
+超前进位加法器设计要点：
 1. **进位生成 (Generate)**: Gi = Ai & Bi
 2. **进位传播 (Propagate)**: Pi = Ai ^ Bi
 3. **超前进位计算**: 
@@ -241,11 +286,10 @@ module carry_lookahead_adder_16bit (
                  testbench_path: str = None,
                  custom_requirements: str = None,
                  output_dir: str = None):
-        # 保存设计类型为实例属性
-        self.design_type = design_type
         """初始化统一TDD测试"""
         self.design_type = design_type
         self.config_profile = config_profile
+        self.custom_config = custom_config  # 保存自定义配置
         self.testbench_path = testbench_path
         self.custom_requirements = custom_requirements
         
@@ -266,7 +310,16 @@ module carry_lookahead_adder_16bit (
         
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        print(f"🧪 统一TDD测试初始化")
+        # 初始化上下文状态管理
+        self.context_state = {
+            "generated_files": [],
+            "current_design": None,
+            "file_mapping": {},
+            "iteration_history": [],
+            "session_info": {}
+        }
+        
+        print(f"[TDD] 统一TDD测试初始化")
         print(f"   设计类型: {design_type}")
         print(f"   配置档案: {config_profile}")
         print(f"   实验ID: {self.experiment_id}")
@@ -296,10 +349,122 @@ module carry_lookahead_adder_16bit (
         
         return None
     
+    def update_context_state(self, file_info: Dict[str, Any]):
+        """更新上下文状态，记录生成的文件信息"""
+        self.context_state["generated_files"].append(file_info)
+        
+        # 更新文件映射
+        if "filename" in file_info:
+            self.context_state["file_mapping"][file_info["filename"]] = file_info
+        
+        # 如果是设计文件，更新当前设计
+        if file_info.get("file_type") == "verilog" and "design" in file_info.get("description", "").lower():
+            self.context_state["current_design"] = file_info
+        
+        print(f"[CONTEXT] 更新上下文状态: {file_info.get('filename', 'unknown')}")
+    
+    def get_design_files_context(self) -> str:
+        """获取设计文件的上下文信息，用于传递给测试阶段"""
+        design_files = [f for f in self.context_state["generated_files"] 
+                       if f.get("file_type") == "verilog" and "design" in f.get("description", "").lower()]
+        
+        if not design_files:
+            return "设计文件: 无（需要先生成设计文件）"
+        
+        context_lines = ["设计文件:"]
+        for file_info in design_files:
+            filename = file_info.get("filename", "unknown")
+            filepath = file_info.get("filepath", "unknown")
+            description = file_info.get("description", "")
+            
+            context_lines.append(f"  - 文件名: {filename}")
+            context_lines.append(f"  - 路径: {filepath}")
+            if description:
+                context_lines.append(f"  - 描述: {description}")
+            context_lines.append("")
+        
+        return "\n".join(context_lines)
+    
+    def create_dynamic_task_description(self, base_description: str, stage: str = "design") -> str:
+        """创建动态任务描述，根据当前上下文状态"""
+        if stage == "design":
+            # 设计阶段：强制生成代码文件
+            return f"""
+🎨 强制设计阶段
+
+{base_description}
+
+强制要求：
+1. 必须使用 generate_verilog_code 工具生成完整的Verilog代码
+2. 必须保存代码文件到实验目录
+3. 必须确保代码符合所有需求规范
+4. 必须生成可编译的代码文件
+5. 不要只分析需求，必须实际生成代码
+
+请立即执行代码生成，不要跳过此步骤。
+"""
+        elif stage == "test":
+            # 测试阶段：添加文件上下文信息
+            design_context = self.get_design_files_context()
+            return f"""
+🧪 测试生成和验证阶段
+
+请为以下设计生成测试台并进行验证：
+
+{design_context}
+
+测试要求：
+1. 生成全面的测试台文件
+2. 包含边界条件测试
+3. 验证所有功能点
+4. 运行仿真验证
+5. 提供详细的测试报告
+
+请生成测试台并执行完整的测试验证流程。
+"""
+        else:
+            return base_description
+    
+    def update_context_state(self, file_info: Dict[str, Any]):
+        """更新上下文状态，记录生成的文件信息"""
+        self.context_state["generated_files"].append(file_info)
+        
+        # 更新文件映射
+        if "filename" in file_info:
+            self.context_state["file_mapping"][file_info["filename"]] = file_info
+        
+        # 如果是设计文件，更新当前设计
+        if file_info.get("file_type") == "verilog" and "design" in file_info.get("description", "").lower():
+            self.context_state["current_design"] = file_info
+        
+        print(f"[CONTEXT] 更新上下文状态: {file_info.get('filename', 'unknown')}")
+    
+    def get_design_files_context(self) -> str:
+        """获取设计文件的上下文信息，用于传递给测试阶段"""
+        design_files = [f for f in self.context_state["generated_files"] 
+                       if f.get("file_type") == "verilog" and "design" in f.get("description", "").lower()]
+        
+        if not design_files:
+            return "设计文件: 无（需要先生成设计文件）"
+        
+        context_lines = ["设计文件:"]
+        for file_info in design_files:
+            filename = file_info.get("filename", "unknown")
+            filepath = file_info.get("filepath", "unknown")
+            description = file_info.get("description", "")
+            
+            context_lines.append(f"  - 文件名: {filename}")
+            context_lines.append(f"  - 路径: {filepath}")
+            if description:
+                context_lines.append(f"  - 描述: {description}")
+            context_lines.append("")
+        
+        return "\n".join(context_lines)
+    
     async def setup_framework(self):
         """设置框架和智能体"""
         try:
-            print("🔧 设置框架和智能体...")
+            print("设置框架和智能体...")
             
             # 创建输出目录
             self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -308,7 +473,7 @@ module carry_lookahead_adder_16bit (
             artifacts_dir.mkdir(exist_ok=True)
             logs_dir.mkdir(exist_ok=True)
             
-            # 🔧 设置实验管理器 - 使用已创建的实验目录
+            # 设置实验管理器 - 使用已创建的实验目录
             from core.experiment_manager import ExperimentManager
             exp_manager = ExperimentManager(base_workspace=Path("tdd_experiments"))
             
@@ -341,7 +506,7 @@ module carry_lookahead_adder_16bit (
             
             exp_path = self.output_dir
             
-            # 🔧 优化：初始化文件管理器时直接设置目标路径
+            # 优化：初始化文件管理器时直接设置目标路径
             from core.file_manager import initialize_file_manager
             self.file_manager = initialize_file_manager(workspace_root=artifacts_dir)
             
@@ -350,7 +515,7 @@ module carry_lookahead_adder_16bit (
             exp_module._experiment_manager = exp_manager
             
             # 验证实验管理器设置
-            print(f"🔧 实验管理器设置完成:")
+            print(f"实验管理器设置完成:")
             print(f"   - 基础路径: {exp_manager.base_workspace}")
             print(f"   - 当前实验: {exp_manager.current_experiment}")
             print(f"   - 实验路径: {exp_manager.current_experiment_path}")
@@ -358,9 +523,9 @@ module carry_lookahead_adder_16bit (
             
             # 确保实验目录存在
             if exp_path.exists():
-                print(f"✅ 实验目录创建成功: {exp_path}")
+                print(f"[OK] 实验目录创建成功: {exp_path}")
             else:
-                print(f"❌ 实验目录创建失败: {exp_path}")
+                print(f"[ERROR] 实验目录创建失败: {exp_path}")
             
             # 从环境变量创建配置
             self.config = FrameworkConfig.from_env()
@@ -368,14 +533,14 @@ module carry_lookahead_adder_16bit (
             # 如果API密钥没有设置，手动设置
             if not self.config.llm.api_key:
                 self.config.llm.api_key = "sk-66ed80a639194920a3840f7013960171"
-                print("🔑 API密钥已手动设置")
+                print("API密钥已手动设置")
             
             # 创建智能体
             self.verilog_agent = EnhancedRealVerilogAgent(self.config)
             self.review_agent = EnhancedRealCodeReviewAgent(self.config)
             
             # 确保智能体知道实验路径
-            print(f"🔧 智能体实验路径设置:")
+            print(f"智能体实验路径设置:")
             print(f"   - Verilog Agent ID: {self.verilog_agent.agent_id}")
             print(f"   - Review Agent ID: {self.review_agent.agent_id}")
             print(f"   - 实验路径: {exp_manager.current_experiment_path}")
@@ -394,14 +559,16 @@ module carry_lookahead_adder_16bit (
                     timeout_per_iteration=self.experiment_config.get('timeout_per_iteration', 300),
                     enable_deep_analysis=True,
                     auto_fix_suggestions=True,
-                    save_iteration_logs=True
+                    save_iteration_logs=True,
+                    enable_persistent_conversation=True,  # 启用持续对话
+                    max_conversation_history=50
                 )
             )
             
-            print("✅ 框架设置完成")
+            print("框架设置完成")
             
         except Exception as e:
-            print(f"❌ 框架设置失败: {str(e)}")
+            print(f"[ERROR] 框架设置失败: {str(e)}")
             raise
     
     async def run_experiment(self) -> Dict[str, Any]:
@@ -409,7 +576,7 @@ module carry_lookahead_adder_16bit (
         experiment_start_time = time.time()
         
         print("=" * 80)
-        print(f"🚀 开始统一TDD实验: {self.design_type.upper()}")
+        print(f"[START] 开始统一TDD实验: {self.design_type.upper()}")
         print("=" * 80)
         
         try:
@@ -420,9 +587,9 @@ module carry_lookahead_adder_16bit (
             design_requirements = self.get_design_requirements()
             testbench_path = self.get_testbench_path()
             
-            print(f"📋 设计需求已准备")
+            print(f"设计需求已准备")
             if testbench_path:
-                print(f"🎯 测试台: {Path(testbench_path).name}")
+                print(f"测试台: {Path(testbench_path).name}")
                 # 复制测试台文件到实验目录
                 from core.experiment_manager import get_experiment_manager
                 exp_manager = get_experiment_manager()
@@ -432,21 +599,40 @@ module carry_lookahead_adder_16bit (
                         f"用户提供的{self.design_type}测试台文件"
                     )
                     if copied_path:
-                        print(f"📋 测试台已复制到: {copied_path.name}")
+                        print(f"测试台已复制到: {copied_path.name}")
                     else:
-                        print(f"⚠️ 测试台复制失败")
+                        print(f"[WARNING] 测试台复制失败")
             else:
-                print("🎯 测试台: 将由AI生成")
+                print("测试台: 将由AI生成")
             
-            print(f"⚙️ 配置: {self.config_profile} ({self.experiment_config})")
+            print(f"配置: {self.config_profile} ({self.experiment_config})")
             
-            # 3. 执行测试驱动任务
-            print(f"🔄 启动测试驱动开发循环...")
+            # 3. 验证实验配置
+            print("🔍 验证实验配置...")
+            self._validate_experiment_config()
+            print("✅ 实验配置验证完成")
+            
+            # 4. 执行测试驱动任务 - 使用强制TDD流程
+            print(f"启动测试驱动开发循环...")
             print(f"   最大迭代次数: {self.experiment_config.get('max_iterations', 2)}")
             print(f"   每次迭代超时: {self.experiment_config.get('timeout_per_iteration', 300)}秒")
+            print(f"   持续对话模式: 已启用")
+            print(f"   强制测试台生成: 已启用")
+            print(f"   强制仿真验证: 已启用")
+            print(f"   智能参数处理: 已启用")
             
+            # 创建增强的任务描述，包含上下文传递机制
+            enhanced_task_description = self.create_dynamic_task_description(design_requirements, "design")
+            
+            # 设置文件监控回调（通过实验管理器）
+            from core.experiment_manager import get_experiment_manager
+            exp_manager = get_experiment_manager()
+            if hasattr(exp_manager, 'set_file_callback'):
+                exp_manager.set_file_callback(self.update_context_state)
+            
+            # 🎯 强制TDD流程执行
             result = await self.coordinator.execute_test_driven_task(
-                task_description=design_requirements,
+                task_description=enhanced_task_description,
                 testbench_path=testbench_path
             )
             
@@ -461,24 +647,24 @@ module carry_lookahead_adder_16bit (
             from core.experiment_manager import get_experiment_manager
             exp_manager = get_experiment_manager()
             if exp_manager.current_experiment_path:
-                print(f"\n📁 实验目录检查: {exp_manager.current_experiment_path}")
+                print(f"\n实验目录检查: {exp_manager.current_experiment_path}")
                 if exp_manager.current_experiment_path.exists():
                     for subdir in ["designs", "testbenches", "artifacts", "logs"]:
                         subdir_path = exp_manager.current_experiment_path / subdir
                         if subdir_path.exists():
                             files = list(subdir_path.glob("*"))
-                            print(f"   📂 {subdir}: {len(files)} 个文件")
+                            print(f"   {subdir}: {len(files)} 个文件")
                             for file in files:
                                 print(f"      - {file.name}")
                         else:
-                            print(f"   📂 {subdir}: 目录不存在")
+                            print(f"   {subdir}: 目录不存在")
                 else:
-                    print(f"   ❌ 实验目录不存在: {exp_manager.current_experiment_path}")
+                    print(f"   [ERROR] 实验目录不存在: {exp_manager.current_experiment_path}")
             
             return analysis
             
         except Exception as e:
-            print(f"❌ 实验执行异常: {str(e)}")
+            print(f"[ERROR] 实验执行异常: {str(e)}")
             error_result = {
                 "success": False,
                 "error": str(e),
@@ -491,7 +677,7 @@ module carry_lookahead_adder_16bit (
     async def _analyze_experiment_result(self, result: Dict[str, Any], duration: float) -> Dict[str, Any]:
         """分析实验结果"""
         print("=" * 80)
-        print("📊 实验结果分析")
+        print("实验结果分析")
         print("=" * 80)
         
         analysis = {
@@ -501,30 +687,43 @@ module carry_lookahead_adder_16bit (
             "success": result.get("success", False),
             "total_duration": duration,
             "timestamp": time.time(),
-            "detailed_result": result
+            "detailed_result": result,
+            "context_state": self.context_state  # 包含上下文状态信息
         }
         
         if result.get("success"):
-            print("🎉 实验成功完成！")
+            print("实验成功完成！")
             
             iterations = result.get("total_iterations", 0)
             final_design = result.get("final_design", [])
             
-            print(f"   📈 总迭代次数: {iterations}")
-            print(f"   ⏱️ 总耗时: {duration:.2f} 秒")
-            print(f"   📁 最终设计文件: {len(final_design)} 个")
+            print(f"   总迭代次数: {iterations}")
+            print(f"   总耗时: {duration:.2f} 秒")
+            print(f"   最终设计文件: {len(final_design)} 个")
+            print(f"   上下文文件数: {len(self.context_state['generated_files'])} 个")
+            
+            # 分析对话历史
+            conversation_history = result.get("conversation_history", [])
+            if conversation_history:
+                print(f"   对话历史长度: {len(conversation_history)} 轮")
+                user_messages = [msg for msg in conversation_history if msg.get('role') == 'user']
+                assistant_messages = [msg for msg in conversation_history if msg.get('role') == 'assistant']
+                print(f"   - 用户消息: {len(user_messages)} 轮")
+                print(f"   - AI响应: {len(assistant_messages)} 轮")
             
             analysis["summary"] = {
                 "iterations_used": iterations,
                 "efficiency": f"成功率: 100%",
                 "files_generated": len(final_design),
+                "context_files": len(self.context_state['generated_files']),
                 "completion_reason": result.get("completion_reason", "tests_passed"),
-                "average_iteration_time": duration / max(iterations, 1)
+                "average_iteration_time": duration / max(iterations, 1),
+                "conversation_rounds": len(conversation_history)
             }
             
             # 显示设计文件信息
             if final_design:
-                print(f"📄 生成的设计文件:")
+                print(f"生成的设计文件:")
                 for i, file_info in enumerate(final_design, 1):
                     if isinstance(file_info, dict):
                         file_path = file_info.get('path', str(file_info))
@@ -533,30 +732,32 @@ module carry_lookahead_adder_16bit (
                     print(f"   {i}. {Path(file_path).name}")
             
         else:
-            print("❌ 实验未能完成")
+            print("实验未能完成")
             
             iterations = result.get("total_iterations", 0)
             error = result.get("error", "未知错误")
             
-            print(f"   📈 已用迭代次数: {iterations}")
-            print(f"   ⏱️ 总耗时: {duration:.2f} 秒")
-            print(f"   ❌ 失败原因: {error}")
+            print(f"   已用迭代次数: {iterations}")
+            print(f"   总耗时: {duration:.2f} 秒")
+            print(f"   失败原因: {error}")
+            print(f"   上下文文件数: {len(self.context_state['generated_files'])} 个")
             
             analysis["summary"] = {
                 "iterations_used": iterations,
                 "completion_reason": result.get("completion_reason", "failed"),
                 "error": error,
-                "partial_progress": iterations > 0
+                "partial_progress": iterations > 0,
+                "context_files": len(self.context_state['generated_files'])
             }
             
             # 分析部分结果
             partial_results = result.get("partial_results", [])
             if partial_results:
-                print(f"🔍 迭代历史分析:")
+                print(f"迭代历史分析:")
                 for i, iteration in enumerate(partial_results, 1):
                     iter_result = iteration.get("result", {})
                     success = iter_result.get("all_tests_passed", False)
-                    print(f"   第{i}次迭代: {'✅ 通过' if success else '❌ 失败'}")
+                    print(f"   第{i}次迭代: {'通过' if success else '失败'}")
         
         # 显示会话信息
         session_id = result.get("session_id")
@@ -564,11 +765,11 @@ module carry_lookahead_adder_16bit (
             try:
                 session_info = self.coordinator.get_session_info(session_id)
                 if session_info:
-                    print(f"📋 会话详情:")
+                    print(f"会话详情:")
                     print(f"   会话ID: {session_id}")
                     print(f"   状态: {session_info.get('status', 'unknown')}")
             except Exception as e:
-                print(f"⚠️ 无法获取会话信息: {e}")
+                print(f"[WARNING] 无法获取会话信息: {e}")
         
         print("=" * 80)
         
@@ -589,45 +790,48 @@ module carry_lookahead_adder_16bit (
         summary_path = self.output_dir / "experiment_summary.txt"
         await self._save_text_summary(analysis, summary_path)
         
-        print(f"💾 实验报告已保存到: {self.output_dir}")
-        print(f"   📄 详细报告: {report_path.name}")
-        print(f"   📋 结果摘要: {summary_path.name}")
+        print(f"实验报告已保存到: {self.output_dir}")
+        print(f"   详细报告: {report_path.name}")
+        print(f"   结果摘要: {summary_path.name}")
     
     async def _save_text_summary(self, analysis: Dict[str, Any], summary_path: Path):
         """保存人类可读的文本摘要"""
         with open(summary_path, 'w', encoding='utf-8') as f:
             f.write("=" * 80 + "\n")
-            f.write("🧪 TDD实验结果摘要\n")
+            f.write("TDD实验结果摘要\n")
             f.write("=" * 80 + "\n\n")
             
             f.write(f"实验ID: {analysis['experiment_id']}\n")
             f.write(f"设计类型: {analysis['design_type']}\n")
             f.write(f"配置档案: {analysis['config_profile']}\n")
-            f.write(f"实验状态: {'✅ 成功' if analysis['success'] else '❌ 失败'}\n")
+            f.write(f"实验状态: {'成功' if analysis['success'] else '失败'}\n")
             f.write(f"总耗时: {analysis['total_duration']:.2f} 秒\n")
             f.write(f"时间戳: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(analysis['timestamp']))}\n\n")
             
             if analysis.get('success'):
                 summary = analysis.get('summary', {})
-                f.write("📊 成功统计:\n")
+                f.write("成功统计:\n")
                 f.write(f"- 迭代次数: {summary.get('iterations_used', 0)}\n")
                 f.write(f"- 生成文件: {summary.get('files_generated', 0)} 个\n")
+                f.write(f"- 上下文文件: {summary.get('context_files', 0)} 个\n")
                 f.write(f"- 完成原因: {summary.get('completion_reason', 'tests_passed')}\n")
-                f.write(f"- 平均迭代时间: {summary.get('average_iteration_time', 0):.2f} 秒\n\n")
+                f.write(f"- 平均迭代时间: {summary.get('average_iteration_time', 0):.2f} 秒\n")
+                f.write(f"- 对话轮数: {summary.get('conversation_rounds', 0)}\n\n")
                 
                 # 测试结果
                 test_results = analysis.get('detailed_result', {}).get('test_results', {})
                 if test_results:
-                    f.write("🧪 测试结果:\n")
-                    f.write(f"- 测试状态: {'✅ 通过' if test_results.get('all_tests_passed') else '❌ 失败'}\n")
+                    f.write("测试结果:\n")
+                    f.write(f"- 测试状态: {'通过' if test_results.get('all_tests_passed') else '失败'}\n")
                     f.write(f"- 测试阶段: {test_results.get('stage', 'unknown')}\n")
                     f.write(f"- 返回码: {test_results.get('return_code', -1)}\n")
                     if test_results.get('test_summary'):
                         f.write(f"- 测试摘要: {test_results['test_summary']}\n")
             else:
-                f.write("❌ 失败信息:\n")
+                f.write("失败信息:\n")
                 error = analysis.get('error', '未知错误')
                 f.write(f"- 错误: {error}\n")
+                f.write(f"- 上下文文件: {analysis.get('summary', {}).get('context_files', 0)} 个\n")
     
     async def _copy_experiment_files(self, result: Dict[str, Any]):
         """复制实验生成的文件到输出目录（优化版本）"""
@@ -640,8 +844,8 @@ module carry_lookahead_adder_16bit (
             
             copied_files = []
             
-            # 🔧 优化：文件已经直接保存在artifacts_dir，只需要处理日志文件
-            print("   📁 文件已直接保存在实验目录，无需复制")
+            # 优化：文件已经直接保存在artifacts_dir，只需要处理日志文件
+            print("   文件已直接保存在实验目录，无需复制")
             
             # 1. 复制标准result中的文件引用（如果存在）
             final_design = result.get('final_design', [])
@@ -664,7 +868,7 @@ module carry_lookahead_adder_16bit (
                     import shutil
                     shutil.copy2(source_path, dest_path)
                     copied_files.append(source_path.name)
-                    print(f"   📁 复制外部文件: {source_path.name}")
+                    print(f"   复制外部文件: {source_path.name}")
             
             # 2. 保存仿真输出
             test_results = result.get('test_results', {})
@@ -672,30 +876,62 @@ module carry_lookahead_adder_16bit (
                 sim_output_path = logs_dir / "simulation_output.log"
                 with open(sim_output_path, 'w', encoding='utf-8') as f:
                     f.write(test_results['simulation_stdout'])
-                print(f"   📝 保存仿真输出: {sim_output_path.name}")
+                print(f"   保存仿真输出: {sim_output_path.name}")
             
             # 保存编译输出
             if test_results.get('compile_stdout'):
                 compile_output_path = logs_dir / "compile_output.log"
                 with open(compile_output_path, 'w', encoding='utf-8') as f:
                     f.write(test_results['compile_stdout'])
-                print(f"   📝 保存编译输出: {compile_output_path.name}")
+                print(f"   保存编译输出: {compile_output_path.name}")
             
             # 保存错误输出
             if test_results.get('simulation_stderr'):
                 error_output_path = logs_dir / "simulation_errors.log"
                 with open(error_output_path, 'w', encoding='utf-8') as f:
                     f.write(test_results['simulation_stderr'])
-                print(f"   📝 保存错误输出: {error_output_path.name}")
+                print(f"   保存错误输出: {error_output_path.name}")
             
             # 总结复制结果
             if copied_files:
-                print(f"   ✅ 成功复制 {len(copied_files)} 个外部文件到实验目录")
+                print(f"   [OK] 成功复制 {len(copied_files)} 个外部文件到实验目录")
             else:
-                print(f"   ✅ 所有文件已直接保存在实验目录中")
+                print(f"   [OK] 所有文件已直接保存在实验目录中")
                 
         except Exception as e:
-            print(f"⚠️ 复制文件时出现警告: {str(e)}")
+            print(f"[WARNING] 复制文件时出现警告: {str(e)}")
+
+    def _validate_experiment_config(self):
+        """验证实验配置"""
+        print("🔍 验证实验配置...")
+        
+        # 验证设计类型
+        if self.design_type not in self.DESIGN_TEMPLATES:
+            raise ValueError(f"不支持的设计类型: {self.design_type}")
+        
+        # 验证配置档案
+        if self.config_profile not in self.EXPERIMENT_CONFIGS:
+            raise ValueError(f"不支持的配置档案: {self.config_profile}")
+        
+        # 验证自定义配置
+        if hasattr(self, 'custom_config') and self.custom_config:
+            for key, value in self.custom_config.items():
+                if key == 'max_iterations' and (not isinstance(value, int) or value < 1):
+                    raise ValueError(f"max_iterations必须是正整数，当前值: {value}")
+                elif key == 'timeout_per_iteration' and (not isinstance(value, int) or value < 30):
+                    raise ValueError(f"timeout_per_iteration必须至少30秒，当前值: {value}")
+                elif key == 'deep_analysis' and not isinstance(value, bool):
+                    raise ValueError(f"deep_analysis必须是布尔值，当前值: {value}")
+        
+        # 验证测试台路径
+        if self.testbench_path and not Path(self.testbench_path).exists():
+            print(f"[WARNING] 测试台文件不存在: {self.testbench_path}")
+        
+        # 验证自定义需求
+        if self.custom_requirements and len(self.custom_requirements.strip()) < 10:
+            print(f"[WARNING] 自定义需求可能过于简短: {len(self.custom_requirements)} 字符")
+        
+        print("✅ 实验配置验证通过")
 
 
 def create_argument_parser():
@@ -758,7 +994,7 @@ async def main():
     parser = create_argument_parser()
     args = parser.parse_args()
     
-    print("🧪 统一测试驱动开发(TDD)测试入口")
+    print("统一测试驱动开发(TDD)测试入口")
     print("=" * 50)
     
     # 构建自定义配置
@@ -784,19 +1020,19 @@ async def main():
         result = await experiment.run_experiment()
         
         # 显示最终结果
-        print(f"🏁 实验完成")
+        print(f"实验完成")
         if result["success"]:
-            print("✅ 设计成功完成并通过所有测试！")
-            print("🎯 测试驱动开发功能验证成功")
+            print("设计成功完成并通过所有测试！")
+            print("测试驱动开发功能验证成功")
         else:
-            print("❌ 设计未能通过所有测试")
-            print("🔍 可以查看日志分析迭代改进过程")
-            print(f"📊 实验报告: unified_tdd_report_{experiment.experiment_id}.json")
+            print("设计未能通过所有测试")
+            print("可以查看日志分析迭代改进过程")
+            print(f"实验报告: unified_tdd_report_{experiment.experiment_id}.json")
         
         return result["success"]
         
     except Exception as e:
-        print(f"💥 实验执行异常: {str(e)}")
+        print(f"实验执行异常: {str(e)}")
         return False
 
 

@@ -169,15 +169,15 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "properties": {
                     "module_file": {
                         "type": "string",
-                        "pattern": r"^[a-zA-Z0-9_./\-]+\.v$",
+                        "pattern": r"^[a-zA-Z0-9_./\-:\\\\]+\.v$",
                         "maxLength": 500,
-                        "description": "模块文件路径，必须以.v结尾"
+                        "description": "模块文件路径，必须以.v结尾，支持Windows和Unix路径"
                     },
                     "testbench_file": {
                         "type": "string",
-                        "pattern": r"^[a-zA-Z0-9_./\-]+\.v$",
+                        "pattern": r"^[a-zA-Z0-9_./\-:\\\\]+\.v$",
                         "maxLength": 500,
-                        "description": "测试台文件路径，必须以.v结尾"
+                        "description": "测试台文件路径，必须以.v结尾，支持Windows和Unix路径"
                     },
                     "module_code": {
                         "type": "string",
@@ -461,6 +461,30 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             self.logger.error(f"❌ LLM调用失败: {str(e)}")
             raise
     
+
+    def _extract_module_name_from_code(self, verilog_code: str) -> str:
+        """从Verilog代码中提取模块名"""
+        import re
+        
+        # 匹配module声明
+        module_pattern = r'module\s+(\w+)\s*\('
+        match = re.search(module_pattern, verilog_code, re.IGNORECASE)
+        
+        if match:
+            return match.group(1)
+        
+        # 如果没有找到，返回默认名称
+        return "unknown_module"
+    
+    def _validate_and_fix_module_name(self, provided_name: str, verilog_code: str) -> str:
+        """验证并修复模块名"""
+        extracted_name = self._extract_module_name_from_code(verilog_code)
+        
+        if provided_name and provided_name != extracted_name:
+            self.logger.warning(f"⚠️ 模块名不匹配: 提供={provided_name}, 提取={extracted_name}")
+            return extracted_name
+        
+        return provided_name or extracted_name
     def _build_enhanced_system_prompt(self) -> str:
         """构建增强的System Prompt（支持智能Schema适配）"""
         base_prompt = """你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
@@ -526,8 +550,8 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         {
             "tool_name": "generate_testbench",
             "parameters": {
-                "module_name": "simple_adder",
-                "code": "module simple_adder(...); endmodule",
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
                 "test_scenarios": [
                     {"name": "basic_test", "description": "基本功能验证"},
                     {"name": "corner_test", "description": "边界条件测试"}
@@ -545,8 +569,8 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         {
             "tool_name": "generate_testbench",
             "parameters": {
-                "module_name": "simple_adder",
-                "verilog_code": "module simple_adder(...); endmodule",
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
                 "test_scenarios": [
                     {"name": "basic_test", "description": "基本功能验证"},
                     {"name": "corner_test", "description": "边界条件测试"}
@@ -775,7 +799,14 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                                      coverage_options: Dict = None) -> Dict[str, Any]:
         """生成测试台工具实现"""
         try:
+            # 验证并修复模块名
+            actual_module_name = self._validate_and_fix_module_name(module_name, module_code)
+            if actual_module_name != module_name:
+                self.logger.info(f"🔧 模块名已修正: {module_name} -> {actual_module_name}")
+                module_name = actual_module_name
+            
             self.logger.info(f"🧪 生成测试台: {module_name}")
+
             
             test_scenarios = test_scenarios or [
                 {"name": "basic_test", "description": "基础功能测试"}
@@ -900,16 +931,60 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                                  module_code: str = None, testbench_code: str = None,
                                  simulator: str = "iverilog",
                                  simulation_options: Dict = None) -> Dict[str, Any]:
-        """运行仿真工具实现 - 集成智能依赖分析"""
+        """运行仿真工具实现 - 集成智能依赖分析和参数处理"""
         self.logger.info(f"🔍 运行仿真: {module_file} {testbench_file} {module_code} {testbench_code} {simulator} {simulation_options}")
         try:
             self.logger.info(f"🔬 运行仿真: {simulator}")
             simulation_options = simulation_options or {}
             
-            # 确定使用文件还是代码内容
-            files_to_compile = []
+            # 🧠 智能参数处理策略
+            # 1. 优先使用文件路径参数
+            # 2. 如果文件路径失败，自动切换到代码内容参数
+            # 3. 如果代码内容也没有，尝试从文件管理器获取
             
+            files_to_compile = []
+            use_file_paths = True
+            
+            # 检查文件路径参数是否有效
             if module_file and testbench_file:
+                # 验证文件路径格式（支持Windows和Unix路径）
+                import re
+                path_pattern = r'^[a-zA-Z0-9_./\-:\\\\]+\.v$'
+                
+                if not re.match(path_pattern, module_file) or not re.match(path_pattern, testbench_file):
+                    self.logger.warning(f"⚠️ 文件路径格式不符合要求，切换到代码内容模式")
+                    self.logger.warning(f"   模块文件路径: {module_file}")
+                    self.logger.warning(f"   测试台文件路径: {testbench_file}")
+                    use_file_paths = False
+                    
+                    # 尝试从文件管理器获取代码内容
+                    if not module_code or not testbench_code:
+                        try:
+                            from core.file_manager import get_file_manager
+                            file_manager = get_file_manager()
+                            
+                            # 尝试获取模块代码
+                            if not module_code:
+                                design_files = file_manager.get_files_by_type("design")
+                                for file_ref in design_files:
+                                    if "alu" in file_ref.file_path.lower():
+                                        module_code = file_ref.content
+                                        self.logger.info(f"📄 从文件管理器获取模块代码: {file_ref.file_path}")
+                                        break
+                            
+                            # 尝试获取测试台代码
+                            if not testbench_code:
+                                testbench_files = file_manager.get_files_by_type("testbench")
+                                for file_ref in testbench_files:
+                                    if "alu" in file_ref.file_path.lower():
+                                        testbench_code = file_ref.content
+                                        self.logger.info(f"📄 从文件管理器获取测试台代码: {file_ref.file_path}")
+                                        break
+                                        
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ 从文件管理器获取代码失败: {str(e)}")
+            
+            if use_file_paths and module_file and testbench_file:
                 mod_file = Path(module_file)
                 tb_file = Path(testbench_file)
                 

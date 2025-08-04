@@ -1306,13 +1306,14 @@ class BaseAgent(ABC):
                         else:
                             subdir = "artifacts"
                         
-                        # 保存到实验文件夹
-                        exp_file_path = exp_manager.save_file(
-                            content=cleaned_content,
-                            filename=filename,
-                            subdir=subdir,
-                            description=f"由{self.agent_id}创建的{file_type}文件"
-                        )
+                        # 🎯 修复：直接保存到实验文件夹，不使用不存在的save_file方法
+                        exp_subdir_path = exp_manager.current_experiment_path / subdir
+                        exp_subdir_path.mkdir(parents=True, exist_ok=True)
+                        exp_file_path = exp_subdir_path / filename
+                        
+                        # 写入文件
+                        with open(exp_file_path, 'w', encoding='utf-8') as f:
+                            f.write(cleaned_content)
                         
                         if exp_file_path:
                             # 同时注册到中央文件管理器

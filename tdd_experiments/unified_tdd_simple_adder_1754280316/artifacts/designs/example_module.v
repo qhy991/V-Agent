@@ -1,0 +1,1 @@
+module example_module(input clk, input rst_n, input [7:0] data_in, output reg [7:0] data_out); endmodule

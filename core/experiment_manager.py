@@ -1,361 +1,275 @@
 #!/usr/bin/env python3
 """
-实验文件夹管理系统
-Experiment Folder Management System
+实验管理器 - 实现实验数据隔离
+==================================================
+
+这个模块为每个实验创建独立的工作环境：
+✅ 每个实验有独立的工作目录
+✅ 实验间数据完全隔离
+✅ 自动清理实验数据
+✅ 实验元数据管理
 """
 
-import os
-import shutil
 import json
-import time
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, Optional, List
 import logging
+import shutil
+import uuid
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+from dataclasses import dataclass, asdict
+from datetime import datetime
+import time
+
+
+@dataclass
+class ExperimentInfo:
+    """实验信息"""
+    experiment_id: str
+    experiment_name: str
+    created_at: str
+    status: str  # "running", "completed", "failed", "cancelled"
+    task_description: str
+    workspace_path: str
+    metadata: Dict[str, Any] = None
+    
+    def __post_init__(self):
+        if self.metadata is None:
+            self.metadata = {}
+
 
 class ExperimentManager:
-    """实验管理器 - 为每次TDD实验创建独立的文件夹"""
+    """实验管理器"""
     
-    def __init__(self, base_workspace: str = None):
-        """
-        初始化实验管理器
+    def __init__(self, base_workspace: Path = None):
+        self.logger = logging.getLogger(__name__)
         
-        Args:
-            base_workspace: 基础工作空间路径，默认为项目根目录/experiments
-        """
-        self.project_root = Path(__file__).parent.parent
-        if base_workspace:
-            self.base_workspace = Path(base_workspace)
-        else:
-            self.base_workspace = self.project_root / "experiments"
+        # 设置基础工作空间
+        if base_workspace is None:
+            base_workspace = Path.cwd() / "experiments"
         
-        self.base_workspace.mkdir(exist_ok=True)
-        self.logger = logging.getLogger(f"{__name__}.ExperimentManager")
+        self.base_workspace = Path(base_workspace)
+        self.base_workspace.mkdir(parents=True, exist_ok=True)
         
-        # 当前实验信息
-        self.current_experiment = None
-        self.current_experiment_path = None
+        # 实验注册表
+        self.experiments: Dict[str, ExperimentInfo] = {}
+        self.registry_file = self.base_workspace / "experiment_registry.json"
         
-    def create_new_experiment(self, experiment_name: str = None, description: str = "") -> Path:
-        """
-        创建新的实验文件夹
+        # 🎯 修复：添加当前实验路径属性
+        self.current_experiment_path: Optional[Path] = None
+        self.current_experiment_id: Optional[str] = None
         
-        Args:
-            experiment_name: 实验名称，如果为None则自动生成
-            description: 实验描述
-            
-        Returns:
-            实验文件夹路径
-        """
-        # 生成实验名称
-        if experiment_name is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            experiment_name = f"tdd_experiment_{timestamp}"
+        # 加载现有实验注册表
+        self._load_registry()
         
-        # 确保实验名称唯一
-        experiment_path = self.base_workspace / experiment_name
-        counter = 1
-        while experiment_path.exists():
-            experiment_path = self.base_workspace / f"{experiment_name}_{counter}"
-            counter += 1
+        self.logger.info(f"🧪 实验管理器已初始化，基础工作空间: {self.base_workspace}")
+    
+    def create_experiment(self, experiment_name: str, task_description: str, 
+                         metadata: Dict[str, Any] = None) -> ExperimentInfo:
+        """创建新实验"""
+        # 生成实验ID
+        experiment_id = f"{experiment_name}_{int(time.time())}"
         
-        # 创建实验文件夹结构
-        experiment_path.mkdir(parents=True)
+        # 创建实验工作目录
+        workspace_path = self.base_workspace / experiment_id
+        workspace_path.mkdir(parents=True, exist_ok=True)
         
-        # 创建子文件夹
-        subdirs = [
-            "designs",      # 设计文件
-            "testbenches",  # 测试台文件
-            "outputs",      # 仿真输出
-            "logs",         # 日志文件
-            "artifacts",    # 其他产物
-            "dependencies"  # 依赖文件
-        ]
-        
+        # 创建子目录
+        subdirs = ["designs", "testbenches", "reports", "logs", "temp"]
         for subdir in subdirs:
-            (experiment_path / subdir).mkdir()
+            (workspace_path / subdir).mkdir(exist_ok=True)
         
-        # 创建实验元数据
-        metadata = {
-            "experiment_name": experiment_name,
-            "description": description,
-            "created_at": datetime.now().isoformat(),
-            "status": "active",
-            "iterations": 0,
-            "files_created": 0,
-            "last_updated": datetime.now().isoformat()
-        }
+        # 创建实验信息
+        experiment_info = ExperimentInfo(
+            experiment_id=experiment_id,
+            experiment_name=experiment_name,
+            created_at=datetime.now().isoformat(),
+            status="running",
+            task_description=task_description,
+            workspace_path=str(workspace_path),
+            metadata=metadata or {}
+        )
         
-        metadata_file = experiment_path / "experiment_metadata.json"
-        with open(metadata_file, 'w', encoding='utf-8') as f:
-            json.dump(metadata, f, indent=2, ensure_ascii=False)
+        # 保存到注册表
+        self.experiments[experiment_id] = experiment_info
+        self._save_registry()
         
-        # 设置为当前实验
-        self.current_experiment = experiment_name
-        self.current_experiment_path = experiment_path
+        # 🎯 修复：设置当前实验路径
+        self.current_experiment_path = workspace_path
+        self.current_experiment_id = experiment_id
         
-        self.logger.info(f"🆕 创建实验文件夹: {experiment_path}")
-        return experiment_path
+        self.logger.info(f"🧪 创建实验: {experiment_id}")
+        self.logger.info(f"   工作目录: {workspace_path}")
+        self.logger.info(f"   任务描述: {task_description[:100]}...")
+        
+        return experiment_info
     
-    def set_current_experiment(self, experiment_name: str) -> bool:
-        """
-        设置当前实验
+    def get_experiment_workspace(self, experiment_id: str) -> Optional[Path]:
+        """获取实验工作目录"""
+        if experiment_id in self.experiments:
+            return Path(self.experiments[experiment_id].workspace_path)
+        return None
+    
+    def get_experiment_info(self, experiment_id: str) -> Optional[ExperimentInfo]:
+        """获取实验信息"""
+        return self.experiments.get(experiment_id)
+    
+    def update_experiment_status(self, experiment_id: str, status: str, 
+                                metadata: Dict[str, Any] = None) -> bool:
+        """更新实验状态"""
+        if experiment_id not in self.experiments:
+            return False
         
-        Args:
-            experiment_name: 实验名称
+        experiment = self.experiments[experiment_id]
+        experiment.status = status
+        
+        if metadata:
+            experiment.metadata.update(metadata)
+        
+        self._save_registry()
+        self.logger.info(f"🧪 更新实验状态: {experiment_id} -> {status}")
+        
+        return True
+    
+    def list_experiments(self, status_filter: str = None) -> List[ExperimentInfo]:
+        """列出实验"""
+        experiments = list(self.experiments.values())
+        
+        if status_filter:
+            experiments = [exp for exp in experiments if exp.status == status_filter]
+        
+        return sorted(experiments, key=lambda x: x.created_at, reverse=True)
+    
+    def cleanup_experiment(self, experiment_id: str, keep_logs: bool = True) -> bool:
+        """清理实验数据"""
+        if experiment_id not in self.experiments:
+            return False
+        
+        experiment = self.experiments[experiment_id]
+        workspace_path = Path(experiment.workspace_path)
+        
+        try:
+            if keep_logs:
+                # 保留日志目录
+                logs_dir = workspace_path / "logs"
+                if logs_dir.exists():
+                    # 只删除临时文件，保留日志
+                    temp_dir = workspace_path / "temp"
+                    if temp_dir.exists():
+                        shutil.rmtree(temp_dir)
+                    
+                    # 清理其他临时文件
+                    for file in workspace_path.glob("*.tmp"):
+                        file.unlink()
+            else:
+                # 完全删除工作目录
+                if workspace_path.exists():
+                    shutil.rmtree(workspace_path)
             
-        Returns:
-            是否设置成功
-        """
-        experiment_path = self.base_workspace / experiment_name
-        if experiment_path.exists():
-            self.current_experiment = experiment_name
-            self.current_experiment_path = experiment_path
-            self.logger.info(f"🎯 切换到实验: {experiment_name}")
+            # 从注册表中移除
+            del self.experiments[experiment_id]
+            self._save_registry()
+            
+            self.logger.info(f"🧪 清理实验: {experiment_id}")
             return True
-        else:
-            self.logger.error(f"❌ 实验不存在: {experiment_name}")
+            
+        except Exception as e:
+            self.logger.error(f"❌ 清理实验失败 {experiment_id}: {str(e)}")
             return False
     
-    def get_experiment_path(self, subdir: str = None) -> Optional[Path]:
-        """
-        获取当前实验的文件夹路径
+    def cleanup_old_experiments(self, keep_days: int = 7) -> int:
+        """清理旧实验"""
+        cutoff_time = datetime.now().timestamp() - (keep_days * 24 * 3600)
+        cleaned_count = 0
         
-        Args:
-            subdir: 子文件夹名称（designs, testbenches, outputs, logs, artifacts, dependencies）
-            
-        Returns:
-            文件夹路径
-        """
-        if not self.current_experiment_path:
-            self.logger.warning("⚠️ 没有活跃的实验")
-            return None
+        for experiment_id, experiment in list(self.experiments.items()):
+            try:
+                created_time = datetime.fromisoformat(experiment.created_at).timestamp()
+                if created_time < cutoff_time:
+                    if self.cleanup_experiment(experiment_id):
+                        cleaned_count += 1
+            except Exception as e:
+                self.logger.warning(f"⚠️ 处理旧实验失败 {experiment_id}: {str(e)}")
         
-        if subdir:
-            return self.current_experiment_path / subdir
-        else:
-            return self.current_experiment_path
+        self.logger.info(f"🧪 清理了 {cleaned_count} 个旧实验")
+        return cleaned_count
     
-    def save_file(self, content: str, filename: str, subdir: str = "artifacts", 
-                 description: str = "") -> Optional[Path]:
-        """
-        在当前实验文件夹中保存文件
-        
-        Args:
-            content: 文件内容
-            filename: 文件名
-            subdir: 子文件夹（designs, testbenches, outputs, logs, artifacts, dependencies）
-            description: 文件描述
-            
-        Returns:
-            保存的文件路径
-        """
-        if not self.current_experiment_path:
-            self.logger.error("❌ 没有活跃的实验，无法保存文件")
+    def get_experiment_file_manager(self, experiment_id: str):
+        """获取实验专用的文件管理器"""
+        workspace = self.get_experiment_workspace(experiment_id)
+        if not workspace:
             return None
         
-        # 确定保存路径
-        save_dir = self.current_experiment_path / subdir
-        save_dir.mkdir(exist_ok=True)
+        from core.file_manager import CentralFileManager
+        return CentralFileManager(workspace)
+    
+    def get_experiment_context_manager(self, experiment_id: str):
+        """获取实验专用的上下文管理器"""
+        from core.context_manager import FullContextManager
+        return FullContextManager(experiment_id)
+    
+    def save_experiment_metadata(self, experiment_id: str, metadata: Dict[str, Any]) -> bool:
+        """保存实验元数据"""
+        if experiment_id not in self.experiments:
+            return False
         
-        file_path = save_dir / filename
+        experiment = self.experiments[experiment_id]
+        experiment.metadata.update(metadata)
         
-        # 如果文件已存在，创建备份或版本号
-        if file_path.exists():
-            base_name = file_path.stem
-            suffix = file_path.suffix
-            counter = 1
-            while file_path.exists():
-                new_name = f"{base_name}_v{counter}{suffix}"
-                file_path = save_dir / new_name
-                counter += 1
+        # 保存到元数据文件
+        workspace = self.get_experiment_workspace(experiment_id)
+        if workspace:
+            metadata_file = workspace / "experiment_metadata.json"
+            with open(metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, indent=2, ensure_ascii=False)
         
-        # 保存文件
+        self._save_registry()
+        return True
+    
+    def load_experiment_metadata(self, experiment_id: str) -> Optional[Dict[str, Any]]:
+        """加载实验元数据"""
+        workspace = self.get_experiment_workspace(experiment_id)
+        if not workspace:
+            return None
+        
+        metadata_file = workspace / "experiment_metadata.json"
+        if metadata_file.exists():
+            try:
+                with open(metadata_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                self.logger.error(f"❌ 加载实验元数据失败: {str(e)}")
+        
+        return None
+    
+    def _load_registry(self):
+        """加载实验注册表"""
+        if self.registry_file.exists():
+            try:
+                with open(self.registry_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    for exp_data in data.get("experiments", []):
+                        experiment = ExperimentInfo(**exp_data)
+                        self.experiments[experiment.experiment_id] = experiment
+                self.logger.info(f"📋 加载了 {len(self.experiments)} 个实验")
+            except Exception as e:
+                self.logger.error(f"❌ 加载实验注册表失败: {str(e)}")
+    
+    def _save_registry(self):
+        """保存实验注册表"""
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(content)
-            
-            # 更新实验元数据
-            self._update_experiment_metadata(files_created_delta=1)
-            
-            # 记录文件信息
-            self._log_file_creation(file_path, description, subdir)
-            
-            self.logger.info(f"💾 保存文件: {file_path.relative_to(self.current_experiment_path)}")
-            return file_path
-            
-        except Exception as e:
-            self.logger.error(f"❌ 保存文件失败 {filename}: {str(e)}")
-            return None
-    
-    def copy_dependency(self, source_path: str, description: str = "") -> Optional[Path]:
-        """
-        复制依赖文件到当前实验的dependencies文件夹
-        
-        Args:
-            source_path: 源文件路径
-            description: 文件描述
-            
-        Returns:
-            复制后的文件路径
-        """
-        if not self.current_experiment_path:
-            self.logger.error("❌ 没有活跃的实验，无法复制依赖")
-            return None
-        
-        source = Path(source_path)
-        if not source.exists():
-            self.logger.error(f"❌ 源文件不存在: {source_path}")
-            return None
-        
-        # 复制到dependencies文件夹
-        deps_dir = self.current_experiment_path / "dependencies"
-        deps_dir.mkdir(exist_ok=True)
-        
-        dest_path = deps_dir / source.name
-        
-        try:
-            shutil.copy2(source, dest_path)
-            self._log_file_creation(dest_path, f"依赖文件: {description}", "dependencies")
-            self.logger.info(f"📋 复制依赖: {source.name}")
-            return dest_path
-        except Exception as e:
-            self.logger.error(f"❌ 复制依赖失败: {str(e)}")
-            return None
-    
-    def start_iteration(self, iteration_number: int):
-        """开始新的迭代"""
-        if self.current_experiment_path:
-            self._update_experiment_metadata(iterations_delta=1)
-            iteration_log = self.current_experiment_path / "logs" / f"iteration_{iteration_number}.log"
-            self.logger.info(f"🔄 开始第 {iteration_number} 次迭代")
-    
-    def finish_experiment(self, success: bool = False, final_notes: str = ""):
-        """结束当前实验"""
-        if not self.current_experiment_path:
-            return
-        
-        # 更新最终状态
-        try:
-            metadata_file = self.current_experiment_path / "experiment_metadata.json"
-            with open(metadata_file, 'r', encoding='utf-8') as f:
-                metadata = json.load(f)
-            
-            metadata.update({
-                "status": "completed" if success else "failed",
-                "completed_at": datetime.now().isoformat(),
-                "final_notes": final_notes,
+            data = {
+                "experiments": [asdict(exp) for exp in self.experiments.values()],
                 "last_updated": datetime.now().isoformat()
-            })
-            
-            with open(metadata_file, 'w', encoding='utf-8') as f:
-                json.dump(metadata, f, indent=2, ensure_ascii=False)
-            
-            self.logger.info(f"🏁 实验结束: {self.current_experiment} ({'成功' if success else '失败'})")
-            
+            }
+            with open(self.registry_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            self.logger.error(f"❌ 更新实验状态失败: {str(e)}")
-    
-    def list_experiments(self) -> List[Dict[str, Any]]:
-        """列出所有实验"""
-        experiments = []
-        
-        for exp_dir in self.base_workspace.iterdir():
-            if exp_dir.is_dir():
-                metadata_file = exp_dir / "experiment_metadata.json"
-                if metadata_file.exists():
-                    try:
-                        with open(metadata_file, 'r', encoding='utf-8') as f:
-                            metadata = json.load(f)
-                        metadata['path'] = str(exp_dir)
-                        experiments.append(metadata)
-                    except Exception as e:
-                        self.logger.warning(f"⚠️ 读取实验元数据失败 {exp_dir.name}: {e}")
-        
-        # 按创建时间排序
-        experiments.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-        return experiments
-    
-    def cleanup_old_experiments(self, keep_days: int = 7):
-        """清理旧的实验文件夹"""
-        cutoff_time = time.time() - (keep_days * 24 * 3600)
-        
-        for exp_dir in self.base_workspace.iterdir():
-            if exp_dir.is_dir() and exp_dir.stat().st_mtime < cutoff_time:
-                try:
-                    shutil.rmtree(exp_dir)
-                    self.logger.info(f"🗑️ 清理旧实验: {exp_dir.name}")
-                except Exception as e:
-                    self.logger.error(f"❌ 清理失败 {exp_dir.name}: {e}")
-    
-    def get_experiment_summary(self) -> Dict[str, Any]:
-        """获取当前实验的摘要信息"""
-        if not self.current_experiment_path:
-            return {"error": "没有活跃的实验"}
-        
-        try:
-            metadata_file = self.current_experiment_path / "experiment_metadata.json"
-            with open(metadata_file, 'r', encoding='utf-8') as f:
-                metadata = json.load(f)
-            
-            # 统计文件数量
-            file_counts = {}
-            for subdir in ["designs", "testbenches", "outputs", "logs", "artifacts", "dependencies"]:
-                subdir_path = self.current_experiment_path / subdir
-                if subdir_path.exists():
-                    file_counts[subdir] = len(list(subdir_path.glob("*")))
-                else:
-                    file_counts[subdir] = 0
-            
-            metadata["file_counts"] = file_counts
-            metadata["total_files"] = sum(file_counts.values())
-            
-            return metadata
-            
-        except Exception as e:
-            return {"error": f"读取实验摘要失败: {str(e)}"}
-    
-    def _update_experiment_metadata(self, iterations_delta: int = 0, files_created_delta: int = 0):
-        """更新实验元数据"""
-        if not self.current_experiment_path:
-            return
-        
-        try:
-            metadata_file = self.current_experiment_path / "experiment_metadata.json"
-            with open(metadata_file, 'r', encoding='utf-8') as f:
-                metadata = json.load(f)
-            
-            metadata["iterations"] += iterations_delta
-            metadata["files_created"] += files_created_delta
-            metadata["last_updated"] = datetime.now().isoformat()
-            
-            with open(metadata_file, 'w', encoding='utf-8') as f:
-                json.dump(metadata, f, indent=2, ensure_ascii=False)
-                
-        except Exception as e:
-            self.logger.error(f"❌ 更新元数据失败: {str(e)}")
-    
-    def _log_file_creation(self, file_path: Path, description: str, category: str):
-        """记录文件创建日志"""
-        log_entry = {
-            "timestamp": datetime.now().isoformat(),
-            "file_path": str(file_path.relative_to(self.current_experiment_path)),
-            "filename": file_path.name,
-            "category": category,
-            "description": description,
-            "size_bytes": file_path.stat().st_size if file_path.exists() else 0
-        }
-        
-        # 添加到文件创建日志
-        files_log = self.current_experiment_path / "logs" / "files_created.jsonl"
-        files_log.parent.mkdir(exist_ok=True)
-        
-        with open(files_log, 'a', encoding='utf-8') as f:
-            f.write(json.dumps(log_entry, ensure_ascii=False) + '\n')
+            self.logger.error(f"❌ 保存实验注册表失败: {str(e)}")
 
 
 # 全局实验管理器实例
 _experiment_manager = None
+
 
 def get_experiment_manager() -> ExperimentManager:
     """获取全局实验管理器实例"""
@@ -364,10 +278,21 @@ def get_experiment_manager() -> ExperimentManager:
         _experiment_manager = ExperimentManager()
     return _experiment_manager
 
-def create_experiment(name: str = None, description: str = "") -> Path:
-    """便捷函数：创建新实验"""
-    return get_experiment_manager().create_new_experiment(name, description)
 
-def save_experiment_file(content: str, filename: str, subdir: str = "artifacts", description: str = "") -> Optional[Path]:
-    """便捷函数：保存实验文件"""
-    return get_experiment_manager().save_file(content, filename, subdir, description)
+def create_experiment_session(experiment_name: str, task_description: str, 
+                            metadata: Dict[str, Any] = None) -> Dict[str, Any]:
+    """创建实验会话"""
+    manager = get_experiment_manager()
+    experiment_info = manager.create_experiment(experiment_name, task_description, metadata)
+    
+    # 获取实验专用的组件
+    file_manager = manager.get_experiment_file_manager(experiment_info.experiment_id)
+    context_manager = manager.get_experiment_context_manager(experiment_info.experiment_id)
+    
+    return {
+        "experiment_id": experiment_info.experiment_id,
+        "experiment_info": experiment_info,
+        "file_manager": file_manager,
+        "context_manager": context_manager,
+        "workspace_path": experiment_info.workspace_path
+    }

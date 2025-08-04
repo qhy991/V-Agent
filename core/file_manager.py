@@ -8,11 +8,14 @@
 ✅ 自动的文件类型识别和分类
 ✅ 跨智能体的文件引用追踪
 ✅ 工作目录隔离和管理
+✅ 端口信息验证和一致性检查
+✅ 版本管理和回滚机制
 """
 
 import json
 import logging
 import uuid
+import hashlib
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union
 from dataclasses import dataclass, asdict
@@ -30,10 +33,15 @@ class FileReference:
     created_at: str
     description: str = ""
     metadata: Dict[str, Any] = None
+    # 🎯 新增：端口信息验证
+    port_info: Dict[str, Any] = None  # 存储模块端口信息
+    version: int = 1  # 文件版本号
 
     def __post_init__(self):
         if self.metadata is None:
             self.metadata = {}
+        if self.port_info is None:
+            self.port_info = {}
 
 
 class CentralFileManager:
@@ -62,6 +70,9 @@ class CentralFileManager:
         self.file_registry: Dict[str, FileReference] = {}
         self.registry_file = self.workspace_root / "file_registry.json"
         
+        # 🎯 新增：端口信息缓存
+        self.port_info_cache: Dict[str, Dict[str, Any]] = {}
+        
         # 加载现有注册表
         self._load_registry()
         
@@ -82,6 +93,9 @@ class CentralFileManager:
         Returns:
             文件引用对象
         """
+        # 🎯 新增：提取和验证端口信息
+        port_info = self._extract_port_info(content, file_type)
+        
         # 检查是否已存在同名文件
         existing_file_id = None
         for fid, file_ref in self.file_registry.items():
@@ -89,12 +103,21 @@ class CentralFileManager:
                 existing_file_id = fid
                 break
         
-        # 如果存在同名文件，使用相同ID；否则生成新ID
+        # 如果存在同名文件，检查端口一致性
         if existing_file_id:
-            file_id = existing_file_id
-            self.logger.info(f"🔄 使用现有文件ID: {file_id}")
+            existing_ref = self.file_registry[existing_file_id]
+            if not self._validate_port_consistency(existing_ref.port_info, port_info):
+                self.logger.warning(f"⚠️ 端口信息不一致，创建新版本: {filename}")
+                # 创建新版本而不是覆盖
+                file_id = str(uuid.uuid4())[:8]
+                version = existing_ref.version + 1
+            else:
+                file_id = existing_file_id
+                version = existing_ref.version
+                self.logger.info(f"🔄 使用现有文件ID: {file_id}")
         else:
             file_id = str(uuid.uuid4())[:8]
+            version = 1
             self.logger.info(f"🆔 生成新文件ID: {file_id}")
         
         # 确定保存目录
@@ -105,9 +128,11 @@ class CentralFileManager:
         if not filename.endswith(file_extension):
             filename = f"{filename}{file_extension}"
         
-        # 直接覆盖同名文件，不创建新文件
-        if (target_dir / filename).exists():
-            self.logger.info(f"🔄 覆盖现有文件: {filename}")
+        # 如果是新版本，添加版本号
+        if version > 1:
+            name_without_ext = Path(filename).stem
+            ext = Path(filename).suffix
+            filename = f"{name_without_ext}_v{version}{ext}"
         
         file_path = target_dir / filename
         
@@ -118,7 +143,7 @@ class CentralFileManager:
         content_hash = str(hash(content))
         
         # 创建或更新文件引用
-        if existing_file_id:
+        if existing_file_id and version == existing_ref.version:
             # 更新现有文件引用
             file_ref = self.file_registry[file_id]
             file_ref.file_path = str(file_path)
@@ -126,6 +151,7 @@ class CentralFileManager:
             file_ref.created_by = created_by
             file_ref.created_at = datetime.now().isoformat()
             file_ref.description = description
+            file_ref.port_info = port_info
             self.logger.info(f"🔄 更新现有文件引用: {file_id}")
         else:
             # 创建新文件引用
@@ -136,14 +162,151 @@ class CentralFileManager:
                 content_hash=content_hash,
                 created_by=created_by,
                 created_at=datetime.now().isoformat(),
-                description=description
+                description=description,
+                port_info=port_info,
+                version=version
             )
             self.file_registry[file_id] = file_ref
-            self.logger.info(f"🆕 创建新文件引用: {file_id}")
+            self.logger.info(f"🆕 创建新文件引用: {file_id} (版本: {version})")
+        
+        # 🎯 新增：更新端口信息缓存
+        self.port_info_cache[file_id] = port_info
+        
         self._save_registry()
         
-        self.logger.info(f"💾 文件已保存: {filename} (ID: {file_id}, 类型: {file_type})")
+        self.logger.info(f"💾 文件已保存: {filename} (ID: {file_id}, 类型: {file_type}, 版本: {version})")
         return file_ref
+    
+    def _extract_port_info(self, content: str, file_type: str) -> Dict[str, Any]:
+        """提取Verilog模块的端口信息"""
+        if file_type != "verilog":
+            return {}
+        
+        import re
+        
+        # 提取模块定义
+        module_pattern = r'module\s+(\w+)\s*\(([^)]+)\);'
+        match = re.search(module_pattern, content, re.DOTALL)
+        
+        if not match:
+            return {}
+        
+        module_name = match.group(1)
+        port_declarations = match.group(2)
+        
+        # 解析端口
+        ports = []
+        port_lines = [line.strip() for line in port_declarations.split(',')]
+        
+        for line in port_lines:
+            if not line:
+                continue
+            
+            # 匹配端口声明
+            port_match = re.search(r'(input|output|inout)\s*(?:\[(\d+):(\d+)\])?\s*(\w+)', line)
+            if port_match:
+                direction = port_match.group(1)
+                msb = port_match.group(2)
+                lsb = port_match.group(3)
+                port_name = port_match.group(4)
+                
+                width = 1
+                if msb and lsb:
+                    width = int(msb) - int(lsb) + 1
+                
+                ports.append({
+                    "name": port_name,
+                    "direction": direction,
+                    "width": width,
+                    "msb": int(msb) if msb else None,
+                    "lsb": int(lsb) if lsb else None
+                })
+        
+        return {
+            "module_name": module_name,
+            "ports": ports,
+            "port_count": len(ports)
+        }
+    
+    def _validate_port_consistency(self, old_ports: Dict[str, Any], new_ports: Dict[str, Any]) -> bool:
+        """验证端口信息一致性"""
+        if not old_ports or not new_ports:
+            return True
+        
+        old_port_names = {port["name"] for port in old_ports.get("ports", [])}
+        new_port_names = {port["name"] for port in new_ports.get("ports", [])}
+        
+        return old_port_names == new_port_names
+    
+    def get_latest_design_file(self, module_name: str = None) -> Optional[FileReference]:
+        """获取最新的设计文件"""
+        design_files = self.get_files_by_type("verilog")
+        
+        if not design_files:
+            return None
+        
+        # 按创建时间排序
+        design_files.sort(key=lambda x: x.created_at, reverse=True)
+        
+        if module_name:
+            # 查找指定模块的最新版本
+            for file_ref in design_files:
+                if file_ref.port_info and file_ref.port_info.get("module_name") == module_name:
+                    return file_ref
+            return None
+        
+        return design_files[0]
+    
+    def get_design_port_info(self, module_name: str) -> Optional[Dict[str, Any]]:
+        """获取设计文件的端口信息"""
+        design_file = self.get_latest_design_file(module_name)
+        if design_file:
+            return design_file.port_info
+        return None
+    
+    def validate_testbench_ports(self, testbench_content: str, design_module_name: str) -> Dict[str, Any]:
+        """验证测试台端口与设计端口的一致性"""
+        design_ports = self.get_design_port_info(design_module_name)
+        if not design_ports:
+            return {"valid": False, "error": f"未找到模块 {design_module_name} 的端口信息"}
+        
+        # 提取测试台中的模块实例化
+        import re
+        instance_pattern = rf'{design_module_name}\s+\w+\s*\(([^)]+)\);'
+        match = re.search(instance_pattern, testbench_content, re.DOTALL)
+        
+        if not match:
+            return {"valid": False, "error": f"未找到模块 {design_module_name} 的实例化"}
+        
+        instance_ports = match.group(1)
+        port_connections = []
+        
+        # 解析端口连接
+        for line in instance_ports.split(','):
+            line = line.strip()
+            if not line:
+                continue
+            
+            port_match = re.search(r'\.(\w+)\s*\(\s*(\w+)\s*\)', line)
+            if port_match:
+                port_name = port_match.group(1)
+                signal_name = port_match.group(2)
+                port_connections.append({"port": port_name, "signal": signal_name})
+        
+        # 验证端口连接
+        design_port_names = {port["name"] for port in design_ports["ports"]}
+        testbench_port_names = {conn["port"] for conn in port_connections}
+        
+        missing_ports = design_port_names - testbench_port_names
+        extra_ports = testbench_port_names - design_port_names
+        
+        return {
+            "valid": len(missing_ports) == 0 and len(extra_ports) == 0,
+            "missing_ports": list(missing_ports),
+            "extra_ports": list(extra_ports),
+            "design_ports": design_ports,
+            "testbench_connections": port_connections
+        }
     
     def save_file_to_path(self, content: str, filename: str, target_path: Path, 
                          file_type: str, created_by: str, description: str = "") -> FileReference:

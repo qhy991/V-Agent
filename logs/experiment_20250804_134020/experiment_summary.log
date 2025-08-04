@@ -1,0 +1,76 @@
+[2025-08-04 13:40:20] ToolRegistry - INFO - 🗄️ 数据库工具注册完成
+[2025-08-04 13:40:20] ToolRegistry - INFO - 🛠️ 基础工具注册完成
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - ✅ 增强BaseAgent初始化完成: enhanced_real_code_review_agent
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 🚀 初始化LLM客户端 - 提供商: dashscope, 模型: qwen3-coder-30b-a3b-instruct
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_testbench (安全级别: normal)
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: run_simulation (安全级别: high)
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: generate_build_script (安全级别: high)
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: execute_build_script (安全级别: high)
+[2025-08-04 13:40:20] core.schema_system.enhanced_base_agent - INFO - 🔧 增强工具注册成功: analyze_test_failures (安全级别: normal)
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 🤖 开始LLM请求 - 模型: qwen3-coder-30b-a3b-instruct, JSON模式: False
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 📋 System Prompt (29 字符):
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 📋 你是专业的验证工程师，请生成高质量的Verilog测试台。
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 👤 User Prompt (1287 字符):
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - 👤 User Prompt: 
+请为以下Verilog模块生成一个完整、专业的测试台：
+
+目标模块: alu_32bit
+```verilog
+module alu_32bit (
+    input  [31:0] a,        // 操作数A
+    input  [31:0] b,        // 操作数B
+    input  [3:0]  op,       // 操作码
+    output [31:0] result,   // 结果
+    output        zero      // 零标志 (result == 0 时为1)
+);
+
+    // 根据操作码选择对应的操作
+    always @(*) begin
+        case (op)
+            4'b0000: result = a + b;     // 加法
+            4'b0001: result = a - b;     // 减法
+            4'b0010: result = a & b;     // 逻辑与
+            4'b0011: result = a | b;     // 逻辑或
+            4'b0100: result = a ^ b;     // 异或
+            4'b0101: result = a << b[4:0]; // 逻辑左移
+            4'b0110: result = a >> b[4:0]; // 逻辑右移
+            default: result = 32'h00000000; // 其他操作码
+        endcase
+    end
+    
+    // 零标志：当结果为0时输出1
+    assign zero = (result == 32'h00000000) ? 1'b1 : 1'b0;
+    
+endmodule
+```
+
+测试要求:
+- 时钟周期: 10.0ns
+- 仿真时间: 10000 个时钟周期
+- 覆盖率收集: 禁用
+
+测试场景:
+- basic_test: 基本功能测试
+- corner_test: 边界条件测试
+
+**重要要求**：
+1. 使用标准Verilog语法，不要使用SystemVerilog特性
+2. 避免使用task/function中的多语句结构
+3. 使用标准的for循环语法
+4. 确保所有语句都有正确的分号
+5. 使用标准的begin/end块结构
+
+请生成包含以下内容的专业测试台：
+1. 完整的testbench模块声明
+2. 所有必要的信号声明
+3. 时钟和复位生成逻辑
+4. 被测模块的正确实例化
+5. 系统化的测试激励生成
+6. 结果检查和断言
+7. 适当的$display、$monitor和$finish语句
+8. 波形转储设置（VCD文件）
+9. 测试报告生成
+
+确保测试台能够充分验证模块的所有功能，并使用标准Verilog语法。
+
+[2025-08-04 13:40:20] LLMClient-dashscope - INFO - ====================================================================================================
