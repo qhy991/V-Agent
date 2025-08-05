@@ -1,0 +1,295 @@
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🛠️ 传统工具调用已启用: 权限=5
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - ✅ LLMCoordinatorAgent (Function Calling支持) 初始化完成
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - DEBUG - 📝 System prompt 长度: 4531 字符
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: assign_task_to_agent
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: analyze_agent_result
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: check_task_completion
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: query_agent_status
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🧠 LLM协调智能体初始化完成
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - DEBUG - 📝 System prompt 长度: 4288 字符
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-08-05 08:34:38] Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+[2025-08-05 08:34:38] EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 7407 字符
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: use_external_testbench
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-05 08:34:38] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-05 08:34:38] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_verilog_agent (集成Schema验证的增强Verilog HDL设计智能体，提供严格参数验证和智能错误修复的专业数字电路设计服务)
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_code_review_agent (集成Schema验证的增强代码审查智能体，提供严格参数验证和智能错误修复的专业硬件验证服务)
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🚀 开始协调任务: 
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3. 符合Verilog标准语法
+4. ...
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🚀 开始Function Calling处理: 
+🧠 协调任务
+
+**用户需求**:
+
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3...
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔗 对话ID: exp_llm_coordinator_counter_1754354078
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🆕 创建新的对话历史
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-05 08:34:38] Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/1
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: assign_task_to_agent (尝试 1/3)
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - 🔍 工具 assign_task_to_agent 实际参数: ['agent_id', 'task_description', 'expected_output']
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - 🔍 传入参数: ['agent_id', 'task_description', 'expected_output', 'task_id']
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - WARNING - ⚠️ 工具 assign_task_to_agent 存在无效参数: ['task_id']
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - INFO - 🗑️ 移除无效参数: task_id
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - DEBUG - ✅ 参数标准化完成: ['agent_id', 'task_description', 'expected_output']
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - INFO - 🎯 assign_task_to_agent 参数已标准化
+[2025-08-05 08:34:43] Agent.llm_coordinator_agent - INFO - 📤 分配任务给智能体 enhanced_real_verilog_agent: 设计一个名为 counter 的Verilog模块，包含时钟、复位、使能、计数输出端口，实现上升沿触发的递增计数功能，支持同步复位和使能控制。...
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 🚀 开始Function Calling处理: 
+📋 协调智能体分配的任务
+
+**任务描述**:
+设计一个名为 counter 的Verilog模块，包含时钟、复位、使能、计数输出端口，实现上升沿触发的递增计数功能，支持同步复位和使能控制。
+
+**...
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 🔗 对话ID: task_task_1754354078_enhanced_real_verilog_agent
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 🆕 创建新的对话历史
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-05 08:34:43] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 1/8
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: analyze_design_requirements (尝试 1/3)
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 analyze_design_requirements 实际参数: ['requirements', 'design_type', 'complexity_level']
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['requirements', 'design_type', 'complexity_level']
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['requirements', 'design_type', 'complexity_level']
+[2025-08-05 08:34:47] Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: sequential - simple
+[2025-08-05 08:35:10] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: analyze_design_requirements
+[2025-08-05 08:35:10] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 4 条消息
+[2025-08-05 08:35:10] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 2/8
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 1/3)
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_verilog_code 实际参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'clock_domain', 'coding_style', 'parameters', 'additional_constraints', 'comments_required']
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style', 'additional_constraints']
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style', 'additional_constraints']
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: counter
+[2025-08-05 08:35:20] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 时序逻辑
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: counter.v
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: None
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔍 filename: counter.v
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔍 file type: verilog
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 686
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 686
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 686
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已通过中央管理器保存: counter.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v) (ID: 305f4838)
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: generate_verilog_code
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 6 条消息
+[2025-08-05 08:35:26] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 3/8
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 read_file 实际参数: ['filepath', 'kwargs']
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['filepath', 'encoding']
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具 read_file 存在无效参数: ['encoding']
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - 🗑️ 移除无效参数: encoding
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['filepath']
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - 🎯 read_file 参数已标准化
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - 📖 读取文件: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件读取成功: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v (686 字符)
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: read_file
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 8 条消息
+[2025-08-05 08:35:29] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 4/8
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 write_file 实际参数: ['filename', 'content', 'directory', 'file_path', 'kwargs']
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['filename', 'content', 'description']
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具 write_file 存在无效参数: ['description']
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🗑️ 移除无效参数: description
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['filename', 'content']
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: counter_documentation.md
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: None
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🔍 filename: counter_documentation.md
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🔍 file type: documentation
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已通过中央管理器保存: counter_documentation.md (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/temp/counter_documentation.md.tmp) (ID: d8f21255)
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 10 条消息
+[2025-08-05 08:35:54] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 5/8
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 read_file 实际参数: ['filepath', 'kwargs']
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['filepath', 'encoding']
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具 read_file 存在无效参数: ['encoding']
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - 🗑️ 移除无效参数: encoding
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['filepath']
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - 🎯 read_file 参数已标准化
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - 📖 读取文件: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件读取成功: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v (686 字符)
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: read_file
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 12 条消息
+[2025-08-05 08:35:56] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 6/8
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: read_file (尝试 1/3)
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 read_file 实际参数: ['filepath', 'kwargs']
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['filepath', 'encoding']
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具 read_file 存在无效参数: ['encoding']
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - 🗑️ 移除无效参数: encoding
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['filepath']
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - 🎯 read_file 参数已标准化
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - 📖 读取文件: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/temp/counter_documentation.md.tmp
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件读取成功: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/temp/counter_documentation.md.tmp (989 字符)
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: read_file
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 14 条消息
+[2025-08-05 08:36:01] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 7/8
