@@ -222,8 +222,8 @@ class OptimizedLLMClient:
             context.update_system_prompt(system_prompt)
             self.logger.info(f"🔄 更新对话 {conversation_id} 的system prompt")
         
-        # 判断是否包含system prompt
-        include_system = self._should_include_system_prompt(context, system_prompt)
+        # 判断是否包含system prompt - 修复：当force_refresh_system=True时，强制包含
+        include_system = force_refresh_system or self._should_include_system_prompt(context, system_prompt)
         
         # 构建消息列表
         messages = []

@@ -198,3 +198,22 @@ TypeError: EnhancedRealVerilogAgent.execute_enhanced_task() got an unexpected ke
   - `Cin`：输入进位（可选，用于级联）
 - 输出：
   - `Sum [3:...
+[2025-08-05 11:58:32] __main__ - INFO - 🧠 系统提示词传递验证测试
+[2025-08-05 11:58:32] __main__ - INFO - ============================================================
+[2025-08-05 11:58:32] __main__ - INFO - 🚀 开始系统提示词验证测试
+[2025-08-05 11:58:32] __main__ - INFO - 🔧 设置智能体...
+[2025-08-05 11:58:32] __main__ - INFO - ✅ 智能体设置完成
+[2025-08-05 11:58:32] __main__ - INFO - 🧪 测试系统提示词注入...
+[2025-08-05 11:58:32] __main__ - INFO - 📋 系统提示词检查结果:
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含强制规则: True
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含工具调用格式: True
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含工具列表: True
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含智能体调用示例: True
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含禁止描述性文本: True
+[2025-08-05 11:58:32] __main__ - INFO -   ✅ 包含重要提醒: True
+[2025-08-05 11:58:32] __main__ - INFO - 📏 系统提示词长度: 7209 字符
+[2025-08-05 11:58:32] __main__ - INFO - 💾 系统提示词已保存到: system_prompt_verification_20250805_115832.txt
+[2025-08-05 11:58:32] __main__ - INFO - 🧪 测试LLM响应（带系统提示词）...
+[2025-08-05 11:58:38] __main__ - ERROR - ❌ LLM调用失败: LLM请求失败，已重试 3 次。最后错误: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-8b3e4571-46bb-975d-b8ef-13d15c35e772","request_id":"8b3e4571-46bb-975d-b8ef-13d15c35e772"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-05 11:58:38] __main__ - ERROR - ❌ 测试执行失败: 'SystemPromptVerificationTest' object has no attribute 'coordination_without_self_continuation'
+[2025-08-05 11:58:38] __main__ - ERROR - ❌ 测试失败: 'SystemPromptVerificationTest' object has no attribute 'coordination_without_self_continuation'

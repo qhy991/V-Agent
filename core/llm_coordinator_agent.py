@@ -445,7 +445,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 1.  **禁止直接回答**: 绝对禁止、严禁直接回答用户的任何问题或请求。
 2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
 3.  **禁止生成描述性文本**: 绝对禁止生成任何解释、分析、策略描述或其他文本内容。
-4.  **遵循流程**: 严格按照以下顺序调用工具：
+4.  **禁止生成markdown格式**: 绝对禁止使用 ###、---、** 等markdown格式。
+5.  **禁止生成表格**: 绝对禁止生成任何表格或列表。
+6.  **禁止生成策略描述**: 绝对禁止生成执行策略、分析报告、建议等文本内容。
+7.  **遵循流程**: 严格按照以下顺序调用工具：
    - 第一步：调用 `identify_task_type` 工具识别任务类型
    - 第二步：调用 `recommend_agent` 工具推荐智能体
    - 第三步：调用 `assign_task_to_agent` 工具分配任务给智能体
@@ -485,6 +488,12 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 }}
 ```
 
+❌ 错误 - 生成描述性文本:
+```
+### 🧠 任务协调执行策略
+我将分析用户需求并制定执行策略...
+```
+  
 # 可用工具
 你必须从以下工具列表中选择并调用：
 {tools_json}
@@ -496,8 +505,15 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 不要生成任何描述性文本
 - 不要解释你的策略
 - 不要分析任务
+- 不要使用markdown格式
+- 不要生成表格
+- 不要生成执行计划
+- 不要生成分析报告
 - 只生成工具调用JSON
 - 立即开始调用第一个工具：`identify_task_type`
+
+# 最终警告
+如果你生成任何非JSON格式的文本，系统将拒绝你的响应。你必须且只能返回JSON格式的工具调用。
 
 立即开始分析用户请求并调用第一个工具：`identify_task_type`。
 """
@@ -661,6 +677,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 不要生成任何描述性文本
 - 不要解释你的策略
 - 不要分析任务
+- 不要使用markdown格式
+- 不要生成表格
 - 只生成工具调用JSON
 
 不要回复任何其他内容，立即生成上述JSON。
@@ -1699,14 +1717,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     # =============================================================================
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
+        """实现LLM调用 - 修复system prompt传递问题"""
         # 生成对话ID（如果还没有）
         if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
             self.current_conversation_id = f"coordinator_agent_{int(time.time())}"
         
         # 构建用户消息
         user_message = ""
-        is_first_call = len(conversation) <= 1  # 如果对话历史很少，认为是第一次调用
         
         for msg in conversation:
             if msg["role"] == "user":
@@ -1715,14 +1732,17 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 user_message += f"Assistant: {msg['content']}\n\n"
         
         try:
-            # 使用优化的LLM调用方法
+            # 修复：始终传递system prompt，确保规则被正确应用
+            system_prompt = self._build_enhanced_system_prompt()
+            
+            # 使用优化的LLM调用方法，但强制包含system prompt
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=self.current_conversation_id,
                 user_message=user_message.strip(),
-                system_prompt=self._build_enhanced_system_prompt() if is_first_call else None,
+                system_prompt=system_prompt,  # 始终传递system prompt
                 temperature=0.3,
                 max_tokens=4000,
-                force_refresh_system=is_first_call
+                force_refresh_system=True  # 强制刷新system prompt
             )
             return response
         except Exception as e:
