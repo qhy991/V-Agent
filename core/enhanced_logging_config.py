@@ -16,6 +16,12 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import json
 
+# 导入对话显示优化器
+try:
+    from core.conversation_display_optimizer import conversation_optimizer
+except ImportError:
+    conversation_optimizer = None
+
 
 class ComponentLoggerManager:
     """管理不同组件的专用日志记录器"""

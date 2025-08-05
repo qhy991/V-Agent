@@ -20,7 +20,22 @@ from .schema_validator import SchemaValidator, ValidationResult
 from .parameter_repairer import ParameterRepairer, RepairResult
 from .flexible_schema_adapter import FlexibleSchemaAdapter, SchemaAdaptationResult
 
+# 导入对话显示优化器
+try:
+    from core.conversation_display_optimizer import conversation_optimizer, optimize_agent_output
+except ImportError:
+    conversation_optimizer = None
+    optimize_agent_output = None
+
 logger = logging.getLogger(__name__)
+
+def optimize_conversation_display(agent_id: str, user_request: str, ai_response: str, iteration_count: int = 1) -> str:
+    """优化对话显示的便捷函数"""
+    if optimize_agent_output:
+        return optimize_agent_output(agent_id, user_request, ai_response, iteration_count)
+    else:
+        # 回退到简单格式
+        return f"\n🔄 第{iteration_count}轮 [{agent_id}]: {ai_response[:200]}{'...' if len(ai_response) > 200 else ''}\n"
 
 @dataclass
 class EnhancedToolDefinition:
