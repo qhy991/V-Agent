@@ -266,10 +266,60 @@ class OptimizedLLMClient:
                 max_tokens=self.optimization_config["max_context_tokens"],
                 preserve_system=self.optimization_config["preserve_system_in_compression"]
             )
-            messages.extend(optimized_messages)
-            if len(optimized_messages) < len(context.messages):
+            
+            # 🎯 新增：去重逻辑，避免重复的对话内容
+            deduplicated_messages = []
+            seen_contents = set()
+            
+            for msg in optimized_messages:
+                content = msg.get("content", "")
+                # 对于用户消息，检查是否包含重复的任务描述
+                if msg.get("role") == "user" and "📋 协调智能体分配的任务" in content:
+                    # 提取任务描述的核心部分（去除重复的上下文信息）
+                    lines = content.split('\n')
+                    core_content = []
+                    in_task_section = False
+                    
+                    for line in lines:
+                        if "📋 协调智能体分配的任务" in line:
+                            if not in_task_section:
+                                core_content.append(line)
+                                in_task_section = True
+                        elif in_task_section and line.strip().startswith("**"):
+                            core_content.append(line)
+                        elif in_task_section and line.strip() and not line.strip().startswith("**"):
+                            core_content.append(line)
+                        elif in_task_section and not line.strip():
+                            break
+                    
+                    content = '\n'.join(core_content)
+                
+                # 检查是否已经见过相同的内容
+                content_hash = hash(content)
+                if content_hash not in seen_contents:
+                    seen_contents.add(content_hash)
+                    deduplicated_messages.append(msg)
+                else:
+                    self.logger.info(f"🔄 [DEDUP_DEBUG] 跳过重复内容: {content[:50]}...")
+            
+            messages.extend(deduplicated_messages)
+            
+            if len(deduplicated_messages) < len(optimized_messages):
                 self.stats["context_optimizations"] += 1
-                self.logger.debug(f"🗜️ 上下文压缩: {len(context.messages)} -> {len(optimized_messages)} 消息")
+                self.logger.debug(f"🗜️ 上下文压缩和去重: {len(optimized_messages)} -> {len(deduplicated_messages)} 消息")
+        else:
+            # 即使不启用压缩，也要进行去重
+            deduplicated_messages = []
+            seen_contents = set()
+            
+            for msg in context.messages:
+                content = msg.get("content", "")
+                content_hash = hash(content)
+                if content_hash not in seen_contents:
+                    seen_contents.add(content_hash)
+                    deduplicated_messages.append(msg)
+            
+            messages.extend(deduplicated_messages)
         
         # 添加当前用户消息
         messages.append({"role": "user", "content": user_message})
@@ -430,7 +480,7 @@ class EnhancedLLMClient:
             self.logger.info(f"📋 {system_prompt}")
         
         self.logger.info(f"👤 User Prompt ({len(prompt)} 字符):")
-        self.logger.info(f"👤 User Prompt: {prompt}")
+        self.logger.info(f"👤 User Prompt:\n {prompt}")
         self.logger.info("="*100)
         
         for attempt in range(max_retries):

@@ -449,7 +449,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 **任务描述示例**: "设计一个名为counter的Verilog模块，生成完整的可编译代码，包含端口定义和功能实现，保存到文件"
 **禁止分配**: 测试台生成、仿真执行、代码审查
 
-## enhanced_real_code_reviewer (代码审查和验证专家)  
+## enhanced_real_code_review_agent (代码审查和验证专家)  
 **专业能力**: 代码审查、测试台生成、仿真验证
 **主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
 **任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
@@ -457,7 +457,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 
 # 🎯 任务分配原则 (重要)
 1. **设计阶段**: 只分配给 enhanced_real_verilog_agent，任务描述只包含"设计模块、生成代码、保存文件"
-2. **验证阶段**: 只分配给 enhanced_real_code_reviewer，任务描述包含"生成测试台、执行仿真、验证功能"
+2. **验证阶段**: 只分配给 enhanced_real_code_review_agent，任务描述包含"生成测试台、执行仿真、验证功能"
 3. **严禁跨界**: 绝对禁止要求设计专家做测试台生成，绝对禁止要求验证专家做主要设计
 4. **分阶段执行**: 先让设计专家完成设计和文件生成，再让验证专家进行测试验证
 
@@ -534,7 +534,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 不要使用markdown格式
 - 不要生成表格
 - 只生成工具调用JSON
-- 立即开始调用第一个工具：`identify_task_type`
 """
     
     async def register_agent(self, agent: EnhancedBaseAgent):
@@ -753,103 +752,173 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                                        expected_output: str = "",
                                        task_type: str = "composite",
                                        priority: str = "medium") -> Dict[str, Any]:
-        """分配任务给智能体"""
+        """智能分配任务给最合适的智能体"""
         
         try:
+            self.logger.info(f"🎯 分配任务给智能体: {agent_id}")
+            self.logger.info(f"📋 任务描述: {task_description[:100]}...")
+            
             # 检查智能体是否存在
             if agent_id not in self.registered_agents:
                 return {
                     "success": False,
-                    "error": f"智能体不存在: {agent_id}"
+                    "error": f"智能体 {agent_id} 未注册",
+                    "available_agents": list(self.registered_agents.keys())
                 }
             
             agent_info = self.registered_agents[agent_id]
             agent = agent_info.agent_instance
             
-            # 更新智能体状态
-            agent_info.status = AgentStatus.WORKING
-            agent_info.last_used = time.time()
-            
-            # 查找当前活跃任务
-            current_task = None
-            for task_id, task in self.active_tasks.items():
-                if task.assigned_agent is None:  # 找到未分配的任务
-                    current_task = task
-                    break
-            
-            if current_task:
-                current_task.assigned_agent = agent_id
-                current_task.current_stage = f"assigned_to_{agent_id}"
-                current_task.iteration_count += 1
-                
-                # 设置智能体的对话ID
-                agent_info.conversation_id = f"task_{current_task.task_id}_{agent_id}"
-            
-            self.logger.info(f"📤 分配任务给智能体 {agent_id}: {task_description[:100]}...")
-            
-            # 构建增强的任务描述
-            enhanced_task = self._build_enhanced_task_description(
-                task_description, expected_output, current_task, task_type, priority
-            )
-            
-            # 调用智能体执行任务
-            start_time = time.time()
-            
-            result = await agent.process_with_function_calling(
-                user_request=enhanced_task,
-                max_iterations=8,
-                conversation_id=agent_info.conversation_id,
-                preserve_context=True,
-                enable_self_continuation=True,
-                max_self_iterations=3
-            )
-            
-            execution_time = time.time() - start_time
-            
-            # 更新智能体统计
-            if result and len(result) > 0:
-                agent_info.success_count += 1
-            else:
-                agent_info.failure_count += 1
-            
-            # 恢复智能体状态
-            agent_info.status = AgentStatus.IDLE
-            
-            # 保存结果到任务上下文
-            if current_task:
-                current_task.agent_results[agent_id] = {
-                    "result": result,
-                    "execution_time": execution_time,
-                    "timestamp": time.time()
+            # 检查智能体状态
+            if agent_info.status == AgentStatus.BUSY:
+                return {
+                    "success": False,
+                    "error": f"智能体 {agent_id} 当前忙碌中",
+                    "agent_status": agent_info.status.value
                 }
             
-            return {
-                "success": True,
+            # 创建任务上下文
+            task_id = f"task_{int(time.time())}"
+            task_context = TaskContext(
+                task_id=task_id,
+                original_request=task_description,
+                task_type=TaskType(task_type),
+                priority=TaskPriority(priority),
+                current_stage=f"assigned_to_{agent_id}",
+                assigned_agent=agent_id,
+                start_time=time.time()
+            )
+            
+            # 设置实验路径
+            task_context.experiment_path = "./file_workspace"
+            
+            # 检查是否是后续调用（通过对话历史判断）
+            is_follow_up_call = False
+            if hasattr(agent, 'conversation_history') and agent.conversation_history:
+                # 检查对话历史中是否已经有相同的任务描述
+                for msg in agent.conversation_history:
+                    if msg.get("role") == "user" and "📋 协调智能体分配的任务" in msg.get("content", ""):
+                        is_follow_up_call = True
+                        break
+            
+            # 构建任务描述
+            enhanced_task = self._build_enhanced_task_description(
+                task_description=task_description,
+                expected_output=expected_output,
+                task_context=task_context,
+                task_type=task_type,
+                priority=priority,
+                include_full_context=not is_follow_up_call  # 后续调用使用简化版本
+            )
+            
+            # 更新智能体状态
+            agent_info.status = AgentStatus.BUSY
+            agent_info.last_used = time.time()
+            agent_info.conversation_id = task_id
+            
+            # 记录任务分配
+            self.active_tasks[task_id] = task_context
+            task_context.agent_assignments.append({
                 "agent_id": agent_id,
-                "result": result,
-                "execution_time": execution_time,
-                "agent_specialty": agent_info.specialty
-            }
+                "timestamp": time.time(),
+                "task_description": task_description
+            })
             
+            self.logger.info(f"📤 发送任务给智能体 {agent_id}")
+            self.logger.info(f"📋 任务描述: {enhanced_task[:200]}...")
+            
+            try:
+                # 执行任务（调用智能体的Function Calling）
+                start_time = time.time()
+                
+                # 🧠 添加上下文保持日志
+                agent_conversation_summary = agent.get_conversation_summary() if hasattr(agent, 'get_conversation_summary') else {}
+                self.logger.info(f"📋 调用前 agent 对话状态: {agent_conversation_summary}")
+                
+                agent_response = await agent.process_with_function_calling(
+                    user_request=enhanced_task,
+                    max_iterations=8,
+                    conversation_id=task_context.task_id,  # 🔗 传递对话ID
+                    preserve_context=True,  # 🧠 保持上下文
+                    enable_self_continuation=True,  # 🔄 启用自主任务继续
+                    max_self_iterations=3  # 🔄 最多自主继续3轮
+                )
+                
+                # 📋 记录调用后的对话状态
+                if hasattr(agent, 'get_conversation_summary'):
+                    post_call_summary = agent.get_conversation_summary()
+                    self.logger.info(f"📋 调用后 agent 对话状态: {post_call_summary}")
+                    # 记录对话变化
+                    if post_call_summary.get('message_count', 0) > agent_conversation_summary.get('message_count', 0):
+                        added_messages = post_call_summary.get('message_count', 0) - agent_conversation_summary.get('message_count', 0)
+                        self.logger.info(f"➕ 本次调用添加了 {added_messages} 条新消息到对话历史")
+                    else:
+                        self.logger.warning("⚠️ 对话历史没有增加，可能没有保持上下文")
+                
+                execution_time = time.time() - start_time
+                
+                # 更新智能体性能指标
+                agent_info.total_execution_time += execution_time
+                agent_info.average_response_time = agent_info.total_execution_time / (agent_info.success_count + agent_info.failure_count + 1)
+                
+                # 更新任务上下文
+                task_context.agent_results[agent_id] = {
+                    "response": agent_response,
+                    "execution_time": execution_time,
+                    "success": True
+                }
+                
+                # 恢复智能体状态
+                agent_info.status = AgentStatus.IDLE
+                
+                self.logger.info(f"✅ 智能体 {agent_id} 任务执行完成，耗时: {execution_time:.2f}秒")
+                
+                return {
+                    "success": True,
+                    "agent_id": agent_id,
+                    "task_id": task_id,
+                    "response": agent_response,
+                    "execution_time": execution_time,
+                    "task_context": task_context
+                }
+                
+            except Exception as e:
+                # 恢复智能体状态
+                agent_info.status = AgentStatus.IDLE
+                agent_info.failure_count += 1
+                agent_info.consecutive_failures += 1
+                agent_info.consecutive_successes = 0
+                agent_info.last_failure_time = time.time()
+                
+                error_msg = f"智能体 {agent_id} 执行任务失败: {str(e)}"
+                self.logger.error(f"❌ {error_msg}")
+                
+                # 更新任务上下文
+                task_context.error_history.append(error_msg)
+                task_context.retry_count += 1
+                
+                return {
+                    "success": False,
+                    "agent_id": agent_id,
+                    "task_id": task_id,
+                    "error": error_msg,
+                    "execution_time": time.time() - start_time
+                }
+                
         except Exception as e:
-            self.logger.error(f"❌ 任务分配失败: {str(e)}")
-            
-            # 恢复智能体状态
-            if agent_id in self.registered_agents:
-                self.registered_agents[agent_id].status = AgentStatus.IDLE
-                self.registered_agents[agent_id].failure_count += 1
-            
+            error_msg = f"任务分配失败: {str(e)}"
+            self.logger.error(f"❌ {error_msg}")
             return {
                 "success": False,
-                "error": str(e),
-                "agent_id": agent_id
+                "error": error_msg
             }
     
     def _build_enhanced_task_description(self, task_description: str, 
                                        expected_output: str,
                                        task_context: TaskContext = None,
                                        task_type: str = "composite",
-                                       priority: str = "medium") -> str:
+                                       priority: str = "medium",
+                                       include_full_context: bool = True) -> str:
         """构建增强的任务描述"""
         
         # 构建外部testbench信息
@@ -877,7 +946,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             # 如果没有找到，则使用默认的文件工作空间路径
             if not current_experiment_path:
-                current_experiment_path = "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/file_workspace"
+                current_experiment_path = "./file_workspace"
         
         if current_experiment_path:
             experiment_path_section = f"""
@@ -896,7 +965,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 4. 必须在任务总结中返回所有生成文件的完整路径
 5. 文件命名应该清晰，避免重复和冲突"""
         
-        enhanced_task = f"""
+        # 根据include_full_context参数决定是否包含完整上下文
+        if include_full_context:
+            enhanced_task = f"""
 📋 协调智能体分配的任务
 
 **任务描述**:
@@ -921,11 +992,27 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 2. 生成高质量的代码并保存为文件
 3. 提供详细的说明文档
 4. 确保代码可读性和可维护性
-5. 如有需要，生成相应的测试台（除非已提供外部testbench）
-6. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
+5. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
 
 请开始执行任务。
 """
+        else:
+            # 简化版本，只包含核心任务描述
+            enhanced_task = f"""
+📋 继续执行任务
+
+**当前任务**: {task_description}
+
+**执行要求**:
+1. 继续之前的任务执行
+2. 生成高质量的代码并保存为文件
+3. 提供详细的说明文档
+4. 确保代码可读性和可维护性
+5. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
+
+请继续执行任务。
+"""
+        
         return enhanced_task
     
     async def _tool_analyze_agent_result(self, agent_id: str, result: Dict[str, Any],
@@ -995,7 +1082,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     def _enhanced_result_quality_analysis(self, result: Dict[str, Any], 
                                         task_context: Dict[str, Any],
                                         quality_threshold: float) -> Dict[str, Any]:
-        """增强的结果质量分析 - 包含文件验证和实际执行检查"""
+        """增强的结果质量分析 - 包含文件验证、实际执行检查和代码测试流程检查"""
         
         analysis = {
             "quality_score": 0.0,
@@ -1006,7 +1093,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "detailed_metrics": {},
             "risk_assessment": "low",
             "file_verification": {},
-            "actual_execution_check": {}
+            "actual_execution_check": {},
+            "code_testing_workflow": {}
         }
         
         # 检查结果是否为空
@@ -1029,26 +1117,28 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             analysis["risk_assessment"] = "medium"
             return analysis
         
-        # 执行文件验证和实际执行检查
+        # 执行文件验证、实际执行检查和代码测试流程检查
         file_verification = self._verify_file_generation(result_content, original_request)
         execution_check = self._check_actual_execution(result_content, original_request)
+        testing_workflow = self._check_code_testing_workflow(result_content, original_request, task_context)
         
         analysis["file_verification"] = file_verification
         analysis["actual_execution_check"] = execution_check
+        analysis["code_testing_workflow"] = testing_workflow
         
         # 详细质量指标分析
         detailed_metrics = self._analyze_detailed_metrics(result_content, result, file_verification, execution_check)
         analysis["detailed_metrics"] = detailed_metrics
         
-        # 计算综合质量分数（包含实际执行权重）
-        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics, file_verification, execution_check)
+        # 计算综合质量分数（包含实际执行和测试流程权重）
+        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics, file_verification, execution_check, testing_workflow)
         analysis["quality_score"] = quality_score
         
         # 分析问题和优势
-        analysis["issues"] = self._identify_quality_issues(detailed_metrics, file_verification, execution_check, original_request)
-        analysis["strengths"] = self._identify_quality_strengths(detailed_metrics, file_verification, execution_check)
+        analysis["issues"] = self._identify_quality_issues(detailed_metrics, file_verification, execution_check, testing_workflow, original_request)
+        analysis["strengths"] = self._identify_quality_strengths(detailed_metrics, file_verification, execution_check, testing_workflow)
         
-        # 根据质量分数和实际执行情况判断完整性
+        # 根据质量分数、实际执行情况和测试流程完整性判断完整性
         if not file_verification.get("all_required_files_generated", False):
             analysis["completeness"] = "incomplete"
             analysis["risk_assessment"] = "high"
@@ -1057,6 +1147,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             analysis["completeness"] = "incomplete" 
             analysis["risk_assessment"] = "high"
             analysis["issues"].append("未实际执行仿真验证")
+        elif testing_workflow.get("workflow_completeness", 0) < 50 and ("测试" in original_request or "验证" in original_request):
+            analysis["completeness"] = "incomplete"
+            analysis["risk_assessment"] = "high"
+            analysis["issues"].append("代码测试流程不完整")
         elif quality_score >= quality_threshold:
             analysis["completeness"] = "complete"
             analysis["risk_assessment"] = "low"
@@ -1070,7 +1164,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 生成具体建议
         analysis["recommendations"] = self._generate_enhanced_recommendations(
             detailed_metrics, quality_score, quality_threshold, 
-            file_verification, execution_check, original_request
+            file_verification, execution_check, testing_workflow, original_request
         )
         
         return analysis
@@ -1164,8 +1258,180 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         return execution_check
     
+    def _check_code_testing_workflow(self, result_content: str, original_request: str, task_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """专门检查代码测试流程的完整性"""
+        testing_workflow = {
+            "test_plan_created": False,
+            "test_cases_designed": False,
+            "testbench_generated": False,
+            "simulation_executed": False,
+            "test_results_analyzed": False,
+            "coverage_analysis_performed": False,
+            "test_report_generated": False,
+            "workflow_completeness": 0.0,
+            "missing_testing_steps": [],
+            "testing_quality_score": 0.0,
+            "test_coverage_metrics": {},
+            "test_execution_details": {}
+        }
+        
+        # 1. 检查测试计划创建
+        test_plan_indicators = [
+            "测试计划", "test plan", "测试策略", "test strategy", 
+            "测试目标", "test objectives", "测试范围", "test scope"
+        ]
+        if any(indicator in result_content for indicator in test_plan_indicators):
+            testing_workflow["test_plan_created"] = True
+        
+        # 2. 检查测试用例设计
+        test_case_indicators = [
+            "测试用例", "test case", "测试向量", "test vector",
+            "边界测试", "boundary test", "功能测试", "functional test",
+            "时序测试", "timing test", "异常测试", "exception test"
+        ]
+        if any(indicator in result_content for indicator in test_case_indicators):
+            testing_workflow["test_cases_designed"] = True
+        
+        # 3. 检查测试台生成
+        testbench_indicators = [
+            "testbench", "测试台", "tb_", "_tb.v", "initial", "always",
+            "test stimulus", "测试激励", "时钟生成", "clock generation"
+        ]
+        if any(indicator in result_content for indicator in testbench_indicators):
+            testing_workflow["testbench_generated"] = True
+        
+        # 4. 检查仿真执行
+        simulation_indicators = [
+            "仿真执行", "simulation executed", "仿真结果", "simulation result",
+            "波形输出", "waveform output", "仿真完成", "simulation completed",
+            "仿真时间", "simulation time", "仿真周期", "simulation cycles"
+        ]
+        if any(indicator in result_content for indicator in simulation_indicators):
+            testing_workflow["simulation_executed"] = True
+        
+        # 5. 检查测试结果分析
+        result_analysis_indicators = [
+            "测试结果分析", "test result analysis", "结果验证", "result verification",
+            "功能正确性", "functional correctness", "时序正确性", "timing correctness",
+            "测试通过", "test passed", "测试失败", "test failed"
+        ]
+        if any(indicator in result_content for indicator in result_analysis_indicators):
+            testing_workflow["test_results_analyzed"] = True
+        
+        # 6. 检查覆盖率分析
+        coverage_indicators = [
+            "代码覆盖率", "code coverage", "功能覆盖率", "functional coverage",
+            "分支覆盖率", "branch coverage", "语句覆盖率", "statement coverage",
+            "覆盖率报告", "coverage report", "覆盖率统计", "coverage statistics"
+        ]
+        if any(indicator in result_content for indicator in coverage_indicators):
+            testing_workflow["coverage_analysis_performed"] = True
+        
+        # 7. 检查测试报告生成
+        report_indicators = [
+            "测试报告", "test report", "测试总结", "test summary",
+            "测试结论", "test conclusion", "测试建议", "test recommendations"
+        ]
+        if any(indicator in result_content for indicator in report_indicators):
+            testing_workflow["test_report_generated"] = True
+        
+        # 计算工作流完整性
+        completed_steps = sum([
+            testing_workflow["test_plan_created"],
+            testing_workflow["test_cases_designed"],
+            testing_workflow["testbench_generated"],
+            testing_workflow["simulation_executed"],
+            testing_workflow["test_results_analyzed"],
+            testing_workflow["coverage_analysis_performed"],
+            testing_workflow["test_report_generated"]
+        ])
+        testing_workflow["workflow_completeness"] = (completed_steps / 7.0) * 100
+        
+        # 识别缺失的测试步骤
+        missing_steps = []
+        if not testing_workflow["test_plan_created"]:
+            missing_steps.append("测试计划创建")
+        if not testing_workflow["test_cases_designed"]:
+            missing_steps.append("测试用例设计")
+        if not testing_workflow["testbench_generated"]:
+            missing_steps.append("测试台生成")
+        if not testing_workflow["simulation_executed"]:
+            missing_steps.append("仿真执行")
+        if not testing_workflow["test_results_analyzed"]:
+            missing_steps.append("测试结果分析")
+        if not testing_workflow["coverage_analysis_performed"]:
+            missing_steps.append("覆盖率分析")
+        if not testing_workflow["test_report_generated"]:
+            missing_steps.append("测试报告生成")
+        
+        testing_workflow["missing_testing_steps"] = missing_steps
+        
+        # 计算测试质量分数
+        quality_factors = {
+            "test_plan_created": 15,
+            "test_cases_designed": 20,
+            "testbench_generated": 25,
+            "simulation_executed": 20,
+            "test_results_analyzed": 10,
+            "coverage_analysis_performed": 5,
+            "test_report_generated": 5
+        }
+        
+        quality_score = sum([
+            quality_factors[step] for step, completed in testing_workflow.items() 
+            if step in quality_factors and completed
+        ])
+        testing_workflow["testing_quality_score"] = quality_score
+        
+        # 提取覆盖率指标（如果存在）
+        coverage_metrics = {}
+        if "覆盖率" in result_content or "coverage" in result_content.lower():
+            # 尝试提取具体的覆盖率数值
+            import re
+            coverage_patterns = [
+                r"代码覆盖率[：:]\s*(\d+(?:\.\d+)?)%",
+                r"功能覆盖率[：:]\s*(\d+(?:\.\d+)?)%",
+                r"分支覆盖率[：:]\s*(\d+(?:\.\d+)?)%",
+                r"语句覆盖率[：:]\s*(\d+(?:\.\d+)?)%",
+                r"code coverage[：:]\s*(\d+(?:\.\d+)?)%",
+                r"functional coverage[：:]\s*(\d+(?:\.\d+)?)%"
+            ]
+            
+            for pattern in coverage_patterns:
+                matches = re.findall(pattern, result_content, re.IGNORECASE)
+                if matches:
+                    coverage_metrics["coverage_percentage"] = float(matches[0])
+                    break
+        
+        testing_workflow["test_coverage_metrics"] = coverage_metrics
+        
+        # 提取测试执行详情
+        execution_details = {}
+        if testing_workflow["simulation_executed"]:
+            # 尝试提取仿真时间、周期等信息
+            import re
+            time_patterns = [
+                r"仿真时间[：:]\s*(\d+(?:\.\d+)?)",
+                r"simulation time[：:]\s*(\d+(?:\.\d+)?)",
+                r"仿真周期[：:]\s*(\d+)",
+                r"simulation cycles[：:]\s*(\d+)"
+            ]
+            
+            for pattern in time_patterns:
+                matches = re.findall(pattern, result_content, re.IGNORECASE)
+                if matches:
+                    if "时间" in pattern or "time" in pattern:
+                        execution_details["simulation_time"] = float(matches[0])
+                    else:
+                        execution_details["simulation_cycles"] = int(matches[0])
+                    break
+        
+        testing_workflow["test_execution_details"] = execution_details
+        
+        return testing_workflow
+    
     def _identify_quality_issues(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
-                               execution_check: Dict[str, Any], original_request: str) -> List[str]:
+                               execution_check: Dict[str, Any], testing_workflow: Dict[str, Any], original_request: str) -> List[str]:
         """识别质量问题"""
         issues = []
         
@@ -1177,6 +1443,16 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         if execution_check.get("missing_executions"):
             issues.extend(execution_check["missing_executions"])
         
+        # 代码测试流程问题
+        if testing_workflow.get("missing_testing_steps"):
+            issues.extend([f"测试流程缺失: {step}" for step in testing_workflow["missing_testing_steps"]])
+        
+        if testing_workflow.get("workflow_completeness", 0) < 50 and ("测试" in original_request or "验证" in original_request):
+            issues.append(f"测试流程完整性不足 ({testing_workflow['workflow_completeness']:.1f}%)")
+        
+        if testing_workflow.get("testing_quality_score", 0) < 50 and ("测试" in original_request or "验证" in original_request):
+            issues.append(f"测试质量分数过低 ({testing_workflow['testing_quality_score']:.1f})")
+        
         # 质量指标问题
         if metrics.get("test_coverage", 0) < 50 and ("测试" in original_request or "验证" in original_request):
             issues.append("测试覆盖率不足")
@@ -1187,7 +1463,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         return issues
     
     def _identify_quality_strengths(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
-                                  execution_check: Dict[str, Any]) -> List[str]:
+                                  execution_check: Dict[str, Any], testing_workflow: Dict[str, Any]) -> List[str]:
         """识别质量优势"""
         strengths = []
         
@@ -1196,6 +1472,34 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         if execution_check.get("simulation_actually_executed"):
             strengths.append("仿真验证已执行")
+        
+        # 代码测试流程优势
+        if testing_workflow.get("workflow_completeness", 0) >= 80:
+            strengths.append(f"测试流程完整性优秀 ({testing_workflow['workflow_completeness']:.1f}%)")
+        
+        if testing_workflow.get("testing_quality_score", 0) >= 80:
+            strengths.append(f"测试质量分数优秀 ({testing_workflow['testing_quality_score']:.1f})")
+        
+        if testing_workflow.get("test_plan_created"):
+            strengths.append("测试计划已创建")
+        
+        if testing_workflow.get("test_cases_designed"):
+            strengths.append("测试用例已设计")
+        
+        if testing_workflow.get("testbench_generated"):
+            strengths.append("测试台已生成")
+        
+        if testing_workflow.get("simulation_executed"):
+            strengths.append("仿真已执行")
+        
+        if testing_workflow.get("test_results_analyzed"):
+            strengths.append("测试结果已分析")
+        
+        if testing_workflow.get("coverage_analysis_performed"):
+            strengths.append("覆盖率分析已完成")
+        
+        if testing_workflow.get("test_report_generated"):
+            strengths.append("测试报告已生成")
         
         if metrics.get("code_quality", 0) >= 80:
             strengths.append("代码质量优秀")
@@ -1207,7 +1511,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     def _generate_enhanced_recommendations(self, metrics: Dict[str, Any], quality_score: float, 
                                          quality_threshold: float, file_verification: Dict[str, Any],
-                                         execution_check: Dict[str, Any], original_request: str) -> List[str]:
+                                         execution_check: Dict[str, Any], testing_workflow: Dict[str, Any], original_request: str) -> List[str]:
         """生成增强的改进建议"""
         recommendations = []
         
@@ -1221,6 +1525,41 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 基于执行检查的建议
         if not execution_check.get("simulation_actually_executed") and ("测试台" in original_request or "验证" in original_request):
             recommendations.append("需要调用enhanced_real_code_review_agent执行实际的仿真验证")
+        
+        # 基于代码测试流程的建议
+        if testing_workflow.get("workflow_completeness", 0) < 50 and ("测试" in original_request or "验证" in original_request):
+            missing_steps = testing_workflow.get("missing_testing_steps", [])
+            if missing_steps:
+                recommendations.append(f"需要完善测试流程，缺失步骤: {', '.join(missing_steps)}")
+            else:
+                recommendations.append("需要建立完整的代码测试流程")
+        
+        if not testing_workflow.get("test_plan_created") and ("测试" in original_request or "验证" in original_request):
+            recommendations.append("需要创建详细的测试计划，包括测试目标、策略和范围")
+        
+        if not testing_workflow.get("test_cases_designed") and ("测试" in original_request or "验证" in original_request):
+            recommendations.append("需要设计全面的测试用例，包括功能测试、边界测试和异常测试")
+        
+        if not testing_workflow.get("testbench_generated") and ("测试台" in original_request or "验证" in original_request):
+            recommendations.append("需要生成完整的测试台文件，包含测试激励和结果验证")
+        
+        if not testing_workflow.get("simulation_executed") and ("仿真" in original_request or "验证" in original_request):
+            recommendations.append("需要实际执行仿真验证，并提供仿真结果和波形分析")
+        
+        if not testing_workflow.get("test_results_analyzed") and ("测试" in original_request or "验证" in original_request):
+            recommendations.append("需要对测试结果进行详细分析，验证功能正确性和时序正确性")
+        
+        if not testing_workflow.get("coverage_analysis_performed") and ("测试" in original_request or "验证" in original_request):
+            recommendations.append("需要进行代码覆盖率分析，确保测试的完整性")
+        
+        if not testing_workflow.get("test_report_generated") and ("测试" in original_request or "验证" in original_request):
+            recommendations.append("需要生成详细的测试报告，包含测试总结、结论和建议")
+        
+        # 基于测试质量分数的建议
+        if testing_workflow.get("testing_quality_score", 0) < 50:
+            recommendations.append("测试质量需要显著提升，建议重新设计测试策略")
+        elif testing_workflow.get("testing_quality_score", 0) < 80:
+            recommendations.append("测试质量良好，但仍有改进空间")
         
         # 基于质量分数的建议
         if quality_score < quality_threshold:
@@ -1308,12 +1647,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     def _calculate_comprehensive_quality_score(self, metrics: Dict[str, float], 
                                              file_verification: Dict[str, Any] = None,
-                                             execution_check: Dict[str, Any] = None) -> float:
-        """计算综合质量分数 - 包含文件验证和实际执行权重"""
+                                             execution_check: Dict[str, Any] = None,
+                                             testing_workflow: Dict[str, Any] = None) -> float:
+        """计算综合质量分数 - 包含文件验证、实际执行和代码测试流程权重"""
         base_weights = {
-            "code_quality": 0.25,
-            "documentation_quality": 0.15,
-            "test_coverage": 0.20,
+            "code_quality": 0.20,
+            "documentation_quality": 0.10,
+            "test_coverage": 0.15,
             "error_handling": 0.10,
             "performance": 0.05,
             "compliance": 0.05
@@ -1324,7 +1664,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         for metric, weight in base_weights.items():
             base_score += metrics.get(metric, 0.0) * weight
         
-        # 文件验证权重 (20%)
+        # 文件验证权重 (15%)
         file_score = 0.0
         if file_verification:
             if file_verification.get("all_required_files_generated", False):
@@ -1333,9 +1673,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 file_score = 50.0  # 仅提到但未实际生成
             elif file_verification.get("files_actually_written", False):
                 file_score = 30.0  # 有写入操作但不完整
-        file_weighted_score = file_score * 0.20
+        file_weighted_score = file_score * 0.15
         
-        # 实际执行权重 (20%)
+        # 实际执行权重 (15%)
         execution_score = 0.0
         if execution_check:
             if execution_check.get("simulation_actually_executed", False):
@@ -1348,10 +1688,30 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             if execution_check.get("concrete_results_provided", False):
                 execution_score += 10.0
-        execution_weighted_score = execution_score * 0.20
+        execution_weighted_score = execution_score * 0.15
+        
+        # 代码测试流程权重 (20%)
+        testing_workflow_score = 0.0
+        if testing_workflow:
+            workflow_completeness = testing_workflow.get("workflow_completeness", 0)
+            testing_quality_score = testing_workflow.get("testing_quality_score", 0)
+            
+            # 基于工作流完整性的分数
+            testing_workflow_score += workflow_completeness * 0.6  # 60%权重给完整性
+            
+            # 基于测试质量分数的分数
+            testing_workflow_score += testing_quality_score * 0.4  # 40%权重给质量分数
+            
+            # 额外奖励：如果所有关键测试步骤都完成
+            if (testing_workflow.get("test_plan_created") and 
+                testing_workflow.get("test_cases_designed") and 
+                testing_workflow.get("testbench_generated") and 
+                testing_workflow.get("simulation_executed")):
+                testing_workflow_score += 20.0  # 额外奖励
+        testing_workflow_weighted_score = testing_workflow_score * 0.20
         
         # 综合分数
-        total_score = base_score + file_weighted_score + execution_weighted_score
+        total_score = base_score + file_weighted_score + execution_weighted_score + testing_workflow_weighted_score
         
         # 严格的惩罚机制：如果关键要求未满足，大幅降低分数
         if file_verification and not file_verification.get("all_required_files_generated", False):
@@ -1359,6 +1719,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         if execution_check and execution_check.get("missing_executions"):
             total_score *= 0.7  # 降低30%
+        
+        # 测试流程惩罚机制
+        if testing_workflow and testing_workflow.get("workflow_completeness", 0) < 30:
+            total_score *= 0.8  # 测试流程严重不完整，降低20%
         
         return min(100.0, max(0.0, total_score))
     
@@ -1392,6 +1756,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         risk_assessment = analysis.get("risk_assessment", "low")
         file_verification = analysis.get("file_verification", {})
         execution_check = analysis.get("actual_execution_check", {})
+        testing_workflow = analysis.get("code_testing_workflow", {})
         
         # 获取原始需求
         original_request = task_context.get("original_request", "") if task_context else ""
@@ -1401,8 +1766,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             # 即使报告完成，也要验证实际执行
             missing_files = file_verification.get("missing_files", [])
             missing_executions = execution_check.get("missing_executions", [])
+            missing_testing_steps = testing_workflow.get("missing_testing_steps", [])
             
-            if missing_files or missing_executions:
+            if missing_files or missing_executions or missing_testing_steps:
                 # 虽然智能体声称完成，但实际缺失关键项
                 return "continue_iteration"  # 需要继续迭代
             else:
@@ -1415,8 +1781,11 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             # 检查是否需要多智能体协作
             missing_files = file_verification.get("missing_files", [])
             missing_executions = execution_check.get("missing_executions", [])
+            missing_testing_steps = testing_workflow.get("missing_testing_steps", [])
             
-            if missing_files or missing_executions or not file_verification.get("all_required_files_generated", False):
+            if (missing_files or missing_executions or missing_testing_steps or 
+                not file_verification.get("all_required_files_generated", False) or
+                testing_workflow.get("workflow_completeness", 0) < 50):
                 return "continue_iteration"  # 需要额外的智能体协作
             else:
                 return "improve_result"
@@ -1431,12 +1800,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 获取验证结果
         file_verification = analysis.get("file_verification", {})
         execution_check = analysis.get("actual_execution_check", {})
+        testing_workflow = analysis.get("code_testing_workflow", {})
         
         # 基于文件和执行验证生成具体建议
         missing_files = file_verification.get("missing_files", [])
         missing_executions = execution_check.get("missing_executions", [])
+        missing_testing_steps = testing_workflow.get("missing_testing_steps", [])
         
-        if missing_files or missing_executions:
+        if missing_files or missing_executions or missing_testing_steps:
             suggestions.append("需要调用额外的智能体来补充缺失的功能")
             
             if "测试台文件" in missing_files or "仿真验证执行" in missing_executions:
@@ -1444,12 +1815,43 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             if "Verilog模块文件" in missing_files:
                 suggestions.append("建议重新调用 enhanced_real_verilog_agent 生成完整的Verilog模块")
+            
+            # 基于测试流程缺失步骤的建议
+            if missing_testing_steps:
+                if "测试计划创建" in missing_testing_steps:
+                    suggestions.append("需要创建详细的测试计划，包括测试目标、策略和范围")
+                if "测试用例设计" in missing_testing_steps:
+                    suggestions.append("需要设计全面的测试用例，包括功能测试、边界测试和异常测试")
+                if "测试台生成" in missing_testing_steps:
+                    suggestions.append("需要生成完整的测试台文件，包含测试激励和结果验证")
+                if "仿真执行" in missing_testing_steps:
+                    suggestions.append("需要实际执行仿真验证，并提供仿真结果和波形分析")
+                if "测试结果分析" in missing_testing_steps:
+                    suggestions.append("需要对测试结果进行详细分析，验证功能正确性和时序正确性")
+                if "覆盖率分析" in missing_testing_steps:
+                    suggestions.append("需要进行代码覆盖率分析，确保测试的完整性")
+                if "测试报告生成" in missing_testing_steps:
+                    suggestions.append("需要生成详细的测试报告，包含测试总结、结论和建议")
         
         if not file_verification.get("all_required_files_generated", False):
             suggestions.append("需要确保所有文件都被实际生成而非仅在报告中描述")
         
         if not execution_check.get("simulation_actually_executed", False):
             suggestions.append("需要执行实际的仿真验证而非仅生成仿真代码")
+        
+        # 基于测试流程完整性的建议
+        workflow_completeness = testing_workflow.get("workflow_completeness", 0)
+        if workflow_completeness < 50:
+            suggestions.append(f"测试流程完整性不足 ({workflow_completeness:.1f}%)，需要完善测试流程")
+        elif workflow_completeness < 80:
+            suggestions.append(f"测试流程基本完整 ({workflow_completeness:.1f}%)，但仍有改进空间")
+        
+        # 基于测试质量分数的建议
+        testing_quality_score = testing_workflow.get("testing_quality_score", 0)
+        if testing_quality_score < 50:
+            suggestions.append(f"测试质量分数过低 ({testing_quality_score:.1f})，需要重新设计测试策略")
+        elif testing_quality_score < 80:
+            suggestions.append(f"测试质量良好 ({testing_quality_score:.1f})，但仍有改进空间")
         
         # 基于质量分数生成建议
         if analysis.get("quality_score", 0) < 70:
@@ -2037,7 +2439,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     # =============================================================================
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """实现LLM调用 - 修复system prompt传递问题"""
+        """实现LLM调用 - 参考enhanced_real_code_reviewer.py，避免每次都传递system prompt"""
         # 生成对话ID（如果还没有）
         if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
             self.current_conversation_id = f"coordinator_agent_{int(time.time())}"
@@ -2045,25 +2447,63 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 构建用户消息
         user_message = ""
         
+        # 修复：更准确的首次调用判断 - 检查是否有assistant响应
+        assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
+        is_first_call = len(assistant_messages) == 0  # 如果没有assistant响应，说明是首次调用
+        
+        self.logger.info(f"🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
+        
+        # 调试：打印对话历史内容
+        for i, msg in enumerate(conversation):
+            self.logger.info(f"🔍 [COORDINATOR] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.info(f"🔍 [COORDINATOR] 内容前100字: {msg['content'][:100]}...")
+        
         for msg in conversation:
             if msg["role"] == "user":
                 user_message += f"{msg['content']}\n\n"
             elif msg["role"] == "assistant":
                 user_message += f"Assistant: {msg['content']}\n\n"
         
-        try:
-            # 修复：始终传递system prompt，确保规则被正确应用
+        # 决定是否传入system prompt - 修复：只在首次调用时传入
+        system_prompt = None
+        if is_first_call:
             system_prompt = self._build_enhanced_system_prompt()
-            
-            # 使用优化的LLM调用方法，但强制包含system prompt
+            self.logger.info(f"📝 [COORDINATOR] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.info(f"📝 [COORDINATOR] System Prompt前200字: {system_prompt[:200]}...")
+            # 检查关键规则是否存在
+            has_mandatory_tools = "必须调用工具" in system_prompt
+            has_task_identification = "identify_task_type" in system_prompt
+            has_agent_assignment = "assign_task_to_agent" in system_prompt
+            self.logger.info(f"🔍 [COORDINATOR] System Prompt检查 - 强制工具: {has_mandatory_tools}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+        else:
+            self.logger.info("🔄 [COORDINATOR] 后续调用 - 依赖缓存System Prompt")
+        
+        self.logger.info(f"📤 [COORDINATOR] 用户消息长度: {len(user_message)}")
+        self.logger.info(f"📤 [COORDINATOR] 用户消息前200字: {user_message[:200]}...")
+        
+        try:
+            # 使用优化的LLM调用方法
+            self.logger.info(f"🤖 [COORDINATOR] 发起LLM调用 - 对话ID: {self.current_conversation_id}")
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=self.current_conversation_id,
                 user_message=user_message.strip(),
-                system_prompt=system_prompt,  # 始终传递system prompt
+                system_prompt=system_prompt,
                 temperature=0.3,
                 max_tokens=4000,
-                force_refresh_system=True  # 强制刷新system prompt
+                force_refresh_system=is_first_call  # 只在首次调用时强制刷新
             )
+            
+            # 分析响应内容
+            self.logger.info(f"🔍 [COORDINATOR] LLM响应长度: {len(response)}")
+            self.logger.info(f"🔍 [COORDINATOR] 响应前200字: {response[:200]}...")
+            
+            # 检查响应是否包含工具调用
+            has_tool_calls = "tool_calls" in response
+            has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
+            has_task_identification = "identify_task_type" in response
+            has_agent_assignment = "assign_task_to_agent" in response
+            self.logger.info(f"🔍 [COORDINATOR] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+            
             return response
         except Exception as e:
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")

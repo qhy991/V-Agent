@@ -113,6 +113,7 @@ class BaseAgent(ABC):
         self.conversation_history: List[Dict[str, str]] = []
         self.current_conversation_id: Optional[str] = None
         self.conversation_start_time: Optional[float] = None
+        self._last_conversation_id: Optional[str] = None  # 🔧 新增：记录上一次对话ID，用于智能体独立上下文管理
         
         # Function Calling配置
         self.max_tool_retry_attempts = 3
@@ -265,22 +266,39 @@ class BaseAgent(ABC):
         
         # 🧠 上下文管理日志
         if conversation_id:
-            self.current_conversation_id = conversation_id
+            # 🔧 修复：为每个智能体创建独立的对话ID，避免对话历史混淆
+            agent_specific_conversation_id = f"{self.agent_id}_{conversation_id}"
+            self.current_conversation_id = agent_specific_conversation_id
             if self.conversation_start_time is None:
                 self.conversation_start_time = time.time()
-            self.logger.info(f"🔗 对话ID: {conversation_id}")
+            self.logger.info(f"🔗 智能体独立对话ID: {agent_specific_conversation_id} (原始ID: {conversation_id})")
         else:
             # 生成新的对话ID
             self.current_conversation_id = f"{self.agent_id}_{int(time.time())}"
             self.conversation_start_time = time.time()
             self.logger.info(f"🆕 生成新对话ID: {self.current_conversation_id}")
         
-        # 决定是否保留对话历史
+        # 🔧 修复：决定是否保留对话历史 - 基于智能体特定的对话ID
         if preserve_context and self.conversation_history:
-            self.logger.info(f"📚 保留现有对话历史: {len(self.conversation_history)} 条消息")
-            conversation = self.conversation_history.copy()
-            # 添加新的用户消息
-            conversation.append({"role": "user", "content": user_request})
+            # 检查当前对话历史是否属于同一个智能体对话
+            current_conversation_id = getattr(self, 'current_conversation_id', None)
+            if current_conversation_id and hasattr(self, '_last_conversation_id') and self._last_conversation_id == current_conversation_id:
+                self.logger.info(f"📚 保留现有对话历史: {len(self.conversation_history)} 条消息")
+                conversation = self.conversation_history.copy()
+                # 添加新的用户消息
+                conversation.append({"role": "user", "content": user_request})
+            else:
+                # 🔧 修复：不同智能体或不同对话，创建新的对话历史
+                self.logger.info(f"🆕 创建新的对话历史（智能体独立上下文）")
+                conversation = [
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_request}
+                ]
+                # 重置对话历史
+                self.conversation_history = conversation.copy()
+                self.conversation_start_time = time.time()
+                # 记录当前对话ID
+                self._last_conversation_id = current_conversation_id
         else:
             self.logger.info(f"🆕 创建新的对话历史")
             # 构建新的对话历史
@@ -291,6 +309,8 @@ class BaseAgent(ABC):
             # 重置对话历史
             self.conversation_history = conversation.copy()
             self.conversation_start_time = time.time()
+            # 记录当前对话ID
+            self._last_conversation_id = getattr(self, 'current_conversation_id', None)
         
         # 记录对话统计信息
         self.logger.info(f"📊 对话统计: 总消息数={len(conversation)}, 对话时长={time.time() - (self.conversation_start_time or time.time()):.1f}秒")
@@ -1130,16 +1150,21 @@ class BaseAgent(ABC):
                 result_message += f"**调用参数**: {self._format_parameters(tool_call.parameters)}\n"
                 result_message += f"**错误信息**: {tool_result.error}\n"
                 
+                # 显示工具规范（如果可用）
+                if hasattr(tool_result, 'tool_specification') and tool_result.tool_specification:
+                    result_message += f"**工具规范**:\n```\n{tool_result.tool_specification}\n```\n"
+                
+                # 显示修复建议（如果可用）
+                if hasattr(tool_result, 'suggested_fix') and tool_result.suggested_fix:
+                    result_message += f"**修复建议**: {tool_result.suggested_fix}\n"
+                
                 # 如果有详细的错误上下文，显示它
                 if hasattr(tool_result, 'context') and tool_result.context:
-                    failure_contexts = tool_result.context.get('failure_chain', [])
-                    if failure_contexts:
-                        latest_context = failure_contexts[-1]
-                        if 'detailed_error' in latest_context:
-                            result_message += f"**详细分析**:\n```\n{latest_context['detailed_error']}\n```\n"
+                    if isinstance(tool_result.context, dict) and 'detailed_error' in tool_result.context:
+                        result_message += f"**详细分析**:\n```\n{tool_result.context['detailed_error']}\n```\n"
                 
                 result_message += f"**影响**: 此工具调用失败可能影响后续操作的执行\n"
-                result_message += f"**建议**: 请根据错误信息分析问题并调整参数重新调用\n\n"
+                result_message += f"**建议**: 请根据工具规范和修复建议重新调用工具\n\n"
         
         # 失败分析和建议
         if failed_calls > 0:
@@ -1177,10 +1202,10 @@ class BaseAgent(ABC):
             result_message += "- 如需进一步处理，请继续调用相应工具\n"
         else:
             result_message += "⚠️ 存在失败的工具调用，建议采取以下行动：\n"
-            result_message += "1. **优先修复关键失败**: 专注解决阻塞性错误\n"
-            result_message += "2. **调整参数重试**: 基于错误分析修改调用参数\n"
-            result_message += "3. **考虑替代方案**: 如果直接修复困难，尝试其他方法\n"
-            result_message += "4. **寻求帮助**: 如果问题持续，请描述遇到的具体问题\n"
+            result_message += "1. **查看工具规范**: 仔细阅读失败工具的工具规范，了解正确的参数格式\n"
+            result_message += "2. **参考修复建议**: 根据提供的修复建议调整工具调用\n"
+            result_message += "3. **重新调用工具**: 使用正确的参数格式重新调用失败的工具\n"
+            result_message += "4. **检查工具可用性**: 确认工具名称是否正确，查看可用工具列表\n"
         
         result_message += "\n💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。"
         
@@ -2431,3 +2456,222 @@ class BaseAgent(ABC):
             advice_parts.append("• 如果问题持续，考虑使用替代方案")
         
         return f"基于错误分析的重试建议：\n" + "\n".join(advice_parts)
+
+    def get_tool_specification(self, tool_name: str) -> str:
+        """获取工具的完整规范"""
+        specs = {
+            "analyze_design_requirements": {
+                "description": "分析Verilog设计需求，分解功能模块",
+                "required_parameters": {
+                    "requirements": "string - 设计需求描述",
+                    "design_type": "string - 设计类型 (sequential/combinational)",
+                    "complexity_level": "string - 复杂度级别 (low/medium/high)",
+                    "module_name": "string - 模块名称"
+                },
+                "example": {
+                    "requirements": "设计一个4位计数器",
+                    "design_type": "sequential",
+                    "complexity_level": "low",
+                    "module_name": "counter"
+                }
+            },
+            "generate_verilog_code": {
+                "description": "生成Verilog模块代码",
+                "required_parameters": {
+                    "module_name": "string - 模块名称",
+                    "behavior": "string - 模块行为描述"
+                },
+                "optional_parameters": {
+                    "coding_style": "string - 编码风格 (synthesizable/non-blocking)",
+                    "include_comments": "boolean - 是否包含注释"
+                },
+                "example": {
+                    "module_name": "counter",
+                    "behavior": "4位递增计数器，支持异步复位",
+                    "coding_style": "synthesizable",
+                    "include_comments": True
+                }
+            },
+            "write_file": {
+                "description": "保存内容到文件",
+                "required_parameters": {
+                    "file_path": "string - 文件路径",
+                    "content": "string - 文件内容"
+                },
+                "optional_parameters": {
+                    "file_type": "string - 文件类型 (verilog/testbench/report)"
+                },
+                "example": {
+                    "file_path": "./designs/counter.v",
+                    "content": "module counter(...); ... endmodule",
+                    "file_type": "verilog"
+                }
+            },
+            "read_file": {
+                "description": "读取文件内容",
+                "required_parameters": {
+                    "file_path": "string - 文件路径"
+                },
+                "example": {
+                    "file_path": "./designs/counter.v"
+                }
+            }
+        }
+        
+        if tool_name in specs:
+            spec = specs[tool_name]
+            spec_text = f"工具名称: {tool_name}\n"
+            spec_text += f"描述: {spec['description']}\n\n"
+            
+            spec_text += "必需参数:\n"
+            for param, desc in spec['required_parameters'].items():
+                spec_text += f"  - {param}: {desc}\n"
+            
+            if 'optional_parameters' in spec:
+                spec_text += "\n可选参数:\n"
+                for param, desc in spec['optional_parameters'].items():
+                    spec_text += f"  - {param}: {desc}\n"
+            
+            spec_text += "\n使用示例:\n"
+            spec_text += f"```json\n{json.dumps(spec['example'], indent=2, ensure_ascii=False)}\n```"
+            
+            return spec_text
+        else:
+            return f"工具 '{tool_name}' 的规范未找到。可用工具: {list(specs.keys())}"
+
+    def get_suggested_fix(self, tool_name: str, error: str) -> str:
+        """根据错误信息生成修复建议"""
+        error_lower = error.lower()
+        
+        if "参数" in error or "parameter" in error_lower:
+            return f"请检查 {tool_name} 的参数格式，参考工具规范重新调用。"
+        elif "不存在" in error or "not found" in error_lower:
+            return f"工具 {tool_name} 不存在，请使用正确的工具名称。"
+        elif "文件" in error or "file" in error_lower:
+            return f"文件路径错误，请检查路径是否正确。"
+        else:
+            return f"工具 {tool_name} 执行失败，请检查参数和调用方式。"
+
+    async def _execute_tool_call_with_retry(self, tool_call: ToolCall) -> ToolResult:
+        """执行工具调用，失败时返回给智能体处理"""
+        try:
+            self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name}")
+            
+            # 标准化参数（解决Schema不一致问题）
+            normalized_parameters = self._normalize_tool_parameters(tool_call.tool_name, tool_call.parameters)
+            if normalized_parameters != tool_call.parameters:
+                self.logger.info(f"🎯 {tool_call.tool_name} 参数已标准化")
+                # 使用标准化后的参数创建新的工具调用
+                tool_call = ToolCall(
+                    tool_name=tool_call.tool_name,
+                    parameters=normalized_parameters,
+                    call_id=tool_call.call_id
+                )
+            
+            # 检查工具是否存在
+            if tool_call.tool_name not in self.function_calling_registry:
+                tool_spec = self.get_tool_specification(tool_call.tool_name)
+                suggested_fix = self.get_suggested_fix(tool_call.tool_name, f"工具 '{tool_call.tool_name}' 不存在")
+                
+                return ToolResult(
+                    call_id=tool_call.call_id or "unknown",
+                    success=False,
+                    result=None,
+                    error=f"工具 '{tool_call.tool_name}' 不存在。可用工具: {list(self.function_calling_registry.keys())}",
+                    tool_specification=tool_spec,
+                    suggested_fix=suggested_fix,
+                    context={
+                        "available_tools": list(self.function_calling_registry.keys()),
+                        "called_tool": tool_call.tool_name
+                    }
+                )
+            
+            # 获取并执行工具函数
+            tool_func = self.function_calling_registry[tool_call.tool_name]
+            
+            if asyncio.iscoroutinefunction(tool_func):
+                result = await tool_func(**tool_call.parameters)
+            else:
+                result = tool_func(**tool_call.parameters)
+            
+            # 检查工具内部是否报告失败
+            tool_success = True
+            tool_error = None
+            
+            if isinstance(result, dict):
+                tool_success = result.get('success', True)
+                tool_error = result.get('error', None)
+                
+                # 如果工具内部报告失败，记录并抛出异常
+                if not tool_success:
+                    error_msg = tool_error or "工具内部执行失败"
+                    self.logger.warning(f"⚠️ 工具内部报告失败 {tool_call.tool_name}: {error_msg}")
+                    raise Exception(error_msg)
+            
+            self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
+            return ToolResult(
+                call_id=tool_call.call_id or "unknown",
+                success=True,
+                result=result,
+                error=None
+            )
+            
+        except Exception as e:
+            error_msg = str(e)
+            self.logger.warning(f"⚠️ 工具执行失败 {tool_call.tool_name}: {error_msg}")
+            
+            # 记录详细的失败上下文
+            failure_context = {
+                "tool_name": tool_call.tool_name,
+                "parameters": tool_call.parameters,
+                "error": error_msg,
+                "error_type": type(e).__name__,
+                "timestamp": time.time(),
+                "agent_id": self.agent_id,
+                "role": self.role
+            }
+            
+            # 增强错误信息格式
+            detailed_error = await self._enhance_error_with_context(failure_context)
+            failure_context["detailed_error"] = detailed_error
+            
+            self.tool_failure_contexts.append(failure_context)
+            
+            # 获取工具规范和修复建议
+            tool_spec = self.get_tool_specification(tool_call.tool_name)
+            suggested_fix = self.get_suggested_fix(tool_call.tool_name, error_msg)
+            
+            self.logger.error(f"❌ 工具调用失败 {tool_call.tool_name}: {error_msg}")
+            self.logger.info(f"📋 返回工具规范给智能体处理")
+            
+            # 返回给智能体处理，不进行重试
+            return ToolResult(
+                call_id=tool_call.call_id or "unknown",
+                success=False,
+                result=None,
+                error=error_msg,
+                tool_specification=tool_spec,
+                suggested_fix=suggested_fix,
+                context=failure_context
+            )
+
+    async def handle_tool_failure(self, tool_result: ToolResult) -> str:
+        """智能体处理工具失败，返回给LLM的提示信息"""
+        if not tool_result.success:
+            # 构建包含工具规范的提示
+            retry_prompt = f"""
+工具调用失败: {tool_result.error}
+
+工具规范:
+{tool_result.tool_specification or "工具规范未找到"}
+
+修复建议:
+{tool_result.suggested_fix or "无具体修复建议"}
+
+请根据上述信息重新调用工具，确保：
+1. 使用正确的工具名称
+2. 按照工具规范提供正确的参数格式
+3. 参考修复建议调整调用方式
+"""
+            return retry_prompt
+        return "工具调用成功"

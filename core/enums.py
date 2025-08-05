@@ -57,6 +57,7 @@ class AgentStatus(Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     OFFLINE = "offline"
+    BUSY = "busy"
 
 
 class TaskComplexity(Enum):
