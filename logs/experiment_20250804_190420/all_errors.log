@@ -1,0 +1,179 @@
+[2025-08-04 19:04:46] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 generate_testbench: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:04:46] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "generate_testbench",
+  "parameters": {
+    "module_name": "alu_32bit",
+    "verilog_code": "module alu_32bit (\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\n);\n\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\n    // wire [31:0] add_result;\n    // wire [31:0] sub_result;\n    \n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\n    always @(*) begin\n        case (op)\n            4'b0000: result = a + b;        // ADD\n            4'b0001: result = a - b;        // SUB  \n            4'b0010: result = a & b;        // AND\n            4'b0011: result = a | b;        // OR\n            4'b0100: result = a ^ b;        // XOR\n            4'b0110: result = a << b[4:0];  // SLL\n            4'b0111: result = a >> b[4:0];  // SRL\n            default: result = 32'h00000000;\n        endcase\n    end\n    \n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\n    assign zero = (result == 32'h0);\n\nendmodule",
+    "test_scenarios": [
+      {
+        "name": "add_operation",
+        "description": "\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "sub_operation",
+        "description": "\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "and_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c"
+      },
+      {
+        "name": "or_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "xor_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "shift_operations",
+        "description": "\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c"
+      }
+    ]
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305486.721953,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: generate_testbench\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'module_name': 'alu_32bit', 'verilog_code': \"module alu_32bit (\\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\\n);\\n\\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\\n    // wire [31:0] add_result;\\n    // wire [31:0] sub_result;\\n    \\n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\\n    always @(*) begin\\n        case (op)\\n            4'b0000: result = a + b;        // ADD\\n            4'b0001: result = a - b;        // SUB  \\n            4'b0010: result = a & b;        // AND\\n            4'b0011: result = a | b;        // OR\\n            4'b0100: result = a ^ b;        // XOR\\n            4'b0110: result = a << b[4:0];  // SLL\\n            4'b0111: result = a >> b[4:0];  // SRL\\n            default: result = 32'h00000000;\\n        endcase\\n    end\\n    \\n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\\n    assign zero = (result == 32'h0);\\n\\nendmodule\", 'test_scenarios': [{'name': 'add_operation', 'description': '\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c'}, {'name': 'sub_operation', 'description': '\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c'}, {'name': 'and_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c'}, {'name': 'or_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c'}, {'name': 'xor_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c'}, {'name': 'shift_operations', 'description': '\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c'}]}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}
+[2025-08-04 19:05:06] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 generate_testbench: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:05:06] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "generate_testbench",
+  "parameters": {
+    "module_name": "alu_32bit",
+    "verilog_code": "module alu_32bit (\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\n);\n\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\n    // wire [31:0] add_result;\n    // wire [31:0] sub_result;\n    \n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\n    always @(*) begin\n        case (op)\n            4'b0000: result = a + b;        // ADD\n            4'b0001: result = a - b;        // SUB  \n            4'b0010: result = a & b;        // AND\n            4'b0011: result = a | b;        // OR\n            4'b0100: result = a ^ b;        // XOR\n            4'b0110: result = a << b[4:0];  // SLL\n            4'b0111: result = a >> b[4:0];  // SRL\n            default: result = 32'h00000000;\n        endcase\n    end\n    \n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\n    assign zero = (result == 32'h0);\n\nendmodule",
+    "test_scenarios": [
+      {
+        "name": "add_operation",
+        "description": "\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "sub_operation",
+        "description": "\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "and_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c"
+      },
+      {
+        "name": "or_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "xor_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "shift_operations",
+        "description": "\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c"
+      }
+    ]
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305506.879854,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: generate_testbench\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'module_name': 'alu_32bit', 'verilog_code': \"module alu_32bit (\\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\\n);\\n\\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\\n    // wire [31:0] add_result;\\n    // wire [31:0] sub_result;\\n    \\n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\\n    always @(*) begin\\n        case (op)\\n            4'b0000: result = a + b;        // ADD\\n            4'b0001: result = a - b;        // SUB  \\n            4'b0010: result = a & b;        // AND\\n            4'b0011: result = a | b;        // OR\\n            4'b0100: result = a ^ b;        // XOR\\n            4'b0110: result = a << b[4:0];  // SLL\\n            4'b0111: result = a >> b[4:0];  // SRL\\n            default: result = 32'h00000000;\\n        endcase\\n    end\\n    \\n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\\n    assign zero = (result == 32'h0);\\n\\nendmodule\", 'test_scenarios': [{'name': 'add_operation', 'description': '\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c'}, {'name': 'sub_operation', 'description': '\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c'}, {'name': 'and_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c'}, {'name': 'or_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c'}, {'name': 'xor_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c'}, {'name': 'shift_operations', 'description': '\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c'}]}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}
+[2025-08-04 19:05:28] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 analyze_test_failures: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:05:28] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "analyze_test_failures",
+  "parameters": {
+    "verilog_code": "module alu_32bit (\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\n);\n\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\n    // wire [31:0] add_result;\n    // wire [31:0] sub_result;\n    \n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\n    always @(*) begin\n        case (op)\n            4'b0000: result = a + b;        // ADD\n            4'b0001: result = a - b;        // SUB  \n            4'b0010: result = a & b;        // AND\n            4'b0011: result = a | b;        // OR\n            4'b0100: result = a ^ b;        // XOR\n            4'b0110: result = a << b[4:0];  // SLL\n            4'b0111: result = a >> b[4:0];  // SRL\n            default: result = 32'h00000000;\n        endcase\n    end\n    \n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\n    assign zero = (result == 32'h0);\n\nendmodule",
+    "compilation_errors": "\u672a\u63d0\u4f9b\u7f16\u8bd1\u9519\u8bef\u4fe1\u606f",
+    "simulation_errors": "\u672a\u63d0\u4f9b\u4eff\u771f\u9519\u8bef\u4fe1\u606f",
+    "test_assertions": "\u672a\u63d0\u4f9b\u6d4b\u8bd5\u65ad\u8a00\u5931\u8d25\u4fe1\u606f",
+    "iteration_number": 1
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305528.846712,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: analyze_test_failures\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'verilog_code': \"module alu_32bit (\\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\\n    output [31:0] result,   // \u7ed3\u679c - \ud83d\udea8 \u9519\u8bef1: \u5e94\u8be5\u662f output reg\\n    output        zero      // \u96f6\u6807\u5fd7 - \ud83d\udea8 \u9519\u8bef2: \u5e94\u8be5\u662f output reg\\n);\\n\\n    // \ud83d\udea8 \u9519\u8bef3: \u4e2d\u95f4\u4fe1\u53f7\u6ca1\u6709\u58f0\u660e\\n    // wire [31:0] add_result;\\n    // wire [31:0] sub_result;\\n    \\n    // \ud83d\udea8 \u9519\u8bef4: always\u5757\u4e2d\u7ed9wire\u7c7b\u578b\u8d4b\u503c\\n    always @(*) begin\\n        case (op)\\n            4'b0000: result = a + b;        // ADD\\n            4'b0001: result = a - b;        // SUB  \\n            4'b0010: result = a & b;        // AND\\n            4'b0011: result = a | b;        // OR\\n            4'b0100: result = a ^ b;        // XOR\\n            4'b0110: result = a << b[4:0];  // SLL\\n            4'b0111: result = a >> b[4:0];  // SRL\\n            default: result = 32'h00000000;\\n        endcase\\n    end\\n    \\n    // \ud83d\udea8 \u9519\u8bef5: zero\u4fe1\u53f7\u7684assign\u4e0ealways\u5757\u51b2\u7a81\\n    assign zero = (result == 32'h0);\\n\\nendmodule\", 'compilation_errors': '\u672a\u63d0\u4f9b\u7f16\u8bd1\u9519\u8bef\u4fe1\u606f', 'simulation_errors': '\u672a\u63d0\u4f9b\u4eff\u771f\u9519\u8bef\u4fe1\u606f', 'test_assertions': '\u672a\u63d0\u4f9b\u6d4b\u8bd5\u65ad\u8a00\u5931\u8d25\u4fe1\u606f', 'iteration_number': 1}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}
+[2025-08-04 19:06:15] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 generate_testbench: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:06:15] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "generate_testbench",
+  "parameters": {
+    "module_name": "alu_32bit",
+    "verilog_code": "module alu_32bit (\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\n    output reg [31:0] result,   // \u4fee\u6b631: \u58f0\u660e\u4e3areg\u7c7b\u578b\n    output reg zero      // \u4fee\u6b632: \u58f0\u660e\u4e3areg\u7c7b\u578b\n);\n\n    // \u4fee\u6b633: \u58f0\u660e\u4e2d\u95f4\u4fe1\u53f7\n    wire [31:0] add_result;\n    wire [31:0] sub_result;\n    \n    // \u4fee\u6b634: \u5728always\u5757\u4e2d\u7ed9reg\u7c7b\u578b\u8d4b\u503c\n    always @(*) begin\n        case (op)\n            4'b0000: result = a + b;        // ADD\n            4'b0001: result = a - b;        // SUB  \n            4'b0010: result = a & b;        // AND\n            4'b0011: result = a | b;        // OR\n            4'b0100: result = a ^ b;        // XOR\n            4'b0110: result = a << b[4:0];  // SLL\n            4'b0111: result = a >> b[4:0];  // SRL\n            default: result = 32'h00000000;\n        endcase\n    end\n    \n    // \u4fee\u6b635: \u79fb\u9664assign\u8bed\u53e5\uff0c\u6539\u4e3a\u5728always\u5757\u4e2d\u66f4\u65b0zero\u4fe1\u53f7\n    always @(*) begin\n        zero = (result == 32'h0);\n    end\n\nendmodule",
+    "test_scenarios": [
+      {
+        "name": "add_operation",
+        "description": "\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "sub_operation",
+        "description": "\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c"
+      },
+      {
+        "name": "and_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c"
+      },
+      {
+        "name": "or_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "xor_operation",
+        "description": "\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c"
+      },
+      {
+        "name": "shift_operations",
+        "description": "\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c"
+      },
+      {
+        "name": "zero_flag_test",
+        "description": "\u6d4b\u8bd5\u96f6\u6807\u5fd7\u4f4d"
+      }
+    ]
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305575.845831,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: generate_testbench\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_generate_testbench() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'module_name': 'alu_32bit', 'verilog_code': \"module alu_32bit (\\n    input  [31:0] a,        // \u64cd\u4f5c\u6570A\\n    input  [31:0] b,        // \u64cd\u4f5c\u6570B\\n    input  [3:0]  op,       // \u64cd\u4f5c\u7801\\n    output reg [31:0] result,   // \u4fee\u6b631: \u58f0\u660e\u4e3areg\u7c7b\u578b\\n    output reg zero      // \u4fee\u6b632: \u58f0\u660e\u4e3areg\u7c7b\u578b\\n);\\n\\n    // \u4fee\u6b633: \u58f0\u660e\u4e2d\u95f4\u4fe1\u53f7\\n    wire [31:0] add_result;\\n    wire [31:0] sub_result;\\n    \\n    // \u4fee\u6b634: \u5728always\u5757\u4e2d\u7ed9reg\u7c7b\u578b\u8d4b\u503c\\n    always @(*) begin\\n        case (op)\\n            4'b0000: result = a + b;        // ADD\\n            4'b0001: result = a - b;        // SUB  \\n            4'b0010: result = a & b;        // AND\\n            4'b0011: result = a | b;        // OR\\n            4'b0100: result = a ^ b;        // XOR\\n            4'b0110: result = a << b[4:0];  // SLL\\n            4'b0111: result = a >> b[4:0];  // SRL\\n            default: result = 32'h00000000;\\n        endcase\\n    end\\n    \\n    // \u4fee\u6b635: \u79fb\u9664assign\u8bed\u53e5\uff0c\u6539\u4e3a\u5728always\u5757\u4e2d\u66f4\u65b0zero\u4fe1\u53f7\\n    always @(*) begin\\n        zero = (result == 32'h0);\\n    end\\n\\nendmodule\", 'test_scenarios': [{'name': 'add_operation', 'description': '\u6d4b\u8bd5\u52a0\u6cd5\u64cd\u4f5c'}, {'name': 'sub_operation', 'description': '\u6d4b\u8bd5\u51cf\u6cd5\u64cd\u4f5c'}, {'name': 'and_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u4e0e\u64cd\u4f5c'}, {'name': 'or_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u6216\u64cd\u4f5c'}, {'name': 'xor_operation', 'description': '\u6d4b\u8bd5\u6309\u4f4d\u5f02\u6216\u64cd\u4f5c'}, {'name': 'shift_operations', 'description': '\u6d4b\u8bd5\u79fb\u4f4d\u64cd\u4f5c'}, {'name': 'zero_flag_test', 'description': '\u6d4b\u8bd5\u96f6\u6807\u5fd7\u4f4d'}]}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}
+[2025-08-04 19:07:03] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 analyze_test_failures: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:07:03] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "analyze_test_failures",
+  "parameters": {
+    "verilog_code": "",
+    "compilation_errors": "error: Task body with multiple statements requires SystemVerilog.",
+    "testbench_code": "`timescale 1ns/1ps\n\nmodule testbench_alu_32bit;\n    reg [31:0] a, b;\n    reg [3:0] op;\n    wire [31:0] result;\n    wire zero;\n    \n    alu_32bit uut (\n        .a(a),\n        .b(b), \n        .op(op),\n        .result(result),\n        .zero(zero)\n    );\n    \n    initial begin\n        $display(\"ALU Test Starting...\");\n        \n        // \ud83d\udea8 \u9519\u8bef6: task\u4e2d\u591a\u8bed\u53e5\u6ca1\u6709begin..end\n        test_add_operation;\n        test_sub_operation;\n        \n        $finish;\n    end\n    \n    // \ud83d\udea8 \u9519\u8bef7: task\u8bed\u6cd5\u9519\u8bef - \u591a\u8bed\u53e5\u9700\u8981begin..end\n    task test_add_operation;\n        a = 32'h12345678;\n        b = 32'h87654321;\n        op = 4'b0000;\n        #10;\n        $display(\"ADD: %h + %h = %h\", a, b, result);\n    endtask\n    \n    task test_sub_operation;\n        a = 32'hFFFFFFFF;\n        b = 32'h00000001;\n        op = 4'b0001;\n        #10;\n        $display(\"SUB: %h - %h = %h\", a, b, result);\n    endtask\n\nendmodule",
+    "iteration_number": 1
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305623.877385,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: analyze_test_failures\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'verilog_code': '', 'compilation_errors': 'error: Task body with multiple statements requires SystemVerilog.', 'testbench_code': '`timescale 1ns/1ps\\n\\nmodule testbench_alu_32bit;\\n    reg [31:0] a, b;\\n    reg [3:0] op;\\n    wire [31:0] result;\\n    wire zero;\\n    \\n    alu_32bit uut (\\n        .a(a),\\n        .b(b), \\n        .op(op),\\n        .result(result),\\n        .zero(zero)\\n    );\\n    \\n    initial begin\\n        $display(\"ALU Test Starting...\");\\n        \\n        // \ud83d\udea8 \u9519\u8bef6: task\u4e2d\u591a\u8bed\u53e5\u6ca1\u6709begin..end\\n        test_add_operation;\\n        test_sub_operation;\\n        \\n        $finish;\\n    end\\n    \\n    // \ud83d\udea8 \u9519\u8bef7: task\u8bed\u6cd5\u9519\u8bef - \u591a\u8bed\u53e5\u9700\u8981begin..end\\n    task test_add_operation;\\n        a = 32\\'h12345678;\\n        b = 32\\'h87654321;\\n        op = 4\\'b0000;\\n        #10;\\n        $display(\"ADD: %h + %h = %h\", a, b, result);\\n    endtask\\n    \\n    task test_sub_operation;\\n        a = 32\\'hFFFFFFFF;\\n        b = 32\\'h00000001;\\n        op = 4\\'b0001;\\n        #10;\\n        $display(\"SUB: %h - %h = %h\", a, b, result);\\n    endtask\\n\\nendmodule', 'iteration_number': 1}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}
+[2025-08-04 19:07:24] Agent.enhanced_real_code_review_agent - ERROR - ❌ 工具调用最终失败 analyze_test_failures: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'
+[2025-08-04 19:07:24] Agent.enhanced_real_code_review_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "analyze_test_failures",
+  "parameters": {
+    "verilog_code": "",
+    "compilation_errors": "testbench.v:45: error: Task body with multiple statements requires SystemVerilog.\ntestbench.v:52: error: Task body with multiple statements requires SystemVerilog.\ntestbench.v:59: error: Task body with multiple statements requires SystemVerilog.",
+    "testbench_code": "",
+    "iteration_number": 1
+  },
+  "error": "EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'",
+  "error_type": "TypeError",
+  "attempt": 3,
+  "timestamp": 1754305644.304617,
+  "agent_id": "enhanced_real_code_review_agent",
+  "role": "code_reviewer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: analyze_test_failures\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: TypeError\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: EnhancedRealCodeReviewAgent._tool_analyze_test_failures() got an unexpected keyword argument 'verilog_code'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'verilog_code': '', 'compilation_errors': 'testbench.v:45: error: Task body with multiple statements requires SystemVerilog.\\ntestbench.v:52: error: Task body with multiple statements requires SystemVerilog.\\ntestbench.v:59: error: Task body with multiple statements requires SystemVerilog.', 'testbench_code': '', 'iteration_number': 1}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u53c2\u6570\u9519\u8bef: \u5de5\u5177\u8c03\u7528\u53c2\u6570\u4e0d\u6b63\u786e\u6216\u7f3a\u5931\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5fc5\u9700\u53c2\u6570\u672a\u63d0\u4f9b\n\u2022 \u53c2\u6570\u7c7b\u578b\u4e0d\u5339\u914d\n\u2022 \u53c2\u6570\u503c\u683c\u5f0f\u9519\u8bef\n\u2022 \u53c2\u6570\u540d\u79f0\u62fc\u5199\u9519\u8bef\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u6240\u6709\u5fc5\u9700\u53c2\u6570\u662f\u5426\u63d0\u4f9b\n\u2022 \u9a8c\u8bc1\u53c2\u6570\u7c7b\u578b\u548c\u683c\u5f0f\n\u2022 \u53c2\u8003\u5de5\u5177\u6587\u6863\u786e\u8ba4\u53c2\u6570\u8981\u6c42\n\u2022 \u4f7f\u7528\u6b63\u786e\u7684\u53c2\u6570\u540d\u79f0\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4f4e - \u901a\u8fc7\u4fee\u6b63\u53c2\u6570\u5373\u53ef\u89e3\u51b3"
+}

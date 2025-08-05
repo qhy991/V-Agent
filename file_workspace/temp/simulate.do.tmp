@@ -1,0 +1,23 @@
+// 仿真脚本
+// 用于编译和仿真8位加法器
+
+// 创建工作库
+vlib work
+
+// 编译设计文件
+vlog eight_bit_adder.v
+
+// 编译测试台文件
+vlog eight_bit_adder_tb.v
+
+// 启动仿真
+vsim eight_bit_adder_tb
+
+// 添加波形
+add wave *
+
+// 运行仿真
+run -all
+
+// 显示波形
+wave zoom full

@@ -1,0 +1,117 @@
+# Verilog/SystemVerilog 信号命名最佳实践
+
+## 1. 命名基本原则
+
+### 1.1 可读性和描述性
+- 使用能够清晰表达信号用途的名称
+- 避免使用缩写或模糊的名称
+- 例如：`data_in` 比 `din` 更清晰
+
+### 1.2 一致性
+- 在整个项目中保持命名风格一致
+- 建立并遵循团队命名规范
+- 使用统一的前缀/后缀规则
+
+### 1.3 避免关键字冲突
+- 不要使用Verilog关键字作为信号名
+- 如：`input`, `output`, `wire`, `reg` 等
+
+## 2. 信号类型命名规范
+
+### 2.1 输入输出信号
+```
+// 常见输入输出命名
+input  wire clk;              // 时钟
+input  wire rst_n;            // 异步复位(低电平有效)
+input  wire [7:0] data_in;    // 数据输入
+output wire [7:0] data_out;   // 数据输出
+```
+
+### 2.2 控制信号
+```
+// 控制信号命名
+wire       enable;            // 使能信号
+wire       valid;             // 有效信号
+wire       ready;             // 就绪信号
+wire       start;             // 开始信号
+wire       done;              // 完成信号
+```
+
+### 2.3 状态信号
+```
+// 状态信号命名
+wire       state_idle;        // 空闲状态
+wire       state_busy;        // 忙状态
+wire       state_error;       // 错误状态
+```
+
+## 3. 信号命名模式
+
+### 3.1 总线命名
+```
+// 总线信号命名
+wire [31:0] address_bus;      // 地址总线
+wire [31:0] data_bus;         // 数据总线
+wire [7:0]  control_bus;      // 控制总线
+```
+
+### 3.2 接口信号命名
+```
+// 接口信号命名
+wire [7:0] tx_data;           // 发送数据
+wire [7:0] rx_data;           // 接收数据
+wire       tx_valid;          // 发送有效
+wire       rx_valid;          // 接收有效
+wire       tx_ready;          // 发送就绪
+wire       rx_ready;          // 接收就绪
+```
+
+## 4. 命名约定示例
+
+### 4.1 时序信号
+```
+wire       sync_clk;           // 同步时钟
+wire       async_rst;          // 异步复位
+wire       sync_rst;           // 同步复位
+```
+
+### 4.2 状态机信号
+```
+typedef enum logic [1:0] {
+    IDLE = 2'b00,
+    READ = 2'b01,
+    WRITE = 2'b10,
+    DONE = 2'b11
+} state_t;
+
+state_t current_state, next_state;
+```
+
+## 5. 常见命名错误及避免方法
+
+### 5.1 错误示例
+```
+// ❌ 不好的命名
+wire a;        // 无意义
+wire b;        // 无意义
+wire x;        // 无意义
+wire data;     // 过于通用
+wire en;       // 缩写不明确
+```
+
+### 5.2 正确示例
+```
+// ✅ 好的命名
+wire       clock;             // 清晰的时钟信号
+wire       reset_n;           // 清晰的复位信号
+wire [7:0] data_in;           // 清晰的数据输入
+wire       enable_signal;     // 明确的使能信号
+```
+
+## 6. 团队协作建议
+
+1. 制定统一的命名规范文档
+2. 在代码审查中检查命名一致性
+3. 使用静态分析工具辅助检查
+4. 定期回顾和更新命名规范
+5. 新成员培训时强调命名规范的重要性

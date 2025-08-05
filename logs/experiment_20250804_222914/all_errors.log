@@ -1,0 +1,19 @@
+[2025-08-04 22:29:14] test_framework - ERROR - ❌ 测试失败: BaseAgent.__init__() got an unexpected keyword argument 'config'
+[2025-08-04 22:29:14] test_framework - ERROR - 错误详情: Traceback (most recent call last):
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/test_llm_coordinator.py", line 37, in test_llm_coordinator_basic
+    coordinator = LLMCoordinatorAgent(config)
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/core/llm_coordinator_agent.py", line 64, in __init__
+    super().__init__(
+    ~~~~~~~~~~~~~~~~^
+        agent_id="llm_coordinator_agent",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        config=config
+        ^^^^^^^^^^^^^
+    )
+    ^
+TypeError: BaseAgent.__init__() got an unexpected keyword argument 'config'
+
+[2025-08-04 22:29:14] test_framework - ERROR - ❌ 复杂任务测试失败: BaseAgent.__init__() got an unexpected keyword argument 'config'
+[2025-08-04 22:29:14] test_framework - ERROR - ❌ 上下文保持测试失败: BaseAgent.__init__() got an unexpected keyword argument 'config'
+[2025-08-04 22:29:14] test_framework - ERROR - ❌ 智能体选择测试失败: BaseAgent.__init__() got an unexpected keyword argument 'config'

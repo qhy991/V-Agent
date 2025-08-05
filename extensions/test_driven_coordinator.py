@@ -232,9 +232,31 @@ class TestDrivenCoordinator:
                 if iteration_result.get("agent_id"):
                     session_agents[iteration_result.get("agent_role", "unknown")] = iteration_result["agent_id"]
                 
-                # 检查是否完成
-                if iteration_result.get("success", False):
-                    self.logger.info(f"✅ TDD循环在第 {iteration} 次迭代成功完成")
+                # 🎯 关键修复：更严格的完成条件检查
+                iteration_success = iteration_result.get("success", False)
+                all_tests_passed = iteration_result.get("test_result", {}).get("all_tests_passed", False)
+                needs_fix = iteration_result.get("needs_fix", False)
+                
+                # 检查分析结果中的next_action
+                analysis_result = iteration_result.get("test_result", {}).get("analysis_result", {})
+                next_action = None
+                if analysis_result and hasattr(analysis_result, 'get'):
+                    next_action = analysis_result.get("next_action", "")
+                
+                # 🎯 修复后的完成条件：
+                # 1. 迭代本身成功
+                # 2. 所有测试通过
+                # 3. 不需要修复
+                # 4. 下一步动作不是重试仿真（表示没有修复动作）
+                truly_completed = (
+                    iteration_success and 
+                    all_tests_passed and 
+                    not needs_fix and
+                    next_action != "retry_simulation"
+                )
+                
+                if truly_completed:
+                    self.logger.info(f"✅ TDD循环在第 {iteration} 次迭代真正完成 - 所有测试通过且无需修复")
                     self.test_driven_sessions[session_id].update({
                         "status": "completed",
                         "success": True,
@@ -254,6 +276,10 @@ class TestDrivenCoordinator:
                         "completion_reason": "tests_passed",
                         "conversation_history": self.persistent_conversation_history if self.config.enable_persistent_conversation else []
                     }
+                elif iteration_success and next_action == "retry_simulation":
+                    # 🎯 新增：如果分析工具建议重试仿真，说明已进行了修复
+                    self.logger.info(f"🔄 第 {iteration} 次迭代：检测到代码修复，准备重新测试")
+                    # 不返回，继续下一次迭代
                 
                 # 检查是否应该继续
                 if not iteration_result.get("should_continue", True):
@@ -354,12 +380,28 @@ class TestDrivenCoordinator:
             )
             
             # 4. 决定是否继续 - 改进逻辑
-            # 🎯 关键改进：不仅检查测试通过，还要检查是否需要修复
+            # 🎯 关键改进：严格检查真实的测试结果，而不是智能体执行结果
             needs_fix = test_result.get("needs_fix", False)
             all_tests_passed = test_result.get("all_tests_passed", False)
             
-            # 如果测试失败或需要修复，继续迭代
-            should_continue = not all_tests_passed or needs_fix
+            # 🔧 新增：检查仿真是否真的成功了（不是分析工具成功了）
+            simulation_result = test_result.get("simulation_result", {})
+            simulation_success = simulation_result.get("success", False)
+            actual_test_passed = simulation_result.get("all_tests_passed", False)
+            
+            # 🎯 严格判断：只有仿真成功且测试真正通过才算成功
+            real_success = simulation_success and actual_test_passed and not needs_fix
+            
+            # 如果仿真失败、测试未通过或需要修复，继续迭代
+            should_continue = not real_success
+            
+            # 📝 详细日志记录判断依据
+            self.logger.info(f"🎯 迭代{iteration}结果判断:")
+            self.logger.info(f"   - 仿真成功: {simulation_success}")
+            self.logger.info(f"   - 测试通过: {actual_test_passed}")
+            self.logger.info(f"   - 需要修复: {needs_fix}")
+            self.logger.info(f"   - 真实成功: {real_success}")
+            self.logger.info(f"   - 应该继续: {should_continue}")
             
             # 如果有仿真错误，添加到上下文中
             if test_result.get("simulation_result") and not test_result["simulation_result"].get("success", False):
@@ -380,13 +422,15 @@ class TestDrivenCoordinator:
                 self.logger.info(f"📝 记录迭代{iteration}的仿真错误: {error_info['error'][:100]}...")
             
             return {
-                "success": all_tests_passed and not needs_fix,
+                "success": real_success,  # 🎯 使用严格的成功判断
                 "iteration": iteration,
                 "design_result": design_result,
                 "test_result": test_result,
                 "improvement_analysis": improvement_analysis,
                 "should_continue": should_continue,
                 "needs_fix": needs_fix,
+                "simulation_success": simulation_success,  # 新增：仿真成功标志
+                "actual_test_passed": actual_test_passed,  # 新增：实际测试通过标志
                 "agent_id": design_result.get("agent_id"),
                 "agent_role": design_result.get("agent_role", "verilog_designer"),
                 "generated_files": design_result.get("generated_files", [])
@@ -1234,7 +1278,7 @@ endmodule
 
 你必须按照以下步骤执行：
 
-**第一步：必须分析错误**
+**第一步：必须分析错误并自动修复**
 ```json
 {{
     "tool_name": "analyze_test_failures",
@@ -1243,6 +1287,7 @@ endmodule
         "compilation_errors": "{error_details}",
         "simulation_errors": "{error_details}",
         "testbench_code": "测试台代码",
+        "testbench_file": "测试台文件路径",
         "iteration_number": {iteration}
     }}
 }}

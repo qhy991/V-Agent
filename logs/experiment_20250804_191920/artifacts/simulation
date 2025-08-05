@@ -1,0 +1,120 @@
+#! /opt/homebrew/Cellar/icarus-verilog/12.0/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/12.0/lib/ivl/system.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_sys.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/12.0/lib/ivl/vhdl_textio.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/12.0/lib/ivl/v2005_math.vpi";
+:vpi_module "/opt/homebrew/Cellar/icarus-verilog/12.0/lib/ivl/va_math.vpi";
+S_0x14460e780 .scope module, "testbench_alu_8bit" "testbench_alu_8bit" 2 3;
+ .timescale -9 -12;
+v0x14461f430_0 .var "a", 7 0;
+v0x14461f4c0_0 .var "b", 7 0;
+v0x14461f550_0 .var "op", 1 0;
+v0x14461f5e0_0 .net "result", 7 0, L_0x144620480;  1 drivers
+v0x14461f690_0 .net "zero", 0 0, L_0x1446205e0;  1 drivers
+S_0x14460e8f0 .scope module, "uut" "alu_8bit" 2 13, 3 1 0, S_0x14460e780;
+ .timescale 0 0;
+    .port_info 0 /INPUT 8 "a";
+    .port_info 1 /INPUT 8 "b";
+    .port_info 2 /INPUT 2 "op";
+    .port_info 3 /OUTPUT 8 "result";
+    .port_info 4 /OUTPUT 1 "zero";
+L_0x14461f9c0 .functor AND 8, v0x14461f430_0, v0x14461f4c0_0, C4<11111111>, C4<11111111>;
+L_0x14461fb30 .functor OR 8, v0x14461f430_0, v0x14461f4c0_0, C4<00000000>, C4<00000000>;
+v0x144607a40_0 .net *"_ivl_10", 0 0, L_0x14461fba0;  1 drivers
+L_0x138040058 .functor BUFT 1, C4<01>, C4<0>, C4<0>, C4<0>;
+v0x14461e430_0 .net/2u *"_ivl_12", 1 0, L_0x138040058;  1 drivers
+v0x14461e4d0_0 .net *"_ivl_14", 0 0, L_0x14461fc80;  1 drivers
+L_0x1380400a0 .functor BUFT 1, C4<10>, C4<0>, C4<0>, C4<0>;
+v0x14461e580_0 .net/2u *"_ivl_16", 1 0, L_0x1380400a0;  1 drivers
+v0x14461e620_0 .net *"_ivl_18", 0 0, L_0x14461fd80;  1 drivers
+L_0x1380400e8 .functor BUFT 1, C4<11>, C4<0>, C4<0>, C4<0>;
+v0x14461e700_0 .net/2u *"_ivl_20", 1 0, L_0x1380400e8;  1 drivers
+v0x14461e7b0_0 .net *"_ivl_22", 0 0, L_0x14461fef0;  1 drivers
+L_0x138040130 .functor BUFT 1, C4<00000000>, C4<0>, C4<0>, C4<0>;
+v0x14461e850_0 .net/2u *"_ivl_24", 7 0, L_0x138040130;  1 drivers
+v0x14461e900_0 .net *"_ivl_26", 7 0, L_0x144620010;  1 drivers
+v0x14461ea10_0 .net *"_ivl_28", 7 0, L_0x1446201b0;  1 drivers
+v0x14461eac0_0 .net *"_ivl_30", 7 0, L_0x144620310;  1 drivers
+L_0x138040178 .functor BUFT 1, C4<00000000>, C4<0>, C4<0>, C4<0>;
+v0x14461eb70_0 .net/2u *"_ivl_34", 7 0, L_0x138040178;  1 drivers
+L_0x138040010 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
+v0x14461ec20_0 .net/2u *"_ivl_8", 1 0, L_0x138040010;  1 drivers
+v0x14461ecd0_0 .net "a", 7 0, v0x14461f430_0;  1 drivers
+v0x14461ed80_0 .net "add_result", 7 0, L_0x14461f760;  1 drivers
+v0x14461ee30_0 .net "and_result", 7 0, L_0x14461f9c0;  1 drivers
+v0x14461eee0_0 .net "b", 7 0, v0x14461f4c0_0;  1 drivers
+v0x14461f070_0 .net "op", 1 0, v0x14461f550_0;  1 drivers
+v0x14461f100_0 .net "or_result", 7 0, L_0x14461fb30;  1 drivers
+v0x14461f1b0_0 .net "result", 7 0, L_0x144620480;  alias, 1 drivers
+v0x14461f260_0 .net "sub_result", 7 0, L_0x14461f8c0;  1 drivers
+v0x14461f310_0 .net "zero", 0 0, L_0x1446205e0;  alias, 1 drivers
+L_0x14461f760 .arith/sum 8, v0x14461f430_0, v0x14461f4c0_0;
+L_0x14461f8c0 .arith/sub 8, v0x14461f430_0, v0x14461f4c0_0;
+L_0x14461fba0 .cmp/eq 2, v0x14461f550_0, L_0x138040010;
+L_0x14461fc80 .cmp/eq 2, v0x14461f550_0, L_0x138040058;
+L_0x14461fd80 .cmp/eq 2, v0x14461f550_0, L_0x1380400a0;
+L_0x14461fef0 .cmp/eq 2, v0x14461f550_0, L_0x1380400e8;
+L_0x144620010 .functor MUXZ 8, L_0x138040130, L_0x14461fb30, L_0x14461fef0, C4<>;
+L_0x1446201b0 .functor MUXZ 8, L_0x144620010, L_0x14461f9c0, L_0x14461fd80, C4<>;
+L_0x144620310 .functor MUXZ 8, L_0x1446201b0, L_0x14461f8c0, L_0x14461fc80, C4<>;
+L_0x144620480 .functor MUXZ 8, L_0x144620310, L_0x14461f760, L_0x14461fba0, C4<>;
+L_0x1446205e0 .cmp/eq 8, L_0x144620480, L_0x138040178;
+    .scope S_0x14460e780;
+T_0 ;
+    %vpi_call 2 24 "$display", "Testing Addition:" {0 0 0};
+    %pushi/vec4 5, 0, 8;
+    %store/vec4 v0x14461f430_0, 0, 8;
+    %pushi/vec4 3, 0, 8;
+    %store/vec4 v0x14461f4c0_0, 0, 8;
+    %pushi/vec4 0, 0, 2;
+    %store/vec4 v0x14461f550_0, 0, 2;
+    %delay 10000, 0;
+    %vpi_call 2 29 "$display", "a=%d, b=%d, op=ADD, result=%d, zero=%b", v0x14461f430_0, v0x14461f4c0_0, v0x14461f5e0_0, v0x14461f690_0 {0 0 0};
+    %vpi_call 2 32 "$display", "Testing Subtraction:" {0 0 0};
+    %pushi/vec4 10, 0, 8;
+    %store/vec4 v0x14461f430_0, 0, 8;
+    %pushi/vec4 4, 0, 8;
+    %store/vec4 v0x14461f4c0_0, 0, 8;
+    %pushi/vec4 1, 0, 2;
+    %store/vec4 v0x14461f550_0, 0, 2;
+    %delay 10000, 0;
+    %vpi_call 2 37 "$display", "a=%d, b=%d, op=SUB, result=%d, zero=%b", v0x14461f430_0, v0x14461f4c0_0, v0x14461f5e0_0, v0x14461f690_0 {0 0 0};
+    %vpi_call 2 40 "$display", "Testing AND:" {0 0 0};
+    %pushi/vec4 12, 0, 8;
+    %store/vec4 v0x14461f430_0, 0, 8;
+    %pushi/vec4 10, 0, 8;
+    %store/vec4 v0x14461f4c0_0, 0, 8;
+    %pushi/vec4 2, 0, 2;
+    %store/vec4 v0x14461f550_0, 0, 2;
+    %delay 10000, 0;
+    %vpi_call 2 45 "$display", "a=%d, b=%d, op=AND, result=%d, zero=%b", v0x14461f430_0, v0x14461f4c0_0, v0x14461f5e0_0, v0x14461f690_0 {0 0 0};
+    %vpi_call 2 48 "$display", "Testing OR:" {0 0 0};
+    %pushi/vec4 6, 0, 8;
+    %store/vec4 v0x14461f430_0, 0, 8;
+    %pushi/vec4 9, 0, 8;
+    %store/vec4 v0x14461f4c0_0, 0, 8;
+    %pushi/vec4 3, 0, 2;
+    %store/vec4 v0x14461f550_0, 0, 2;
+    %delay 10000, 0;
+    %vpi_call 2 53 "$display", "a=%d, b=%d, op=OR, result=%d, zero=%b", v0x14461f430_0, v0x14461f4c0_0, v0x14461f5e0_0, v0x14461f690_0 {0 0 0};
+    %vpi_call 2 56 "$display", "Testing Zero Flag:" {0 0 0};
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0x14461f430_0, 0, 8;
+    %pushi/vec4 0, 0, 8;
+    %store/vec4 v0x14461f4c0_0, 0, 8;
+    %pushi/vec4 0, 0, 2;
+    %store/vec4 v0x14461f550_0, 0, 2;
+    %delay 10000, 0;
+    %vpi_call 2 61 "$display", "a=%d, b=%d, op=ADD, result=%d, zero=%b", v0x14461f430_0, v0x14461f4c0_0, v0x14461f5e0_0, v0x14461f690_0 {0 0 0};
+    %vpi_call 2 63 "$finish" {0 0 0};
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "file_workspace/testbenches/testbench_alu_8bit.v";
+    "file_workspace/designs/alu_8bit.v";

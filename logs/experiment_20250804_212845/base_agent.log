@@ -1,0 +1,113 @@
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5403 字符
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 21:28:45] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'module_code', 'test_scenarios', 'clock_period', 'simulation_time', 'coverage_options']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_name', 'verilog_code', 'test_scenarios']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: verilog_code -> module_code
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'module_code', 'test_scenarios']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'module_code', 'test_scenarios', 'clock_period', 'simulation_time', 'coverage_options']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_name', 'code', 'test_cases']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: code -> module_code
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: test_cases -> test_scenarios
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'module_code', 'test_scenarios']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'module_code', 'test_scenarios', 'clock_period', 'simulation_time', 'coverage_options']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_name', 'module_code', 'test_cases']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: test_cases -> test_scenarios
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'module_code', 'test_scenarios']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'module_code', 'test_scenarios', 'clock_period', 'simulation_time', 'coverage_options']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_name', 'module_code', 'invalid_param', 'another_invalid']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ 工具 generate_testbench 存在无效参数: ['invalid_param', 'another_invalid']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🗑️ 移除无效参数: invalid_param
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🗑️ 移除无效参数: another_invalid
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'module_code']
+[2025-08-04 21:28:45] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: test_alu
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: test_alu.v
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: test_alu.v
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 88
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 88
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 88
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: test_alu.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/test_alu.v) (ID: b31ce2c3)
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: test_alu.v
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_test_alu.v
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: testbench_test_alu.v
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 4906
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 4476
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 4476
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：4906 -> 4476 字符
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：4906 -> 4476 字符
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: testbench_test_alu.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/testbenches/testbench_test_alu.v) (ID: 3ddab817)
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5403 字符
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 21:29:14] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 21:29:14] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成

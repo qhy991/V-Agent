@@ -1,0 +1,20 @@
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5405 字符
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 18:27:58] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 18:27:58] Agent.enhanced_real_code_review_agent - INFO - 🔍 第1次迭代：智能分析测试失败并尝试自动修复
+[2025-08-04 18:28:06] Agent.enhanced_real_code_review_agent - INFO - 🤖 LLM分析结果: ```json
+{
+    "error_analysis": "测试台代码中存在两个主要问题：1) task test_operation包含多条语句但未使用begin/end块，这是SystemVerilog的语法要求；2) 函数op_name声明为返回7*8位宽，但在Verilog中函数返回值必须是32位或更小，且函数不能有输入参数。这些都违反了IEEE 1364标准的Verilog语法规范...
+[2025-08-04 18:28:06] Agent.enhanced_real_code_review_agent - INFO - 🔧 LLM建议进行自动修复，开始执行修复...
+[2025-08-04 18:28:06] Agent.enhanced_real_code_review_agent - INFO - 🔧 开始自动修复SystemVerilog语法错误: /var/folders/nz/_d30_pdj29d06hr6fmkv3_sw0000gn/T/tmp1um2tyaz.v
+[2025-08-04 18:28:10] Agent.enhanced_real_code_review_agent - INFO - ✅ SystemVerilog语法修复完成: /var/folders/nz/_d30_pdj29d06hr6fmkv3_sw0000gn/T/tmp1um2tyaz.v
+[2025-08-04 18:28:10] Agent.enhanced_real_code_review_agent - INFO - ✅ SystemVerilog语法自动修复完成

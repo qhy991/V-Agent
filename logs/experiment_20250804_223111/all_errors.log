@@ -1,0 +1,15 @@
+[2025-08-04 22:31:11] test_framework - ERROR - ❌ 测试失败: 'LLMCoordinatorAgent' object has no attribute 'register_enhanced_tool'
+[2025-08-04 22:31:11] test_framework - ERROR - 错误详情: Traceback (most recent call last):
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/test_llm_coordinator.py", line 37, in test_llm_coordinator_basic
+    coordinator = LLMCoordinatorAgent(config)
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/core/llm_coordinator_agent.py", line 89, in __init__
+    self._register_coordination_tools()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/core/llm_coordinator_agent.py", line 97, in _register_coordination_tools
+    self.register_enhanced_tool(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'LLMCoordinatorAgent' object has no attribute 'register_enhanced_tool'
+
+[2025-08-04 22:31:11] test_framework - ERROR - ❌ 复杂任务测试失败: 'LLMCoordinatorAgent' object has no attribute 'register_enhanced_tool'
+[2025-08-04 22:31:11] test_framework - ERROR - ❌ 上下文保持测试失败: 'LLMCoordinatorAgent' object has no attribute 'register_enhanced_tool'
+[2025-08-04 22:31:11] test_framework - ERROR - ❌ 智能体选择测试失败: 'LLMCoordinatorAgent' object has no attribute 'register_enhanced_tool'

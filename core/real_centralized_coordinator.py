@@ -477,10 +477,29 @@ class RealCentralizedCoordinator:
             # 执行任务（调用智能体的Function Calling）
             start_time = time.time()
             
+            # 🧠 添加上下文保持日志
+            agent_conversation_summary = agent.get_conversation_summary() if hasattr(agent, 'get_conversation_summary') else {}
+            self.logger.info(f"📋 调用前 agent 对话状态: {agent_conversation_summary}")
+            
             agent_response = await agent.process_with_function_calling(
                 user_request=task_description,
-                max_iterations=8
+                max_iterations=8,
+                conversation_id=context.conversation_id,  # 🔗 传递对话ID
+                preserve_context=True,  # 🧠 保持上下文
+                enable_self_continuation=True,  # 🔄 启用自主任务继续
+                max_self_iterations=3  # 🔄 最多自主继续3轮
             )
+            
+            # 📋 记录调用后的对话状态
+            if hasattr(agent, 'get_conversation_summary'):
+                post_call_summary = agent.get_conversation_summary()
+                self.logger.info(f"📋 调用后 agent 对话状态: {post_call_summary}")
+                # 记录对话变化
+                if post_call_summary.get('message_count', 0) > agent_conversation_summary.get('message_count', 0):
+                    added_messages = post_call_summary.get('message_count', 0) - agent_conversation_summary.get('message_count', 0)
+                    self.logger.info(f"➕ 本次调用添加了 {added_messages} 条新消息到对话历史")
+                else:
+                    self.logger.warning("⚠️ 对话历史没有增加，可能没有保持上下文")
             
             execution_time = time.time() - start_time
             

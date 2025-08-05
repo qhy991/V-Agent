@@ -240,56 +240,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         
 
         
-        # 5. 测试台生成工具
-        self.register_enhanced_tool(
-            name="generate_testbench",
-            func=self._tool_generate_testbench,
-            description="为Verilog模块生成测试台",
-            security_level="normal",
-            category="verification",
-            schema={
-                "type": "object",
-                "properties": {
-                    "module_name": {
-                        "type": "string",
-                        "pattern": r"^[a-zA-Z][a-zA-Z0-9_]*$",
-                        "maxLength": 100,
-                        "description": "目标模块名称"
-                    },
-                    "verilog_code": {
-                        "type": "string",
-                        "minLength": 10,
-                        "maxLength": 50000,
-                        "description": "目标模块的Verilog代码"
-                    },
-                    "test_scenarios": {
-                        "type": "array",
-                        "items": {
-                            "type": "string",
-                            "maxLength": 1000
-                        },
-                        "maxItems": 20,
-                        "description": "测试场景描述列表"
-                    },
-                    "clock_period": {
-                        "type": "number",
-                        "minimum": 0.1,
-                        "maximum": 1000.0,
-                        "default": 10.0,
-                        "description": "时钟周期(ns)"
-                    },
-                    "simulation_time": {
-                        "type": "integer",
-                        "minimum": 100,
-                        "maximum": 1000000,
-                        "default": 10000,
-                        "description": "仿真时间(时钟周期数)"
-                    }
-                },
-                "required": ["module_name", "verilog_code"],
-                "additionalProperties": False
-            }
-        )
+        # 注意：测试台生成功能已移除，由代码审查智能体负责
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """实现LLM调用 - 智能处理Schema验证错误"""
@@ -446,19 +397,12 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 - `complexity_filter` (可选): "simple", "medium", "complex", "any"
 - `max_results` (可选): 最大返回结果数，1-50
 
-### 4. generate_testbench
-- `module_name` (必需): 目标模块名称
-- `verilog_code` (必需): 目标模块的Verilog代码（也可使用 `code`）
-- `test_scenarios` (可选): 测试场景描述列表（也可使用 `test_cases`）
-- `clock_period` (可选): 时钟周期(ns)，0.1-1000.0
-- `simulation_time` (可选): 仿真时间(时钟周期数)，100-1000000
-
-### 5. write_file
+### 4. write_file
 - `filename` (必需): 文件名
 - `content` (必需): 文件内容
 - `description` (可选): 文件描述
 
-### 6. read_file
+### 5. read_file
 - `filepath` (必需): 文件路径
 - `encoding` (可选): 文件编码，默认"utf-8"
 
@@ -477,7 +421,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 1. 分析设计需求 (analyze_design_requirements)
 2. 搜索现有模块 (可选，search_existing_modules)  
 3. 生成Verilog代码 (generate_verilog_code)
-4. 生成测试台 (generate_testbench)
+
+⚠️ **职责边界**: 本智能体专注于Verilog代码设计和生成，测试台生成、仿真验证等功能由代码审查智能体负责。
 
 💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
 
@@ -509,8 +454,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         return {
             AgentCapability.CODE_GENERATION,
             AgentCapability.MODULE_DESIGN,
-            AgentCapability.SPECIFICATION_ANALYSIS,
-            AgentCapability.VERIFICATION
+            AgentCapability.SPECIFICATION_ANALYSIS
         }
     
     def get_specialty_description(self) -> str:
@@ -856,17 +800,38 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     
     
     
-    def _build_port_info(self, ports: List[Dict], port_type: str) -> str:
-        """构建端口信息字符串"""
+    def _build_port_info(self, ports, port_type: str) -> str:
+        """构建端口信息字符串，支持字符串和字典格式的端口定义"""
         if not ports:
             return ""
         
         port_info = ""
         for port in ports:
-            width = port.get("width", 1)
-            width_str = f"[{width-1}:0] " if width > 1 else ""
-            description = port.get('description', '')
-            port_info += f"    {port_type} {width_str}{port['name']},  // {description}\n"
+            if isinstance(port, str):
+                # 处理字符串格式: "port_name [width]" 或 "port_name"
+                port = port.strip()
+                if '[' in port and ']' in port:
+                    # 带宽度的端口: "data [7:0]"
+                    parts = port.split('[')
+                    name = parts[0].strip()
+                    width_part = parts[1].split(']')[0]
+                    if ':' in width_part:
+                        # [7:0] 格式
+                        high, low = width_part.split(':')
+                        width_str = f"[{high.strip()}:{low.strip()}] "
+                    else:
+                        # [7] 格式
+                        width_str = f"[{width_part.strip()}] "
+                    port_info += f"    {port_type} {width_str}{name},  // {name} signal\n"
+                else:
+                    # 简单端口: "clk"
+                    port_info += f"    {port_type} {port},  // {port} signal\n"
+            elif isinstance(port, dict):
+                # 处理字典格式
+                width = port.get("width", 1)
+                width_str = f"[{width-1}:0] " if width > 1 else ""
+                description = port.get('description', '')
+                port_info += f"    {port_type} {width_str}{port['name']},  // {description}\n"
         
         return port_info
     
@@ -938,90 +903,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     
 
     
-    async def _tool_generate_testbench(self, module_name: str, verilog_code: str,
-                                     test_scenarios: List[str] = None,
-                                     clock_period: float = 10.0,
-                                     simulation_time: int = 10000) -> Dict[str, Any]:
-        """生成测试台工具实现"""
-        try:
-            self.logger.info(f"🧪 生成测试台: {module_name}")
-            
-            test_scenarios = test_scenarios or ["basic functionality test"]
-            
-            testbench_prompt = f"""
-请为以下Verilog模块生成一个完整的测试台(testbench)：
-
-目标模块: {module_name}
-```verilog
-{verilog_code}
-```
-
-测试要求:
-- 时钟周期: {clock_period}ns
-- 仿真时间: {simulation_time} 个时钟周期
-- 测试场景: {', '.join(test_scenarios)}
-
-🚨 **关键要求 - 请严格遵守**:
-请只返回纯净的Verilog测试台代码，不要包含任何解释文字、Markdown格式或代码块标记。
-不要使用```verilog 或 ``` 标记。
-不要添加"以下是..."、"说明："等解释性文字。
-不要包含功能说明、测试报告示例、文件结构建议等文字内容。
-直接从 `timescale 开始，以 endmodule 结束。
-
-测试台必须包含：
-1. `timescale 声明
-2. testbench模块声明
-3. 信号声明
-4. 时钟和复位生成
-5. 被测模块实例化
-6. 测试激励生成
-7. 结果检查和显示
-8. 适当的$display和$monitor语句
-9. 波形转储设置
-
-确保测试台能够充分验证模块功能，并且是纯Verilog代码。
-"""
-            
-            response = await self.llm_client.send_prompt(
-                prompt=testbench_prompt,
-                system_prompt="你是验证工程师，请生成全面的Verilog测试台。记住：只返回纯Verilog代码，不要任何解释文字或Markdown格式。",
-                temperature=0.1
-            )
-            
-            # 使用Function Calling write_file工具保存测试台
-            tb_filename = f"{module_name}_tb.v"
-            write_result = await self._tool_write_file(
-                filename=tb_filename,
-                content=response,
-                description=f"生成的{module_name}模块测试台"
-            )
-            
-            if not write_result.get("success", False):
-                self.logger.error(f"❌ 测试台文件保存失败: {write_result.get('error', 'Unknown error')}")
-                return {
-                    "success": False,
-                    "error": f"测试台文件保存失败: {write_result.get('error', 'Unknown error')}"
-                }
-            
-            return {
-                "success": True,
-                "module_name": module_name,
-                "testbench_code": response,
-                "file_path": write_result.get("file_path"),
-                "file_id": write_result.get("file_id"),
-                "test_scenarios": test_scenarios,
-                "simulation_config": {
-                    "clock_period": clock_period,
-                    "simulation_time": simulation_time
-                }
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 测试台生成失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+    # 测试台生成功能已移除，由代码审查智能体负责
+    # 这样可以更好地分离职责：设计智能体专注代码生成，审查智能体负责验证
 
 
     async def _tool_generate_verilog_code(self, module_name: str, requirements: str,

@@ -1,0 +1,450 @@
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🛠️ 传统工具调用已启用: 权限=5
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - ✅ LLMCoordinatorAgent (Function Calling支持) 初始化完成
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - DEBUG - 📝 System prompt 长度: 4429 字符
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: assign_task_to_agent
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: analyze_agent_result
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: check_task_completion
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔧 注册Function Calling工具: query_agent_status
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🧠 LLM协调智能体初始化完成
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🛠️ 传统工具调用已启用: 权限=4
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - ✅ EnhancedRealVerilogAgent (Function Calling支持) 初始化完成
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - DEBUG - 📝 System prompt 长度: 4510 字符
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: analyze_design_requirements
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_verilog_code
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: search_existing_modules
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 23:28:39] Agent.enhanced_real_verilog_agent - INFO - 🔧 增强Verilog设计智能体(Schema支持)初始化完成
+[2025-08-04 23:28:39] EnhancedRealVerilogAgent - INFO - EnhancedRealVerilogAgent初始化完成
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 6733 字符
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 23:28:39] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 23:28:39] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_verilog_agent (集成Schema验证的增强Verilog HDL设计智能体，提供严格参数验证和智能错误修复的专业数字电路设计服务)
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_code_review_agent (集成Schema验证的增强代码审查智能体，提供严格参数验证和智能错误修复的专业硬件验证服务)
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🚀 开始协调任务: 
+请设计一个4位加法器模块，包含：
+1. 基本的加法功能
+2. 进位输出
+3. 相应的测试台
+
+请确保代码质量。
+...
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🚀 开始Function Calling处理: 
+🧠 协调任务
+
+**用户需求**:
+
+请设计一个4位加法器模块，包含：
+1. 基本的加法功能
+2. 进位输出
+3. 相应的测试台
+
+请确保代码质量。
+
+
+**任务ID**: task_1754321...
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔗 对话ID: test_simple_1754321319
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 23:28:39] Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/5
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: assign_task_to_agent (尝试 1/3)
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - 🔍 工具 assign_task_to_agent 实际参数: ['agent_id', 'task_description', 'expected_output']
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - 🔍 传入参数: ['agent_id', 'task_description', 'expected_output']
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - DEBUG - ✅ 参数标准化完成: ['agent_id', 'task_description', 'expected_output']
+[2025-08-04 23:28:40] Agent.llm_coordinator_agent - INFO - 📤 分配任务给智能体 enhanced_real_verilog_agent: 设计一个4位加法器模块，包含基本的加法功能和进位输出...
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 🚀 开始Function Calling处理: 
+📋 协调智能体分配的任务
+
+**任务描述**:
+设计一个4位加法器模块，包含基本的加法功能和进位输出
+
+**期望输出**:
+完整的Verilog代码和模块说明
+
+**任务上下文**:
+- 任务ID:...
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 🔗 对话ID: task_task_1754321319_enhanced_real_verilog_agent
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 23:28:40] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 1/8
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: analyze_design_requirements (尝试 1/3)
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 analyze_design_requirements 实际参数: ['requirements', 'design_type', 'complexity_level']
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['requirements', 'design_type', 'complexity_level']
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['requirements', 'design_type', 'complexity_level']
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - INFO - 📊 分析设计需求: combinational - simple
+[2025-08-04 23:28:42] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到组合逻辑需求，自动调整设计类型为: combinational
+[2025-08-04 23:28:53] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: analyze_design_requirements
+[2025-08-04 23:28:53] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 4 条消息
+[2025-08-04 23:28:53] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 2/8
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 1/3)
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_verilog_code 实际参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'clock_domain', 'coding_style']
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: four_bit_adder
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - ERROR - ❌ Verilog代码生成失败: 'str' object has no attribute 'get'
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具内部报告失败 generate_verilog_code: 'str' object has no attribute 'get'
+[2025-08-04 23:28:56] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具执行失败 generate_verilog_code (尝试 1): 'str' object has no attribute 'get'
+[2025-08-04 23:29:07] Agent.enhanced_real_verilog_agent - INFO - 💡 重试建议: ## 1. 根本原因分析
+
+**最可能根本原因：**  
+工具内部代码错误地将字符串类型变量当作字典处理，尝试调用 `.get()` 方法导致异常。这属于典型的**类型错误（TypeError）**，常见于参数解析或配置读取逻辑中。
+
+**为什么之前失败：**  
+- 错误与输入参数内容无关，而是工具实现缺陷。
+- 工具未对输入做正确类型检查或转换。
+- 没有异常捕获机制来处理此类错误。
+
+---
+
+## 2. 具体修复步骤
+
+### ✅ 修改建议：
+无需修改调用参数，因为参数格式是正确的。应从工具端修复。
+
+### 🔧 前置条件：
+- 确保工具代码可访问并可调试。
+- 启用详细日志记录以定位具体出错位置。
+
+### 🛠 替代方案：
+1. **手动编写Verilog代码**（临时方案）：
+```verilog
+module four_bit_adder (
+    input [3:0] a,
+    input [3:0] b,
+    input cin,
+    output [3:0] sum,
+    output cout
+);
+    wire [3:0] carry;
+
+    full_adder fa0 (.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(carry[0]));
+    full_adder fa1 (.a(a[1]), .b(b[1]), .cin(carry[0]), .sum(sum[1]), .cout(carry[1]));
+    full_adder fa2 (.a(a[2]), .b(b[2]), .cin(carry[1]), .sum(sum[2]), .cout(carry[2]));
+    full_adder fa3 (.a(a[3]), .b(b[3]), .cin(carry[2]), .sum(sum[3]), .cout(cout));
+
+endmodule
+```
+
+2. **使用其他工具/库**（如Yosys、Chisel等）生成结构化Verilog。
+
+---
+
+## 3. 重试策略
+
+### ❌ 是否值得重试？  
+**不建议直接重试**，因为错误源于代码逻辑而非输入数据。
+
+### 🔄 调整建议：
+- 若必须使用该工具，请联系开发者修复 `.get()` 调用处的类型错误。
+- 或者在调用前封装参数为统一格式（如JSON对象），避免字符串被误解析。
+
+### 📈 预期成功率：
+- 当前：≈ 0%
+- 修复后：≈ 95%
+
+--- 
+
+📌 **结论：** 此为工具实现Bug，需修复代码逻辑，非用户输入问题。
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 2/3)
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_verilog_code 实际参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'clock_domain', 'coding_style']
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: four_bit_adder
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - ERROR - ❌ Verilog代码生成失败: 'str' object has no attribute 'get'
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具内部报告失败 generate_verilog_code: 'str' object has no attribute 'get'
+[2025-08-04 23:29:08] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具执行失败 generate_verilog_code (尝试 2): 'str' object has no attribute 'get'
+[2025-08-04 23:29:23] Agent.enhanced_real_verilog_agent - INFO - 💡 重试建议: ## 1. 根本原因分析
+
+**最可能根本原因：**  
+工具内部代码错误地将字符串（`str`）当作字典（`dict`）处理，尝试调用 `.get()` 方法导致异常。这属于典型的**类型错误（TypeError）**，常见于以下情况：
+- 工具期望接收一个字典参数，但实际传入了字符串。
+- 工具内部处理逻辑中，某个变量被错误地赋值为字符串，后续却当作字典使用。
+
+**为什么之前的尝试失败了？**  
+因为失败原因与输入参数无关，而是工具本身的代码缺陷。同样的参数在相同有缺陷的代码路径下执行，必然重复失败。
+
+---
+
+## 2. 具体修复步骤
+
+### ✅ 修复方向一：修改工具调用参数（规避型修复）
+
+虽然错误源于工具内部，但可通过调整参数结构尝试绕过问题代码路径：
+
+#### 修改建议：
+```json
+{
+  "module_name": "four_bit_adder",
+  "requirements": "设计一个4位加法器模块，包含两个4位输入a和b，一个进位输入cin，一个4位和输出sum，一个进位输出cout",
+  "input_ports": {
+    "a": "[3:0]",
+    "b": "[3:0]",
+    "cin": ""
+  },
+  "output_ports": {
+    "sum": "[3:0]",
+    "cout": ""
+  },
+  "coding_style": "structural"
+}
+```
+
+> **说明**：将 `input_ports` 和 `output_ports` 从列表改为字典结构，避免工具内部错误地将其解析为字符串。
+
+### ✅ 修复方向二：修复工具源码（根本性修复）
+
+定位工具源码中调用 `.get()` 的位置，检查变量类型。例如：
+```python
+# 错误示例（假设变量 data 应为 dict，但实际是 str）
+value = data.get("key")  # 若 data 是 str，则报错
+
+# 修复方式
+if isinstance(data, dict):
+    value = data.get("key")
+else:
+    raise TypeError("Expected dict, got {}".format(type(data)))
+```
+
+> **前置条件**：需要访问工具源码权限。
+
+### ✅ 替代方案：使用其他工具或手动编写
+
+若工具无法修复，可考虑：
+- 使用其他 Verilog 生成工具（如 `verilog-generator`）。
+- 手动编写该模块（4位加法器结构清晰，开发成本低）。
+
+---
+
+## 3. 重试策略
+
+### ✅ 是否值得重试？
+- **不建议直接重试原参数**，因为失败原因未消除，重试必然失败。
+- **建议修改参数后重试**（如上文结构化端口参数），可能绕过工具缺陷。
+
+### ✅ 调整后重试建议：
+1. 使用结构化端口参数（`input_ports` 和 `output_ports` 为字典）。
+2. 降低工具复杂度：先生成简单组合逻辑模块测试工具是否正常。
+3. 添加调试日志：在工具入口打印所有参数类型，确认输入无误。
+
+### ✅ 预期成功概率：
+- **原参数重试**：≈ 0%
+- **修改参数后重试**：≈ 30%（取决于工具内部错误是否被绕过）
+- **修复工具源码后**：≈ 90%
+
+---
+
+## 🔧 总结建议
+
+| 项目 | 建议 |
+|------|------|
+| 短期解决方案 | 修改参数结构，将端口改为字典形式尝试绕过错误 |
+| 长期解决方案 | 定位并修复工具源码中对 `.get()` 的错误调用 |
+| 替代方案 | 手动编写 Verilog 模块或使用其他工具 |
+| 重试建议 | 不建议原样重试，修改参数后可尝试一次 |
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 3/3)
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_verilog_code 实际参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'clock_domain', 'coding_style']
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: four_bit_adder
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - ERROR - ❌ Verilog代码生成失败: 'str' object has no attribute 'get'
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具内部报告失败 generate_verilog_code: 'str' object has no attribute 'get'
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ 工具执行失败 generate_verilog_code (尝试 3): 'str' object has no attribute 'get'
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - ERROR - ❌ 工具调用最终失败 generate_verilog_code: 'str' object has no attribute 'get'
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - ERROR - 📊 失败上下文: {
+  "tool_name": "generate_verilog_code",
+  "parameters": {
+    "module_name": "four_bit_adder",
+    "requirements": "\u8bbe\u8ba1\u4e00\u4e2a4\u4f4d\u52a0\u6cd5\u5668\u6a21\u5757\uff0c\u5305\u542b\u4e24\u4e2a4\u4f4d\u8f93\u5165a\u548cb\uff0c\u4e00\u4e2a\u8fdb\u4f4d\u8f93\u5165cin\uff0c\u4e00\u4e2a4\u4f4d\u548c\u8f93\u51fasum\uff0c\u4e00\u4e2a\u8fdb\u4f4d\u8f93\u51facout",
+    "input_ports": [
+      "a [3:0]",
+      "b [3:0]",
+      "cin"
+    ],
+    "output_ports": [
+      "sum [3:0]",
+      "cout"
+    ],
+    "coding_style": "structural"
+  },
+  "error": "'str' object has no attribute 'get'",
+  "error_type": "Exception",
+  "attempt": 3,
+  "timestamp": 1754321364.6094131,
+  "agent_id": "enhanced_real_verilog_agent",
+  "role": "verilog_designer",
+  "detailed_error": "=== \u5de5\u5177\u6267\u884c\u5931\u8d25\u8be6\u7ec6\u5206\u6790 ===\n\ud83d\udd27 \u5de5\u5177\u540d\u79f0: generate_verilog_code\n\ud83d\udcdd \u9519\u8bef\u7c7b\u578b: Exception\n\ud83d\udd0d \u539f\u59cb\u9519\u8bef: 'str' object has no attribute 'get'\n\ud83d\udcca \u5c1d\u8bd5\u6b21\u6570: 3/3\n\u2699\ufe0f \u8c03\u7528\u53c2\u6570: {'module_name': 'four_bit_adder', 'requirements': '\u8bbe\u8ba1\u4e00\u4e2a4\u4f4d\u52a0\u6cd5\u5668\u6a21\u5757\uff0c\u5305\u542b\u4e24\u4e2a4\u4f4d\u8f93\u5165a\u548cb\uff0c\u4e00\u4e2a\u8fdb\u4f4d\u8f93\u5165cin\uff0c\u4e00\u4e2a4\u4f4d\u548c\u8f93\u51fasum\uff0c\u4e00\u4e2a\u8fdb\u4f4d\u8f93\u51facout', 'input_ports': ['a [3:0]', 'b [3:0]', 'cin'], 'output_ports': ['sum [3:0]', 'cout'], 'coding_style': 'structural'}\n\n\ud83c\udfaf \u9519\u8bef\u5206\u6790:\n\u901a\u7528\u6267\u884c\u9519\u8bef: \u5de5\u5177\u6267\u884c\u8fc7\u7a0b\u4e2d\u53d1\u751f\u5f02\u5e38: Exception\n\n\ud83d\udca1 \u53ef\u80fd\u539f\u56e0:\n\u2022 \u5de5\u5177\u5185\u90e8\u903b\u8f91\u9519\u8bef\n\u2022 \u8f93\u5165\u6570\u636e\u683c\u5f0f\u95ee\u9898\n\u2022 \u73af\u5883\u914d\u7f6e\u4e0d\u5f53\n\u2022 \u4f9d\u8d56\u5e93\u7248\u672c\u51b2\u7a81\n\n\ud83d\udd27 \u5efa\u8bae\u4fee\u590d:\n\u2022 \u68c0\u67e5\u5de5\u5177\u8f93\u5165\u6570\u636e\n\u2022 \u9a8c\u8bc1\u73af\u5883\u914d\u7f6e\n\u2022 \u66f4\u65b0\u6216\u91cd\u88c5\u4f9d\u8d56\u5e93\n\u2022 \u67e5\u770b\u8be6\u7ec6\u9519\u8bef\u65e5\u5fd7\n\n\u26a0\ufe0f \u5f71\u54cd\u8bc4\u4f30: \u4e2d\u7b49 - \u9700\u8981\u5177\u4f53\u5206\u6790\u89e3\u51b3"
+}
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - DEBUG - 💾 对话历史已更新: 6 条消息
+[2025-08-04 23:29:24] Agent.enhanced_real_verilog_agent - INFO - 🔄 Function Calling 迭代 3/8
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_verilog_code (尝试 1/3)
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_verilog_code 实际参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'clock_domain', 'coding_style']
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'requirements', 'input_ports', 'output_ports', 'coding_style']
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - INFO - 🔧 生成Verilog代码: four_bit_adder
+[2025-08-04 23:30:23] Agent.enhanced_real_verilog_agent - INFO - 🔍 检测到设计类型: 组合逻辑
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 📝 写入文件: four_bit_adder.v
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO -    - 当前实验路径: None
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 filename: four_bit_adder.v
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 file type: verilog
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 686
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - ✅ module 1 验证通过，长度: 686
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - ✅ 成功提取Verilog代码，长度: 686
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - ✅ 文件已通过中央管理器保存: four_bit_adder.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/four_bit_adder_v2.v) (ID: a1133806)
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - ✅ 工具执行成功: generate_verilog_code
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🔧 执行工具调用: generate_testbench (尝试 1/3)
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'verilog_code', 'test_scenarios', 'clock_period', 'simulation_time']
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - 🔍 传入参数: ['module_name', 'verilog_code', 'test_scenarios', 'simulation_time']
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'verilog_code', 'test_scenarios', 'simulation_time']
+[2025-08-04 23:30:27] Agent.enhanced_real_verilog_agent - INFO - 🧪 生成测试台: four_bit_adder

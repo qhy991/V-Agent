@@ -316,22 +316,18 @@ class EnhancedBaseAgent(BaseAgent):
     
     async def _execute_enhanced_tool_call(self, tool_call: ToolCall) -> ToolResult:
         """
-        执行增强的工具调用（带Schema验证和智能修复）
+        执行增强工具调用 - 支持Schema验证和智能转换
         
-        Args:
-            tool_call: 工具调用
-            
-        Returns:
-            工具执行结果
+        修复：确保工具调用正确路由到增强验证流程
         """
-        tool_name = tool_call.tool_name
+        logger = logging.getLogger(__name__)
         
-        # 检查工具是否存在
-        if tool_name not in self.enhanced_tools:
-            logger.warning(f"⚠️ 工具 {tool_name} 未在增强注册表中，回退到传统方式")
+        # 🎯 关键修复：检查工具是否在增强注册表中
+        if tool_call.tool_name not in self.enhanced_tools:
+            logger.warning(f"⚠️ 工具 {tool_call.tool_name} 未在增强注册表中，回退到传统方式")
             return await self._execute_tool_call_with_retry(tool_call)
         
-        tool_def = self.enhanced_tools[tool_name]
+        tool_def = self.enhanced_tools[tool_call.tool_name]
         
         # 1. 智能参数适配（使用统一Schema系统）
         from .unified_schemas import UnifiedSchemas
@@ -339,34 +335,34 @@ class EnhancedBaseAgent(BaseAgent):
         # 首先使用统一Schema系统进行标准化
         try:
             normalized_parameters = UnifiedSchemas.validate_and_normalize_parameters(
-                tool_name, tool_call.parameters
+                tool_call.tool_name, tool_call.parameters
             )
-            logger.info(f"🎯 {tool_name} 使用统一Schema标准化参数")
+            logger.info(f"🎯 {tool_call.tool_name} 使用统一Schema标准化参数")
         except Exception as e:
             logger.debug(f"统一Schema处理失败，使用原参数: {e}")
             normalized_parameters = tool_call.parameters
         
         # 然后进行传统的适配
         adaptation_result = self.schema_adapter.adapt_parameters(
-            normalized_parameters, tool_def.schema, tool_name
+            normalized_parameters, tool_def.schema, tool_call.tool_name
         )
         
         if not adaptation_result.success:
-            logger.warning(f"⚠️ {tool_name} 参数适配失败: {adaptation_result.warnings}")
+            logger.warning(f"⚠️ {tool_call.tool_name} 参数适配失败: {adaptation_result.warnings}")
             parameters_to_validate = tool_call.parameters  # 使用原参数
         else:
             parameters_to_validate = adaptation_result.adapted_data
             if adaptation_result.transformations:
-                logger.info(f"🔄 {tool_name} 参数适配成功: {', '.join(adaptation_result.transformations)}")
+                logger.info(f"🔄 {tool_call.tool_name} 参数适配成功: {', '.join(adaptation_result.transformations)}")
         
         # 2. Schema验证（使用适配后的参数）
         validation_result = await self._validate_tool_parameters(
-            parameters_to_validate, tool_def.schema, tool_name
+            parameters_to_validate, tool_def.schema, tool_call.tool_name
         )
         
         if validation_result.is_valid:
             # 验证通过，使用适配后的参数执行
-            logger.info(f"✅ {tool_name} 参数验证通过")
+            logger.info(f"✅ {tool_call.tool_name} 参数验证通过")
             adapted_tool_call = ToolCall(
                 tool_name=tool_call.tool_name,
                 parameters=parameters_to_validate,
@@ -375,7 +371,7 @@ class EnhancedBaseAgent(BaseAgent):
             return await self._execute_validated_tool(adapted_tool_call, tool_def)
         
         # 3. 验证失败，尝试智能修复（使用适配后的参数）
-        logger.warning(f"⚠️ {tool_name} 参数验证失败，尝试智能修复")
+        logger.warning(f"⚠️ {tool_call.tool_name} 参数验证失败，尝试智能修复")
         adapted_tool_call_for_repair = ToolCall(
             tool_name=tool_call.tool_name,
             parameters=parameters_to_validate,
@@ -387,7 +383,7 @@ class EnhancedBaseAgent(BaseAgent):
         
         if repair_result.success and repair_result.repaired_data:
             # 修复成功，使用修复后的参数执行
-            logger.info(f"🔧 {tool_name} 参数修复成功")
+            logger.info(f"🔧 {tool_call.tool_name} 参数修复成功")
             repaired_tool_call = ToolCall(
                 tool_name=tool_call.tool_name,
                 parameters=repair_result.repaired_data,
@@ -395,8 +391,8 @@ class EnhancedBaseAgent(BaseAgent):
             )
             return await self._execute_validated_tool(repaired_tool_call, tool_def)
         
-        # 3. 修复失败，返回详细错误信息给Agent
-        logger.error(f"❌ {tool_name} 参数修复失败")
+        # 4. 修复失败，返回详细错误信息给Agent
+        logger.error(f"❌ {tool_call.tool_name} 参数修复失败")
         return ToolResult(
             call_id=tool_call.call_id,
             success=False,

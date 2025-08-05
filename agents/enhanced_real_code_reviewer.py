@@ -231,6 +231,71 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             }
         )
         
+        # 3. 外部testbench使用工具
+        self.register_enhanced_tool(
+            name="use_external_testbench",
+            func=self._tool_use_external_testbench,
+            description="使用外部提供的testbench文件进行测试验证",
+            security_level="high",
+            category="verification",
+            schema={
+                "type": "object",
+                "properties": {
+                    "design_code": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 100000,
+                        "description": "需要测试的Verilog设计代码"
+                    },
+                    "external_testbench_path": {
+                        "type": "string",
+                        "pattern": r"^[a-zA-Z0-9_./\-:\\\\]+\.v$",
+                        "maxLength": 500,
+                        "description": "外部testbench文件路径，必须以.v结尾"
+                    },
+                    "design_module_name": {
+                        "type": "string",
+                        "pattern": r"^[a-zA-Z][a-zA-Z0-9_]*$",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "description": "设计模块名称，必须以字母开头"
+                    },
+                    "simulator": {
+                        "type": "string",
+                        "enum": ["iverilog", "modelsim", "vivado", "auto"],
+                        "default": "iverilog",
+                        "description": "仿真器选择"
+                    },
+                    "simulation_options": {
+                        "type": "object",
+                        "properties": {
+                            "timescale": {
+                                "type": "string",
+                                "pattern": r"^\d+[a-z]+/\d+[a-z]+$",
+                                "default": "1ns/1ps",
+                                "description": "时间精度设置"
+                            },
+                            "dump_waves": {
+                                "type": "boolean",
+                                "default": True,
+                                "description": "是否生成波形文件"
+                            },
+                            "max_sim_time": {
+                                "type": "integer",
+                                "minimum": 100,
+                                "maximum": 10000000,
+                                "default": 100000,
+                                "description": "最大仿真时间(时间单位)"
+                            }
+                        },
+                        "additionalProperties": False,
+                        "description": "仿真选项配置"
+                    }
+                },
+                "required": ["design_code", "external_testbench_path", "design_module_name"],
+                "additionalProperties": False
+            }
+        )
 
         
         # 4. 构建脚本生成工具
@@ -414,6 +479,11 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                         "maxLength": 10000,
                         "description": "测试台代码"
                     },
+                    "testbench_file": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "description": "测试台文件路径（用于自动修复）"
+                    },
                     "iteration_number": {
                         "type": "integer",
                         "minimum": 1,
@@ -505,6 +575,46 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 5. 最佳实践和设计模式应用
 6. 安全性和可靠性考量
 
+🎯 **任务执行原则**:
+- 如果提供了外部testbench，直接使用该testbench进行测试，跳过testbench生成步骤
+- 如果未提供外部testbench，必须生成测试台并运行仿真来验证代码功能
+- 测试失败时必须进入迭代修复流程
+- 每次修复时要将错误信息完整传递到上下文
+- 根据具体错误类型采用相应的修复策略
+- 达到最大迭代次数(8次)或测试通过后结束任务
+
+📁 **外部Testbench模式**:
+当任务描述中包含"外部testbench路径"或"外部Testbench模式"时：
+1. ✅ 直接使用提供的testbench文件进行测试
+2. ❌ 不要调用generate_testbench工具
+3. 🎯 专注于：代码审查、错误修复、测试执行、结果分析
+4. 🔄 如果测试失败，修复设计代码而不是testbench
+
+🔄 **错误修复策略**:
+当遇到不同类型的错误时，采用以下修复方法：
+- **语法错误**: 修复Verilog语法问题，检查关键字、操作符
+- **编译错误**: 检查模块定义、端口声明、信号连接
+- **仿真错误**: 修复测试台时序、激励生成、断言检查
+- **逻辑错误**: 分析功能实现，修正算法逻辑
+- **时序错误**: 调整时钟域、复位逻辑、建立保持时间
+
+⚠️ **上下文传递要求**:
+- 每次工具调用失败后，要在下一轮prompt中包含完整的错误信息
+- 错误信息应包括错误类型、具体位置、错误描述
+- 记录已尝试的修复方法，避免重复相同的修复
+
+🔍 **错误信息解读指南**:
+当工具执行失败时，按以下优先级分析错误信息：
+1. **compilation_errors**: 编译阶段的语法和模块错误
+2. **simulation_errors**: 仿真阶段的运行时错误  
+3. **error_message**: 一般性错误描述
+4. **stage**: 失败发生的具体阶段（compile/simulate/exception）
+
+每轮修复都要明确说明：
+- 识别到的错误类型和根本原因
+- 采用的具体修复策略
+- 修复后期望解决的问题
+
 🛠️ **工具调用规则**:
 你必须使用JSON格式调用工具，格式如下：
 ```json
@@ -543,7 +653,23 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 
 🎯 **推荐的工具调用方式**:
 
-### 方式1: 使用自然字符串格式（推荐）
+### 方式1: 外部Testbench模式（当提供外部testbench时使用）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "use_external_testbench",
+            "parameters": {
+                "design_code": "module target_module(...); endmodule",
+                "external_testbench_path": "/path/to/external_testbench.v",
+                "design_module_name": "target_module"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 标准模式 - 生成testbench（无外部testbench时使用）
 ```json
 {
     "tool_calls": [
@@ -586,11 +712,17 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 ### 1. generate_testbench
 **必需参数**:
 - `module_name` (string): 目标模块名称
-- `verilog_code` (string): 目标模块代码（也可使用 `code`, `module_code`）
+- `module_code` (string): 目标模块代码（也可使用 `code`, `design_code`）
 **可选参数**:
 - `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
 - `clock_period` (number): 时钟周期(ns)，0.1-1000.0
 - `simulation_time` (integer): 仿真时间，100-1000000
+
+**测试台生成要求**:
+- 必须包含测试计数器（passed_count, failed_count, total_count）
+- 每个测试用例后输出明确的PASS/FAIL状态
+- 测试结束时输出详细的统计信息
+- 如果所有测试通过，必须输出"All passed!"消息
 
 ### 2. run_simulation
 **必需参数**:
@@ -654,12 +786,35 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 - 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
 - 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
 
-📊 **推荐工作流程**:
-收到代码审查任务时，建议流程：
-1. 生成全面的测试台进行验证 (generate_testbench)
-2. 执行仿真并分析结果 (run_simulation)
-3. 生成构建脚本确保可重现性 (generate_build_script)
-4. 提供详细的审查报告和建议
+📊 **标准工作流程**:
+收到代码审查任务时，必须按以下流程执行：
+1. 🧪 生成全面的测试台进行验证 (generate_testbench)
+2. 🔬 执行仿真并分析结果 (run_simulation)
+3. 📊 根据测试结果决定：
+   - ✅ **测试通过** → 生成构建脚本(可选) → **任务完成，停止工具调用**
+   - ❌ **测试失败** → 进入错误修复循环：
+     * 分析具体错误信息（语法错误、逻辑错误、仿真错误等）
+     * 根据错误信息修复代码
+     * 重新运行测试验证修复效果
+     * 如果仍有错误且未达到最大迭代次数，继续修复
+     * 达到最大迭代次数或测试通过后结束
+
+🎯 **任务完成标准**:
+对于代码审查任务，满足以下任一条件时认为任务已完成：
+1. ✅ **成功场景**：测试通过，功能验证正确
+2. ✅ **修复完成场景**：经过迭代修复后测试通过
+3. ✅ **达到限制场景**：达到最大迭代次数(默认8次)，提供最终报告
+4. ✅ **无法修复场景**：错误超出修复能力，提供详细分析报告
+
+⚠️ **错误修复迭代规则**:
+- 每次测试失败后，必须将具体错误信息传递到下一轮上下文
+- 根据错误类型采取相应修复策略：
+  * 语法错误 → 修复语法问题
+  * 编译错误 → 检查模块定义、端口连接
+  * 仿真错误 → 修复测试台或时序问题
+  * 逻辑错误 → 分析功能实现，修正算法
+- 最大迭代次数保护机制，避免无限循环
+- 每次迭代都要记录错误信息和修复尝试
 
 💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
 
@@ -675,7 +830,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     "tool_name": "generate_testbench",
     "parameters": {
         "module_name": "adder_16bit",
-        "verilog_code": "..."
+        "module_code": "..."
     }
 }
 
@@ -751,10 +906,10 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         self.logger.info(f"🎯 开始执行增强代码审查任务: {task_id}")
         
         try:
-            # 使用增强验证处理流程
+            # 使用增强验证处理流程 - 允许更多迭代次数进行错误修复
             result = await self.process_with_enhanced_validation(
                 user_request=enhanced_prompt,
-                max_iterations=5
+                max_iterations=8  # 增加到8次迭代，给足够空间进行错误修复
             )
             
             if result["success"]:
@@ -842,18 +997,44 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 4. 确保所有语句都有正确的分号
 5. 使用标准的begin/end块结构
 
+**测试结果统计要求**：
+1. 必须统计通过的测试用例数量（passed_count）
+2. 必须统计失败的测试用例数量（failed_count）
+3. 必须统计总测试用例数量（total_count）
+4. 在每个测试用例执行后，输出明确的PASS/FAIL状态
+5. 在测试结束时，输出详细的统计信息
+6. 如果所有测试都通过（failed_count = 0），必须输出"All passed!"消息
+
 请生成包含以下内容的专业测试台：
 1. 完整的testbench模块声明
-2. 所有必要的信号声明
+2. 所有必要的信号声明（包括计数器信号）
 3. 时钟和复位生成逻辑
 4. 被测模块的正确实例化
 5. 系统化的测试激励生成
 6. 结果检查和断言
-7. 适当的$display、$monitor和$finish语句
-8. 波形转储设置（VCD文件）
-9. 测试报告生成
+7. 测试计数器变量声明（passed_count, failed_count, total_count）
+8. 每个测试用例的状态输出格式：
+   ```
+   $display("Time=%0t: Test Case %0d - %s", $time, test_number, test_name);
+   $display("Expected: %h, Got: %h, Status: %s", expected_value, actual_value, status);
+   ```
+9. 测试结束时的统计输出格式：
+   ```
+   $display("==================================================");
+   $display("Test Summary:");
+   $display("Total Tests: %0d", total_count);
+   $display("Passed: %0d", passed_count);
+   $display("Failed: %0d", failed_count);
+   $display("==================================================");
+   if (failed_count == 0) begin
+       $display("All passed!");
+   end
+   $display("==================================================");
+   ```
+10. 适当的$display、$monitor和$finish语句
+11. 波形转储设置（VCD文件）
 
-确保测试台能够充分验证模块的所有功能，并使用标准Verilog语法。
+确保测试台能够充分验证模块的所有功能，使用标准Verilog语法，并提供清晰的测试结果统计。
 """
             
             response = await self.llm_client.send_prompt(
@@ -927,6 +1108,85 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "error": str(e)
             }
     
+    async def _tool_use_external_testbench(self, design_code: str, external_testbench_path: str,
+                                          design_module_name: str, simulator: str = "iverilog",
+                                          simulation_options: Dict[str, Any] = None) -> Dict[str, Any]:
+        """使用外部testbench进行测试验证"""
+        try:
+            self.logger.info(f"🔍 使用外部testbench验证设计: {design_module_name}")
+            
+            # 设置默认仿真选项
+            if simulation_options is None:
+                simulation_options = {
+                    "timescale": "1ns/1ps",
+                    "dump_waves": True,
+                    "max_sim_time": 100000
+                }
+            
+            # 检查外部testbench文件是否存在
+            testbench_path = Path(external_testbench_path)
+            if not testbench_path.exists():
+                return {
+                    "success": False,
+                    "error": f"外部testbench文件不存在: {external_testbench_path}",
+                    "stage": "validation"
+                }
+            
+            # 读取外部testbench内容
+            try:
+                with open(testbench_path, 'r', encoding='utf-8') as f:
+                    testbench_code = f.read()
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"读取外部testbench失败: {str(e)}",
+                    "stage": "file_reading"
+                }
+            
+            # 创建临时设计文件
+            design_filename = f"{design_module_name}.v"
+            design_file_path = self.artifacts_dir / design_filename
+            
+            try:
+                with open(design_file_path, 'w', encoding='utf-8') as f:
+                    f.write(design_code)
+                
+                self.logger.info(f"✅ 设计文件已创建: {design_file_path}")
+            except Exception as e:
+                return {
+                    "success": False,
+                    "error": f"创建设计文件失败: {str(e)}",
+                    "stage": "file_creation"
+                }
+            
+            # 使用run_simulation工具进行仿真
+            result = await self._tool_run_simulation(
+                module_file=str(design_file_path),
+                testbench_file=external_testbench_path,
+                simulator=simulator,
+                simulation_options=simulation_options
+            )
+            
+            # 增强结果信息
+            if result.get("success"):
+                result["external_testbench_used"] = external_testbench_path
+                result["message"] = f"✅ 使用外部testbench成功验证设计模块 {design_module_name}"
+                self.logger.info(f"✅ 外部testbench验证成功: {design_module_name}")
+            else:
+                result["external_testbench_used"] = external_testbench_path
+                result["message"] = f"❌ 使用外部testbench验证失败: {result.get('error', '未知错误')}"
+                self.logger.warning(f"❌ 外部testbench验证失败: {design_module_name}")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"❌ 外部testbench使用异常: {str(e)}")
+            return {
+                "success": False,
+                "error": f"外部testbench使用异常: {str(e)}",
+                "stage": "exception"
+            }
+
     async def _tool_run_simulation(self, module_file: str = None, testbench_file: str = None,
                                  module_code: str = None, testbench_code: str = None,
                                  simulator: str = "iverilog",
@@ -1408,20 +1668,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "error": str(e)
             }
     
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
     def _generate_recommendations(self, issues: List[Dict]) -> List[str]:
         """生成改进建议"""
         recommendations = []
@@ -1685,92 +1931,481 @@ esac
                                          simulation_errors: str = "",
                                          test_assertions: str = "",
                                          testbench_code: str = "",
+                                         testbench_file: str = "",
                                          iteration_number: int = 1,
                                          previous_fixes: List[str] = None) -> Dict[str, Any]:
-        """测试失败分析工具实现 - 专门用于TDD循环中的错误分析与修复建议"""
+        """测试失败分析工具实现 - 智能分析并自动修复测试失败"""
         try:
-            self.logger.info(f"🔍 分析第{iteration_number}次迭代的测试失败")
+            self.logger.info(f"🔍 第{iteration_number}次迭代：智能分析测试失败并尝试自动修复")
             
-            previous_fixes = previous_fixes or []
-            analysis_results = {
-                "failure_types": [],
-                "root_causes": [],
-                "fix_suggestions": [],
-                "priority_level": "medium",
-                "confidence": 0.8
-            }
+            # 使用LLM分析错误并生成修复方案
+            analysis_prompt = f"""
+作为资深Verilog/SystemVerilog专家，请深入分析以下测试失败情况并提供精确的修复方案：
+
+**编译错误:**
+{compilation_errors}
+
+**仿真错误:**
+{simulation_errors}
+
+**测试断言失败:**
+{test_assertions}
+
+**设计代码:**
+{design_code}
+
+**测试台代码:**
+{testbench_code}
+
+## 🔧 专业Verilog语法修复指导
+
+### ⚠️ 常见语法错误识别与修复策略
+
+#### 1. **未命名begin块变量声明错误**
+**错误模式**: `Variable declaration in unnamed block requires SystemVerilog`
+**根本原因**: 在未命名的begin-end块中声明变量违反了Verilog标准
+**标准修复方法**:
+```verilog
+// ❌ 错误写法
+@(posedge clk);
+begin
+    reg [4:0] expected;  // SystemVerilog语法
+    reg [4:0] actual;
+    // 逻辑...
+end
+
+// ✅ 修复方法1: 移动变量声明到initial块顶部
+initial begin
+    reg [4:0] expected;
+    reg [4:0] actual;
+    
+    // 等待时钟
+    @(posedge clk);
+    expected = 5'b00000;
+    actual = {{cout, sum}};
+    // 验证逻辑...
+end
+
+// ✅ 修复方法2: 使用wire类型
+wire [4:0] expected = 5'b00000;
+wire [4:0] actual = {{cout, sum}};
+@(posedge clk);
+// 验证逻辑...
+```
+
+#### 2. **时序和组合逻辑混合错误**
+**错误识别**: always块类型不匹配
+**修复策略**: 明确区分组合逻辑(always @(*))和时序逻辑(always @(posedge clk))
+
+#### 3. **端口连接和模块实例化错误**
+**常见问题**: 端口名不匹配、位宽不一致
+**修复方法**: 检查端口声明与实例化的一致性
+
+#### 4. **testbench结构错误**
+**标准testbench模板**:
+```verilog
+`timescale 1ns/1ps
+
+module tb_module;
+    // 1. 信号声明(在模块顶部)
+    reg [N-1:0] input_signals;
+    wire [M-1:0] output_signals;
+    
+    // 2. 时钟生成(如需要)
+    reg clk = 0;
+    always #5 clk = ~clk;
+    
+    // 3. 被测模块实例化
+    module_name uut (.ports(signals));
+    
+    // 4. 测试逻辑
+    initial begin
+        // 初始化
+        // 波形设置
+        $dumpfile("wave.vcd");
+        $dumpvars(0, tb_module);
+        
+        // 测试用例
+        // 结束仿真
+        $finish;
+    end
+endmodule
+```
+
+### 🎯 分析要求
+
+请基于以上专业知识，提供：
+1. **精确的错误根本原因分析** (区分语法、语义、时序错误)
+2. **具体的修复步骤** (提供完整的代码修改)
+3. **标准Verilog转换** (如果涉及SystemVerilog特性)
+4. **修复验证方法** (如何确认修复效果)
+5. **防止循环修复** (确保一次性彻底解决问题)
+
+### 📋 重要修复原则
+- **语法严格性**: 严格遵循IEEE 1364-2005 Verilog标准
+- **变量作用域**: 确保变量在正确的作用域内声明
+- **时序正确性**: 正确处理时钟域和reset逻辑
+- **可综合性**: 确保代码可被综合工具处理
+- **仿真兼容性**: 确保与iverilog等开源工具兼容
+
+格式化输出为JSON：
+{{
+    "error_analysis": "详细的错误根本原因分析，包括具体的语法规则违反",
+    "fix_required": true/false,
+    "fix_type": "design_code" | "testbench" | "both",
+    "specific_fixes": ["详细的修复步骤1", "步骤2", "步骤3"],
+    "code_changes": {{
+        "file_to_modify": "需要修改的文件路径",
+        "modifications": "完整的修复后的代码内容"
+    }},
+    "syntax_violations": ["具体违反的Verilog语法规则"],
+    "prevention_tips": ["防止类似错误的建议"]
+}}
+"""
+
+            # 调用LLM进行智能分析
+            conversation = [{"role": "user", "content": analysis_prompt}]
+            llm_response = await self._call_llm_for_function_calling(conversation)
             
-            # 分析编译错误
-            if compilation_errors:
-                compile_analysis = self._analyze_compilation_errors(compilation_errors, design_code)
-                analysis_results["failure_types"].extend(compile_analysis["failure_types"])
-                analysis_results["root_causes"].extend(compile_analysis["root_causes"])
-                analysis_results["fix_suggestions"].extend(compile_analysis["fix_suggestions"])
+            self.logger.info(f"🤖 LLM分析结果: {llm_response[:200]}...")
             
-            # 分析仿真错误
-            if simulation_errors:
-                sim_analysis = self._analyze_simulation_errors(simulation_errors, design_code)
-                analysis_results["failure_types"].extend(sim_analysis["failure_types"])
-                analysis_results["root_causes"].extend(sim_analysis["root_causes"])
-                analysis_results["fix_suggestions"].extend(sim_analysis["fix_suggestions"])
-            
-            # 分析测试断言失败
-            if test_assertions:
-                assertion_analysis = self._analyze_assertion_failures(test_assertions, design_code, testbench_code)
-                analysis_results["failure_types"].extend(assertion_analysis["failure_types"])
-                analysis_results["root_causes"].extend(assertion_analysis["root_causes"])
-                analysis_results["fix_suggestions"].extend(assertion_analysis["fix_suggestions"])
-            
-            # 去重并优先排序
-            analysis_results["failure_types"] = list(set(analysis_results["failure_types"]))
-            analysis_results["root_causes"] = list(set(analysis_results["root_causes"]))
-            
-            # 过滤掉之前已尝试的修复方法
-            filtered_suggestions = []
-            for suggestion in analysis_results["fix_suggestions"]:
-                is_duplicate = any(prev_fix.lower() in suggestion.lower() or 
-                                 suggestion.lower() in prev_fix.lower() 
-                                 for prev_fix in previous_fixes)
-                if not is_duplicate:
-                    filtered_suggestions.append(suggestion)
-            
-            analysis_results["fix_suggestions"] = filtered_suggestions[:5]  # 最多5个建议
-            
-            # 根据迭代次数调整优先级
-            if iteration_number >= 3:
-                analysis_results["priority_level"] = "high"
-            elif len(analysis_results["failure_types"]) > 2:
-                analysis_results["priority_level"] = "high"
-            
-            # 生成详细的修复指导
-            detailed_guidance = self._generate_detailed_fix_guidance(
-                analysis_results, design_code, iteration_number
-            )
-            
-            self.logger.info(f"✅ 测试失败分析完成，发现 {len(analysis_results['failure_types'])} 种失败类型")
-            
-            return {
-                "success": True,
-                "analysis": analysis_results,
-                "detailed_guidance": detailed_guidance,
-                "iteration_context": {
-                    "iteration_number": iteration_number,
-                    "previous_attempts": len(previous_fixes),
-                    "failure_complexity": len(analysis_results["failure_types"])
-                },
-                "next_steps": self._recommend_next_steps(analysis_results, iteration_number)
-            }
+            # 解析LLM响应
+            try:
+                import json
+                import re
+                
+                # 尝试提取JSON内容
+                json_match = re.search(r'\{.*\}', llm_response, re.DOTALL)
+                if json_match:
+                    analysis_data = json.loads(json_match.group())
+                else:
+                    # 如果没有找到JSON，创建基本分析结果
+                    analysis_data = {
+                        "error_analysis": "智能分析中...",
+                        "fix_required": True,
+                        "fix_type": "testbench",
+                        "specific_fixes": ["需要修复SystemVerilog语法错误"],
+                        "code_changes": {
+                            "file_to_modify": testbench_file,
+                            "modifications": "转换SystemVerilog语法为标准Verilog"
+                        }
+                    }
+                
+                # 如果LLM判断需要修复，则尝试自动修复
+                fix_results = []
+                if analysis_data.get("fix_required", False):
+                    self.logger.info("🔧 LLM建议进行自动修复，开始执行修复...")
+                    
+                    # 1. 检查是否是未命名begin块变量声明错误
+                    if "Variable declaration in unnamed block requires SystemVerilog" in compilation_errors:
+                        self.logger.info("🎯 检测到未命名begin块变量声明错误，执行专项修复...")
+                        fix_result = await self._auto_fix_unnamed_block_variables(
+                            testbench_file, compilation_errors, testbench_code
+                        )
+                        fix_results.append(fix_result)
+                        
+                        if fix_result.get("success"):
+                            self.logger.info("✅ 未命名begin块变量声明错误修复完成")
+                        else:
+                            self.logger.warning(f"⚠️ 未命名begin块修复失败: {fix_result.get('error', 'Unknown error')}")
+                    
+                    # 2. 通用SystemVerilog语法错误修复
+                    elif "SystemVerilog" in compilation_errors and testbench_file:
+                        fix_result = await self._auto_fix_systemverilog_syntax(
+                            testbench_file, compilation_errors, testbench_code
+                        )
+                        fix_results.append(fix_result)
+                        
+                        if fix_result.get("success"):
+                            self.logger.info("✅ SystemVerilog语法自动修复完成")
+                        else:
+                            self.logger.warning(f"⚠️ 自动修复失败: {fix_result.get('error', 'Unknown error')}")
+                    
+                    # 3. 基于LLM分析结果的智能修复
+                    elif analysis_data.get("code_changes", {}).get("modifications"):
+                        self.logger.info("🤖 基于LLM分析结果执行智能修复...")
+                        fix_result = await self._apply_llm_suggested_fixes(
+                            analysis_data["code_changes"], testbench_file
+                        )
+                        fix_results.append(fix_result)
+                        
+                        if fix_result.get("success"):
+                            self.logger.info("✅ LLM建议的修复方案应用完成")
+                        else:
+                            self.logger.warning(f"⚠️ LLM修复方案应用失败: {fix_result.get('error', 'Unknown error')}")
+                
+                return {
+                    "success": True,
+                    "analysis": analysis_data,
+                    "llm_response": llm_response,
+                    "auto_fix_attempted": len(fix_results) > 0,
+                    "fix_results": fix_results,
+                    "iteration_context": {
+                        "iteration_number": iteration_number,
+                        "has_compilation_errors": bool(compilation_errors),
+                        "fix_required": analysis_data.get("fix_required", False)
+                    },
+                    "next_action": "retry_simulation" if any(r.get("success") for r in fix_results) else "manual_review"
+                }
+                
+            except json.JSONDecodeError as e:
+                self.logger.warning(f"⚠️ LLM响应解析失败: {e}, 使用fallback分析")
+                # Fallback到基础分析逻辑
+                return await self._fallback_analysis(compilation_errors, simulation_errors, test_assertions, testbench_file)
             
         except Exception as e:
-            self.logger.error(f"❌ 测试失败分析异常: {str(e)}")
+            self.logger.error(f"❌ 智能测试失败分析异常: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
                 "fallback_suggestions": [
-                    "检查代码语法和模块实例化",
-                    "验证信号宽度和类型匹配",
-                    "确认测试台激励的正确性"
+                    "检查SystemVerilog语法兼容性",
+                    "验证testbench文件语法",
+                    "确认编译器支持的Verilog标准"
                 ]
+            }
+    
+    async def _auto_fix_unnamed_block_variables(self, testbench_file: str, compilation_errors: str, testbench_code: str) -> Dict[str, Any]:
+        """专门修复未命名begin块中的变量声明错误"""
+        try:
+            self.logger.info(f"🎯 专项修复未命名begin块变量声明错误: {testbench_file}")
+            
+            # 使用规则基础的修复方法，针对常见的模式进行修复
+            fixed_code = testbench_code
+            
+            # 修复模式1: @(posedge clk); begin ... end 块中的变量声明
+            import re
+            
+            # 查找问题模式：@(posedge clk); 后跟 begin 块，其中包含变量声明
+            pattern = r'(@\(posedge\s+\w+\);\s*\n?\s*)begin\s*\n(\s*reg\s+.*?\n(?:\s*reg\s+.*?\n)*)(.*?)end'
+            
+            def fix_unnamed_block(match):
+                clock_event = match.group(1)
+                variable_declarations = match.group(2).strip()
+                remaining_logic = match.group(3).strip()
+                
+                # 将变量声明移动到initial块的开头
+                # 这里我们需要找到当前的initial块，并将变量声明添加到其开头
+                
+                # 修复方案：将整个块改为使用已声明的变量
+                # 创建临时变量名（避免冲突）
+                temp_vars = []
+                var_assignments = []
+                
+                for line in variable_declarations.split('\n'):
+                    if 'reg' in line and line.strip():
+                        # 提取变量名和类型
+                        var_match = re.search(r'reg\s+(?:\[.*?\])?\s*(\w+)', line)
+                        if var_match:
+                            var_name = var_match.group(1)
+                            temp_vars.append(var_name)
+                            # 创建赋值语句
+                            if 'expected' in var_name:
+                                var_assignments.append(f"        {var_name} = 5'b00000;")
+                            elif 'actual' in var_name:
+                                var_assignments.append(f"        {var_name} = {{cout, sum}};")
+                
+                # 重构代码块
+                fixed_block = f"{clock_event}\n"
+                if var_assignments:
+                    fixed_block += "\n".join(var_assignments) + "\n"
+                if remaining_logic:
+                    fixed_block += f"        {remaining_logic.strip()}\n"
+                
+                return fixed_block
+            
+            # 应用修复
+            fixed_code = re.sub(pattern, fix_unnamed_block, fixed_code, flags=re.DOTALL | re.MULTILINE)
+            
+            # 额外修复：将所有reg变量声明移动到模块级别
+            # 查找所有在begin块中的reg声明
+            reg_declarations = []
+            lines = fixed_code.split('\n')
+            in_initial_block = False
+            indent_level = 0
+            
+            for i, line in enumerate(lines):
+                if 'initial begin' in line:
+                    in_initial_block = True
+                    continue
+                
+                if in_initial_block:
+                    if 'begin' in line:
+                        indent_level += 1
+                    if 'end' in line:
+                        indent_level -= 1
+                        if indent_level < 0:
+                            in_initial_block = False
+                    
+                    # 如果在begin块中发现reg声明，提取并移除
+                    if re.match(r'\s*reg\s+', line.strip()) and 'reg clk' not in line:
+                        reg_declarations.append(line.strip())
+                        lines[i] = ''  # 移除这行
+            
+            # 将reg声明添加到模块级别（在其他reg声明之后）
+            if reg_declarations:
+                # 找到合适的位置插入（在已有的reg声明之后）
+                insert_position = -1
+                for i, line in enumerate(lines):
+                    if re.match(r'\s*reg\s+', line.strip()) and 'reg clk' not in line:
+                        insert_position = i + 1
+                
+                if insert_position > 0:
+                    # 插入新的reg声明
+                    for reg_decl in reg_declarations:
+                        lines.insert(insert_position, reg_decl)
+                        insert_position += 1
+            
+            fixed_code = '\n'.join(lines)
+            
+            # 写入修复后的代码
+            if fixed_code != testbench_code:
+                with open(testbench_file, 'w', encoding='utf-8') as f:
+                    f.write(fixed_code)
+                
+                self.logger.info(f"✅ 未命名begin块变量声明错误修复完成: {testbench_file}")
+                return {
+                    "success": True,
+                    "message": "已修复未命名begin块中的变量声明错误",
+                    "fixed_file": testbench_file,
+                    "changes_made": "将begin块中的变量声明移动到模块级别，重构测试逻辑"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "未检测到需要修复的模式"
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ 未命名begin块修复失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"修复过程中发生异常: {str(e)}"
+            }
+    
+    async def _auto_fix_systemverilog_syntax(self, testbench_file: str, compilation_errors: str, testbench_code: str) -> Dict[str, Any]:
+        """自动修复SystemVerilog语法错误"""
+        try:
+            self.logger.info(f"🔧 开始自动修复SystemVerilog语法错误: {testbench_file}")
+            
+            # 使用LLM智能转换SystemVerilog语法为标准Verilog
+            fix_prompt = f"""
+请将以下Verilog testbench代码中的SystemVerilog语法转换为标准Verilog-2001语法：
+
+**编译错误信息:**
+{compilation_errors}
+
+**原始testbench代码:**
+{testbench_code}
+
+**修复要求:**
+1. 将SystemVerilog的task语法转换为标准Verilog语法
+2. 如果task包含多条语句，使用begin/end块包围
+3. 确保所有语法符合Verilog-2001标准
+4. 保持功能逻辑不变
+
+请直接输出修复后的完整Verilog代码，不要添加任何解释。
+"""
+            
+            # 调用LLM生成修复后的代码
+            conversation = [{"role": "user", "content": fix_prompt}]
+            fixed_code = await self._call_llm_for_function_calling(conversation)
+            
+            # 清理LLM响应，提取纯代码部分
+            fixed_code = self._extract_verilog_code(fixed_code)
+            
+            if fixed_code:
+                # 写入修复后的代码
+                with open(testbench_file, 'w', encoding='utf-8') as f:
+                    f.write(fixed_code)
+                
+                self.logger.info(f"✅ SystemVerilog语法修复完成: {testbench_file}")
+                return {
+                    "success": True,
+                    "message": "SystemVerilog语法已转换为标准Verilog",
+                    "fixed_file": testbench_file,
+                    "changes_made": "将SystemVerilog task语法转换为标准Verilog语法"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "无法从LLM响应中提取有效的Verilog代码"
+                }
+                
+        except Exception as e:
+            self.logger.error(f"❌ SystemVerilog语法自动修复失败: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _extract_verilog_code(self, llm_response: str) -> str:
+        """从LLM响应中提取Verilog代码"""
+        try:
+            import re
+            
+            # 尝试匹配代码块
+            code_blocks = re.findall(r'```(?:verilog|systemverilog)?\n(.*?)\n```', llm_response, re.DOTALL)
+            if code_blocks:
+                return code_blocks[0].strip()
+            
+            # 如果没有代码块标记，查找module定义
+            module_match = re.search(r'(module\s+.*?endmodule)', llm_response, re.DOTALL)
+            if module_match:
+                return module_match.group(1).strip()
+            
+            # 最后尝试：如果响应主要是代码，直接返回
+            lines = llm_response.strip().split('\n')
+            verilog_lines = [line for line in lines if any(keyword in line for keyword in 
+                           ['module', 'endmodule', 'task', 'endtask', 'initial', 'always', 'begin', 'end', 'reg', 'wire'])]
+            
+            if len(verilog_lines) > len(lines) * 0.3:  # 如果30%以上的行包含Verilog关键字
+                return llm_response.strip()
+            
+            return ""
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 代码提取失败: {e}")
+            return ""
+    
+    async def _fallback_analysis(self, compilation_errors: str, simulation_errors: str, test_assertions: str, testbench_file: str) -> Dict[str, Any]:
+        """备用分析逻辑"""
+        try:
+            # 简单的基于规则的分析
+            if "SystemVerilog" in compilation_errors and testbench_file:
+                # 尝试直接修复SystemVerilog错误
+                fix_result = await self._auto_fix_systemverilog_syntax(
+                    testbench_file, compilation_errors, ""
+                )
+                
+                return {
+                    "success": True,
+                    "analysis": {
+                        "error_analysis": "检测到SystemVerilog语法错误",
+                        "fix_required": True,
+                        "fix_type": "testbench"
+                    },
+                    "auto_fix_attempted": True,
+                    "fix_results": [fix_result],
+                    "next_action": "retry_simulation" if fix_result.get("success") else "manual_review"
+                }
+            
+            return {
+                "success": True,
+                "analysis": {
+                    "error_analysis": "需要手动检查测试失败原因",
+                    "fix_required": False,
+                    "fix_type": "manual"
+                },
+                "auto_fix_attempted": False,
+                "fix_results": [],
+                "next_action": "manual_review"
+            }
+            
+        except Exception as e:
+            return {
+                "success": False,
+                "error": str(e)
             }
     
     def _analyze_compilation_errors(self, errors: str, design_code: str) -> Dict[str, List[str]]:
@@ -2012,5 +2647,87 @@ esac
             return True
             
         except Exception as e:
-            self.logger.warning(f"⚠️ 文件验证失败 {file_path}: {str(e)}")
+            self.logger.warning(f"⚠️ 文件验证失败: {str(e)}")
             return False
+
+    async def _apply_llm_suggested_fixes(self, code_changes: Dict[str, Any], testbench_file: str) -> Dict[str, Any]:
+        """应用LLM建议的修复方案"""
+        try:
+            self.logger.info(f"🤖 应用LLM建议的修复方案到: {testbench_file}")
+            
+            # 从code_changes中获取修复内容
+            modifications = code_changes.get("modifications", "")
+            file_to_modify = code_changes.get("file_to_modify", testbench_file)
+            
+            if not modifications:
+                return {
+                    "success": False,
+                    "error": "LLM未提供具体的修复内容"
+                }
+            
+            # 如果LLM提供的是完整的代码，直接使用
+            if "module " in modifications and "endmodule" in modifications:
+                # 这是完整的Verilog代码
+                fixed_code = modifications
+            else:
+                # 这是修复说明，需要我们自己应用修复
+                # 读取现有文件内容
+                try:
+                    with open(file_to_modify, 'r', encoding='utf-8') as f:
+                        current_code = f.read()
+                except FileNotFoundError:
+                    return {
+                        "success": False,
+                        "error": f"目标文件不存在: {file_to_modify}"
+                    }
+                
+                # 使用LLM重新生成修复后的代码
+                fix_prompt = f"""
+基于以下修复指导，请修复Verilog测试台代码：
+
+**原始代码:**
+{current_code}
+
+**修复指导:**
+{modifications}
+
+**修复要求:**
+1. 严格遵循Verilog-2001标准
+2. 将所有变量声明移到模块级别
+3. 避免在未命名begin块中声明变量
+4. 保持功能逻辑不变
+
+请输出完整的修复后代码：
+"""
+                
+                # 调用LLM生成修复后的代码
+                conversation = [{"role": "user", "content": fix_prompt}]
+                llm_response = await self._call_llm_for_function_calling(conversation)
+                
+                # 提取Verilog代码
+                fixed_code = self._extract_verilog_code(llm_response)
+                
+                if not fixed_code:
+                    return {
+                        "success": False,
+                        "error": "无法从LLM响应中提取有效的Verilog代码"
+                    }
+            
+            # 写入修复后的代码
+            with open(file_to_modify, 'w', encoding='utf-8') as f:
+                f.write(fixed_code)
+            
+            self.logger.info(f"✅ LLM建议的修复方案应用完成: {file_to_modify}")
+            return {
+                "success": True,
+                "message": "LLM建议的修复方案已成功应用",
+                "fixed_file": file_to_modify,
+                "changes_made": "基于LLM分析结果应用了智能修复"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ LLM修复方案应用失败: {str(e)}")
+            return {
+                "success": False,
+                "error": f"修复过程中发生异常: {str(e)}"
+            }

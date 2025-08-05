@@ -1,0 +1,70 @@
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5544 字符
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 21:37:33] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 21:37:33] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: alu_8bit
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 466
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 466
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 466
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: alu_8bit.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/alu_8bit_v2.v) (ID: 268ff3ea)
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: testbench_alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 12711
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 12696
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 12696
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：12711 -> 12696 字符
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：12711 -> 12696 字符
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: testbench_alu_8bit.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/testbenches/testbench_alu_8bit.v) (ID: 26f3b247)
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5544 字符
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 21:38:17] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 运行仿真: alu_8bit.v test_enhanced_testbench_output.v None None iverilog None
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔬 运行仿真: iverilog
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 📁 找到模块文件: file_workspace/designs/alu_8bit.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔨 开始编译 2 个文件
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔨 编译命令: iverilog -o logs/experiment_20250804_213733/artifacts/simulation file_workspace/designs/alu_8bit.v test_enhanced_testbench_output.v
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔨 编译工作目录: /Users/haiyan-mini/Documents/Study/V-Agent
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - ERROR - ❌ 编译失败，返回码: 2
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - ERROR - 编译错误: test_enhanced_testbench_output.v:1: warning: macro verilog undefined (and assumed null) at this point.
+test_enhanced_testbench_output.v:1: syntax error
+I give up.
+
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - INFO - 🔍 仿真结果: {'success': False, 'error': '编译失败: test_enhanced_testbench_output.v:1: warning: macro verilog undefined (and assumed null) at this point.\ntest_enhanced_testbench_output.v:1: syntax error\nI give up.\n', 'stage': 'compilation', 'compilation_output': 'test_enhanced_testbench_output.v:1: warning: macro verilog undefined (and assumed null) at this point.\ntest_enhanced_testbench_output.v:1: syntax error\nI give up.\n', 'command': 'iverilog -o logs/experiment_20250804_213733/artifacts/simulation file_workspace/designs/alu_8bit.v test_enhanced_testbench_output.v'}
+[2025-08-04 21:38:17] Agent.enhanced_real_code_review_agent - ERROR - ❌ 仿真执行失败 (compilation): 编译失败: test_enhanced_testbench_output.v:1: warning: macro verilog undefined (and assumed null) at this point.
+test_enhanced_testbench_output.v:1: syntax error
+I give up.
+

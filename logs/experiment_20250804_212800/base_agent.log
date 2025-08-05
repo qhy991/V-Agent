@@ -1,0 +1,187 @@
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5403 字符
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 21:28:00] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 21:28:00] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 21:28:07] Agent.enhanced_real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+请设计一个简单的8位ALU模块，要求：
+1. 支持基本运算（加、减、与、或）
+2. 提供结果和零标志位输出
+3. 生成相应的测试台
+
+请完成设计并确保质量。
+...
+[2025-08-04 21:28:07] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-04 21:28:07] Agent.enhanced_real_code_review_agent - INFO - 🔗 对话ID: test_self_continuation_1754314080
+[2025-08-04 21:28:07] Agent.enhanced_real_code_review_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 21:28:07] Agent.enhanced_real_code_review_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 21:28:12] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/10
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: write_file (尝试 1/3)
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 write_file 实际参数: ['filename', 'content', 'directory', 'file_path', 'kwargs']
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['filename', 'content', 'description']
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ 工具 write_file 存在无效参数: ['description']
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🗑️ 移除无效参数: description
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['filename', 'content']
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🎯 write_file 参数已标准化
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: alu_8bit.v
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: alu_8bit.v
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 515
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 515
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 515
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: alu_8bit.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/alu_8bit_v2.v) (ID: 8cbc8fd7)
+[2025-08-04 21:28:25] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: write_file
+[2025-08-04 21:28:30] Agent.enhanced_real_code_review_agent - DEBUG - 💾 对话历史已更新: 4 条消息
+[2025-08-04 21:28:30] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 2/10
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: generate_testbench (尝试 1/3)
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_testbench 实际参数: ['module_name', 'module_code', 'test_scenarios', 'clock_period', 'simulation_time', 'coverage_options']
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_name', 'code', 'test_scenarios']
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - INFO - 🔄 参数映射: code -> module_code
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_name', 'module_code', 'test_scenarios']
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - INFO - 🎯 generate_testbench 参数已标准化
+[2025-08-04 21:28:36] Agent.enhanced_real_code_review_agent - INFO - 🧪 生成测试台: alu_8bit
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: alu_8bit.v
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: alu_8bit.v
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 515
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 未找到代码块，尝试提取module声明
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个module声明
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ module 1 验证通过，长度: 515
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 515
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - WARNING - ⚠️ Verilog代码提取失败，使用传统清理方法
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: alu_8bit.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/alu_8bit_v2.v) (ID: 8c6c72da)
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 设计代码已保存: alu_8bit.v
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 📝 写入文件: testbench_alu_8bit.v
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 实验管理器检查:
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO -    - 实验管理器存在: True
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO -    - 当前实验路径: None
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 filename: testbench_alu_8bit.v
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 file type: verilog
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🧹 使用智能代码提取处理Verilog文件
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🔍 开始提取Verilog代码，原始内容长度: 11258
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 找到 1 个Verilog代码块
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 代码块 1 验证通过，长度: 11243
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 成功提取Verilog代码，长度: 11243
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🧹 Verilog代码提取成功：11258 -> 11243 字符
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - 🧹 内容已清理：11258 -> 11243 字符
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 文件已通过中央管理器保存: testbench_alu_8bit.v (file path: /Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/testbenches/testbench_alu_8bit.v) (ID: 26f3b247)
+[2025-08-04 21:29:35] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: generate_testbench
+[2025-08-04 21:29:45] Agent.enhanced_real_code_review_agent - DEBUG - 💾 对话历史已更新: 6 条消息
+[2025-08-04 21:29:49] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 3/10
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: run_simulation (尝试 1/3)
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 run_simulation 实际参数: ['module_file', 'testbench_file', 'module_code', 'testbench_code', 'simulator', 'simulation_options']
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['module_file', 'testbench_file', 'simulator']
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_files -> verilog_files 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['module_file', 'testbench_file', 'simulator']
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔍 运行仿真: alu_8bit.v testbench_alu_8bit.v None None iverilog None
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔬 运行仿真: iverilog
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 📁 找到模块文件: file_workspace/designs/alu_8bit.v
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 📁 找到有效测试台文件: file_workspace/testbenches/testbench_alu_8bit.v
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔨 开始编译 2 个文件
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔨 编译命令: iverilog -o logs/experiment_20250804_212800/artifacts/simulation file_workspace/designs/alu_8bit.v file_workspace/testbenches/testbench_alu_8bit.v
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔨 编译工作目录: /Users/haiyan-mini/Documents/Study/V-Agent
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔨 运行仿真命令: vvp logs/experiment_20250804_212800/artifacts/simulation
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - DEBUG - 仿真输出: VCD info: dumpfile alu_8bit.vcd opened for output.
+==================================================
+ALU 8-bit Testbench Started
+Time		Test			A	B	OP	Result	Zero	Expected	Status
+======================...
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - 🔍 仿真结果: {'success': True, 'output': 'VCD info: dumpfile alu_8bit.vcd opened for output.\n==================================================\nALU 8-bit Testbench Started\nTime\t\tTest\t\t\tA\tB\tOP\tResult\tZero\tExpected\tStatus\n==================================================\nTime=0: a=00000000, b=00000000, op=00, result=00000000, zero=1\n--------------------------------------------------\nStarting Addition Tests\n--------------------------------------------------\nTime=20000: a=00000101, b=00000011, op=00, result=00001000, zero=0\n30000\tAddition Test 1\t\t5\t3\t00\t8\t0\t8\t\tPASS\nTime=30000: a=11111111, b=00000000, op=00, result=11111111, zero=0\n40000\tAddition Test 2\t\tff\t0\t00\tff\t0\tff\t\tPASS\nTime=40000: a=11111111, b=00000001, op=00, result=00000000, zero=1\n50000\tAddition Test 3\t\tff\t1\t00\t0\t1\t0\t\tPASS\n--------------------------------------------------\nStarting Subtraction Tests\n--------------------------------------------------\nTime=50000: a=00001010, b=00000100, op=01, result=00000110, zero=0\n60000\tSubtraction Test 1\t10\t4\t01\t6\t0\t6\t\tPASS\nTime=60000: a=00000101, b=00000101, op=01, result=00000000, zero=1\n70000\tSubtraction Test 2\t5\t5\t01\t0\t1\t0\t\tPASS\nTime=70000: a=00000011, b=00000101, op=01, result=11111110, zero=0\n80000\tSubtraction Test 3\t3\t5\t01\tfe\t0\tfe\t\tPASS\n--------------------------------------------------\nStarting AND Operation Tests\n--------------------------------------------------\nTime=80000: a=10101010, b=11001100, op=10, result=10001000, zero=0\n90000\tAND Test 1\t\t10101010\t11001100\t10\t10001000\t0\t10001000\tPASS\nTime=90000: a=00000000, b=11111111, op=10, result=00000000, zero=1\n100000\tAND Test 2\t\t00000000\t11111111\t10\t00000000\t1\t00000000\tPASS\nTime=100000: a=11111111, b=11111111, op=10, result=11111111, zero=0\n110000\tAND Test 3\t\t11111111\t11111111\t10\t11111111\t0\t11111111\tPASS\n--------------------------------------------------\nStarting OR Operation Tests\n--------------------------------------------------\nTime=110000: a=10101010, b=01010101, op=11, result=11111111, zero=0\n120000\tOR Test 1\t\t10101010\t01010101\t11\t11111111\t0\t11111111\tPASS\nTime=120000: a=10000000, b=00000001, op=11, result=10000001, zero=0\n130000\tOR Test 2\t\t10000000\t00000001\t11\t10000001\t0\t10000001\tPASS\nTime=130000: a=00000000, b=00000000, op=11, result=00000000, zero=1\n140000\tOR Test 3\t\t00000000\t00000000\t11\t00000000\t1\t00000000\tPASS\n--------------------------------------------------\nStarting Zero Flag Tests\n--------------------------------------------------\nTime=140000: a=00000000, b=00000000, op=00, result=00000000, zero=1\n150000\tZero Flag Test 1\t0\t0\t00\t0\t1\t0\t\tPASS\nTime=150000: a=00001111, b=00001111, op=01, result=00000000, zero=1\n160000\tZero Flag Test 2\t15\t15\t01\t0\t1\t0\t\tPASS\nTime=160000: a=11110000, b=00001111, op=10, result=00000000, zero=1\n170000\tZero Flag Test 3\t11110000\t00001111\t10\t00000000\t1\t00000000\tPASS\nTime=170000: a=00000000, b=00000000, op=11, result=00000000, zero=1\n180000\tZero Flag Test 4\t00000000\t00000000\t11\t00000000\t1\t00000000\tPASS\nTime=180000: a=00000001, b=00000001, op=00, result=00000010, zero=0\n190000\tZero Flag Test 5\t1\t1\t00\t2\t0\t2\t\tPASS\n==================================================\nTest Summary:\nTotal Tests: 17\nPassed: 17\nFailed: 0\n==================================================\nAll tests PASSED!\n==================================================\nfile_workspace/testbenches/testbench_alu_8bit.v:90: $finish called at 290000 (1ps)\n', 'compilation_output': '', 'waveform_file': None, 'errors': [], 'warnings': [], 'return_code': 0, 'command': 'vvp logs/experiment_20250804_212800/artifacts/simulation', 'stage': 'simulation'}
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - ✅ 仿真执行成功
+[2025-08-04 21:30:49] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: run_simulation
+[2025-08-04 21:31:33] Agent.enhanced_real_code_review_agent - DEBUG - 💾 对话历史已更新: 8 条消息
+[2025-08-04 21:31:35] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 4/10
+[2025-08-04 21:32:29] Agent.enhanced_real_code_review_agent - INFO - ✅ 任务完成，无需调用工具。最终对话历史: 9 条消息
+[2025-08-04 21:32:43] Agent.enhanced_real_code_review_agent - INFO - 🧠 开始自主任务继续评估...
+[2025-08-04 21:32:43] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续迭代 1/2
+[2025-08-04 21:32:46] Agent.enhanced_real_code_review_agent - INFO - 📋 自我评估结果: {'completion_rate': 95, 'quality_score': 85, 'needs_continuation': True, 'reason': '虽然基本功能已实现并通过仿真验证，但可以进一步完善测试覆盖和代码质量', 'suggested_actions': ['生成构建脚本确保设计可重现性', '添加更多边界条件测试用例', '分析仿真波形验证时序特性', '增加覆盖率分析']}
+[2025-08-04 21:32:46] Agent.enhanced_real_code_review_agent - INFO - 🔄 决定继续执行任务: 虽然基本功能已实现并通过仿真验证，但可以进一步完善测试覆盖和代码质量
+[2025-08-04 21:32:46] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/10
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - INFO - 🔧 执行工具调用: generate_build_script (尝试 1/3)
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 工具 generate_build_script 实际参数: ['verilog_files', 'testbench_files', 'script_type', 'target_name', 'build_options']
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - 🔍 传入参数: ['verilog_files', 'testbench_files', 'script_type']
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 verilog_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 code -> module_code 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 design_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 rtl_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 source_code -> module_code 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 name -> module_name 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 module -> module_name 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 target_module -> module_name 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 file_path -> filename 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 path -> filename 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 filepath -> filename 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_cases -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_scenarios -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 test_vectors -> test_scenarios 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script -> script_name 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 script_path -> script_name 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_file -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ⚠️ 映射 coverage_data -> coverage_data_file 无效，目标参数不存在
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - DEBUG - ✅ 参数标准化完成: ['verilog_files', 'testbench_files', 'script_type']
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - INFO - 📜 生成构建脚本: makefile
+[2025-08-04 21:32:48] Agent.enhanced_real_code_review_agent - INFO - ✅ 工具执行成功: generate_build_script
+[2025-08-04 21:33:01] Agent.enhanced_real_code_review_agent - DEBUG - 💾 对话历史已更新: 14 条消息
+[2025-08-04 21:33:03] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 2/10

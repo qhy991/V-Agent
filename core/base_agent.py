@@ -109,6 +109,11 @@ class BaseAgent(ABC):
         # 任务历史
         self.task_history: List[Dict[str, Any]] = []
         
+        # 🧠 对话上下文管理 - 新增
+        self.conversation_history: List[Dict[str, str]] = []
+        self.current_conversation_id: Optional[str] = None
+        self.conversation_start_time: Optional[float] = None
+        
         # Function Calling配置
         self.max_tool_retry_attempts = 3
         self.tool_failure_contexts: List[Dict[str, Any]] = []
@@ -242,15 +247,62 @@ class BaseAgent(ABC):
     # 🔧 Function Calling 核心方法
     # ==========================================================================
     
-    async def process_with_function_calling(self, user_request: str, max_iterations: int = 10) -> str:
-        """使用Function Calling处理用户请求"""
-        self.logger.info(f"🚀 开始Function Calling处理: {user_request[:100]}...")
+    async def process_with_function_calling(self, user_request: str, max_iterations: int = 10, 
+                                          conversation_id: str = None, preserve_context: bool = True,
+                                          enable_self_continuation: bool = True, max_self_iterations: int = 3) -> str:
+        """使用Function Calling处理用户请求
         
-        # 构建对话历史
-        conversation = [
-            {"role": "system", "content": self.system_prompt},
-            {"role": "user", "content": user_request}
-        ]
+        Args:
+            user_request: 用户请求
+            max_iterations: 最大工具调用迭代次数
+            conversation_id: 对话ID
+            preserve_context: 是否保持对话上下文
+            enable_self_continuation: 是否启用自主任务继续
+            max_self_iterations: 自主继续的最大次数
+        """
+        self.logger.info(f"🚀 开始Function Calling处理: {user_request[:100]}...")
+        self.logger.info(f"🔄 自主继续模式: {'启用' if enable_self_continuation else '禁用'}")
+        
+        # 🧠 上下文管理日志
+        if conversation_id:
+            self.current_conversation_id = conversation_id
+            if self.conversation_start_time is None:
+                self.conversation_start_time = time.time()
+            self.logger.info(f"🔗 对话ID: {conversation_id}")
+        else:
+            self.logger.warning("⚠️ 未提供对话ID，使用新的对话上下文")
+        
+        # 决定是否保留对话历史
+        if preserve_context and self.conversation_history:
+            self.logger.info(f"📚 保留现有对话历史: {len(self.conversation_history)} 条消息")
+            conversation = self.conversation_history.copy()
+            # 添加新的用户消息
+            conversation.append({"role": "user", "content": user_request})
+        else:
+            self.logger.info(f"🆕 创建新的对话历史")
+            # 构建新的对话历史
+            conversation = [
+                {"role": "system", "content": self.system_prompt},
+                {"role": "user", "content": user_request}
+            ]
+            # 重置对话历史
+            self.conversation_history = conversation.copy()
+            self.conversation_start_time = time.time()
+        
+        # 记录对话统计信息
+        self.logger.info(f"📊 对话统计: 总消息数={len(conversation)}, 对话时长={time.time() - (self.conversation_start_time or time.time()):.1f}秒")
+        
+        # 🎯 执行初始任务
+        initial_result = await self._execute_single_task_cycle(conversation, user_request, max_iterations)
+        
+        # 🔄 如果启用自主继续，则进行自我评估和任务继续
+        if enable_self_continuation:
+            return await self._execute_self_continuation(conversation, initial_result, user_request, max_self_iterations, max_iterations)
+        else:
+            return initial_result
+    
+    async def _execute_single_task_cycle(self, conversation: List[Dict[str, str]], user_request: str, max_iterations: int) -> str:
+        """执行单个任务周期（原有的Function Calling逻辑）"""
         
         for iteration in range(max_iterations):
             self.logger.info(f"🔄 Function Calling 迭代 {iteration + 1}/{max_iterations}")
@@ -264,7 +316,10 @@ class BaseAgent(ABC):
                 
                 if not tool_calls:
                     # 没有工具调用，返回最终结果
-                    self.logger.info("✅ 任务完成，无需调用工具")
+                    conversation.append({"role": "assistant", "content": llm_response})
+                    # 🧠 更新并保存最终对话历史
+                    self.conversation_history = conversation.copy()
+                    self.logger.info(f"✅ 任务完成，无需调用工具。最终对话历史: {len(self.conversation_history)} 条消息")
                     return llm_response
                 
                 # 执行工具调用
@@ -279,6 +334,10 @@ class BaseAgent(ABC):
                 result_message = self._format_tool_results(tool_calls, all_tool_results)
                 conversation.append({"role": "user", "content": result_message})
                 
+                # 🧠 更新对话历史
+                self.conversation_history = conversation.copy()
+                self.logger.debug(f"💾 对话历史已更新: {len(self.conversation_history)} 条消息")
+                
             except Exception as e:
                 self.logger.error(f"❌ Function Calling迭代失败: {str(e)}")
                 return f"处理请求时发生错误: {str(e)}"
@@ -286,9 +345,171 @@ class BaseAgent(ABC):
         # 达到最大迭代次数，获取最终响应
         try:
             final_response = await self._call_llm_for_function_calling(conversation)
+            # 🧠 保存最终对话状态
+            conversation.append({"role": "assistant", "content": final_response})
+            self.conversation_history = conversation.copy()
+            self.logger.warning(f"⏰ 达到最大迭代次数。最终对话历史: {len(self.conversation_history)} 条消息")
             return final_response
         except Exception as e:
-            return f"无法完成请求，已达到最大迭代次数: {str(e)}"
+            error_msg = f"无法完成请求，已达到最大迭代次数: {str(e)}"
+            # 🧠 记录错误状态
+            conversation.append({"role": "assistant", "content": error_msg})
+            self.conversation_history = conversation.copy()
+            return error_msg
+    
+    async def _execute_self_continuation(self, conversation: List[Dict[str, str]], initial_result: str, 
+                                       original_request: str, max_self_iterations: int, max_iterations: int) -> str:
+        """执行自主任务继续逻辑"""
+        self.logger.info(f"🧠 开始自主任务继续评估...")
+        
+        current_result = initial_result
+        
+        for self_iteration in range(max_self_iterations):
+            self.logger.info(f"🔄 自主继续迭代 {self_iteration + 1}/{max_self_iterations}")
+            
+            # 🧠 构建自我评估prompt
+            self_evaluation_prompt = self._build_self_evaluation_prompt(original_request, current_result)
+            
+            # 添加自我评估消息到对话
+            conversation.append({"role": "user", "content": self_evaluation_prompt})
+            
+            try:
+                # 获取LLM的自我评估和决策
+                evaluation_response = await self._call_llm_for_function_calling(conversation)
+                conversation.append({"role": "assistant", "content": evaluation_response})
+                
+                # 🧠 解析自我评估结果
+                evaluation_result = self._parse_self_evaluation(evaluation_response)
+                
+                self.logger.info(f"📋 自我评估结果: {evaluation_result}")
+                
+                if evaluation_result["needs_continuation"]:
+                    self.logger.info(f"🔄 决定继续执行任务: {evaluation_result['reason']}")
+                    
+                    # 构建继续任务的prompt
+                    continuation_prompt = self._build_continuation_prompt(evaluation_result)
+                    conversation.append({"role": "user", "content": continuation_prompt})
+                    
+                    # 执行继续任务
+                    continuation_result = await self._execute_single_task_cycle(conversation, continuation_prompt, max_iterations)
+                    current_result = continuation_result
+                    
+                    # 更新对话历史
+                    self.conversation_history = conversation.copy()
+                    
+                else:
+                    self.logger.info(f"✅ 任务评估完成，无需继续: {evaluation_result['reason']}")
+                    # 更新对话历史并返回最终结果
+                    self.conversation_history = conversation.copy()
+                    return current_result
+                    
+            except Exception as e:
+                self.logger.error(f"❌ 自主继续迭代失败: {str(e)}")
+                return current_result
+        
+        self.logger.warning(f"⏰ 达到自主继续最大迭代次数")
+        self.conversation_history = conversation.copy()
+        return current_result
+    
+    def _build_self_evaluation_prompt(self, original_request: str, current_result: str) -> str:
+        """构建自我评估prompt"""
+        return f"""
+## 🧠 任务完成度自我评估
+
+**原始任务**: {original_request}
+
+**当前完成情况**: 
+{current_result}
+
+请仔细分析当前的任务完成情况，并回答以下问题：
+
+1. **任务完成度评估**: 原始任务是否已经完全完成？
+2. **质量评估**: 当前的实现质量如何？是否存在可以改进的地方？
+3. **遗漏分析**: 是否有遗漏的重要功能或步骤？
+4. **继续决策**: 是否需要继续执行额外的任务来提高完成度或质量？
+
+请用以下JSON格式回答：
+```json
+{{
+    "completion_rate": 85,
+    "quality_score": 80,
+    "needs_continuation": true,
+    "reason": "需要添加更详细的测试用例和错误处理",
+    "suggested_next_actions": [
+        "添加边界条件测试",
+        "完善错误处理机制",
+        "优化代码结构"
+    ]
+}}
+```
+
+如果任务已经完全完成且质量满意，请设置 `needs_continuation: false`。
+"""
+    
+    def _parse_self_evaluation(self, response: str) -> Dict[str, Any]:
+        """解析自我评估结果"""
+        try:
+            # 尝试解析JSON格式
+            import json
+            import re
+            
+            # 查找JSON代码块
+            json_pattern = r'```json\s*(\{.*?\})\s*```'
+            matches = re.findall(json_pattern, response, re.DOTALL)
+            
+            if matches:
+                evaluation_data = json.loads(matches[0])
+                return {
+                    "completion_rate": evaluation_data.get("completion_rate", 100),
+                    "quality_score": evaluation_data.get("quality_score", 100),
+                    "needs_continuation": evaluation_data.get("needs_continuation", False),
+                    "reason": evaluation_data.get("reason", "评估完成"),
+                    "suggested_actions": evaluation_data.get("suggested_next_actions", [])
+                }
+            
+            # 如果没有找到JSON，尝试文本分析
+            needs_continuation = any(phrase in response.lower() for phrase in [
+                "需要继续", "未完成", "可以改进", "建议添加", "needs_continuation: true"
+            ])
+            
+            return {
+                "completion_rate": 90,
+                "quality_score": 85,
+                "needs_continuation": needs_continuation,
+                "reason": "基于文本分析的评估结果",
+                "suggested_actions": []
+            }
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 自我评估解析失败: {str(e)}")
+            # 默认不继续，返回保守的评估结果
+            return {
+                "completion_rate": 100,
+                "quality_score": 90,
+                "needs_continuation": False,
+                "reason": "解析失败，采用保守策略",
+                "suggested_actions": []
+            }
+    
+    def _build_continuation_prompt(self, evaluation_result: Dict[str, Any]) -> str:
+        """构建继续任务的prompt"""
+        suggested_actions = evaluation_result.get("suggested_actions", [])
+        reason = evaluation_result.get("reason", "继续改进任务")
+        
+        actions_text = "\n".join([f"- {action}" for action in suggested_actions]) if suggested_actions else "- 根据之前的分析继续改进"
+        
+        return f"""
+## 🔄 继续任务执行
+
+基于刚才的自我评估，我需要继续改进当前的工作。
+
+**继续原因**: {reason}
+
+**具体行动计划**:
+{actions_text}
+
+请继续执行这些改进任务，使用合适的工具来完成。
+"""
     
     def _parse_tool_calls_from_response(self, response: str) -> List[ToolCall]:
         """解析LLM响应中的工具调用"""
@@ -360,12 +581,163 @@ class BaseAgent(ABC):
     def _normalize_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         """标准化工具参数，解决Schema不一致问题"""
         try:
-            from core.schema_system.unified_schemas import UnifiedSchemas
-            return UnifiedSchemas.resolve_parameter_aliases(parameters)
-        except ImportError:
-            # 如果统一Schema系统不可用，使用基本的别名映射
-            normalized = parameters.copy()
+            # 获取工具的实际函数签名
+            if tool_name in self.function_calling_registry:
+                tool_func = self.function_calling_registry[tool_name]
+                import inspect
+                
+                # 获取函数签名
+                sig = inspect.signature(tool_func)
+                actual_params = list(sig.parameters.keys())
+                
+                self.logger.debug(f"🔍 工具 {tool_name} 实际参数: {actual_params}")
+                self.logger.debug(f"🔍 传入参数: {list(parameters.keys())}")
+                
+                # 构建参数映射表
+                param_mappings = self._build_parameter_mappings(tool_name, actual_params)
+                
+                # 应用映射
+                normalized = parameters.copy()
+                mapped_params = {}
+                
+                for input_param, value in normalized.items():
+                    # 查找映射
+                    mapped_param = param_mappings.get(input_param, input_param)
+                    
+                    if mapped_param != input_param:
+                        self.logger.info(f"🔄 参数映射: {input_param} -> {mapped_param}")
+                        mapped_params[mapped_param] = value
+                    else:
+                        mapped_params[input_param] = value
+                
+                # 验证映射后的参数是否在函数签名中
+                invalid_params = []
+                for param in mapped_params.keys():
+                    if param not in actual_params and param != 'self':
+                        invalid_params.append(param)
+                
+                if invalid_params:
+                    self.logger.warning(f"⚠️ 工具 {tool_name} 存在无效参数: {invalid_params}")
+                    # 移除无效参数
+                    for invalid_param in invalid_params:
+                        if invalid_param in mapped_params:
+                            del mapped_params[invalid_param]
+                            self.logger.info(f"🗑️ 移除无效参数: {invalid_param}")
+                
+                self.logger.debug(f"✅ 参数标准化完成: {list(mapped_params.keys())}")
+                return mapped_params
+                
+            else:
+                self.logger.warning(f"⚠️ 工具 {tool_name} 未找到，使用基本映射")
+                return self._apply_basic_parameter_mapping(parameters)
+                
+        except Exception as e:
+            self.logger.error(f"❌ 参数标准化失败: {str(e)}")
+            return self._apply_basic_parameter_mapping(parameters)
+    
+    def _build_parameter_mappings(self, tool_name: str, actual_params: List[str]) -> Dict[str, str]:
+        """构建参数映射表"""
+        mappings = {}
+        
+        # 通用参数映射
+        common_mappings = {
+            # 代码相关参数
+            "verilog_code": "module_code",
+            "code": "module_code", 
+            "design_code": "module_code",
+            "rtl_code": "module_code",
+            "source_code": "module_code",
             
+            # 模块名相关参数
+            "name": "module_name",
+            "module": "module_name",
+            "target_module": "module_name",
+            
+            # 文件路径相关参数
+            "file_path": "filename",
+            "path": "filename",
+            "filepath": "filename",
+            
+            # 测试相关参数
+            "test_cases": "test_scenarios",
+            "test_scenarios": "test_scenarios",  # 保持一致性
+            "test_vectors": "test_scenarios",
+            
+            # 文件列表相关参数
+            "files": "verilog_files",
+            "design_files": "verilog_files",
+            "source_files": "verilog_files",
+            
+            # 脚本相关参数
+            "script": "script_name",
+            "script_path": "script_name",
+            
+            # 覆盖率相关参数
+            "coverage_file": "coverage_data_file",
+            "coverage_data": "coverage_data_file",
+        }
+        
+        # 工具特定的映射
+        tool_specific_mappings = {
+            "generate_testbench": {
+                "verilog_code": "module_code",
+                "code": "module_code",
+                "design_code": "module_code",
+                "test_cases": "test_scenarios",
+                "test_vectors": "test_scenarios",
+            },
+            "run_simulation": {
+                "module_file": "module_file",  # 保持原样
+                "testbench_file": "testbench_file",  # 保持原样
+                "module_code": "module_code",
+                "testbench_code": "testbench_code",
+            },
+            "generate_build_script": {
+                "verilog_files": "verilog_files",
+                "design_files": "verilog_files",
+                "source_files": "verilog_files",
+                "testbench_files": "testbench_files",
+            },
+            "execute_build_script": {
+                "script": "script_name",
+                "script_path": "script_name",
+            },
+            "analyze_test_failures": {
+                "design_code": "design_code",  # 保持原样
+                "testbench_code": "testbench_code",  # 保持原样
+            },
+            "write_file": {
+                "file_path": "filename",
+                "path": "filename",
+                "filepath": "filename",
+            },
+            "read_file": {
+                "filepath": "filepath",  # 保持原样
+                "path": "filepath",
+                "file_path": "filepath",
+            }
+        }
+        
+        # 应用通用映射
+        mappings.update(common_mappings)
+        
+        # 应用工具特定映射
+        if tool_name in tool_specific_mappings:
+            mappings.update(tool_specific_mappings[tool_name])
+        
+        # 验证映射的有效性
+        valid_mappings = {}
+        for input_param, mapped_param in mappings.items():
+            if mapped_param in actual_params:
+                valid_mappings[input_param] = mapped_param
+            else:
+                self.logger.debug(f"⚠️ 映射 {input_param} -> {mapped_param} 无效，目标参数不存在")
+        
+        return valid_mappings
+    
+    def _apply_basic_parameter_mapping(self, parameters: Dict[str, Any]) -> Dict[str, Any]:
+        """应用基本参数映射（备用方案）"""
+        try:
             # 基本的参数别名映射
             alias_mappings = {
                 "code": "verilog_code",
@@ -380,12 +752,14 @@ class BaseAgent(ABC):
             }
             
             # 应用别名映射
+            normalized = parameters.copy()
             for alias, standard_name in alias_mappings.items():
                 if alias in normalized and standard_name not in normalized:
                     normalized[standard_name] = normalized[alias]
                     self.logger.debug(f"🔄 参数别名映射: {alias} -> {standard_name}")
             
             return normalized
+            
         except Exception as e:
             self.logger.debug(f"参数标准化失败: {e}")
             return parameters
@@ -1255,6 +1629,26 @@ class BaseAgent(ABC):
         self.file_cache.clear()
         self.file_metadata_cache.clear()
         self.logger.info("🧹 缓存已清空")
+    
+    def clear_conversation_history(self):
+        """清空对话历史 - 新增方法"""
+        old_count = len(self.conversation_history)
+        self.conversation_history.clear()
+        self.current_conversation_id = None
+        self.conversation_start_time = None
+        self.logger.info(f"🧹 对话历史已清空: 删除了 {old_count} 条消息")
+    
+    def get_conversation_summary(self) -> Dict[str, Any]:
+        """获取对话摘要 - 新增方法"""
+        return {
+            "conversation_id": self.current_conversation_id,
+            "message_count": len(self.conversation_history),
+            "conversation_duration": time.time() - (self.conversation_start_time or time.time()) if self.conversation_start_time else 0,
+            "system_prompt_length": len(self.system_prompt),
+            "last_message_time": self.conversation_start_time,
+            "agent_id": self.agent_id,
+            "role": self.role
+        }
     
     # ==========================================================================
     # 🔧 基础Function Calling工具实现

@@ -1,0 +1,68 @@
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5405 字符
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 19:32:05] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+请设计一个简单的8位ALU模块，要求：
+1. 支持基本运算（加、减、与、或）
+2. 提供结果和零标志位输出
+3. 生成相应的测试台
+
+请完成设计并确保质量。
+...
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔗 对话ID: test_self_continuation_1754307125
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 19:32:05] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/10
+[2025-08-04 19:32:09] Agent.enhanced_real_code_review_agent - ERROR - ❌ LLM调用失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-9a3a679c-95b6-9be9-a662-1540cd4b0fa2","request_id":"9a3a679c-95b6-9be9-a662-1540cd4b0fa2"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:09] Agent.enhanced_real_code_review_agent - ERROR - ❌ Function Calling迭代失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-9a3a679c-95b6-9be9-a662-1540cd4b0fa2","request_id":"9a3a679c-95b6-9be9-a662-1540cd4b0fa2"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:09] Agent.enhanced_real_code_review_agent - INFO - 🧠 开始自主任务继续评估...
+[2025-08-04 19:32:09] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续迭代 1/2
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - ERROR - ❌ LLM调用失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-58308e6d-77f4-99f2-ac06-4703dfac0706","request_id":"58308e6d-77f4-99f2-ac06-4703dfac0706"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - ERROR - ❌ 自主继续迭代失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-58308e6d-77f4-99f2-ac06-4703dfac0706","request_id":"58308e6d-77f4-99f2-ac06-4703dfac0706"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🛠️ 传统工具调用已启用: 权限=2
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: write_file
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: read_file
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - ✅ EnhancedRealCodeReviewAgent (Function Calling支持) 初始化完成
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - DEBUG - 📝 System prompt 长度: 5405 字符
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_testbench
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: run_simulation
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: generate_build_script
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: execute_build_script
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔧 注册Function Calling工具: analyze_test_failures
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔍 增强代码审查智能体(Schema支持)初始化完成
+[2025-08-04 19:32:13] EnhancedRealCodeReviewAgent - INFO - EnhancedRealCodeReviewAgent初始化完成
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+设计一个4位计数器，包含使能和复位功能。
+...
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续模式: 禁用
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔗 对话ID: test_disabled_1754307133
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 19:32:13] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/5
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - ERROR - ❌ LLM调用失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-ff3fdb1e-8363-9a70-b0f7-8f0e561a71f5","request_id":"ff3fdb1e-8363-9a70-b0f7-8f0e561a71f5"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - ERROR - ❌ Function Calling迭代失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-ff3fdb1e-8363-9a70-b0f7-8f0e561a71f5","request_id":"ff3fdb1e-8363-9a70-b0f7-8f0e561a71f5"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🧹 对话历史已清空: 删除了 2 条消息
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🚀 开始Function Calling处理: 
+设计一个4位计数器，包含使能和复位功能。
+...
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续模式: 启用
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🔗 对话ID: test_enabled_1754307136
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🆕 创建新的对话历史
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+[2025-08-04 19:32:16] Agent.enhanced_real_code_review_agent - INFO - 🔄 Function Calling 迭代 1/5
+[2025-08-04 19:32:20] Agent.enhanced_real_code_review_agent - ERROR - ❌ LLM调用失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-7504ce74-f1db-9149-b966-581f35d6cb10","request_id":"7504ce74-f1db-9149-b966-581f35d6cb10"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:20] Agent.enhanced_real_code_review_agent - ERROR - ❌ Function Calling迭代失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-7504ce74-f1db-9149-b966-581f35d6cb10","request_id":"7504ce74-f1db-9149-b966-581f35d6cb10"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:20] Agent.enhanced_real_code_review_agent - INFO - 🧠 开始自主任务继续评估...
+[2025-08-04 19:32:20] Agent.enhanced_real_code_review_agent - INFO - 🔄 自主继续迭代 1/2
+[2025-08-04 19:32:24] Agent.enhanced_real_code_review_agent - ERROR - ❌ LLM调用失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-354a6346-b888-96ab-823d-0423dffc8857","request_id":"354a6346-b888-96ab-823d-0423dffc8857"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
+[2025-08-04 19:32:24] Agent.enhanced_real_code_review_agent - ERROR - ❌ 自主继续迭代失败: LLM请求最终失败，已尝试 3 次: 403, message='{"error":{"code":"AllocationQuota.FreeTierOnly","param":null,"message":"The free tier of the model has been exhausted. If you wish to continue access the model on a paid basis, please disable the \\"use free tier only\\" mode in the management console.","type":"AllocationQuota.FreeTierOnly"},"id":"chatcmpl-354a6346-b888-96ab-823d-0423dffc8857","request_id":"354a6346-b888-96ab-823d-0423dffc8857"}', url='https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions'
