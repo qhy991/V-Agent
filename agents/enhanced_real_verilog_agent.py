@@ -262,46 +262,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             }
         )
         
-        # 3. 模块搜索工具
-        self.register_enhanced_tool(
-            name="search_existing_modules",
-            func=self._tool_search_existing_modules,
-            description="搜索现有的Verilog模块和IP核",
-            security_level="normal",
-            category="database",
-            schema={
-                "type": "object",
-                "properties": {
-                    "module_type": {
-                        "type": "string",
-                        "enum": ["arithmetic", "memory", "interface", "controller", "dsp", "custom"],
-                        "description": "模块类型分类"
-                    },
-                    "functionality": {
-                        "type": "string",
-                        "minLength": 3,
-                        "maxLength": 500,
-                        "description": "功能关键词描述"
-                    },
-                    "complexity_filter": {
-                        "type": "string",
-                        "enum": ["simple", "medium", "complex", "any"],
-                        "default": "any",
-                        "description": "复杂度过滤条件"
-                    },
-                    "max_results": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 50,
-                        "default": 10,
-                        "description": "最大返回结果数"
-                    }
-                },
-                "additionalProperties": False
-            }
-        )
-        
-        # 4. 代码质量分析工具
+
+        # 3. 代码质量分析工具
         self.register_enhanced_tool(
             name="analyze_code_quality",
             func=self._tool_analyze_code_quality,
@@ -328,82 +290,9 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                 "additionalProperties": False
             }
         )
-        
-        # 5. 设计规格验证工具
-        self.register_enhanced_tool(
-            name="validate_design_specifications",
-            func=self._tool_validate_design_specifications,
-            description="验证设计需求与生成代码的符合性",
-            security_level="normal",
-            category="validation",
-            schema={
-                "type": "object",
-                "properties": {
-                    "requirements": {
-                        "type": "string",
-                        "minLength": 10,
-                        "maxLength": 10000,
-                        "description": "设计需求描述"
-                    },
-                    "generated_code": {
-                        "type": "string",
-                        "minLength": 20,
-                        "maxLength": 100000,
-                        "description": "生成的Verilog代码（可选）"
-                    },
-                    "design_type": {
-                        "type": "string",
-                        "enum": ["combinational", "sequential", "mixed", "custom"],
-                        "default": "mixed",
-                        "description": "设计类型"
-                    }
-                },
-                "required": ["requirements"],
-                "additionalProperties": False
-            }
-        )
-        
-        # 6. 设计文档生成工具
-        self.register_enhanced_tool(
-            name="generate_design_documentation",
-            func=self._tool_generate_design_documentation,
-            description="为Verilog模块生成完整的设计文档",
-            security_level="normal",
-            category="documentation",
-            schema={
-                "type": "object",
-                "properties": {
-                    "module_name": {
-                        "type": "string",
-                        "pattern": r"^[a-zA-Z][a-zA-Z0-9_]*$",
-                        "maxLength": 100,
-                        "description": "模块名称"
-                    },
-                    "verilog_code": {
-                        "type": "string",
-                        "minLength": 20,
-                        "maxLength": 100000,
-                        "description": "Verilog代码"
-                    },
-                    "requirements": {
-                        "type": "string",
-                        "minLength": 10,
-                        "maxLength": 10000,
-                        "description": "设计需求描述"
-                    },
-                    "design_type": {
-                        "type": "string",
-                        "enum": ["combinational", "sequential", "mixed", "custom"],
-                        "default": "mixed",
-                        "description": "设计类型"
-                    }
-                },
-                "required": ["module_name", "verilog_code", "requirements"],
-                "additionalProperties": False
-            }
-        )
-        
-        # 7. 代码优化工具
+
+
+        # 4. 代码优化工具
         self.register_enhanced_tool(
             name="optimize_verilog_code",
             func=self._tool_optimize_verilog_code,
@@ -440,6 +329,31 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 
         
         # 注意：测试台生成功能已移除，由代码审查智能体负责
+        
+        # 5. 工具使用指导工具
+        self.register_enhanced_tool(
+            name="get_tool_usage_guide",
+            func=self._tool_get_tool_usage_guide,
+            description="获取EnhancedRealVerilogAgent的工具使用指导，包括可用工具、参数说明、调用示例和最佳实践。",
+            security_level="normal",
+            category="help",
+            schema={
+                "type": "object",
+                "properties": {
+                    "include_examples": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": "是否包含调用示例"
+                    },
+                    "include_best_practices": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": "是否包含最佳实践"
+                    }
+                },
+                "additionalProperties": False
+            }
+        )
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
@@ -480,7 +394,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 
 现在请严格按照可用工具列表进行工具调用：
 """
-        user_message += testbench_reminder
+        user_message += testbench_reminder.replace("analyze_design_requirements, generate_verilog_code, search_existing_modules, analyze_code_quality, validate_design_specifications, generate_design_documentation, optimize_verilog_code, write_file, read_file", "analyze_design_requirements, generate_verilog_code, analyze_code_quality, optimize_verilog_code, write_file, read_file")
         
         # 决定是否传入system prompt - 修复：对于新任务总是传入
         system_prompt = None
@@ -555,7 +469,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 
 现在请严格按照可用工具列表进行工具调用：
 """
-        full_prompt += testbench_reminder
+        full_prompt += testbench_reminder.replace("analyze_design_requirements, generate_verilog_code, search_existing_modules, analyze_code_quality, validate_design_specifications, generate_design_documentation, optimize_verilog_code, write_file, read_file", "analyze_design_requirements, generate_verilog_code, analyze_code_quality, optimize_verilog_code, write_file, read_file")
         
         try:
             response = await self.llm_client.send_prompt(
@@ -820,10 +734,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 **可用工具列表** (仅限这些工具):
 - `analyze_design_requirements`: 分析设计需求
 - `generate_verilog_code`: 生成Verilog代码
-- `search_existing_modules`: 搜索现有模块
 - `analyze_code_quality`: 分析代码质量  
-- `validate_design_specifications`: 验证设计规格
-- `generate_design_documentation`: 生成设计文档
 - `optimize_verilog_code`: 优化Verilog代码
 - `write_file`: 写入文件
 - `read_file`: 读取文件
@@ -843,7 +754,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 2. 生成代码 → 调用 `generate_verilog_code`
 3. **保存文件** → 调用 `write_file` 保存.v文件到指定目录
 4. 质量检查 → 调用 `analyze_code_quality` (可选)
-5. **生成文档** → 调用 `generate_design_documentation` 并保存到reports目录
+5. 代码优化 → 调用 `optimize_verilog_code` (可选)
 6. **路径回传** → 在任务总结中列出所有生成文件的完整路径
 
 **严格禁止的行为**:
@@ -1341,70 +1252,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         return port_info
     
     
-    async def _tool_search_existing_modules(self, module_type: str = None,
-                                          functionality: str = None,
-                                          complexity_filter: str = "any",
-                                          max_results: int = 10) -> Dict[str, Any]:
-        """搜索现有模块工具实现"""
-        try:
-            self.logger.info(f"🔍 搜索现有模块: {module_type} - {functionality}")
-            
-            # 模拟数据库搜索（实际项目中连接真实数据库）
-            sample_modules = [
-                {
-                    "name": "counter_8bit",
-                    "type": "arithmetic",
-                    "functionality": "8-bit binary counter with enable and reset",
-                    "complexity": "simple",
-                    "file_path": "lib/counters/counter_8bit.v"
-                },
-                {
-                    "name": "fifo_sync",
-                    "type": "memory", 
-                    "functionality": "Synchronous FIFO buffer with configurable depth",
-                    "complexity": "medium",
-                    "file_path": "lib/memory/fifo_sync.v"
-                },
-                {
-                    "name": "uart_tx",
-                    "type": "interface",
-                    "functionality": "UART transmitter with configurable baud rate",
-                    "complexity": "medium",
-                    "file_path": "lib/communication/uart_tx.v"
-                }
-            ]
-            
-            # 应用过滤条件
-            results = []
-            for module in sample_modules:
-                if module_type and module["type"] != module_type:
-                    continue
-                if functionality and functionality.lower() not in module["functionality"].lower():
-                    continue
-                if complexity_filter != "any" and module["complexity"] != complexity_filter:
-                    continue
-                results.append(module)
-                
-                if len(results) >= max_results:
-                    break
-            
-            return {
-                "success": True,
-                "results": results,
-                "total_found": len(results),
-                "search_criteria": {
-                    "module_type": module_type,
-                    "functionality": functionality,
-                    "complexity_filter": complexity_filter
-                }
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 模块搜索失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+
     
 
     
@@ -1674,129 +1522,9 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         except Exception:
             return "unknown_module"
     
-    async def _tool_validate_design_specifications(self, requirements: str, 
-                                                 generated_code: str = None,
-                                                 design_type: str = "mixed") -> Dict[str, Any]:
-        """验证设计规格符合性工具"""
-        try:
-            self.logger.info(f"🔍 验证设计规格符合性: {design_type}")
-            
-            # Build code section separately to avoid backslash in f-string
-            if generated_code:
-                code_section = f"**生成的代码**:\n```verilog\n{generated_code}\n```"
-            else:
-                code_section = "**注意**: 暂无生成代码，仅验证需求完整性"
-            
-            validation_prompt = f"""
-请验证以下设计需求与生成代码的符合性：
 
-**设计需求**:
-{requirements}
-
-**设计类型**: {design_type}
-
-{code_section}
-
-请从以下方面进行验证：
-1. **功能完整性**: 需求中的所有功能是否在代码中实现
-2. **接口一致性**: 端口定义是否与需求匹配
-3. **约束满足**: 是否满足所有设计约束
-4. **参数化支持**: 参数化需求是否正确实现
-5. **设计类型匹配**: 代码结构是否与设计类型一致
-
-请提供详细的验证报告，包括：
-- 符合性评分（0-100）
-- 各项指标验证结果
-- 不符合项详细说明
-- 改进建议
-"""
-            
-            response = await self.llm_client.send_prompt(
-                prompt=validation_prompt,
-                system_prompt="你是专业的设计验证专家，请提供准确、全面的规格符合性验证。",
-                temperature=0.1
-            )
-            
-            return {
-                "success": True,
-                "design_type": design_type,
-                "validation_report": response,
-                "validation_timestamp": time.time()
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 设计规格验证失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
     
-    async def _tool_generate_design_documentation(self, module_name: str, 
-                                                verilog_code: str,
-                                                requirements: str,
-                                                design_type: str = "mixed") -> Dict[str, Any]:
-        """生成设计文档工具"""
-        try:
-            self.logger.info(f"📄 生成设计文档: {module_name}")
-            
-            doc_prompt = f"""
-请为以下Verilog模块生成完整的设计文档：
 
-**模块名称**: {module_name}
-**设计类型**: {design_type}
-
-**设计需求**:
-{requirements}
-
-**Verilog代码**:
-```verilog
-{verilog_code}
-```
-
-请生成包含以下内容的设计文档：
-1. **模块概述**: 功能描述、设计目标
-2. **接口说明**: 端口定义、信号描述
-3. **功能规格**: 详细的功能说明
-4. **设计架构**: 内部结构、关键组件
-5. **时序要求**: 时钟、复位、时序约束
-6. **使用说明**: 实例化示例、注意事项
-7. **测试建议**: 测试策略、验证要点
-
-文档格式要求：
-- 使用Markdown格式
-- 结构清晰，层次分明
-- 包含代码示例
-- 提供完整的接口说明
-"""
-            
-            response = await self.llm_client.send_prompt(
-                prompt=doc_prompt,
-                system_prompt="你是专业的技术文档编写专家，请生成清晰、完整的设计文档。",
-                temperature=0.1
-            )
-            
-            # 保存文档文件
-            doc_filename = f"{module_name}_design_doc.md"
-            write_result = await self._tool_write_file(
-                filename=doc_filename,
-                content=response,
-                description=f"{module_name}模块设计文档"
-            )
-            
-            return {
-                "success": True,
-                "module_name": module_name,
-                "documentation": response,
-                "file_path": write_result.get("file_path"),
-                "file_id": write_result.get("file_id")
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 设计文档生成失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
     
     async def _tool_optimize_verilog_code(self, verilog_code: str, 
                                         optimization_target: str = "area",
@@ -1898,5 +1626,82 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             
         except Exception:
             return ""
-                
+    
+    def _generate_verilog_tool_guide(self) -> List[str]:
+        """生成EnhancedRealVerilogAgent专用的工具使用指导"""
+        guide = []
+        
+        guide.append("\n=== EnhancedRealVerilogAgent 工具调用指导 ===")
+        guide.append("")
+        
+        guide.append("【可用工具列表】")
+        guide.append("1. analyze_design_requirements - 设计需求分析")
+        guide.append("   功能: 分析和解析Verilog设计需求，提取关键设计参数")
+        guide.append("   参数: requirements, design_type, complexity_level")
+        guide.append("   示例: analyze_design_requirements('设计一个8位加法器', 'combinational', 'medium')")
+        guide.append("")
+        
+        guide.append("2. generate_verilog_code - Verilog代码生成")
+        guide.append("   功能: 生成高质量的Verilog HDL代码")
+        guide.append("   参数: module_name, requirements, input_ports, output_ports, coding_style")
+        guide.append("   示例: generate_verilog_code('adder_8bit', '8位加法器', [{'name':'a','width':8}], [{'name':'sum','width':8}], 'rtl')")
+        guide.append("")
+        
+        guide.append("3. analyze_code_quality - 代码质量分析")
+        guide.append("   功能: 分析Verilog代码质量，提供详细的评估报告")
+        guide.append("   参数: verilog_code, module_name")
+        guide.append("   示例: analyze_code_quality(verilog_code, 'adder_8bit')")
+        guide.append("")
+        
+        guide.append("4. optimize_verilog_code - 代码优化")
+        guide.append("   功能: 优化Verilog代码，支持面积、速度、功耗等优化目标")
+        guide.append("   参数: verilog_code, optimization_target, module_name")
+        guide.append("   示例: optimize_verilog_code(verilog_code, 'area', 'adder_8bit')")
+        guide.append("")
+        
+        guide.append("5. get_tool_usage_guide - 工具使用指导")
+        guide.append("   功能: 获取工具使用指导")
+        guide.append("   参数: include_examples, include_best_practices")
+        guide.append("   示例: get_tool_usage_guide(True, True)")
+        guide.append("")
+        
+        guide.append("【设计流程最佳实践】")
+        guide.append("1. 需求分析: analyze_design_requirements")
+        guide.append("2. 代码生成: generate_verilog_code")
+        guide.append("3. 质量分析: analyze_code_quality")
+        guide.append("4. 代码优化: optimize_verilog_code (可选)")
+        guide.append("")
+        
+        guide.append("【注意事项】")
+        guide.append("- 专注于Verilog HDL设计，不负责测试台生成")
+        guide.append("- 所有工具都支持Schema验证，确保参数格式正确")
+        guide.append("- 建议按照最佳实践流程调用工具")
+        guide.append("- 生成的代码包含详细注释和端口说明")
+        guide.append("- 支持多种编码风格：behavioral, structural, rtl, mixed")
+        
+        return guide
+    
+    async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
+                                       include_best_practices: bool = True) -> Dict[str, Any]:
+        """获取EnhancedRealVerilogAgent专用的工具使用指导"""
+        try:
+            guide = self._generate_verilog_tool_guide()
+            
+            return {
+                "success": True,
+                "guide": guide,
+                "agent_type": "EnhancedRealVerilogAgent",
+                "include_examples": include_examples,
+                "include_best_practices": include_best_practices,
+                "total_tools": 5,  # EnhancedRealVerilogAgent有5个工具
+                "message": "成功生成EnhancedRealVerilogAgent的工具使用指导"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 生成工具使用指导失败: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "生成工具使用指导时发生错误"
+            }
          

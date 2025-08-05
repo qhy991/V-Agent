@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>多智能体对话可视化</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #2c3e50; }
+        h2 { color: #34495e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 多智能体对话可视化报告</h1>
+        <p>生成时间: 2025-08-05 22:54:37</p>
+        
+        
+<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h3>📊 对话统计</h3>
+    <p><strong>总消息数:</strong> 11</p>
+    <p><strong>参与智能体:</strong> 3</p>
+    <p><strong>消息类型分布:</strong></p>
+    <ul>
+        <li>user: 2</li> <li>system: 1</li> <li>tool_call: 3</li> <li>tool_result: 3</li> <li>assistant: 2</li>
+    </ul>
+</div>
+
+        
+        <h2>📝 对话流程</h2>
+        
+<div style="border-left: 4px solid #4ecdc4; padding: 10px; margin: 5px 0; background: #f0fdfc;">
+    <div style="font-weight: bold; color: #4ecdc4;">👤 User - user</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.9em;">设计一个8位counter模块并生成Verilog代码</div>
+</div>
+
+<div style="border-left: 4px solid #ff6b6b; padding: 10px; margin: 5px 0; background: #fff5f5;">
+    <div style="font-weight: bold; color: #ff6b6b;">🔧 System - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.9em;">开始协调任务执行，识别任务类型</div>
+</div>
+
+<div style="border-left: 4px solid #ff6b6b; padding: 10px; margin: 5px 0; background: #fff5f5;">
+    <div style="font-weight: bold; color: #ff6b6b;">⚙️ Tool Call - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-weight: bold; margin-bottom: 5px;">🔧 identify_task_type</div>
+    <div style="font-size: 0.85em;">调用identify_task_type工具</div>
+</div>
+
+<div style="border-left: 4px solid #45b7d1; padding: 10px; margin: 5px 0; background: #f0f9ff;">
+    <div style="font-weight: bold; color: #45b7d1;">✅ Tool Result - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.85em;">任务类型识别完成</div>
+</div>
+
+<div style="border-left: 4px solid #ff6b6b; padding: 10px; margin: 5px 0; background: #fff5f5;">
+    <div style="font-weight: bold; color: #ff6b6b;">⚙️ Tool Call - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-weight: bold; margin-bottom: 5px;">🔧 assign_task_to_agent</div>
+    <div style="font-size: 0.85em;">分配任务给Verilog设计智能体</div>
+</div>
+
+<div style="border-left: 4px solid #4ecdc4; padding: 10px; margin: 5px 0; background: #f0fdfc;">
+    <div style="font-weight: bold; color: #4ecdc4;">👤 User - mock_verilog_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.9em;">设计8位counter模块，生成Verilog代码</div>
+</div>
+
+<div style="border-left: 4px solid #ff6b6b; padding: 10px; margin: 5px 0; background: #fff5f5;">
+    <div style="font-weight: bold; color: #ff6b6b;">⚙️ Tool Call - mock_verilog_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-weight: bold; margin-bottom: 5px;">🔧 write_file</div>
+    <div style="font-size: 0.85em;">开始调用工具: write_file</div>
+</div>
+
+<div style="border-left: 4px solid #45b7d1; padding: 10px; margin: 5px 0; background: #f0f9ff;">
+    <div style="font-weight: bold; color: #45b7d1;">✅ Tool Result - mock_verilog_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.85em;">工具执行成功: write_file</div>
+</div>
+
+<div style="border-left: 4px solid #95a5a6; padding: 10px; margin: 5px 0; background: #f8f9fa;">
+    <div style="font-weight: bold; color: #95a5a6;">🤖 Assistant - mock_verilog_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.9em;">已成功生成8位counter模块的Verilog代码并保存到counter.v文件</div>
+</div>
+
+<div style="border-left: 4px solid #45b7d1; padding: 10px; margin: 5px 0; background: #f0f9ff;">
+    <div style="font-weight: bold; color: #45b7d1;">✅ Tool Result - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.85em;">智能体任务执行完成</div>
+</div>
+
+<div style="border-left: 4px solid #95a5a6; padding: 10px; margin: 5px 0; background: #f8f9fa;">
+    <div style="font-weight: bold; color: #95a5a6;">🤖 Assistant - llm_coordinator_agent</div>
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 5px;">22:35:52</div>
+    <div style="font-size: 0.9em;">✅ 任务完成！已成功设计8位counter模块并生成Verilog代码</div>
+</div>
+
+    </div>
+</body>
+</html>

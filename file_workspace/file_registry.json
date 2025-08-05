@@ -293,25 +293,32 @@
   },
   "c5267164": {
     "file_id": "c5267164",
-    "file_path": "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/file_workspace/designs/counter.v",
+    "file_path": "/Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter.v",
     "file_type": "verilog",
-    "content_hash": "869610565188523103",
-    "created_by": "enhanced_real_code_review_agent",
-    "created_at": "2025-08-05T17:31:01.738613",
-    "description": "由enhanced_real_code_review_agent创建的verilog文件",
+    "content_hash": "4552496474828762717",
+    "created_by": "enhanced_real_verilog_agent",
+    "created_at": "2025-08-05T22:22:29.911783",
+    "description": "由enhanced_real_verilog_agent创建的verilog文件",
     "metadata": {},
     "port_info": {
       "module_name": "counter",
       "ports": [
         {
-          "name": "wire",
+          "name": "clk",
           "direction": "input",
           "width": 1,
           "msb": null,
           "lsb": null
         },
         {
-          "name": "wire",
+          "name": "reset",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "enable",
           "direction": "input",
           "width": 1,
           "msb": null,
@@ -325,17 +332,17 @@
           "lsb": null
         }
       ],
-      "port_count": 3
+      "port_count": 4
     },
     "version": 1
   },
   "262fe708": {
     "file_id": "262fe708",
-    "file_path": "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/file_workspace/testbenches/testbench_counter.v",
+    "file_path": "/Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/testbenches/testbench_counter.v",
     "file_type": "testbench",
-    "content_hash": "4210111390116599737",
+    "content_hash": "-3510861153459522926",
     "created_by": "enhanced_real_code_review_agent",
-    "created_at": "2025-08-05T17:31:01.741450",
+    "created_at": "2025-08-05T22:28:35.181603",
     "description": "由enhanced_real_code_review_agent创建的testbench文件",
     "metadata": {},
     "port_info": {},
@@ -397,5 +404,123 @@
     "metadata": {},
     "port_info": {},
     "version": 1
+  },
+  "b0d43bc8": {
+    "file_id": "b0d43bc8",
+    "file_path": "/Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter_v2.v",
+    "file_type": "verilog",
+    "content_hash": "-3893571916057101137",
+    "created_by": "enhanced_real_verilog_agent",
+    "created_at": "2025-08-05T22:23:50.301731",
+    "description": "由enhanced_real_verilog_agent创建的verilog文件",
+    "metadata": {},
+    "port_info": {
+      "module_name": "counter",
+      "ports": [
+        {
+          "name": "clk",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "reset",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "enable",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "up_down",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "load",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "data_in",
+          "direction": "input",
+          "width": 8,
+          "msb": 7,
+          "lsb": 0
+        },
+        {
+          "name": "reg",
+          "direction": "output",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "reg",
+          "direction": "output",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "reg",
+          "direction": "output",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        }
+      ],
+      "port_count": 9
+    },
+    "version": 2
+  },
+  "0b00b736": {
+    "file_id": "0b00b736",
+    "file_path": "/Users/haiyan-mini/Documents/Study/V-Agent/file_workspace/designs/counter_v2.v",
+    "file_type": "verilog",
+    "content_hash": "-3675531125860894643",
+    "created_by": "enhanced_real_code_review_agent",
+    "created_at": "2025-08-05T22:28:35.174003",
+    "description": "由enhanced_real_code_review_agent创建的verilog文件",
+    "metadata": {},
+    "port_info": {
+      "module_name": "counter",
+      "ports": [
+        {
+          "name": "wire",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "wire",
+          "direction": "input",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        },
+        {
+          "name": "reg",
+          "direction": "output",
+          "width": 1,
+          "msb": null,
+          "lsb": null
+        }
+      ],
+      "port_count": 3
+    },
+    "version": 2
   }
 }

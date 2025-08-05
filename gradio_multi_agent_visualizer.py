@@ -18,6 +18,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import os
 import sys
+import socket
 from pathlib import Path
 
 # 添加项目根目录到路径
@@ -308,6 +309,129 @@ class MultiAgentVisualizer:
             self.add_message("system", "error", error_msg)
             return self.format_message_display(self.conversation_history[-1]), "", ""
     
+    def load_experiment_conversation(self, experiment_path: str) -> str:
+        """从实验报告加载真实的对话历史"""
+        try:
+            # 🔧 修复路径拼接问题
+            experiment_path = experiment_path.strip()
+            if experiment_path.endswith('/reports/experiment_report.json'):
+                # 如果用户已经输入了完整路径，直接使用
+                report_path = Path(experiment_path)
+            else:
+                # 标准路径拼接
+                report_path = Path(experiment_path) / "reports" / "experiment_report.json"
+            
+            if not report_path.exists():
+                return f"❌ 实验报告文件不存在: {report_path}\n💡 请确认路径格式正确，例如: /path/to/llm_experiments/llm_coordinator_counter_1754356089"
+            
+            with open(report_path, 'r', encoding='utf-8') as f:
+                report_data = json.load(f)
+            
+            # 🔧 尝试多种路径提取对话历史
+            conversation_history = []
+            found_path = None
+            
+            # 路径 1: detailed_result.conversation_history (标准路径)
+            if 'detailed_result' in report_data and 'conversation_history' in report_data['detailed_result']:
+                conversation_history = report_data['detailed_result']['conversation_history']
+                found_path = "detailed_result.conversation_history"
+            
+            # 路径 2: 直接在根级别的conversation_history
+            elif 'conversation_history' in report_data:
+                conversation_history = report_data['conversation_history']
+                found_path = "root.conversation_history"
+            
+            # 路径 3: 嵌套在其他字段中
+            elif 'experiment_report' in report_data and 'conversation_history' in report_data['experiment_report']:
+                conversation_history = report_data['experiment_report']['conversation_history']
+                found_path = "experiment_report.conversation_history"
+            
+            # 检查实验状态
+            experiment_success = report_data.get('success', False)
+            experiment_id = report_data.get('experiment_id', 'unknown')
+            
+            if not conversation_history:
+                # 提供详细的调试信息
+                available_keys = list(report_data.keys())
+                detailed_structure = {}
+                
+                if 'detailed_result' in report_data:
+                    detailed_structure['detailed_result'] = list(report_data['detailed_result'].keys())
+                
+                debug_info = f"""
+⚠️ 实验报告中conversation_history为空或不存在
+
+📊 实验信息:
+- 实验ID: {experiment_id}
+- 实验状态: {'✅ 成功' if experiment_success else '❌ 失败'}
+- 报告路径: {report_path}
+
+📝 数据结构分析:
+- 根级别字段: {available_keys}
+- detailed_result字段: {detailed_structure.get('detailed_result', '不存在')}
+
+💡 可能的原因:
+1. 该实验是在对话历史功能实现之前运行的
+2. 实验失败，未记录完整对话历史
+3. 使用了旧版本的框架
+
+🚀 建议:
+- 运行新的实验来获得完整对话历史
+- 使用修改后的框架重新执行实验
+"""
+                return debug_info.strip()
+            
+            # 转换为可视化格式
+            self.conversation_history = []
+            for msg in conversation_history:
+                self.add_message_from_experiment(msg)
+            
+            # 更新智能体状态
+            agents_involved = list(set(msg.get('agent_id', 'unknown') for msg in conversation_history))
+            for agent_id in agents_involved:
+                if agent_id not in self.agent_states:
+                    self.agent_states[agent_id] = {
+                        "status": "completed",
+                        "last_active": time.time()
+                    }
+            
+            return f"✅ 成功加载实验对话历史: {len(conversation_history)} 条消息，涉及 {len(agents_involved)} 个智能体"
+            
+        except Exception as e:
+            return f"❌ 加载实验对话历史失败: {str(e)}"
+    
+    def add_message_from_experiment(self, exp_msg: dict):
+        """从实验消息转换为可视化消息格式"""
+        role = exp_msg.get('role', 'unknown')
+        content = exp_msg.get('content', '')
+        agent_id = exp_msg.get('agent_id', 'unknown')
+        tool_info = exp_msg.get('tool_info', {})
+        timestamp = exp_msg.get('timestamp', time.time())
+        
+        # 根据角色映射到可视化类型
+        if role == 'system':
+            msg_type = 'system_prompt'
+        elif role == 'user':
+            msg_type = 'user_prompt'
+        elif role == 'assistant':
+            msg_type = 'assistant_response'
+        elif role in ['tool_call', 'tool_result']:
+            msg_type = 'tool_call'
+        else:
+            msg_type = role
+        
+        message = {
+            'timestamp': timestamp,
+            'agent_id': agent_id,
+            'type': msg_type,
+            'content': content,
+        }
+        
+        if tool_info:
+            message['tool_info'] = tool_info
+        
+        self.conversation_history.append(message)
+    
     def export_conversation(self) -> str:
         """导出对话记录"""
         if not self.conversation_history:
@@ -381,6 +505,15 @@ def create_gradio_interface():
                     simulate_btn = gr.Button("🚀 开始模拟", variant="primary")
                     export_btn = gr.Button("💾 导出记录", variant="secondary")
                 
+                # 🆕 实验加载功能
+                gr.Markdown("### 📁 加载实验对话")
+                experiment_path = gr.Textbox(
+                    label="实验目录路径",
+                    placeholder="例如: /path/to/llm_experiments/llm_coordinator_counter_1754400290",
+                    lines=1
+                )
+                load_experiment_btn = gr.Button("📂 加载实验对话", variant="secondary")
+                
                 # 系统状态
                 gr.Markdown("## 📊 系统状态")
                 init_status = gr.HTML(value="❌ 智能体未初始化")
@@ -417,6 +550,51 @@ def create_gradio_interface():
             result = visualizer.export_conversation()
             return gr.update(value=result, visible=True)
         
+        def handle_load_experiment(experiment_path_input):
+            if not experiment_path_input.strip():
+                return "❌ 请输入实验目录路径", "", ""
+            
+            result = visualizer.load_experiment_conversation(experiment_path_input.strip())
+            
+            if result.startswith("✅"):
+                # 加载成功，显示对话和统计信息
+                conv_display = ""
+                for msg in visualizer.conversation_history:
+                    conv_display += visualizer.format_message_display(msg)
+                
+                agent_stat = visualizer.get_agent_status_display()
+                
+                # 生成统计信息
+                stats = {
+                    "总消息数": len(visualizer.conversation_history),
+                    "System Prompt": len([m for m in visualizer.conversation_history if m['type'] == 'system_prompt']),
+                    "User Prompt": len([m for m in visualizer.conversation_history if m['type'] == 'user_prompt']),
+                    "工具调用": len([m for m in visualizer.conversation_history if m['type'] == 'tool_call']),
+                    "Assistant Response": len([m for m in visualizer.conversation_history if m['type'] == 'assistant_response'])
+                }
+                
+                stats_display = f"""
+<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 10px 0;">
+    <h4>📊 实验对话统计</h4>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+        {' '.join([f'<div style="text-align: center; padding: 8px; background: white; border-radius: 4px;"><strong>{k}</strong><br>{v}</div>' for k, v in stats.items()])}
+    </div>
+    <div style="margin-top: 10px; padding: 8px; background: #e8f5e8; border-radius: 4px;">
+        <strong>加载结果:</strong> {result}
+    </div>
+</div>
+"""
+                return conv_display, agent_stat, stats_display
+            else:
+                # 加载失败
+                error_display = f"""
+<div style="padding: 20px; text-align: center; color: #666;">
+    <h3>加载失败</h3>
+    <p>{result}</p>
+</div>
+"""
+                return error_display, "", ""
+        
         # 绑定事件
         init_btn.click(
             fn=handle_init,
@@ -434,28 +612,76 @@ def create_gradio_interface():
             outputs=[export_result]
         )
         
+        load_experiment_btn.click(
+            fn=handle_load_experiment,
+            inputs=[experiment_path],
+            outputs=[conversation_display, agent_status, stats_display]
+        )
+        
         # 示例请求
         gr.Markdown("""
-        ## 📋 示例请求
+        ## 📋 使用说明
         
+        ### 🚀 模拟对话模式
         - `请设计一个8位counter模块`
         - `设计一个counter模块并生成测试台验证`  
         - `创建一个带使能和复位的计数器`
         - `设计ALU模块，支持加减法运算`
+        
+        ### 📂 加载实验对话模式
+        1. 运行实验生成对话历史（使用 `test_llm_coordinator_enhanced.py`）
+        2. 复制实验目录路径（例如：`llm_experiments/llm_coordinator_counter_1754400290`）
+        3. 在上方输入框中粘贴路径并点击"加载实验对话"
+        4. 查看真实的多智能体协作对话流程和工具调用详情
+        
+        ### 💡 特性
+        - ✅ 实时可视化多智能体对话流程
+        - ✅ 区分显示不同类型的消息（系统提示、工具调用、响应等）
+        - ✅ 智能体状态监控
+        - ✅ 对话统计分析
+        - ✅ 支持导出对话记录
         """)
     
     return demo
+
+def find_available_port(start_port=7862, max_attempts=10):
+    """自动寻找可用端口"""
+    import socket
+    
+    for port in range(start_port, start_port + max_attempts):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('127.0.0.1', port))
+                return port
+        except OSError:
+            continue
+    return None
 
 if __name__ == "__main__":
     # 创建导出目录
     (project_root / "exports").mkdir(exist_ok=True)
     
+    print("🚀 启动多智能体对话可视化工具...")
+    
+    # 自动寻找可用端口
+    available_port = find_available_port()
+    if available_port is None:
+        print("❌ 无法找到可用端口，请手动指定GRADIO_SERVER_PORT环境变量")
+        sys.exit(1)
+    
+    print(f"🔧 使用端口: {available_port}")
+    
     # 启动Gradio界面
     demo = create_gradio_interface()
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        share=False,
-        debug=True,
-        show_error=True
-    )
+    
+    try:
+        demo.launch(
+            server_name="127.0.0.1",
+            server_port=available_port,
+            share=False,
+            debug=False,  # 减少调试信息
+            show_error=True,
+            quiet=True  # 减少输出
+        )
+    except KeyboardInterrupt:
+        print("\n👋 可视化工具已停止")
