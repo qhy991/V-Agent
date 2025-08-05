@@ -270,7 +270,10 @@ class BaseAgent(ABC):
                 self.conversation_start_time = time.time()
             self.logger.info(f"🔗 对话ID: {conversation_id}")
         else:
-            self.logger.warning("⚠️ 未提供对话ID，使用新的对话上下文")
+            # 生成新的对话ID
+            self.current_conversation_id = f"{self.agent_id}_{int(time.time())}"
+            self.conversation_start_time = time.time()
+            self.logger.info(f"🆕 生成新对话ID: {self.current_conversation_id}")
         
         # 决定是否保留对话历史
         if preserve_context and self.conversation_history:
@@ -300,6 +303,157 @@ class BaseAgent(ABC):
             return await self._execute_self_continuation(conversation, initial_result, user_request, max_self_iterations, max_iterations)
         else:
             return initial_result
+    
+    async def process_with_optimized_function_calling(self, user_request: str, max_iterations: int = 10,
+                                                    conversation_id: str = None, preserve_context: bool = True,
+                                                    enable_self_continuation: bool = True, max_self_iterations: int = 3) -> str:
+        """使用优化的Function Calling处理用户请求（支持智能缓存和上下文管理）"""
+        self.logger.info(f"🚀 开始优化Function Calling处理: {user_request[:100]}...")
+        self.logger.info(f"🔄 自主继续模式: {'启用' if enable_self_continuation else '禁用'}")
+        
+        # 🧠 上下文管理日志
+        if conversation_id:
+            self.current_conversation_id = conversation_id
+            if self.conversation_start_time is None:
+                self.conversation_start_time = time.time()
+            self.logger.info(f"🔗 对话ID: {conversation_id}")
+        else:
+            # 生成新的对话ID
+            self.current_conversation_id = f"{self.agent_id}_{int(time.time())}"
+            self.conversation_start_time = time.time()
+            self.logger.info(f"🆕 生成新对话ID: {self.current_conversation_id}")
+        
+        # 🎯 执行优化的任务周期
+        initial_result = await self._execute_optimized_task_cycle(user_request, max_iterations)
+        
+        # 🔄 如果启用自主继续，则进行自我评估和任务继续
+        if enable_self_continuation:
+            return await self._execute_optimized_self_continuation(initial_result, user_request, max_self_iterations, max_iterations)
+        else:
+            return initial_result
+    
+    async def _execute_optimized_task_cycle(self, user_request: str, max_iterations: int) -> str:
+        """执行优化的任务周期（使用智能缓存和上下文管理）"""
+        
+        for iteration in range(max_iterations):
+            self.logger.info(f"🔄 优化Function Calling 迭代 {iteration + 1}/{max_iterations}")
+            
+            try:
+                # 使用优化的LLM调用
+                llm_response = await self._call_llm_optimized(user_request, iteration == 0)
+                
+                # 解析工具调用
+                tool_calls = self._parse_tool_calls_from_response(llm_response)
+                
+                if not tool_calls:
+                    # 没有工具调用，返回最终结果
+                    self.logger.info(f"✅ 任务完成，无需调用工具")
+                    return llm_response
+                
+                # 执行工具调用
+                all_tool_results = []
+                for tool_call in tool_calls:
+                    result = await self._execute_tool_call_with_retry(tool_call)
+                    all_tool_results.append(result)
+                
+                # 构建工具结果消息
+                result_message = self._format_tool_results(tool_calls, all_tool_results)
+                
+                # 更新用户请求为工具结果，用于下一次迭代
+                user_request = result_message
+                
+            except Exception as e:
+                self.logger.error(f"❌ 优化Function Calling迭代失败: {str(e)}")
+                return f"处理请求时发生错误: {str(e)}"
+        
+        # 达到最大迭代次数，获取最终响应
+        try:
+            final_response = await self._call_llm_optimized(user_request, False)
+            return final_response
+        except Exception as e:
+            self.logger.error(f"❌ 最终响应生成失败: {str(e)}")
+            return f"生成最终响应时发生错误: {str(e)}"
+    
+    async def _call_llm_optimized(self, user_message: str, is_first_call: bool = False) -> str:
+        """优化的LLM调用方法"""
+        try:
+            # 获取system prompt
+            system_prompt = self.system_prompt
+            
+            # 调用优化的LLM客户端
+            response = await self.llm_client.send_prompt_optimized(
+                conversation_id=self.current_conversation_id,
+                user_message=user_message,
+                system_prompt=system_prompt if is_first_call else None,  # 只在第一次调用时传递system prompt
+                temperature=0.3,
+                max_tokens=4000,
+                force_refresh_system=is_first_call
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            raise
+    
+    async def _execute_optimized_self_continuation(self, initial_result: str, original_request: str, 
+                                                 max_self_iterations: int, max_iterations: int) -> str:
+        """优化的自主任务继续"""
+        self.logger.info(f"🧠 开始优化的自主任务继续，最大迭代次数: {max_self_iterations}")
+        
+        current_result = initial_result
+        
+        for self_iteration in range(max_self_iterations):
+            self.logger.info(f"🧠 自主继续迭代 {self_iteration + 1}/{max_self_iterations}")
+            
+            try:
+                # 构建自我评估提示
+                evaluation_prompt = self._build_self_evaluation_prompt(original_request, current_result)
+                
+                # 使用优化的LLM调用进行自我评估
+                evaluation_response = await self._call_llm_optimized(evaluation_prompt, False)
+                
+                # 解析评估结果
+                evaluation_result = self._parse_self_evaluation(evaluation_response)
+                
+                # 检查是否需要继续
+                if not evaluation_result.get("should_continue", False):
+                    self.logger.info(f"✅ 自主继续完成，任务已满足要求")
+                    break
+                
+                # 构建继续提示
+                continuation_prompt = self._build_continuation_prompt(evaluation_result)
+                
+                # 使用优化的LLM调用进行任务继续
+                continuation_response = await self._call_llm_optimized(continuation_prompt, False)
+                
+                # 更新当前结果
+                current_result = continuation_response
+                
+                self.logger.info(f"🔄 自主继续完成第 {self_iteration + 1} 轮")
+                
+            except Exception as e:
+                self.logger.error(f"❌ 自主继续迭代失败: {str(e)}")
+                break
+        
+        return current_result
+    
+    def get_llm_optimization_stats(self) -> Dict[str, Any]:
+        """获取LLM优化统计信息"""
+        if hasattr(self.llm_client, 'get_optimization_stats'):
+            return self.llm_client.get_optimization_stats()
+        return {"error": "LLM客户端不支持优化统计"}
+    
+    def clear_llm_context(self, conversation_id: str = None):
+        """清除LLM对话上下文"""
+        target_id = conversation_id or self.current_conversation_id
+        if target_id and hasattr(self.llm_client, 'clear_conversation_context'):
+            self.llm_client.clear_conversation_context(target_id)
+            self.logger.info(f"🗑️ 清除LLM对话上下文: {target_id}")
+    
+    def clear_all_llm_contexts(self):
+        """清除所有LLM对话上下文"""
+        if hasattr(self.llm_client, 'clear_all_contexts'):
+            self.llm_client.clear_all_contexts()
+            self.logger.info("🗑️ 清除所有LLM对话上下文")
     
     async def _execute_single_task_cycle(self, conversation: List[Dict[str, str]], user_request: str, max_iterations: int) -> str:
         """执行单个任务周期（原有的Function Calling逻辑）"""

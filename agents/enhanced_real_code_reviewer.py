@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import os
 import re
+import time
 from typing import Dict, Any, Set, List, Tuple
 from pathlib import Path
 
@@ -506,7 +507,40 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         )
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """实现LLM调用 - 智能处理Schema验证错误"""
+        """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
+        # 生成对话ID（如果还没有）
+        if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
+            self.current_conversation_id = f"code_review_agent_{int(time.time())}"
+        
+        # 构建用户消息
+        user_message = ""
+        is_first_call = len(conversation) <= 1  # 如果对话历史很少，认为是第一次调用
+        
+        for msg in conversation:
+            if msg["role"] == "user":
+                user_message += f"{msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                user_message += f"Assistant: {msg['content']}\n\n"
+        
+        try:
+            # 使用优化的LLM调用方法
+            response = await self.llm_client.send_prompt_optimized(
+                conversation_id=self.current_conversation_id,
+                user_message=user_message.strip(),
+                system_prompt=self._build_enhanced_system_prompt() if is_first_call else None,
+                temperature=0.2,  # 代码审查需要更高的一致性
+                max_tokens=4000,
+                force_refresh_system=is_first_call
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            # 如果优化调用失败，回退到传统方式
+            self.logger.warning("⚠️ 回退到传统LLM调用方式")
+            return await self._call_llm_traditional(conversation)
+    
+    async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
+        """传统的LLM调用方法（作为回退方案）"""
         # 构建完整的prompt
         full_prompt = ""
         system_prompt = self._build_enhanced_system_prompt()
@@ -528,10 +562,9 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             )
             return response
         except Exception as e:
-            self.logger.error(f"❌ LLM调用失败: {str(e)}")
+            self.logger.error(f"❌ 传统LLM调用失败: {str(e)}")
             raise
     
-
     def _extract_module_name_from_code(self, verilog_code: str) -> str:
         """从Verilog代码中提取模块名"""
         import re

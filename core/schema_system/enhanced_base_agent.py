@@ -106,38 +106,29 @@ class EnhancedBaseAgent(BaseAgent):
     async def process_with_enhanced_validation(self, user_request: str, 
                                              max_iterations: int = 10,
                                              conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
-        """
-        使用增强验证处理用户请求 - 支持多轮对话
-        
-        Args:
-            user_request: 用户请求
-            max_iterations: 最大迭代次数
-            conversation_history: 外部传入的对话历史（支持多轮对话）
-            
-        Returns:
-            处理结果
-        """
-        # 🎯 新增：支持外部传入的对话历史
+        """使用增强验证处理用户请求"""
+        # 初始化对话历史
         if conversation_history is None:
             conversation_history = []
         
+        # 生成对话ID
+        conversation_id = f"{self.agent_id}_{int(time.time())}"
+        self.logger.info(f"🆕 生成对话ID: {conversation_id}")
+        
         iteration_count = 0
+        param_validation_failed_tools = set()
+        permanently_failed_tools = set()
         
-        # 跟踪失败的工具，区分参数验证失败和真正的执行失败
-        permanently_failed_tools = set()  # 真正失败的工具（执行错误等）
-        param_validation_failed_tools = set()  # 参数验证失败的工具（可在下次迭代重试）
-        
-        logger.info(f"🚀 开始增强验证处理: {user_request[:100]}...")
-        logger.info(f"🔗 初始对话历史长度: {len(conversation_history)} 轮")
+        self.logger.info(f"🚀 开始增强验证处理: {user_request[:100]}...")
+        self.logger.info(f"🔗 初始对话历史长度: {len(conversation_history)} 轮")
         
         while iteration_count < max_iterations:
             iteration_count += 1
-            logger.info(f"🔄 第 {iteration_count}/{max_iterations} 次迭代")
+            self.logger.info(f"🔄 第 {iteration_count}/{max_iterations} 次迭代")
             
             try:
-                # 1. 调用LLM获取响应 - 使用完整的对话历史
-                conversation = self._build_conversation_with_history(user_request, conversation_history)
-                llm_response = await self._call_llm_for_function_calling(conversation)
+                # 1. 调用LLM获取响应 - 使用优化的LLM调用
+                llm_response = await self._call_llm_optimized_with_history(user_request, conversation_history, iteration_count == 1)
                 
                 # 🎯 新增：将AI响应添加到对话历史
                 conversation_history.append({
@@ -167,23 +158,35 @@ class EnhancedBaseAgent(BaseAgent):
                 
                 # 在新迭代开始时，清空参数验证失败的工具（给它们重试机会）
                 if iteration_count > 1:
-                    logger.info(f"🔄 第{iteration_count}次迭代：清空参数验证失败工具，允许重试")
+                    self.logger.info(f"🔄 第{iteration_count}次迭代：清空参数验证失败工具，允许重试")
                     param_validation_failed_tools.clear()
                 
                 for i, tool_call in enumerate(tool_calls):
-                    # 只跳过真正永久失败的工具的依赖工具
+                    # 检查是否应该跳过工具执行
                     if self._should_skip_tool_due_to_dependencies(tool_call, permanently_failed_tools):
-                        logger.warning(f"⚠️ 跳过工具 {tool_call.tool_name}，因为依赖的关键工具已永久失败")
+                        self.logger.warning(f"⚠️ 跳过工具 {tool_call.tool_name}：依赖的关键工具已失败")
                         skipped_result = ToolResult(
                             call_id=tool_call.call_id,
                             success=False,
-                            error=f"跳过执行：关键工具 {', '.join(permanently_failed_tools)} 已永久失败",
+                            error=f"跳过执行：依赖的关键工具已失败",
                             result=None
                         )
                         tool_results.append(skipped_result)
-                        all_tools_successful = False
                         continue
                     
+                    # 检查工具是否已永久失败
+                    if tool_call.tool_name in permanently_failed_tools:
+                        self.logger.warning(f"⚠️ 跳过已永久失败的工具: {tool_call.tool_name}")
+                        skipped_result = ToolResult(
+                            call_id=tool_call.call_id,
+                            success=False,
+                            error=f"工具已永久失败",
+                            result=None
+                        )
+                        tool_results.append(skipped_result)
+                        continue
+                    
+                    # 执行工具调用
                     result = await self._execute_enhanced_tool_call(tool_call)
                     tool_results.append(result)
                     
@@ -191,18 +194,18 @@ class EnhancedBaseAgent(BaseAgent):
                         all_tools_successful = False
                         current_iteration_failed_tools.add(tool_call.tool_name)
                         
-                        # 区分参数验证失败和其他执行失败
+                        # 检查是否为参数验证失败
                         if "参数验证失败" in result.error:
                             param_validation_failed_tools.add(tool_call.tool_name)
-                            logger.warning(f"⚠️ {tool_call.tool_name} 参数验证失败，将在下次迭代重试")
+                            self.logger.warning(f"⚠️ 工具 {tool_call.tool_name} 参数验证失败，将在下次迭代重试")
                         else:
-                            # 真正的执行失败
+                            # 真正的执行失败，标记为永久失败
                             permanently_failed_tools.add(tool_call.tool_name)
-                            logger.error(f"❌ {tool_call.tool_name} 执行失败，标记为永久失败")
+                            self.logger.error(f"❌ {tool_call.tool_name} 执行失败，标记为永久失败")
                             
                             # 如果是关键工具的真正失败，停止执行后续工具
                             if self._is_critical_tool(tool_call.tool_name):
-                                logger.error(f"❌ 关键工具永久失败: {tool_call.tool_name}，停止后续工具执行")
+                                self.logger.error(f"❌ 关键工具永久失败: {tool_call.tool_name}，停止后续工具执行")
                                 remaining_tools = tool_calls[i+1:]
                                 for remaining_tool in remaining_tools:
                                     skipped_result = ToolResult(
@@ -216,7 +219,7 @@ class EnhancedBaseAgent(BaseAgent):
                 
                 # 4. 检查是否所有工具都成功
                 if all_tools_successful:
-                    logger.info(f"✅ 所有工具执行成功，任务完成")
+                    self.logger.info(f"✅ 所有工具执行成功，任务完成")
                     
                     # 🎯 新增：检查是否为最终结果
                     if self._is_final_result(tool_results):
@@ -253,7 +256,7 @@ class EnhancedBaseAgent(BaseAgent):
                     }
                 
                 # 5. 处理工具执行失败，准备下一次迭代
-                logger.warning(f"⚠️ 第 {iteration_count} 次迭代有工具执行失败，准备重试")
+                self.logger.warning(f"⚠️ 第 {iteration_count} 次迭代有工具执行失败，准备重试")
                 
                 # 🎯 新增：构建错误反馈并添加到对话历史
                 error_feedback = self._build_enhanced_error_feedback(
@@ -275,11 +278,11 @@ class EnhancedBaseAgent(BaseAgent):
                 
                 # 检查是否应该继续
                 if len(permanently_failed_tools) > 3:
-                    logger.error(f"❌ 永久失败的工具过多，停止重试")
+                    self.logger.error(f"❌ 永久失败的工具过多，停止重试")
                     break
                 
             except Exception as e:
-                logger.error(f"❌ 第 {iteration_count} 次迭代异常: {str(e)}")
+                self.logger.error(f"❌ 第 {iteration_count} 次迭代异常: {str(e)}")
                 
                 # 🎯 新增：将异常信息添加到对话历史
                 error_msg = f"处理过程中发生异常: {str(e)}"
@@ -304,15 +307,64 @@ class EnhancedBaseAgent(BaseAgent):
                 user_request = error_msg
         
         # 达到最大迭代次数
-        logger.warning(f"⚠️ 达到最大迭代次数 {max_iterations}，任务未完成")
         return {
             "success": False,
-            "error": f"达到最大迭代次数 {max_iterations}，任务未完成",
+            "error": f"达到最大迭代次数 {max_iterations}",
             "iterations": iteration_count,
-            "conversation_history": conversation_history,
-            "permanently_failed_tools": list(permanently_failed_tools),
-            "param_validation_failed_tools": list(param_validation_failed_tools)
+            "conversation_history": conversation_history
         }
+    
+    async def _call_llm_optimized_with_history(self, user_request: str, 
+                                             conversation_history: List[Dict[str, str]], 
+                                             is_first_call: bool = False) -> str:
+        """使用优化的LLM调用方法，支持对话历史"""
+        try:
+            # 生成对话ID
+            conversation_id = f"{self.agent_id}_{int(time.time())}"
+            
+            # 获取system prompt
+            system_prompt = self._build_enhanced_system_prompt()
+            
+            # 构建完整的用户消息（包含历史上下文）
+            full_user_message = user_request
+            if conversation_history and not is_first_call:
+                # 添加最近的对话历史作为上下文
+                recent_history = conversation_history[-6:]  # 保留最近3轮对话
+                context_parts = []
+                for entry in recent_history:
+                    if entry.get("role") == "user":
+                        context_parts.append(f"用户: {entry['content']}")
+                    elif entry.get("role") == "assistant":
+                        context_parts.append(f"助手: {entry['content']}")
+                
+                if context_parts:
+                    full_user_message = f"对话历史:\n" + "\n".join(context_parts) + f"\n\n当前请求: {user_request}"
+            
+            # 调用优化的LLM客户端
+            response = await self.llm_client.send_prompt_optimized(
+                conversation_id=conversation_id,
+                user_message=full_user_message,
+                system_prompt=system_prompt if is_first_call else None,  # 只在第一次调用时传递system prompt
+                temperature=0.3,
+                max_tokens=4000,
+                force_refresh_system=is_first_call
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            raise
+    
+    def get_enhanced_optimization_stats(self) -> Dict[str, Any]:
+        """获取增强的优化统计信息"""
+        base_stats = self.get_llm_optimization_stats()
+        enhanced_stats = {
+            **base_stats,
+            "agent_id": self.agent_id,
+            "agent_type": self.__class__.__name__,
+            "enhanced_tools_count": len(self.enhanced_tools),
+            "validation_statistics": self.get_validation_statistics()
+        }
+        return enhanced_stats
     
     async def _execute_enhanced_tool_call(self, tool_call: ToolCall) -> ToolResult:
         """
@@ -843,6 +895,28 @@ class EnhancedBaseAgent(BaseAgent):
             "success_rate": successful_validations / total_validations if total_validations > 0 else 0,
             "cache_size": len(self.validation_cache)
         }
+    
+    def get_tools_json_schema(self) -> str:
+        """获取所有工具的JSON Schema描述，用于注入到系统提示词中"""
+        tools_info = []
+        
+        for tool_name, tool_def in self.enhanced_tools.items():
+            tool_info = {
+                "name": tool_name,
+                "description": tool_def.description,
+                "schema": tool_def.schema,
+                "category": tool_def.category,
+                "security_level": tool_def.security_level
+            }
+            tools_info.append(tool_info)
+        
+        return json.dumps(tools_info, ensure_ascii=False, indent=2)
+    
+    def get_tool_schema(self, tool_name: str) -> Optional[Dict[str, Any]]:
+        """获取指定工具的Schema定义"""
+        if tool_name in self.enhanced_tools:
+            return self.enhanced_tools[tool_name].schema
+        return None
     
     def _build_conversation_with_history(self, user_request: str, conversation_history: list) -> list:
         """构建包含历史的对话 - 改进版本支持真正的多轮对话"""

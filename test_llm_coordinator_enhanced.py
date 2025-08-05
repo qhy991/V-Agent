@@ -290,6 +290,9 @@ class EnhancedLLMCoordinatorTest:
             
         except Exception as e:
             print(f"   ❌ 协调智能体创建失败: {str(e)}")
+            import traceback
+            print(f"   📋 详细错误信息:")
+            traceback.print_exc()
             return False
     
     async def run_experiment(self):

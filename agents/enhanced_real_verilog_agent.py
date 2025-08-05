@@ -442,7 +442,40 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         # 注意：测试台生成功能已移除，由代码审查智能体负责
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """实现LLM调用 - 智能处理Schema验证错误"""
+        """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
+        # 生成对话ID（如果还没有）
+        if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
+            self.current_conversation_id = f"verilog_agent_{int(time.time())}"
+        
+        # 构建用户消息
+        user_message = ""
+        is_first_call = len(conversation) <= 1  # 如果对话历史很少，认为是第一次调用
+        
+        for msg in conversation:
+            if msg["role"] == "user":
+                user_message += f"{msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                user_message += f"Assistant: {msg['content']}\n\n"
+        
+        try:
+            # 使用优化的LLM调用方法
+            response = await self.llm_client.send_prompt_optimized(
+                conversation_id=self.current_conversation_id,
+                user_message=user_message.strip(),
+                system_prompt=self._build_enhanced_system_prompt() if is_first_call else None,
+                temperature=0.3,
+                max_tokens=4000,
+                force_refresh_system=is_first_call
+            )
+            return response
+        except Exception as e:
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            # 如果优化调用失败，回退到传统方式
+            self.logger.warning("⚠️ 回退到传统LLM调用方式")
+            return await self._call_llm_traditional(conversation)
+    
+    async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
+        """传统的LLM调用方法（作为回退方案）"""
         # 构建完整的prompt
         full_prompt = ""
         system_prompt = self._build_enhanced_system_prompt()
@@ -459,12 +492,12 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             response = await self.llm_client.send_prompt(
                 prompt=full_prompt.strip(),
                 system_prompt=system_prompt,
-                temperature=0.3,  # 降低温度以提高一致性
+                temperature=0.3,
                 max_tokens=4000
             )
             return response
         except Exception as e:
-            self.logger.error(f"❌ LLM调用失败: {str(e)}")
+            self.logger.error(f"❌ 传统LLM调用失败: {str(e)}")
             raise
     
     def _build_enhanced_system_prompt(self) -> str:
@@ -588,6 +621,59 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 }
 ```
 
+### 方式4: 代码质量分析
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "analyze_code_quality",
+            "parameters": {
+                "verilog_code": "module counter (input clk, input reset, output reg [7:0] count); always @(posedge clk or negedge reset) begin if (!reset) count <= 8'd0; else count <= count + 1'b1; end endmodule",
+                "module_name": "counter"
+            }
+        }
+    ]
+}
+```
+
+⚠️ **重要提醒**:
+- `analyze_code_quality` 工具需要 `verilog_code` 参数（必需），这是要分析的完整Verilog代码
+- 如果需要分析文件中的代码，请先使用 `read_file` 读取文件内容，然后将内容作为 `verilog_code` 参数传递
+- 不要使用 `file_path` 参数，该工具不接受文件路径
+
+### 方式5: 设计文档生成
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_design_documentation",
+            "parameters": {
+                "module_name": "counter",
+                "verilog_code": "module counter (...); ... endmodule",
+                "requirements": "设计一个8位计数器",
+                "design_type": "sequential"
+            }
+        }
+    ]
+}
+```
+
+### 方式6: 代码优化
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "optimize_verilog_code",
+            "parameters": {
+                "verilog_code": "module counter (...); ... endmodule",
+                "optimization_target": "area",
+                "module_name": "counter"
+            }
+        }
+    ]
+}
+```
+
 🛠️ **工具调用规则**:
 你必须使用JSON格式调用工具，格式如下：
 ```json
@@ -629,7 +715,18 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 - 智能推断缺失参数
 - 提供详细的错误信息和修复建议
 
-请根据具体需求选择合适的工具调用方式，系统会自动处理参数适配和验证。"""
+请根据具体需求选择合适的工具调用方式，系统会自动处理参数适配和验证。
+
+🚨 **重要提醒 - 避免循环调用**:
+1. **analyze_code_quality 工具调用**: 必须先使用 `read_file` 读取文件内容，然后将内容作为 `verilog_code` 参数传递
+2. **不要重复调用**: 如果工具调用失败，检查错误信息并修正参数，不要重复相同的错误调用
+3. **参数验证**: 确保传递的参数符合工具定义的要求
+4. **错误恢复**: 如果工具调用失败，分析错误原因并调整策略，而不是无限重试
+
+示例正确流程：
+1. 使用 `read_file` 读取文件内容
+2. 将读取的内容作为 `verilog_code` 参数传递给 `analyze_code_quality`
+3. 处理分析结果，不要重复相同的调用"""
         
         return base_prompt
     
