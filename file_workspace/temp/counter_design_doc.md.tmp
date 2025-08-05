@@ -4,72 +4,47 @@
 
 ## 1. 模块概述
 
-### 功能描述  
-`counter` 是一个可参数化的同步递增计数器模块，支持动态最大计数值设定、使能控制、同步复位以及溢出检测。该模块可用于需要精确计数控制的数字系统中，如定时器、状态机控制、数据流监控等场景。
+### 功能描述
+
+`counter` 模块是一个**同步计数器**模块，用于在时钟上升沿时根据使能信号（`enable`）递增计数值。当复位信号（`reset`）有效时，计数器清零。
 
 ### 设计目标
-- 实现一个宽度可配置的向上计数器（`WIDTH` 参数化）。
-- 支持外部指定最大计数值（`max_count` 输入）。
-- 提供同步使能（`en`）和低电平有效的同步复位（`rst_n`）。
-- 在计数达到最大值时产生一个周期宽的 `overflow` 脉冲。
-- 可选自动清零模式（由 `AUTO_CLEAR` 参数控制）。
-- 保证时序安全性和可综合性的纯同步设计。
+
+- 实现一个8位同步递增计数器。
+- 支持异步复位（低电平有效）。
+- 支持同步使能控制。
+- 适用于通用计数、定时、状态控制等场景。
 
 ---
 
 ## 2. 接口说明
 
-### 端口列表
+### 端口定义
 
-| 端口名       | 方向   | 位宽           | 描述 |
-|--------------|--------|----------------|------|
-| `clk`        | 输入   | 1              | 主时钟信号，上升沿触发 |
-| `rst_n`      | 输入   | 1              | 低电平有效的同步复位信号 |
-| `en`         | 输入   | 1              | 计数使能信号，高电平有效 |
-| `max_count`  | 输入   | `[WIDTH-1:0]`  | 最大计数值，决定溢出点 |
-| `count`      | 输出   | `[WIDTH-1:0]`  | 当前计数值 |
-| `overflow`   | 输出   | 1              | 溢出标志，当计数达到 `max_count` 时输出一个周期的高脉冲 |
-
-### 参数说明
-
-| 参数名         | 类型     | 默认值 | 描述 |
-|----------------|----------|--------|------|
-| `WIDTH`        | integer  | 8      | 计数器位宽，决定计数范围为 `0` 到 `2^WIDTH - 1` |
-| `AUTO_CLEAR`   | integer  | 1      | 是否在溢出后自动清零计数器。`1` 表示自动清零，`0` 表示保持最大值或需外部干预 |
-
-> ⚠️ 注意：`AUTO_CLEAR` 必须为 `0` 或 `1`，不支持其他值。
+| 端口名   | 方向   | 类型     | 描述 |
+|----------|--------|----------|------|
+| `clk`    | 输入   | `wire`   | 主时钟信号，上升沿触发计数操作 |
+| `reset`  | 输入   | `wire`   | 异步复位信号，低电平有效，用于将计数器清零 |
+| `enable` | 输入   | `wire`   | 同步使能信号，高电平时允许计数器递增 |
+| `count`  | 输出   | `reg[7:0]` | 8位计数器输出值 |
 
 ---
 
 ## 3. 功能规格
 
-### 基本行为
-- 计数器在每个时钟上升沿根据控制信号更新状态。
-- 复位有效（`rst_n == 0`）时，`count` 和 `overflow` 被清零。
-- 当 `en == 1` 且未复位时，计数器递增。
-- 当 `count_reg == max_count` 时，产生一个周期的 `overflow` 脉冲。
-- 若 `AUTO_CLEAR == 1`，则溢出后 `count` 自动归零；否则行为未定义（建议外部逻辑处理）。
+### 功能说明
 
-### 状态转移逻辑
+- **复位功能**：
+  - 当 `reset` 为低电平时，无论 `enable` 和 `clk` 的状态如何，`count` 被置为 `8'd0`。
+  - 复位为异步操作，优先于其他逻辑。
 
-| 条件 | 行为 |
-|------|------|
-| `!rst_n` | `count <= 0; overflow <= 0` |
-| `rst_n && !en` | 保持当前状态 |
-| `rst_n && en && (count < max_count)` | `count <= count + 1` |
-| `rst_n && en && (count == max_count)` | `overflow <= 1`; 若 `AUTO_CLEAR` 为 1，则 `count <= 0` |
+- **计数功能**：
+  - 在 `reset` 为高电平的前提下，每当 `clk` 的上升沿到来时：
+    - 如果 `enable` 为高，则 `count` 值加1。
+    - 如果 `enable` 为低，则 `count` 保持不变。
 
-### 溢出机制
-- `overflow` 是一个单周期脉冲信号，在满足以下条件时置高：
-  - `en == 1`
-  - 当前 `count_reg == max_count`
-- 脉冲宽度为一个时钟周期，适合用于触发中断或状态切换。
-
-### 自动清零模式
-- 当 `AUTO_CLEAR = 1`：计数达到 `max_count` 后自动归零，开始新一轮计数。
-- 当 `AUTO_CLEAR = 0`：溢出后不自动归零，`count` 将停留在 `max_count`，直到被复位或外部干预。
-
-> 🔔 建议：若使用 `AUTO_CLEAR = 0`，应在外部逻辑中处理后续动作，避免死锁。
+- **溢出行为**：
+  - 当 `count` 达到最大值 `8'hFF`（即255）时，下一次递增将导致其回绕为 `8'd0`。
 
 ---
 
@@ -77,91 +52,43 @@
 
 ### 内部结构
 
-```plaintext
-+-----------------------------+
-|          counter            |
-|                             |
-|   +---------------------+   |
-|   |   count_reg [WIDTH] |<--+-- count (output)
-|   +----------+----------+   |
-|              |              |
-|   +----------v----------+   |
-|   |     Adder (+1)      |   |
-|   +----------+----------+   |
-|              |              |
-|   +----------v----------+   |
-|   |  Comparator (==)    |<--+-- max_count
-|   +----------+----------+   |
-|              |              |
-|   +----------v----------+   |
-|   | overflow_reg (1bit) |<--+-- overflow (output)
-|   +---------------------+   |
-|                             |
-|   Control Logic:            |
-|   - clk, rst_n, en          |
-|   - AUTO_CLEAR parameter    |
-+-----------------------------+
-```
+该模块采用一个简单的同步逻辑结构，包含以下关键组件：
 
-### 关键组件说明
+- **时钟同步控制逻辑**：在 `always @(posedge clk or negedge reset)` 块中实现。
+- **异步复位逻辑**：在 `if (!reset)` 分支中处理。
+- **使能控制逻辑**：在 `else if (enable)` 分支中判断是否递增计数器。
+- **8位寄存器 `count`**：用于存储当前计数值。
 
-- **`count_reg`**：主计数寄存器，存储当前计数值。
-- **加法器**：实现 `count_reg + 1` 操作（隐式由 Verilog 表达式生成）。
-- **比较器**：判断 `count_reg == max_count`。
-- **`overflow_reg`**：溢出状态寄存器，确保脉冲仅持续一个周期。
-- **同步控制逻辑**：所有操作均在 `posedge clk` 下执行，确保同步性。
+### 关键代码片段
 
-### 寄存器传输级（RTL）行为
 ```verilog
-always @(posedge clk) begin
-    if (!rst_n) begin
-        count_reg    <= {WIDTH{1'b0}};
-        overflow_reg <= 1'b0;
-    end else begin
-        overflow_reg <= 1'b0; // 默认清零
-
-        if (en) begin
-            if (count_reg == max_count) begin
-                overflow_reg <= 1'b1;
-                if (AUTO_CLEAR)
-                    count_reg <= {WIDTH{1'b0}};
-            end else begin
-                count_reg <= count_reg + 1;
-            end
-        end
+always @(posedge clk or negedge reset) begin
+    if (!reset) begin
+        count <= 8'd0;
+    end else if (enable) begin
+        count <= count + 8'd1;
     end
 end
 ```
-
-> ✅ 所有赋值均为非阻塞赋值（`<=`），符合同步设计规范。
 
 ---
 
 ## 5. 时序要求
 
 ### 时钟要求
-- 主时钟 `clk` 应为稳定时钟源。
-- 推荐频率依据应用需求设定，但需满足目标工艺下的建立/保持时间约束。
-- 上升沿采样所有输入信号。
+
+- 主时钟 `clk` 应为稳定周期信号。
+- 推荐频率范围：依据具体应用需求设定，例如 1 MHz ~ 100 MHz。
 
 ### 复位信号
-- `rst_n` 为**同步低电平复位**信号：
-  - 必须在时钟上升沿有效才能触发复位。
-  - 建议复位脉冲宽度 ≥ 2 个时钟周期以确保可靠复位。
-  - 不支持异步复位功能。
 
-### 时序约束建议（SDC 示例）
-
-```tcl
-create_clock -name clk -period 10 [get_ports clk]
-set_input_delay -clock clk 2 [get_ports {en max_count}]
-set_output_delay -clock clk 2 [get_ports {count overflow}]
-set_multicycle_path -setup 1 -from [get_clocks clk] -to [get_clocks clk]
-```
+- `reset` 是异步低电平有效的复位信号。
+- 建议在系统上电时保持 `reset` 为低电平至少一个时钟周期，以确保计数器正确初始化。
 
 ### 建立与保持时间
-- 所有输入信号（`en`, `max_count`）应在时钟上升沿前满足建立时间（Tsu），并在之后满足保持时间（Th）。
-- 工具综合时应自动检查并优化。
+
+- 所有输入信号（`enable`）应在 `clk` 上升沿前满足建立时间（setup time）和保持时间（hold time）要求。
+- 复位信号 `reset` 的异步特性要求其在时钟边沿附近保持稳定，避免亚稳态问题。
 
 ---
 
@@ -169,34 +96,31 @@ set_multicycle_path -setup 1 -from [get_clocks clk] -to [get_clocks clk]
 
 ### 实例化示例
 
+以下是一个在顶层模块中实例化 `counter` 的示例：
+
 ```verilog
-// 实例化一个 8 位计数器，最大计数为 99，溢出后自动清零
-counter #(
-    .WIDTH(8),
-    .AUTO_CLEAR(1)
-) u_counter (
-    .clk        (clk),
-    .rst_n      (rst_n),
-    .en         (counter_en),
-    .max_count  (8'd99),
-    .count      (current_count),
-    .overflow   (ovf_flag)
+module top_module (
+    input      sys_clk,
+    input      sys_rst_n,
+    input      en,
+    output reg [7:0] counter_out
 );
+
+counter u_counter (
+    .clk     (sys_clk),
+    .reset   (sys_rst_n),
+    .enable  (en),
+    .count   (counter_out)
+);
+
+endmodule
 ```
 
-### 参数配置建议
-
-| 应用场景 | 推荐参数 |
-|--------|----------|
-| 定时器循环 | `AUTO_CLEAR = 1` |
-| 单次计数等待 | `AUTO_CLEAR = 0`，配合外部清零 |
-| 高精度延时 | `WIDTH ≥ 16`, `max_count` 设为所需周期数 |
-
 ### 注意事项
-1. **`max_count` 必须 ≤ `2^WIDTH - 1`**，否则无法正确比较。
-2. 若 `max_count` 动态变化，建议在 `en=0` 时修改，避免竞争。
-3. `overflow` 为单周期脉冲，若下游模块可能错过，建议使用边沿检测或锁存。
-4. `AUTO_CLEAR = 0` 时，需确保外部逻辑能处理溢出后的状态，防止停滞。
+
+- `reset` 信号应为低电平有效，确保与系统复位逻辑一致。
+- `enable` 信号应在 `clk` 上升沿前稳定，避免毛刺导致计数错误。
+- 若需扩展为更大位宽，需修改 `count` 的位宽定义及加法逻辑。
 
 ---
 
@@ -204,108 +128,76 @@ counter #(
 
 ### 测试策略
 
-| 测试项 | 目标 | 方法 |
-|-------|------|------|
-| 复位功能 | 验证复位后状态清零 | 拉低 `rst_n`，观察 `count` 和 `overflow` 是否归零 |
-| 递增功能 | 验证正常计数 | 使能后观察 `count` 逐拍递增 |
-| 溢出检测 | 验证 `overflow` 正确生成 | 设置 `max_count=5`，计数到 5 时检查 `overflow` 是否为 1 |
-| 自动清零 | 验证 `AUTO_CLEAR` 行为 | 溢出后观察 `count` 是否归零 |
-| 使能控制 | 验证 `en` 控制有效性 | 在 `en=0` 时修改 `max_count`，再开启 `en` 观察行为 |
-| 边界测试 | 验证最大值行为 | 设置 `max_count = 2^WIDTH - 1`，测试溢出 |
+建议采用以下测试策略验证模块功能：
 
-### 仿真测试代码片段（Testbench 示例）
+1. **基本功能测试**：
+   - 测试正常计数功能（`enable=1`）。
+   - 测试使能关闭时计数保持不变（`enable=0`）。
+   - 测试复位功能（`reset=0`）。
+
+2. **边界条件测试**：
+   - 测试计数器从 `8'hFF` 回绕到 `8'h00`。
+   - 测试复位信号在计数器运行过程中插入。
+
+3. **时序测试**：
+   - 测试建立/保持时间是否满足。
+   - 测试复位信号与时钟边沿的同步性。
+
+### 验证要点
+
+| 验证项 | 描述 |
+|--------|------|
+| 复位功能 | `reset=0` 时 `count` 是否清零 |
+| 使能控制 | `enable=1` 时是否递增，`enable=0` 时是否保持 |
+| 递增逻辑 | 每个时钟周期是否正确递增1 |
+| 溢出行为 | 是否从 `8'hFF` 正确回绕到 `8'h00` |
+| 异步复位优先级 | 复位是否优先于其他操作 |
+
+### 示例测试平台代码（Testbench）
 
 ```verilog
 module tb_counter;
 
-    parameter WIDTH = 4;
-    reg         clk = 0;
-    reg         rst_n = 0;
-    reg         en = 0;
-    reg [WIDTH-1:0] max_count = 0;
+reg clk;
+reg reset;
+reg enable;
+wire [7:0] count;
 
-    wire [WIDTH-1:0] count;
-    wire             overflow;
+// 实例化被测模块
+counter uut (
+    .clk(clk),
+    .reset(reset),
+    .enable(enable),
+    .count(count)
+);
 
-    // 实例化被测模块
-    counter #(
-        .WIDTH(4),
-        .AUTO_CLEAR(1)
-    ) uut (
-        .clk(clk),
-        .rst_n(rst_n),
-        .en(en),
-        .max_count(max_count),
-        .count(count),
-        .overflow(overflow)
-    );
+// 生成时钟
+always begin
+    #5 clk = ~clk;
+end
 
-    // 时钟生成
-    always #5 clk = ~clk;
+initial begin
+    clk = 0;
+    reset = 0;
+    enable = 0;
 
-    initial begin
-        $monitor("Time=%0t | count=%d | overflow=%b | en=%b", 
-                 $time, count, overflow, en);
+    #10 reset = 1; // 释放复位
+    enable = 1;
 
-        // 初始化
-        max_count = 4'd5;
+    #100 enable = 0; // 停止计数
+    #50 enable = 1;  // 恢复计数
 
-        // 复位
-        rst_n = 0;
-        #20;
-        rst_n = 1;
+    #20 reset = 0;   // 插入复位
+    #10 reset = 1;
 
-        // 开始计数
-        en = 1;
-        #80;
-        en = 0;
-
-        // 修改 max_count 并重新启用
-        max_count = 4'd3;
-        #10;
-        en = 1;
-        #50;
-
-        $finish;
-    end
+    #100 $finish;
+end
 
 endmodule
 ```
 
-### 预期输出示例
-```
-Time=0   | count=0 | overflow=0 | en=0
-Time=20  | count=0 | overflow=0 | en=0
-Time=30  | count=1 | overflow=0 | en=1
-Time=40  | count=2 | overflow=0 | en=1
-Time=50  | count=3 | overflow=0 | en=1
-Time=60  | count=4 | overflow=0 | en=1
-Time=70  | count=5 | overflow=1 | en=1
-Time=80  | count=0 | overflow=0 | en=1
-...
-```
-
-### 覆盖率建议
-- **功能覆盖率**：
-  - `rst_n` 有效/无效路径
-  - `en` 使能/禁止
-  - 溢出事件触发
-  - `AUTO_CLEAR=0` 与 `=1` 的行为差异
-- **代码覆盖率**：确保所有 `if/else` 分支均被执行。
-
 ---
 
-## 附录：版本信息
+## 结语
 
-| 项目 | 内容 |
-|------|------|
-| 模块名称 | `counter` |
-| 版本 | 1.0 |
-| 作者 | 设计团队 |
-| 最后更新 | 2025年4月5日 |
-| 综合工具兼容性 | 支持主流综合工具（Synopsys DC, Cadence Genus, Yosys） |
-| 可测性 | 支持扫描链插入（需顶层配置） |
-
---- 
-
-✅ **本模块已通过基本功能仿真验证，适用于中低频数字系统设计。**
+本设计文档详细描述了 `counter` 模块的功能、接口、设计结构、时序要求、使用方法及测试策略。该模块结构简洁、功能明确，适用于多种同步计数场景，具备良好的可重用性和可扩展性。

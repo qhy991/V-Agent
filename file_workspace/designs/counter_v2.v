@@ -1,21 +1,16 @@
 module counter (
     input      clk,
-    input      reset,
-    input      enable,
-    output reg [7:0] count
+    input      rst_n,
+    input      en,
+    output reg [3:0] count
 );
 
-// 8-bit counter with synchronous reset and enable control
-// The counter increments only when 'enable' is high
-// Reset takes effect only at rising edge of clock
-
-always @(posedge clk) begin
-    if (reset) begin
-        count <= 8'h00;  // Synchronous reset sets counter to zero
-    end else if (enable) begin
-        count <= count + 1;  // Increment counter when enable is asserted
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        count <= 4'b0;
+    end else if (en) begin
+        count <= count + 1;
     end
-    // No action when enable is low, retain current value
 end
 
 endmodule

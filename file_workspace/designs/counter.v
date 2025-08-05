@@ -1,14 +1,13 @@
 module counter(
     input wire clk,
-    input wire rst,
-    input wire enable,
+    input wire reset,
     output reg [3:0] count
 );
 
-always @(posedge clk or posedge rst) begin
-    if (rst)
+always @(posedge clk or posedge reset) begin
+    if (reset)
         count <= 4'b0;
-    else if (enable)
+    else
         count <= count + 1;
 end
 

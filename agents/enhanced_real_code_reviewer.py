@@ -12,7 +12,7 @@ import tempfile
 import os
 import re
 import time
-from typing import Dict, Any, Set, List, Tuple
+from typing import Dict, Any, Set, List, Tuple, Optional
 from pathlib import Path
 
 from core.schema_system.enhanced_base_agent import EnhancedBaseAgent
@@ -958,6 +958,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 
 🎯 **重要提示 - 文件名传递**:
 """
+        base_prompt += "\n\n【重要】每当你调用任何工具时，都要思考本次操作后是否需要进行仿真测试（run_simulation）来验证修改的正确性。只有在需要验证功能正确性或修改后有影响时，才应安排仿真测试。"
         return base_prompt
     
     def get_capabilities(self) -> Set[AgentCapability]:
@@ -979,11 +980,50 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         self.logger.info(f"🎯 开始执行增强代码审查任务: {task_id}")
         
         try:
+            # 🔧 新增：从任务描述中提取设计文件路径
+            design_file_path = self._extract_design_file_path_from_task(enhanced_prompt)
+            if design_file_path:
+                self.logger.info(f"📁 从任务描述中提取到设计文件路径: {design_file_path}")
+                
+                # 读取设计文件内容
+                design_content = self._read_design_file_content(design_file_path)
+                if design_content:
+                    self.logger.info(f"✅ 成功读取设计文件内容，长度: {len(design_content)} 字符")
+                    
+                    # 将设计文件内容添加到 file_contents 中，供后续工具使用
+                    file_contents["design_file"] = {
+                        "path": design_file_path,
+                        "content": design_content,
+                        "type": "verilog"
+                    }
+                    
+                    # 增强任务描述，明确指定要使用的设计文件
+                    enhanced_prompt = f"""
+{enhanced_prompt}
+
+**🔧 重要提示**:
+- 已找到设计文件: {design_file_path}
+- 设计文件内容已加载，长度: {len(design_content)} 字符
+- 请直接使用此设计文件进行代码审查和测试台生成
+- 不需要重新生成或查找设计文件
+"""
+                else:
+                    self.logger.warning(f"⚠️ 无法读取设计文件内容: {design_file_path}")
+            else:
+                self.logger.info("ℹ️ 未从任务描述中找到设计文件路径，将使用默认流程")
+            
+            # 🔧 新增：将 file_contents 存储到实例变量中，供工具调用时使用
+            self._current_file_contents = file_contents
+            
             # 使用增强验证处理流程 - 允许更多迭代次数进行错误修复
             result = await self.process_with_enhanced_validation(
                 user_request=enhanced_prompt,
                 max_iterations=8  # 增加到8次迭代，给足够空间进行错误修复
             )
+            
+            # 🔧 新增：清理实例变量
+            if hasattr(self, '_current_file_contents'):
+                delattr(self, '_current_file_contents')
             
             if result["success"]:
                 self.logger.info(f"✅ 代码审查任务完成: {task_id}")
@@ -998,6 +1038,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                     "tool_results": result.get("tool_results", []),
                     "iterations": result.get("iterations", 1),
                     "generated_files": generated_files,  # 新增：生成的文件路径列表
+                    "design_file_path": design_file_path,  # 🔧 新增：记录使用的设计文件路径
                     "quality_metrics": {
                         "schema_validation_passed": True,
                         "parameter_errors_fixed": result.get("iterations", 1) > 1,
@@ -1010,10 +1051,15 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                     "success": False,
                     "task_id": task_id,
                     "error": result.get("error", "Unknown error"),
-                    "iterations": result.get("iterations", 1)
+                    "iterations": result.get("iterations", 1),
+                    "design_file_path": design_file_path  # 🔧 新增：记录使用的设计文件路径
                 }
                 
         except Exception as e:
+            # 🔧 新增：确保清理实例变量
+            if hasattr(self, '_current_file_contents'):
+                delattr(self, '_current_file_contents')
+                
             self.logger.error(f"❌ 代码审查任务执行异常: {task_id} - {str(e)}")
             return {
                 "success": False,
@@ -1098,13 +1144,30 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     # 工具实现方法
     # =============================================================================
     
-    async def _tool_generate_testbench(self, module_name: str, module_code: str,
+    async def _tool_generate_testbench(self, module_name: str, module_code: str = None,
                                      test_scenarios: List[Dict] = None,
                                      clock_period: float = 10.0,
                                      simulation_time: int = 10000,
                                      coverage_options: Dict = None) -> Dict[str, Any]:
         """生成测试台工具实现"""
         try:
+            # 🔧 新增：从实例变量中获取 file_contents（如果存在）
+            file_contents = getattr(self, '_current_file_contents', None)
+            if file_contents and "design_file" in file_contents:
+                design_file_info = file_contents["design_file"]
+                if design_file_info.get("content"):
+                    module_code = design_file_info["content"]
+                    self.logger.info(f"📁 使用传递的设计文件内容，长度: {len(module_code)} 字符")
+                else:
+                    self.logger.warning("⚠️ file_contents 中的 design_file 没有内容")
+            
+            # 如果没有模块代码，报错
+            if not module_code:
+                return {
+                    "success": False,
+                    "error": "缺少模块代码，无法生成测试台"
+                }
+            
             # 验证并修复模块名
             actual_module_name = self._validate_and_fix_module_name(module_name, module_code)
             if actual_module_name != module_name:
@@ -2882,3 +2945,73 @@ endmodule
                 "success": False,
                 "error": f"修复过程中发生异常: {str(e)}"
             }
+    
+    def _extract_design_file_path_from_task(self, task_description: str) -> Optional[str]:
+        """从任务描述中提取设计文件路径"""
+        try:
+            import re
+            
+            # 方法1：查找 "设计文件:" 后面的路径
+            design_file_pattern = r'设计文件[:\s]+([^\s\n]+\.v)'
+            match = re.search(design_file_pattern, task_description)
+            if match:
+                return match.group(1)
+            
+            # 方法2：查找 "设计文件路径" 部分
+            path_section_pattern = r'设计文件路径[:\s]*\n.*?设计文件[:\s]+([^\s\n]+\.v)'
+            match = re.search(path_section_pattern, task_description, re.DOTALL)
+            if match:
+                return match.group(1)
+            
+            # 方法3：查找任何 .v 文件路径
+            verilog_file_pattern = r'([^\s\n]+\.v)'
+            matches = re.findall(verilog_file_pattern, task_description)
+            if matches:
+                # 优先选择包含 "design" 或 "counter" 等关键词的路径
+                for path in matches:
+                    if any(keyword in path.lower() for keyword in ['design', 'counter', 'module']):
+                        return path
+                # 如果没有找到关键词匹配的，返回第一个
+                return matches[0]
+            
+            self.logger.warning("⚠️ 未从任务描述中找到设计文件路径")
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ 提取设计文件路径时出错: {str(e)}")
+            return None
+    
+    def _read_design_file_content(self, file_path: str) -> Optional[str]:
+        """读取设计文件内容"""
+        try:
+            from pathlib import Path
+            
+            # 处理相对路径
+            if not os.path.isabs(file_path):
+                # 尝试多种可能的路径组合
+                possible_paths = [
+                    file_path,
+                    f"./file_workspace/designs/{os.path.basename(file_path)}",
+                    f"./file_workspace/{os.path.basename(file_path)}",
+                    f"file_workspace/designs/{os.path.basename(file_path)}",
+                    f"file_workspace/{os.path.basename(file_path)}"
+                ]
+                
+                for path in possible_paths:
+                    if Path(path).exists():
+                        file_path = path
+                        break
+                else:
+                    self.logger.warning(f"⚠️ 未找到设计文件: {file_path}")
+                    return None
+            
+            # 读取文件内容
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            self.logger.info(f"✅ 成功读取设计文件: {file_path} (长度: {len(content)} 字符)")
+            return content
+            
+        except Exception as e:
+            self.logger.error(f"❌ 读取设计文件失败: {str(e)}")
+            return None

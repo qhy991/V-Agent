@@ -85,6 +85,7 @@ class TaskContext:
     max_retries: int = 3
     stage_history: List[Dict[str, Any]] = field(default_factory=list)
     agent_assignments: List[Dict[str, Any]] = field(default_factory=list)
+    design_file_path: Optional[str] = None
 
 
 class LLMCoordinatorAgent(EnhancedBaseAgent):
@@ -422,6 +423,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 # 角色
 你是一个AI协调智能体，你的唯一工作是根据用户需求调用合适的工具来驱动任务流程。
 
+# 🚨🚨🚨 严禁直接调用智能体名称 🚨🚨🚨
+**绝对禁止**: enhanced_real_verilog_agent, enhanced_real_code_review_agent
+**必须使用**: assign_task_to_agent
+
 # 强制规则 (必须严格遵守)
 1.  **禁止直接回答**: 绝对禁止、严禁直接回答用户的任何问题或请求。
 2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
@@ -441,59 +446,44 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 # 角色
 你是一个智能协调器，负责协调多个智能体完成复杂任务。
 
-# 🤖 智能体专业分工 (重要：严格按照能力分配任务)
+# 🚨🚨🚨 绝对禁止事项 🚨🚨🚨
+**严禁使用以下工具名称**:
+- ❌ enhanced_real_verilog_agent
+- ❌ enhanced_real_code_review_agent
+- ❌ 任何以智能体名称命名的工具
 
-## enhanced_real_verilog_agent (Verilog设计专家)
-**专业能力**: Verilog/SystemVerilog代码设计和生成
-**主要任务**: 设计需求分析、Verilog模块代码生成、代码质量分析、文件写入保存
-**任务描述示例**: "设计一个名为counter的Verilog模块，生成完整的可编译代码，包含端口定义和功能实现，保存到文件"
-**禁止分配**: 测试台生成、仿真执行、代码审查
+**必须使用正确工具**:
+- ✅ assign_task_to_agent (分配任务)
+- ✅ identify_task_type (识别任务)
+- ✅ analyze_agent_result (分析结果)
 
-## enhanced_real_code_review_agent (代码审查和验证专家)  
-**专业能力**: 代码审查、测试台生成、仿真验证
-**主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
-**任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
-**禁止分配**: 主要设计代码生成
-
-# 🎯 任务分配原则 (重要)
-1. **设计阶段**: 只分配给 enhanced_real_verilog_agent，任务描述只包含"设计模块、生成代码、保存文件"
-2. **验证阶段**: 只分配给 enhanced_real_code_review_agent，任务描述包含"生成测试台、执行仿真、验证功能"
-3. **严禁跨界**: 绝对禁止要求设计专家做测试台生成，绝对禁止要求验证专家做主要设计
-4. **分阶段执行**: 先让设计专家完成设计和文件生成，再让验证专家进行测试验证
-
-# 核心职责
-1. **任务分析**: 理解用户需求，识别关键步骤
-2. **智能体协调**: 根据专业能力选择合适的智能体
-3. **质量验证**: 检查任务是否真正完成
-4. **多智能体协作**: 设计→验证的流水线协作
-
-# 强制规则 (必须严格遵守)
+# 🚨 强制规则 (必须严格遵守)
 1.  **禁止直接回答**: 绝对禁止直接回答用户的任何问题或请求。
 2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
 3.  **禁止生成描述性文本**: 绝对禁止生成任何解释、分析、策略描述或其他文本内容。
 4.  **禁止生成markdown格式**: 绝对禁止使用 ###、---、** 等markdown格式。
 5.  **禁止生成表格**: 绝对禁止生成任何表格或列表。
+6.  **🚨🚨🚨 禁止直接调用智能体**: 绝对禁止将智能体名称用作tool_name
+7.  **🚨🚨🚨 必须使用 assign_task_to_agent**: 分配任务给智能体时，必须且只能使用 assign_task_to_agent 工具
 
-# 工作流程
-1. `identify_task_type` - 识别任务类型
-2. `recommend_agent` - 推荐智能体
-3. `assign_task_to_agent` - 分配任务
-4. `analyze_agent_result` - 分析结果
-5. 根据分析结果决定：
-   - 如果需要其他智能体协作 → 继续分配任务
-   - 如果任务完成 → 调用 `provide_final_answer`
+# 🔧 正确的工具调用方式 (重要！！！)
 
-# 智能协作策略
-- 当第一个智能体完成设计但缺少测试台时，调用 `enhanced_real_code_review_agent`
-- 当需要仿真验证时，调用 `enhanced_real_code_review_agent`
-- 根据实际执行结果而非文本报告做决策
+## ✅ 正确示例 1 - 任务类型识别
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "identify_task_type",
+            "parameters": {{
+                "user_request": "设计一个计数器模块",
+                "context": {{}}
+            }}
+        }}
+    ]
+}}
+```
 
-# 智能体调用方法 (重要！)
-**正确方式**: 使用 `assign_task_to_agent` 工具，在 `agent_id` 参数中指定智能体名称
-**错误方式**: 直接调用智能体名称作为工具
-
-**示例**:
-✅ 正确 - 调用 `assign_task_to_agent` 工具:
+## ✅ 正确示例 2 - 分配任务给Verilog设计智能体
 ```json
 {{
     "tool_calls": [
@@ -501,39 +491,95 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "tool_name": "assign_task_to_agent",
             "parameters": {{
                 "agent_id": "enhanced_real_verilog_agent",
-                "task_description": "设计一个4位计数器模块"
+                "task_description": "设计一个名为counter的Verilog模块，生成完整的可编译代码",
+                "task_type": "design",
+                "priority": "medium"
             }}
         }}
     ]
 }}
 ```
 
-❌ 错误 - 直接调用智能体名称:
+## ✅ 正确示例 3 - 分配任务给代码审查智能体
 ```json
 {{
     "tool_calls": [
         {{
-            "tool_name": "enhanced_real_verilog_agent",  // 这是错误的！
-            "parameters": {{}}
+            "tool_name": "assign_task_to_agent",
+            "parameters": {{
+                "agent_id": "enhanced_real_code_review_agent",
+                "task_description": "审查Verilog代码并生成测试台",
+                "task_type": "verification",
+                "priority": "medium"
+            }}
         }}
     ]
 }}
 ```
 
+## ❌❌❌ 错误示例 - 绝对禁止！！！
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "enhanced_real_verilog_agent",  // ❌ 禁止！
+            "parameters": {{...}}
+        }}
+    ]
+}}
+```
+
+# 🤖 智能体专业分工
+
+## enhanced_real_verilog_agent (Verilog设计专家)
+**专业能力**: Verilog/SystemVerilog代码设计和生成
+**使用方式**: 通过 assign_task_to_agent 调用，agent_id="enhanced_real_verilog_agent"
+**主要任务**: 设计需求分析、Verilog模块代码生成、代码质量分析、文件写入保存
+**任务描述示例**: "设计一个名为counter的Verilog模块，生成完整的可编译代码，包含端口定义和功能实现，保存到文件"
+
+## enhanced_real_code_review_agent (代码审查和验证专家)  
+**专业能力**: 代码审查、测试台生成、仿真验证
+**使用方式**: 通过 assign_task_to_agent 调用，agent_id="enhanced_real_code_review_agent"
+**主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
+**任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
+
+# 📋 标准工作流程
+1. **第一步**: 调用 `identify_task_type` 识别任务类型
+2. **第二步**: 根据识别结果，调用 `assign_task_to_agent` 分配任务
+3. **第三步**: 调用 `analyze_agent_result` 分析执行结果
+4. **第四步**: 根据需要继续分配任务或调用 `provide_final_answer`
+
+# 🔄 多智能体协作模式
+- **设计阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_verilog_agent
+- **验证阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_code_review_agent
+- **结果分析**: 使用 analyze_agent_result 分析每个阶段的结果
+
+# 🚨 关键提醒
+1. **绝对不要**在 tool_name 字段中使用智能体名称
+2. **必须使用** assign_task_to_agent 工具来调用智能体
+3. **agent_id 参数**才是指定智能体的正确位置
+4. **所有工具调用**都必须是有效的JSON格式
+
 # 可用工具
-你必须从以下工具列表中选择并调用：
 {tools_json}
 
-# 输出格式
-你的回复必须是严格的JSON格式，包含一个 "tool_calls" 列表。
+# 🎯 输出格式要求
+**严格要求**: 你的回复必须是有效的JSON格式，包含 "tool_calls" 数组。
+**格式模板**:
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "正确的工具名称",
+            "parameters": {{
+                "参数名": "参数值"
+            }}
+        }}
+    ]
+}}
+```
 
-# 重要提醒
-- 不要生成任何描述性文本
-- 不要解释你的策略
-- 不要分析任务
-- 不要使用markdown格式
-- 不要生成表格
-- 只生成工具调用JSON
+⚡ **立即开始**: 收到用户请求后，立即调用 `identify_task_type` 工具开始任务分析，不要生成任何其他内容。
 """
     
     async def register_agent(self, agent: EnhancedBaseAgent):
@@ -671,13 +717,18 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         escaped_user_request = user_request.replace('"', '\\"')
 
         return f"""
-# 强制指令
+# 🚨🚨🚨 强制指令 🚨🚨🚨
 你必须立即调用 `identify_task_type` 工具。
 
 **用户需求**:
 {user_request}
 
-# 工具调用格式 (必须严格遵守):
+# 🚨 绝对禁止以下工具名称 🚨
+❌ enhanced_real_verilog_agent
+❌ enhanced_real_code_review_agent  
+❌ 任何智能体名称
+
+# ✅ 唯一正确的工具调用格式:
 ```json
 {{
     "tool_calls": [
@@ -691,18 +742,20 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 }}
 ```
 
-# 重要提醒
-- 只能调用 `identify_task_type` 工具
-- 不要直接调用智能体名称
-- 不要生成任何其他内容
-- 不要生成任何描述性文本
-- 不要解释你的策略
-- 不要分析任务
-- 不要使用markdown格式
-- 不要生成表格
-- 只生成工具调用JSON
+# 🚨🚨🚨 严格要求 🚨🚨🚨
+- ✅ 只能调用 `identify_task_type` 工具
+- ❌ 绝对禁止调用智能体名称作为工具
+- ❌ 绝对禁止使用 enhanced_real_verilog_agent 作为 tool_name
+- ❌ 绝对禁止使用 enhanced_real_code_review_agent 作为 tool_name
+- ❌ 不要生成任何其他内容
+- ❌ 不要生成任何描述性文本
+- ❌ 不要解释你的策略
+- ❌ 不要分析任务
+- ❌ 不要使用markdown格式
+- ❌ 不要生成表格
+- ✅ 只生成工具调用JSON
 
-不要回复任何其他内容，立即生成上述JSON。
+⚡ 立即执行: 复制上面的JSON，不要修改任何内容，立即生成。
 """
     
     def _build_coordination_task(self, user_request: str, task_context: TaskContext) -> str:
@@ -751,7 +804,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     async def _tool_assign_task_to_agent(self, agent_id: str, task_description: str,
                                        expected_output: str = "",
                                        task_type: str = "composite",
-                                       priority: str = "medium") -> Dict[str, Any]:
+                                       priority: str = "medium",
+                                       design_file_path: str = None) -> Dict[str, Any]:
         """智能分配任务给最合适的智能体"""
         
         try:
@@ -792,6 +846,17 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             # 设置实验路径
             task_context.experiment_path = "./file_workspace"
             
+            # 🔧 新增：如果提供了 design_file_path，直接使用
+            if design_file_path:
+                task_context.design_file_path = design_file_path
+                self.logger.info(f"📁 使用提供的设计文件路径: {design_file_path}")
+            else:
+                # 🔧 新增：尝试从之前的智能体结果中提取设计文件路径
+                design_file_path = self._extract_design_file_path_from_previous_results()
+                if design_file_path:
+                    task_context.design_file_path = design_file_path
+                    self.logger.info(f"📁 从之前结果中提取设计文件路径: {design_file_path}")
+            
             # 检查是否是后续调用（通过对话历史判断）
             is_follow_up_call = False
             if hasattr(agent, 'conversation_history') and agent.conversation_history:
@@ -821,7 +886,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             task_context.agent_assignments.append({
                 "agent_id": agent_id,
                 "timestamp": time.time(),
-                "task_description": task_description
+                "task_description": task_description,
+                "design_file_path": design_file_path  # 🔧 新增：记录设计文件路径
             })
             
             self.logger.info(f"📤 发送任务给智能体 {agent_id}")
@@ -837,23 +903,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 
                 agent_response = await agent.process_with_function_calling(
                     user_request=enhanced_task,
-                    max_iterations=8,
-                    conversation_id=task_context.task_id,  # 🔗 传递对话ID
-                    preserve_context=True,  # 🧠 保持上下文
-                    enable_self_continuation=True,  # 🔄 启用自主任务继续
-                    max_self_iterations=3  # 🔄 最多自主继续3轮
+                    conversation_id=task_id,
+                    max_iterations=8
                 )
-                
-                # 📋 记录调用后的对话状态
-                if hasattr(agent, 'get_conversation_summary'):
-                    post_call_summary = agent.get_conversation_summary()
-                    self.logger.info(f"📋 调用后 agent 对话状态: {post_call_summary}")
-                    # 记录对话变化
-                    if post_call_summary.get('message_count', 0) > agent_conversation_summary.get('message_count', 0):
-                        added_messages = post_call_summary.get('message_count', 0) - agent_conversation_summary.get('message_count', 0)
-                        self.logger.info(f"➕ 本次调用添加了 {added_messages} 条新消息到对话历史")
-                    else:
-                        self.logger.warning("⚠️ 对话历史没有增加，可能没有保持上下文")
                 
                 execution_time = time.time() - start_time
                 
@@ -865,7 +917,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 task_context.agent_results[agent_id] = {
                     "response": agent_response,
                     "execution_time": execution_time,
-                    "success": True
+                    "success": True,
+                    "design_file_path": design_file_path  # 🔧 新增：保存设计文件路径
                 }
                 
                 # 恢复智能体状态
@@ -879,7 +932,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                     "task_id": task_id,
                     "response": agent_response,
                     "execution_time": execution_time,
-                    "task_context": task_context
+                    "task_context": task_context,
+                    "design_file_path": design_file_path  # 🔧 新增：返回设计文件路径
                 }
                 
             except Exception as e:
@@ -930,6 +984,16 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 外部testbench路径: {task_context.external_testbench_path}
 - 工作指导: 如果你是代码审查智能体，请直接使用提供的testbench进行测试，不要生成新的testbench
 - 专注任务: 代码审查、错误修复、测试执行和结果分析"""
+        
+        # 🔧 新增：构建设计文件路径信息
+        design_file_section = ""
+        if task_context and hasattr(task_context, 'design_file_path') and task_context.design_file_path:
+            design_file_section = f"""
+
+**📁 设计文件路径**:
+- 设计文件: {task_context.design_file_path}
+- 工作指导: 请直接使用此路径的设计文件进行代码审查和测试台生成
+- 重要提示: 这是需要审查的具体文件路径，请优先使用此文件"""
           
         # 构建实验路径信息 - 从任务上下文或获取当前实验路径
         experiment_path_section = ""
@@ -985,6 +1049,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 当前阶段: {task_context.current_stage if task_context else "initial"}
 - 迭代次数: {task_context.iteration_count if task_context else 0}
 {external_testbench_section}
+{design_file_section}
 {experiment_path_section}
 
 **执行要求**:
@@ -1002,6 +1067,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 📋 继续执行任务
 
 **当前任务**: {task_description}
+{design_file_section}
 
 **执行要求**:
 1. 继续之前的任务执行
@@ -3126,3 +3192,61 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "status": task_status,
             "results": results_summary or {}
         }
+
+    def _extract_design_file_path_from_previous_results(self) -> Optional[str]:
+        """从之前的智能体结果中提取设计文件路径"""
+        try:
+            # 遍历所有活跃任务
+            for task_id, task in self.active_tasks.items():
+                # 遍历任务中的智能体结果
+                for agent_id, agent_result in task.agent_results.items():
+                    # 检查是否是设计智能体的结果
+                    if agent_id == "enhanced_real_verilog_agent" and agent_result.get("success", False):
+                        # 方法1：直接从 agent_result 中获取 design_file_path
+                        if "design_file_path" in agent_result:
+                            return agent_result["design_file_path"]
+                        
+                        # 方法2：从 response 中解析 file_path
+                        response = agent_result.get("response", "")
+                        if isinstance(response, dict) and "file_path" in response:
+                            return response["file_path"]
+                        
+                        # 方法3：从 response 字符串中提取 file_path
+                        if isinstance(response, str):
+                            # 尝试从 JSON 格式的响应中提取
+                            import re
+                            import json
+                            
+                            # 查找 JSON 格式的 file_path
+                            json_pattern = r'"file_path"\s*:\s*"([^"]+)"'
+                            match = re.search(json_pattern, response)
+                            if match:
+                                return match.group(1)
+                            
+                            # 查找其他可能的路径格式
+                            path_patterns = [
+                                r'file_path[:\s]+([^\s\n,}]+)',
+                                r'path[:\s]+([^\s\n,}]+\.v)',
+                                r'saved.*?([^\s\n,}]+\.v)',
+                                r'生成.*?([^\s\n,}]+\.v)'
+                            ]
+                            
+                            for pattern in path_patterns:
+                                match = re.search(pattern, response, re.IGNORECASE)
+                                if match:
+                                    path = match.group(1).strip('"\'')
+                                    if path.endswith('.v'):
+                                        return path
+            
+            # 如果没有找到，尝试从最近的对话历史中查找
+            for task_id, task in self.active_tasks.items():
+                for assignment in task.agent_assignments:
+                    if assignment.get("design_file_path"):
+                        return assignment["design_file_path"]
+            
+            self.logger.warning("⚠️ 未找到之前的设计文件路径")
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ 提取设计文件路径时出错: {str(e)}")
+            return None
