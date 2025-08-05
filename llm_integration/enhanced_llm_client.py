@@ -213,17 +213,29 @@ class OptimizedLLMClient:
         """优化的提示发送方法，支持智能缓存和上下文管理"""
         start_time = time.time()
         
+        self.logger.info(f"🚀 [SYSTEM_PROMPT_DEBUG] 开始优化LLM调用")
+        self.logger.info(f"📝 [SYSTEM_PROMPT_DEBUG] 参数: conversation_id={conversation_id}, force_refresh_system={force_refresh_system}")
+        
         # 获取对话上下文
         context = self._get_conversation_context(conversation_id)
+        
+        # 记录system prompt相关信息
+        if system_prompt:
+            system_prompt_hash = context._hash_prompt(system_prompt)
+            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 收到新system prompt: 长度={len(system_prompt)}, hash={system_prompt_hash[:8]}...")
+            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 当前上下文system prompt hash: {context.system_prompt_hash[:8] if context.system_prompt_hash else 'None'}...")
+        else:
+            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 没有提供system prompt")
         
         # 检查是否需要更新system prompt
         if system_prompt and (force_refresh_system or 
                              context.system_prompt_hash != context._hash_prompt(system_prompt)):
             context.update_system_prompt(system_prompt)
-            self.logger.info(f"🔄 更新对话 {conversation_id} 的system prompt")
+            self.logger.info(f"🔄 [SYSTEM_PROMPT_DEBUG] 更新对话 {conversation_id} 的system prompt")
         
         # 判断是否包含system prompt - 修复：当force_refresh_system=True时，强制包含
         include_system = force_refresh_system or self._should_include_system_prompt(context, system_prompt)
+        self.logger.info(f"🤔 [SYSTEM_PROMPT_DEBUG] 是否包含system prompt: {include_system}")
         
         # 构建消息列表
         messages = []
@@ -231,10 +243,22 @@ class OptimizedLLMClient:
         if include_system and context.system_prompt:
             messages.append({"role": "system", "content": context.system_prompt})
             self.stats["cache_misses"] += 1
-            self.logger.debug(f"📋 包含system prompt (缓存未命中)")
+            cache_hit_rate = self._get_cache_hit_rate()
+            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 包含system prompt (缓存未命中) - 长度: {len(context.system_prompt)}")
+            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] System prompt 内容前100字: {context.system_prompt[:100]}...")
+            self.logger.info(f"📊 [CACHE_DEBUG] 缓存统计 - 命中: {self.stats['cache_hits']}, 未命中: {self.stats['cache_misses']}, 命中率: {cache_hit_rate:.1%}")
         else:
             self.stats["cache_hits"] += 1
-            self.logger.debug(f"⚡ 跳过system prompt (缓存命中)")
+            cache_hit_rate = self._get_cache_hit_rate()
+            self.logger.info(f"⚡ [SYSTEM_PROMPT_DEBUG] 跳过system prompt (缓存命中)")
+            self.logger.info(f"📊 [CACHE_DEBUG] 缓存统计 - 命中: {self.stats['cache_hits']}, 未命中: {self.stats['cache_misses']}, 命中率: {cache_hit_rate:.1%}")
+            
+            # 提供缓存命中的详细信息
+            if context.system_prompt:
+                self.logger.info(f"📋 [CACHE_DEBUG] 使用缓存的system prompt - 长度: {len(context.system_prompt)}")
+                self.logger.info(f"📋 [CACHE_DEBUG] 缓存prompt前100字: {context.system_prompt[:100]}...")
+            else:
+                self.logger.warning(f"⚠️ [CACHE_DEBUG] 缓存命中但没有system prompt内容！")
         
         # 添加历史消息（如果启用上下文压缩）
         if self.optimization_config["enable_context_compression"]:
@@ -249,6 +273,11 @@ class OptimizedLLMClient:
         
         # 添加当前用户消息
         messages.append({"role": "user", "content": user_message})
+        
+        # 记录最终发送的消息结构
+        self.logger.info(f"📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: {len(messages)} 条消息")
+        for i, msg in enumerate(messages):
+            self.logger.info(f"📤 [SYSTEM_PROMPT_DEBUG] 消息 {i}: role={msg['role']}, 长度={len(msg['content'])}")
         
         # 记录token使用情况
         total_tokens = sum(len(msg["content"]) // 4 for msg in messages)

@@ -876,9 +876,21 @@ Your selection:"""
             
             # 3. 转换为统一格式
             if standardized_response:
-                return self._convert_standardized_to_internal(standardized_response, raw_response)
+                internal_response = self._convert_standardized_to_internal(standardized_response, raw_response)
             else:
-                return self._convert_legacy_to_internal(raw_response, agent_id, task_id)
+                internal_response = self._convert_legacy_to_internal(raw_response, agent_id, task_id)
+            
+            # 4. 验证生成的文件
+            if internal_response.get("file_references"):
+                file_validation = self._validate_generated_files(internal_response["file_references"])
+                internal_response["file_validation"] = file_validation
+                
+                # 记录文件验证结果
+                self.logger.info(f"📁 文件验证结果 {agent_id}: {file_validation['existing_files']}/{file_validation['total_files']} 文件存在")
+                if file_validation["missing_files"] > 0:
+                    self.logger.warning(f"⚠️ 发现 {file_validation['missing_files']} 个缺失文件")
+            
+            return internal_response
                 
         except Exception as e:
             self.logger.error(f"❌ 响应处理失败 {agent_id}: {str(e)}")
@@ -965,15 +977,32 @@ Your selection:"""
                         metadata=ref.get("metadata", {})
                     ))
         
-        # 检查生成的文件
+        # 检查生成的文件 - 支持新的文件路径格式
         if "generated_files" in raw_response:
-            for file_path in raw_response["generated_files"]:
-                file_references.append(FileReference(
-                    file_path=file_path,
-                    file_type=self._detect_file_type(file_path),
-                    description=f"Generated file by {agent_id}",
-                    metadata={"generated_by": agent_id}
-                ))
+            generated_files = raw_response["generated_files"]
+            if isinstance(generated_files, list):
+                for file_info in generated_files:
+                    if isinstance(file_info, dict):
+                        # 新的文件信息格式
+                        file_references.append(FileReference(
+                            file_path=file_info.get("file_path", ""),
+                            file_type=file_info.get("file_type", self._detect_file_type(file_info.get("file_path", ""))),
+                            description=file_info.get("description", f"Generated file by {agent_id}"),
+                            metadata={
+                                "generated_by": agent_id,
+                                "tool_name": file_info.get("tool_name", ""),
+                                "module_name": file_info.get("module_name", ""),
+                                "file_id": file_info.get("file_id", "")
+                            }
+                        ))
+                    elif isinstance(file_info, str):
+                        # 兼容旧格式：直接是文件路径字符串
+                        file_references.append(FileReference(
+                            file_path=file_info,
+                            file_type=self._detect_file_type(file_info),
+                            description=f"Generated file by {agent_id}",
+                            metadata={"generated_by": agent_id}
+                        ))
         
         return {
             "success": success,
@@ -1027,8 +1056,92 @@ Your selection:"""
             return "documentation"
         elif file_path.endswith('.txt'):
             return "text"
+        elif file_path.endswith('.vcd'):
+            return "waveform"
+        elif file_path.endswith('.vvp'):
+            return "simulation_output"
         else:
             return "unknown"
+    
+    def _validate_file_existence(self, file_path: str) -> Dict[str, Any]:
+        """验证文件是否存在并返回文件信息"""
+        import os
+        from pathlib import Path
+        
+        validation_result = {
+            "exists": False,
+            "file_path": file_path,
+            "file_size": 0,
+            "is_file": False,
+            "is_directory": False,
+            "error": None
+        }
+        
+        try:
+            if not file_path:
+                validation_result["error"] = "Empty file path"
+                return validation_result
+            
+            path = Path(file_path)
+            validation_result["exists"] = path.exists()
+            
+            if validation_result["exists"]:
+                validation_result["is_file"] = path.is_file()
+                validation_result["is_directory"] = path.is_dir()
+                
+                if validation_result["is_file"]:
+                    validation_result["file_size"] = path.stat().st_size
+                    
+        except Exception as e:
+            validation_result["error"] = str(e)
+        
+        return validation_result
+    
+    def _validate_generated_files(self, file_references: List[FileReference]) -> Dict[str, Any]:
+        """验证所有生成的文件是否存在"""
+        validation_results = {
+            "total_files": len(file_references),
+            "existing_files": 0,
+            "missing_files": 0,
+            "file_details": [],
+            "summary": {}
+        }
+        
+        for file_ref in file_references:
+            file_path = file_ref.file_path
+            validation = self._validate_file_existence(file_path)
+            
+            file_detail = {
+                "file_path": file_path,
+                "file_type": file_ref.file_type,
+                "description": file_ref.description,
+                "exists": validation["exists"],
+                "file_size": validation["file_size"],
+                "error": validation["error"]
+            }
+            
+            validation_results["file_details"].append(file_detail)
+            
+            if validation["exists"]:
+                validation_results["existing_files"] += 1
+            else:
+                validation_results["missing_files"] += 1
+        
+        # 生成摘要
+        validation_results["summary"] = {
+            "success_rate": validation_results["existing_files"] / validation_results["total_files"] if validation_results["total_files"] > 0 else 0,
+            "total_size_bytes": sum(detail["file_size"] for detail in validation_results["file_details"]),
+            "file_types": {}
+        }
+        
+        # 统计文件类型
+        for detail in validation_results["file_details"]:
+            file_type = detail["file_type"]
+            if file_type not in validation_results["summary"]["file_types"]:
+                validation_results["summary"]["file_types"][file_type] = 0
+            validation_results["summary"]["file_types"][file_type] += 1
+        
+        return validation_results
     
     def _make_task_analysis_serializable(self, task_analysis: Dict[str, Any]) -> Dict[str, Any]:
         """确保task_analysis中的所有对象都是可JSON序列化的"""
@@ -1265,3 +1378,92 @@ Your main response message here
         except Exception as e:
             self.logger.error(f"❌ 保存对话日志失败: {str(e)}")
             raise
+    
+    def generate_file_management_report(self, conversation_id: str = None) -> Dict[str, Any]:
+        """生成文件管理报告"""
+        if not conversation_id:
+            conversation_id = self.conversation_id
+        
+        # 收集所有文件引用
+        all_files = []
+        file_validation_summary = {
+            "total_files": 0,
+            "existing_files": 0,
+            "missing_files": 0,
+            "total_size_bytes": 0,
+            "file_types": {},
+            "agents_files": {}
+        }
+        
+        for record in self.conversation_history:
+            if record.file_references:
+                agent_files = []
+                for file_ref in record.file_references:
+                    file_info = {
+                        "file_path": file_ref.file_path,
+                        "file_type": file_ref.file_type,
+                        "description": file_ref.description,
+                        "metadata": file_ref.metadata,
+                        "timestamp": record.timestamp,
+                        "agent_id": record.speaker_id
+                    }
+                    all_files.append(file_info)
+                    agent_files.append(file_info)
+                
+                if record.speaker_id not in file_validation_summary["agents_files"]:
+                    file_validation_summary["agents_files"][record.speaker_id] = []
+                file_validation_summary["agents_files"][record.speaker_id].extend(agent_files)
+        
+        # 验证所有文件
+        for file_info in all_files:
+            file_validation_summary["total_files"] += 1
+            validation = self._validate_file_existence(file_info["file_path"])
+            
+            if validation["exists"]:
+                file_validation_summary["existing_files"] += 1
+                file_validation_summary["total_size_bytes"] += validation["file_size"]
+            else:
+                file_validation_summary["missing_files"] += 1
+            
+            # 统计文件类型
+            file_type = file_info["file_type"]
+            if file_type not in file_validation_summary["file_types"]:
+                file_validation_summary["file_types"][file_type] = 0
+            file_validation_summary["file_types"][file_type] += 1
+        
+        # 计算成功率
+        if file_validation_summary["total_files"] > 0:
+            file_validation_summary["success_rate"] = file_validation_summary["existing_files"] / file_validation_summary["total_files"]
+        else:
+            file_validation_summary["success_rate"] = 0.0
+        
+        report = {
+            "conversation_id": conversation_id,
+            "generation_timestamp": time.time(),
+            "file_management_summary": file_validation_summary,
+            "all_files": all_files,
+            "recommendations": self._generate_file_management_recommendations(file_validation_summary)
+        }
+        
+        return report
+    
+    def _generate_file_management_recommendations(self, file_summary: Dict[str, Any]) -> List[str]:
+        """生成文件管理建议"""
+        recommendations = []
+        
+        if file_summary["missing_files"] > 0:
+            recommendations.append(f"⚠️ 发现 {file_summary['missing_files']} 个缺失文件，建议检查文件保存路径和权限")
+        
+        if file_summary["success_rate"] < 0.8:
+            recommendations.append("⚠️ 文件保存成功率较低，建议检查文件系统配置")
+        
+        if file_summary["total_size_bytes"] > 100 * 1024 * 1024:  # 100MB
+            recommendations.append("💾 生成的文件总大小较大，建议考虑文件压缩或清理临时文件")
+        
+        if "verilog" in file_summary["file_types"] and file_summary["file_types"]["verilog"] > 10:
+            recommendations.append("📁 生成了大量Verilog文件，建议按模块类型组织文件结构")
+        
+        if not recommendations:
+            recommendations.append("✅ 文件管理状态良好，所有文件都已正确保存")
+        
+        return recommendations

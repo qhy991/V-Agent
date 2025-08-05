@@ -413,7 +413,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         )
     
     def _build_enhanced_system_prompt(self) -> str:
-        """构建一个极简且强制的系统提示词"""
+        """构建支持动态决策和多智能体协作的系统提示词"""
         
         # 检查工具是否已经注册
         if not hasattr(self, 'enhanced_tools') or not self.enhanced_tools:
@@ -439,22 +439,54 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 
         return f"""
 # 角色
-你是一个AI协调智能体，你的唯一工作是根据用户需求调用合适的工具来驱动任务流程。
+你是一个智能协调器，负责协调多个智能体完成复杂任务。
+
+# 🤖 智能体专业分工 (重要：严格按照能力分配任务)
+
+## enhanced_real_verilog_agent (Verilog设计专家)
+**专业能力**: Verilog/SystemVerilog代码设计和生成
+**主要任务**: 设计需求分析、Verilog模块代码生成、代码质量分析、文件写入保存
+**任务描述示例**: "设计一个名为counter的Verilog模块，生成完整的可编译代码，包含端口定义和功能实现，保存到文件"
+**禁止分配**: 测试台生成、仿真执行、代码审查
+
+## enhanced_real_code_reviewer (代码审查和验证专家)  
+**专业能力**: 代码审查、测试台生成、仿真验证
+**主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
+**任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
+**禁止分配**: 主要设计代码生成
+
+# 🎯 任务分配原则 (重要)
+1. **设计阶段**: 只分配给 enhanced_real_verilog_agent，任务描述只包含"设计模块、生成代码、保存文件"
+2. **验证阶段**: 只分配给 enhanced_real_code_reviewer，任务描述包含"生成测试台、执行仿真、验证功能"
+3. **严禁跨界**: 绝对禁止要求设计专家做测试台生成，绝对禁止要求验证专家做主要设计
+4. **分阶段执行**: 先让设计专家完成设计和文件生成，再让验证专家进行测试验证
+
+# 核心职责
+1. **任务分析**: 理解用户需求，识别关键步骤
+2. **智能体协调**: 根据专业能力选择合适的智能体
+3. **质量验证**: 检查任务是否真正完成
+4. **多智能体协作**: 设计→验证的流水线协作
 
 # 强制规则 (必须严格遵守)
-1.  **禁止直接回答**: 绝对禁止、严禁直接回答用户的任何问题或请求。
+1.  **禁止直接回答**: 绝对禁止直接回答用户的任何问题或请求。
 2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
 3.  **禁止生成描述性文本**: 绝对禁止生成任何解释、分析、策略描述或其他文本内容。
 4.  **禁止生成markdown格式**: 绝对禁止使用 ###、---、** 等markdown格式。
 5.  **禁止生成表格**: 绝对禁止生成任何表格或列表。
-6.  **禁止生成策略描述**: 绝对禁止生成执行策略、分析报告、建议等文本内容。
-7.  **遵循流程**: 严格按照以下顺序调用工具：
-   - 第一步：调用 `identify_task_type` 工具识别任务类型
-   - 第二步：调用 `recommend_agent` 工具推荐智能体
-   - 第三步：调用 `assign_task_to_agent` 工具分配任务给智能体
-   - 第四步：调用 `analyze_agent_result` 工具分析结果
-   - 第五步：调用 `check_task_completion` 工具检查完成状态
-   - 最后：调用 `provide_final_answer` 工具提供最终答案
+
+# 工作流程
+1. `identify_task_type` - 识别任务类型
+2. `recommend_agent` - 推荐智能体
+3. `assign_task_to_agent` - 分配任务
+4. `analyze_agent_result` - 分析结果
+5. 根据分析结果决定：
+   - 如果需要其他智能体协作 → 继续分配任务
+   - 如果任务完成 → 调用 `provide_final_answer`
+
+# 智能协作策略
+- 当第一个智能体完成设计但缺少测试台时，调用 `enhanced_real_code_review_agent`
+- 当需要仿真验证时，调用 `enhanced_real_code_review_agent`
+- 根据实际执行结果而非文本报告做决策
 
 # 智能体调用方法 (重要！)
 **正确方式**: 使用 `assign_task_to_agent` 工具，在 `agent_id` 参数中指定智能体名称
@@ -488,12 +520,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 }}
 ```
 
-❌ 错误 - 生成描述性文本:
-```
-### 🧠 任务协调执行策略
-我将分析用户需求并制定执行策略...
-```
-  
 # 可用工具
 你必须从以下工具列表中选择并调用：
 {tools_json}
@@ -507,15 +533,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 不要分析任务
 - 不要使用markdown格式
 - 不要生成表格
-- 不要生成执行计划
-- 不要生成分析报告
 - 只生成工具调用JSON
 - 立即开始调用第一个工具：`identify_task_type`
-
-# 最终警告
-如果你生成任何非JSON格式的文本，系统将拒绝你的响应。你必须且只能返回JSON格式的工具调用。
-
-立即开始分析用户请求并调用第一个工具：`identify_task_type`。
 """
     
     async def register_agent(self, agent: EnhancedBaseAgent):
@@ -648,6 +667,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         # 获取第一个必须调用的工具信息
         first_tool_schema = self.get_tool_schema("identify_task_type")
+        
+        # Escape quotes in user_request
+        escaped_user_request = user_request.replace('"', '\\"')
 
         return f"""
 # 强制指令
@@ -663,7 +685,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         {{
             "tool_name": "identify_task_type",
             "parameters": {{
-                "user_request": "{user_request.replace('"', '\\"')}"
+                "user_request": "{escaped_user_request}"
             }}
         }}
     ]
@@ -839,6 +861,40 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 外部testbench路径: {task_context.external_testbench_path}
 - 工作指导: 如果你是代码审查智能体，请直接使用提供的testbench进行测试，不要生成新的testbench
 - 专注任务: 代码审查、错误修复、测试执行和结果分析"""
+          
+        # 构建实验路径信息 - 从任务上下文或获取当前实验路径
+        experiment_path_section = ""
+        current_experiment_path = None
+        
+        if task_context and hasattr(task_context, 'experiment_path') and task_context.experiment_path:
+            current_experiment_path = task_context.experiment_path
+        else:
+            # 尝试从活跃任务中获取实验路径
+            for task in self.active_tasks.values():
+                if hasattr(task, 'experiment_path') and task.experiment_path:
+                    current_experiment_path = task.experiment_path
+                    break
+            
+            # 如果没有找到，则使用默认的文件工作空间路径
+            if not current_experiment_path:
+                current_experiment_path = "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/file_workspace"
+        
+        if current_experiment_path:
+            experiment_path_section = f"""
+
+**📁 实验文件路径**:
+- 当前实验路径: {current_experiment_path}
+- 设计文件保存: {current_experiment_path}/designs/
+- 测试台保存: {current_experiment_path}/testbenches/
+- 报告保存: {current_experiment_path}/reports/
+- 临时文件: {current_experiment_path}/temp/
+
+**⚠️ 重要文件管理要求**:
+1. 所有生成的Verilog代码必须保存为.v文件
+2. 设计模块保存到designs目录，测试台保存到testbenches目录
+3. 文档和报告保存到reports目录
+4. 必须在任务总结中返回所有生成文件的完整路径
+5. 文件命名应该清晰，避免重复和冲突"""
         
         enhanced_task = f"""
 📋 协调智能体分配的任务
@@ -858,13 +914,15 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 当前阶段: {task_context.current_stage if task_context else "initial"}
 - 迭代次数: {task_context.iteration_count if task_context else 0}
 {external_testbench_section}
+{experiment_path_section}
 
 **执行要求**:
 1. 仔细分析任务需求
-2. 生成高质量的代码
+2. 生成高质量的代码并保存为文件
 3. 提供详细的说明文档
 4. 确保代码可读性和可维护性
 5. 如有需要，生成相应的测试台（除非已提供外部testbench）
+6. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
 
 请开始执行任务。
 """
@@ -937,7 +995,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     def _enhanced_result_quality_analysis(self, result: Dict[str, Any], 
                                         task_context: Dict[str, Any],
                                         quality_threshold: float) -> Dict[str, Any]:
-        """增强的结果质量分析"""
+        """增强的结果质量分析 - 包含文件验证和实际执行检查"""
         
         analysis = {
             "quality_score": 0.0,
@@ -946,7 +1004,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "strengths": [],
             "recommendations": [],
             "detailed_metrics": {},
-            "risk_assessment": "low"
+            "risk_assessment": "low",
+            "file_verification": {},
+            "actual_execution_check": {}
         }
         
         # 检查结果是否为空
@@ -957,25 +1017,47 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             analysis["risk_assessment"] = "high"
             return analysis
         
+        # 获取原始任务需求
+        original_request = task_context.get("original_request", "") if task_context else ""
+        
         # 分析结果内容
-        content = result.get("content", "")
-        if not content:
+        result_content = result.get("result", "") if isinstance(result.get("result"), str) else str(result.get("result", ""))
+        if not result_content:
             analysis["completeness"] = "incomplete"
             analysis["issues"].append("结果内容为空")
             analysis["recommendations"].append("要求智能体重新执行并提供详细结果")
             analysis["risk_assessment"] = "medium"
             return analysis
         
+        # 执行文件验证和实际执行检查
+        file_verification = self._verify_file_generation(result_content, original_request)
+        execution_check = self._check_actual_execution(result_content, original_request)
+        
+        analysis["file_verification"] = file_verification
+        analysis["actual_execution_check"] = execution_check
+        
         # 详细质量指标分析
-        detailed_metrics = self._analyze_detailed_metrics(content, result)
+        detailed_metrics = self._analyze_detailed_metrics(result_content, result, file_verification, execution_check)
         analysis["detailed_metrics"] = detailed_metrics
         
-        # 计算综合质量分数
-        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics)
+        # 计算综合质量分数（包含实际执行权重）
+        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics, file_verification, execution_check)
         analysis["quality_score"] = quality_score
         
-        # 根据质量分数判断完整性
-        if quality_score >= quality_threshold:
+        # 分析问题和优势
+        analysis["issues"] = self._identify_quality_issues(detailed_metrics, file_verification, execution_check, original_request)
+        analysis["strengths"] = self._identify_quality_strengths(detailed_metrics, file_verification, execution_check)
+        
+        # 根据质量分数和实际执行情况判断完整性
+        if not file_verification.get("all_required_files_generated", False):
+            analysis["completeness"] = "incomplete"
+            analysis["risk_assessment"] = "high"
+            analysis["issues"].append("未实际生成所需文件")
+        elif not execution_check.get("simulation_actually_executed", False) and "测试台" in original_request:
+            analysis["completeness"] = "incomplete" 
+            analysis["risk_assessment"] = "high"
+            analysis["issues"].append("未实际执行仿真验证")
+        elif quality_score >= quality_threshold:
             analysis["completeness"] = "complete"
             analysis["risk_assessment"] = "low"
         elif quality_score >= quality_threshold * 0.7:
@@ -986,11 +1068,176 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             analysis["risk_assessment"] = "high"
         
         # 生成具体建议
-        analysis["recommendations"] = self._generate_specific_recommendations(detailed_metrics, quality_score, quality_threshold)
+        analysis["recommendations"] = self._generate_enhanced_recommendations(
+            detailed_metrics, quality_score, quality_threshold, 
+            file_verification, execution_check, original_request
+        )
         
         return analysis
     
-    def _analyze_detailed_metrics(self, content: str, result: Dict[str, Any]) -> Dict[str, Any]:
+    def _verify_file_generation(self, result_content: str, original_request: str) -> Dict[str, Any]:
+        """验证是否实际生成了所需文件"""
+        verification = {
+            "verilog_file_mentioned": False,
+            "testbench_file_mentioned": False,
+            "files_actually_written": False,
+            "all_required_files_generated": False,
+            "missing_files": []
+        }
+        
+        # 检查是否提到了Verilog文件
+        if ".v" in result_content or "module" in result_content.lower():
+            verification["verilog_file_mentioned"] = True
+        
+        # 检查是否提到了测试台文件
+        if ("testbench" in result_content.lower() or "tb_" in result_content.lower() or 
+            "_tb.v" in result_content or "test" in result_content.lower()):
+            verification["testbench_file_mentioned"] = True
+        
+        # 检查是否实际执行了文件写入操作
+        # 通过检查是否有工具调用的迹象
+        if ("write_file" in result_content.lower() or 
+            "文件已生成" in result_content or "文件创建" in result_content or
+            "保存到" in result_content or "写入文件" in result_content):
+            verification["files_actually_written"] = True
+        
+        # 分析原始需求，确定需要的文件
+        required_files = []
+        if "verilog" in original_request.lower() or "模块" in original_request:
+            required_files.append("verilog_module")
+        if ("测试台" in original_request or "testbench" in original_request.lower() or 
+            "验证" in original_request or "test" in original_request.lower()):
+            required_files.append("testbench")
+        
+        # 检查所有必需文件是否都生成了
+        missing_files = []
+        if "verilog_module" in required_files and not verification["verilog_file_mentioned"]:
+            missing_files.append("Verilog模块文件")
+        if "testbench" in required_files and not verification["testbench_file_mentioned"]:
+            missing_files.append("测试台文件")
+        
+        verification["missing_files"] = missing_files
+        verification["all_required_files_generated"] = (len(missing_files) == 0 and 
+                                                       verification["files_actually_written"])
+        
+        return verification
+    
+    def _check_actual_execution(self, result_content: str, original_request: str) -> Dict[str, Any]:
+        """检查是否实际执行了所需操作"""
+        execution_check = {
+            "simulation_mentioned": False,
+            "simulation_actually_executed": False,
+            "tools_called": False,
+            "concrete_results_provided": False,
+            "missing_executions": []
+        }
+        
+        # 检查是否提到了仿真
+        if ("仿真" in result_content or "simulation" in result_content.lower() or 
+            "run_simulation" in result_content or "执行仿真" in result_content):
+            execution_check["simulation_mentioned"] = True
+        
+        # 检查是否实际执行了仿真（通过具体输出判断）
+        if (("仿真结果" in result_content or "simulation result" in result_content.lower() or
+             "波形" in result_content or "waveform" in result_content.lower() or
+             "仿真输出" in result_content or "时序" in result_content) and 
+            execution_check["simulation_mentioned"]):
+            execution_check["simulation_actually_executed"] = True
+        
+        # 检查是否调用了工具
+        if ("工具调用" in result_content or "tool_call" in result_content.lower() or
+            "执行工具" in result_content or "function calling" in result_content.lower()):
+            execution_check["tools_called"] = True
+        
+        # 检查是否提供了具体结果
+        if ("执行成功" in result_content and "结果" in result_content) or "输出:" in result_content:
+            execution_check["concrete_results_provided"] = True
+        
+        # 分析缺失的执行项
+        missing_executions = []
+        if ("测试台" in original_request or "验证" in original_request) and not execution_check["simulation_actually_executed"]:
+            missing_executions.append("仿真验证执行")
+        if ("文件" in original_request or "生成" in original_request) and not execution_check["tools_called"]:
+            missing_executions.append("文件生成操作")
+        
+        execution_check["missing_executions"] = missing_executions
+        
+        return execution_check
+    
+    def _identify_quality_issues(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
+                               execution_check: Dict[str, Any], original_request: str) -> List[str]:
+        """识别质量问题"""
+        issues = []
+        
+        # 文件生成问题
+        if file_verification.get("missing_files"):
+            issues.extend([f"缺失{file}" for file in file_verification["missing_files"]])
+        
+        # 执行问题
+        if execution_check.get("missing_executions"):
+            issues.extend(execution_check["missing_executions"])
+        
+        # 质量指标问题
+        if metrics.get("test_coverage", 0) < 50 and ("测试" in original_request or "验证" in original_request):
+            issues.append("测试覆盖率不足")
+        
+        if metrics.get("code_quality", 0) < 50:
+            issues.append("代码质量需要提升")
+        
+        return issues
+    
+    def _identify_quality_strengths(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
+                                  execution_check: Dict[str, Any]) -> List[str]:
+        """识别质量优势"""
+        strengths = []
+        
+        if file_verification.get("all_required_files_generated"):
+            strengths.append("所有必需文件已生成")
+        
+        if execution_check.get("simulation_actually_executed"):
+            strengths.append("仿真验证已执行")
+        
+        if metrics.get("code_quality", 0) >= 80:
+            strengths.append("代码质量优秀")
+        
+        if metrics.get("documentation_quality", 0) >= 70:
+            strengths.append("文档质量良好")
+        
+        return strengths
+    
+    def _generate_enhanced_recommendations(self, metrics: Dict[str, Any], quality_score: float, 
+                                         quality_threshold: float, file_verification: Dict[str, Any],
+                                         execution_check: Dict[str, Any], original_request: str) -> List[str]:
+        """生成增强的改进建议"""
+        recommendations = []
+        
+        # 基于文件验证的建议
+        if not file_verification.get("all_required_files_generated"):
+            if file_verification.get("missing_files"):
+                recommendations.append(f"需要调用enhanced_real_code_review_agent生成缺失的文件: {', '.join(file_verification['missing_files'])}")
+            else:
+                recommendations.append("需要使用write_file工具实际生成文件，而非仅在报告中描述")
+        
+        # 基于执行检查的建议
+        if not execution_check.get("simulation_actually_executed") and ("测试台" in original_request or "验证" in original_request):
+            recommendations.append("需要调用enhanced_real_code_review_agent执行实际的仿真验证")
+        
+        # 基于质量分数的建议
+        if quality_score < quality_threshold:
+            if metrics.get("test_coverage", 0) < 50:
+                recommendations.append("需要增强测试覆盖率，添加更多测试用例")
+            if metrics.get("code_quality", 0) < 60:
+                recommendations.append("需要改进代码质量，增加注释和优化结构")
+        
+        # 协作建议
+        if len(recommendations) > 0:
+            recommendations.append("建议启动多智能体协作模式以确保任务完整性")
+        
+        return recommendations
+    
+    def _analyze_detailed_metrics(self, content: str, result: Dict[str, Any], 
+                                 file_verification: Dict[str, Any] = None, 
+                                 execution_check: Dict[str, Any] = None) -> Dict[str, Any]:
         """分析详细质量指标"""
         metrics = {
             "code_quality": 0.0,
@@ -1059,22 +1306,61 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         return metrics
     
-    def _calculate_comprehensive_quality_score(self, metrics: Dict[str, float]) -> float:
-        """计算综合质量分数"""
-        weights = {
-            "code_quality": 0.35,
-            "documentation_quality": 0.20,
-            "test_coverage": 0.25,
+    def _calculate_comprehensive_quality_score(self, metrics: Dict[str, float], 
+                                             file_verification: Dict[str, Any] = None,
+                                             execution_check: Dict[str, Any] = None) -> float:
+        """计算综合质量分数 - 包含文件验证和实际执行权重"""
+        base_weights = {
+            "code_quality": 0.25,
+            "documentation_quality": 0.15,
+            "test_coverage": 0.20,
             "error_handling": 0.10,
             "performance": 0.05,
             "compliance": 0.05
         }
         
-        total_score = 0.0
-        for metric, weight in weights.items():
-            total_score += metrics.get(metric, 0.0) * weight
+        # 基础分数计算
+        base_score = 0.0
+        for metric, weight in base_weights.items():
+            base_score += metrics.get(metric, 0.0) * weight
         
-        return min(100.0, total_score)
+        # 文件验证权重 (20%)
+        file_score = 0.0
+        if file_verification:
+            if file_verification.get("all_required_files_generated", False):
+                file_score = 100.0
+            elif file_verification.get("verilog_file_mentioned", False):
+                file_score = 50.0  # 仅提到但未实际生成
+            elif file_verification.get("files_actually_written", False):
+                file_score = 30.0  # 有写入操作但不完整
+        file_weighted_score = file_score * 0.20
+        
+        # 实际执行权重 (20%)
+        execution_score = 0.0
+        if execution_check:
+            if execution_check.get("simulation_actually_executed", False):
+                execution_score += 60.0
+            elif execution_check.get("simulation_mentioned", False):
+                execution_score += 20.0  # 仅提到但未实际执行
+            
+            if execution_check.get("tools_called", False):
+                execution_score += 30.0
+            
+            if execution_check.get("concrete_results_provided", False):
+                execution_score += 10.0
+        execution_weighted_score = execution_score * 0.20
+        
+        # 综合分数
+        total_score = base_score + file_weighted_score + execution_weighted_score
+        
+        # 严格的惩罚机制：如果关键要求未满足，大幅降低分数
+        if file_verification and not file_verification.get("all_required_files_generated", False):
+            total_score *= 0.6  # 降低40%
+        
+        if execution_check and execution_check.get("missing_executions"):
+            total_score *= 0.7  # 降低30%
+        
+        return min(100.0, max(0.0, total_score))
     
     def _generate_specific_recommendations(self, metrics: Dict[str, float], 
                                          quality_score: float, 
@@ -1099,41 +1385,75 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     def _determine_enhanced_next_action(self, analysis: Dict[str, Any], 
                                       task_context: Dict[str, Any]) -> str:
-        """确定增强的下一步行动"""
+        """确定增强的下一步行动 - 支持多智能体协作决策"""
         
         completeness = analysis.get("completeness", "unknown")
         quality_score = analysis.get("quality_score", 0)
         risk_assessment = analysis.get("risk_assessment", "low")
+        file_verification = analysis.get("file_verification", {})
+        execution_check = analysis.get("actual_execution_check", {})
         
-        # 基于风险等级和完整性决定行动
-        if risk_assessment == "high":
-            if completeness == "failed":
-                return "retry_with_different_agent"
+        # 获取原始需求
+        original_request = task_context.get("original_request", "") if task_context else ""
+        
+        # 先检查传统的完整性指标
+        if completeness == "complete" and quality_score >= 80:
+            # 即使报告完成，也要验证实际执行
+            missing_files = file_verification.get("missing_files", [])
+            missing_executions = execution_check.get("missing_executions", [])
+            
+            if missing_files or missing_executions:
+                # 虽然智能体声称完成，但实际缺失关键项
+                return "continue_iteration"  # 需要继续迭代
+            else:
+                return "complete_task"  # 真正完成
+        
+        elif completeness == "failed" or risk_assessment == "high":
+            return "retry_with_different_agent"
+        
+        elif completeness == "partial" or quality_score < 70:
+            # 检查是否需要多智能体协作
+            missing_files = file_verification.get("missing_files", [])
+            missing_executions = execution_check.get("missing_executions", [])
+            
+            if missing_files or missing_executions or not file_verification.get("all_required_files_generated", False):
+                return "continue_iteration"  # 需要额外的智能体协作
             else:
                 return "improve_result"
         
-        if completeness == "complete" and quality_score >= 80:
-            return "complete_task"
-        elif completeness == "partial" and quality_score >= 60:
-            return "improve_result"
-        elif completeness == "incomplete" or quality_score < 40:
-            return "retry_with_different_agent"
         else:
             return "continue_iteration"
     
     def _generate_improvement_suggestions(self, analysis: Dict[str, Any], agent_id: str) -> List[str]:
-        """生成改进建议"""
+        """生成改进建议 - 包含具体的智能体协作建议"""
         suggestions = []
         
-        # 基于分析结果生成建议
+        # 获取验证结果
+        file_verification = analysis.get("file_verification", {})
+        execution_check = analysis.get("actual_execution_check", {})
+        
+        # 基于文件和执行验证生成具体建议
+        missing_files = file_verification.get("missing_files", [])
+        missing_executions = execution_check.get("missing_executions", [])
+        
+        if missing_files or missing_executions:
+            suggestions.append("需要调用额外的智能体来补充缺失的功能")
+            
+            if "测试台文件" in missing_files or "仿真验证执行" in missing_executions:
+                suggestions.append("建议调用 enhanced_real_code_review_agent 生成测试台并执行仿真")
+            
+            if "Verilog模块文件" in missing_files:
+                suggestions.append("建议重新调用 enhanced_real_verilog_agent 生成完整的Verilog模块")
+        
+        if not file_verification.get("all_required_files_generated", False):
+            suggestions.append("需要确保所有文件都被实际生成而非仅在报告中描述")
+        
+        if not execution_check.get("simulation_actually_executed", False):
+            suggestions.append("需要执行实际的仿真验证而非仅生成仿真代码")
+        
+        # 基于质量分数生成建议
         if analysis.get("quality_score", 0) < 70:
-            suggestions.append("考虑使用不同的智能体重新执行任务")
-        
-        if "code_quality" in analysis.get("detailed_metrics", {}) and analysis["detailed_metrics"]["code_quality"] < 50:
-            suggestions.append("要求智能体提供更详细的代码注释和文档")
-        
-        if "test_coverage" in analysis.get("detailed_metrics", {}) and analysis["detailed_metrics"]["test_coverage"] < 60:
-            suggestions.append("要求生成更全面的测试用例")
+            suggestions.append("质量分数偏低，需要改进或使用多智能体协作")
         
         # 基于智能体历史表现生成建议
         if agent_id in self.registered_agents:

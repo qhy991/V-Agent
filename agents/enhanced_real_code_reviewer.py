@@ -514,7 +514,17 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         
         # 构建用户消息
         user_message = ""
-        is_first_call = len(conversation) <= 1  # 如果对话历史很少，认为是第一次调用
+        
+        # 修复：更准确的首次调用判断 - 检查是否有assistant响应
+        assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
+        is_first_call = len(assistant_messages) == 0  # 如果没有assistant响应，说明是首次调用
+        
+        self.logger.info(f"🔄 [CODE_REVIEWER] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
+        
+        # 调试：打印对话历史内容
+        for i, msg in enumerate(conversation):
+            self.logger.info(f"🔍 [CODE_REVIEWER] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.info(f"🔍 [CODE_REVIEWER] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
             if msg["role"] == "user":
@@ -522,16 +532,46 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             elif msg["role"] == "assistant":
                 user_message += f"Assistant: {msg['content']}\n\n"
         
+        # 决定是否传入system prompt - 修复：对于新任务总是传入
+        system_prompt = None
+        if is_first_call:
+            system_prompt = self._build_enhanced_system_prompt()
+            self.logger.info(f"📝 [CODE_REVIEWER] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.info(f"📝 [CODE_REVIEWER] System Prompt前200字: {system_prompt[:200]}...")
+            # 检查关键规则是否存在
+            has_mandatory_tools = "必须调用工具" in system_prompt
+            has_testbench = "generate_testbench" in system_prompt
+            has_simulation = "run_simulation" in system_prompt
+            self.logger.info(f"🔍 [CODE_REVIEWER] System Prompt检查 - 强制工具: {has_mandatory_tools}, 测试台生成: {has_testbench}, 仿真执行: {has_simulation}")
+        else:
+            self.logger.info("🔄 [CODE_REVIEWER] 后续调用 - 依赖缓存System Prompt")
+        
+        self.logger.info(f"📤 [CODE_REVIEWER] 用户消息长度: {len(user_message)}")
+        self.logger.info(f"📤 [CODE_REVIEWER] 用户消息前200字: {user_message[:200]}...")
+        
         try:
             # 使用优化的LLM调用方法
+            self.logger.info(f"🤖 [CODE_REVIEWER] 发起LLM调用 - 对话ID: {self.current_conversation_id}")
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=self.current_conversation_id,
                 user_message=user_message.strip(),
-                system_prompt=self._build_enhanced_system_prompt() if is_first_call else None,
+                system_prompt=system_prompt,
                 temperature=0.2,  # 代码审查需要更高的一致性
                 max_tokens=4000,
                 force_refresh_system=is_first_call
             )
+            
+            # 分析响应内容
+            self.logger.info(f"🔍 [CODE_REVIEWER] LLM响应长度: {len(response)}")
+            self.logger.info(f"🔍 [CODE_REVIEWER] 响应前200字: {response[:200]}...")
+            
+            # 检查响应是否包含工具调用
+            has_tool_calls = "tool_calls" in response
+            has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
+            has_testbench_call = "generate_testbench" in response
+            has_simulation_call = "run_simulation" in response
+            self.logger.info(f"🔍 [CODE_REVIEWER] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 测试台生成: {has_testbench_call}, 仿真执行: {has_simulation_call}")
+            
             return response
         except Exception as e:
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
@@ -947,12 +987,17 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             if result["success"]:
                 self.logger.info(f"✅ 代码审查任务完成: {task_id}")
+                
+                # 提取生成的文件路径信息
+                generated_files = self._extract_generated_files_from_tool_results(result.get("tool_results", []))
+                
                 return {
                     "success": True,
                     "task_id": task_id,
                     "response": result.get("response", ""),
                     "tool_results": result.get("tool_results", []),
                     "iterations": result.get("iterations", 1),
+                    "generated_files": generated_files,  # 新增：生成的文件路径列表
                     "quality_metrics": {
                         "schema_validation_passed": True,
                         "parameter_errors_fixed": result.get("iterations", 1) > 1,
@@ -975,6 +1020,79 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "task_id": task_id,
                 "error": f"执行异常: {str(e)}"
             }
+    
+    # =============================================================================
+    # 新增：文件路径提取和管理
+    # =============================================================================
+    
+    def _extract_generated_files_from_tool_results(self, tool_results: List[Dict]) -> List[Dict]:
+        """从工具结果中提取生成的文件路径信息"""
+        generated_files = []
+        
+        for tool_result in tool_results:
+            if not isinstance(tool_result, dict):
+                continue
+                
+            tool_name = tool_result.get("tool_name", "")
+            result_data = tool_result.get("result", {})
+            
+            # 检查write_file工具的结果
+            if tool_name == "write_file" and isinstance(result_data, dict):
+                if result_data.get("success", False):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "testbench_code",
+                        "description": result_data.get("description", ""),
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查generate_testbench工具的结果
+            elif tool_name == "generate_testbench" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "testbench",
+                        "module_name": result_data.get("module_name", ""),
+                        "description": f"Generated testbench for: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查run_simulation工具的结果
+            elif tool_name == "run_simulation" and isinstance(result_data, dict):
+                if result_data.get("success", False):
+                    # 仿真可能生成波形文件
+                    waveform_file = result_data.get("waveform_file", "")
+                    if waveform_file:
+                        file_info = {
+                            "file_path": waveform_file,
+                            "file_type": "waveform",
+                            "description": "Simulation waveform file",
+                            "tool_name": tool_name
+                        }
+                        generated_files.append(file_info)
+            
+            # 检查generate_build_script工具的结果
+            elif tool_name == "generate_build_script" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "build_script",
+                        "script_type": result_data.get("script_type", ""),
+                        "description": f"Build script: {result_data.get('script_type', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+        
+        self.logger.info(f"📁 提取到 {len(generated_files)} 个生成文件")
+        for file_info in generated_files:
+            self.logger.info(f"📄 生成文件: {file_info.get('file_path', '')} - {file_info.get('description', '')}")
+        
+        return generated_files
     
     # =============================================================================
     # 工具实现方法

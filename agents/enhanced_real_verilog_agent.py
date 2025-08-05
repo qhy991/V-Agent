@@ -449,7 +449,17 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         
         # 构建用户消息
         user_message = ""
-        is_first_call = len(conversation) <= 1  # 如果对话历史很少，认为是第一次调用
+        
+        # 修复：更准确的首次调用判断 - 检查是否有assistant响应
+        assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
+        is_first_call = len(assistant_messages) == 0  # 如果没有assistant响应，说明是首次调用
+        
+        self.logger.info(f"🔄 [VERILOG_AGENT] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
+        
+        # 调试：打印对话历史内容
+        for i, msg in enumerate(conversation):
+            self.logger.info(f"🔍 [VERILOG_AGENT] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.info(f"🔍 [VERILOG_AGENT] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
             if msg["role"] == "user":
@@ -457,16 +467,45 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             elif msg["role"] == "assistant":
                 user_message += f"Assistant: {msg['content']}\n\n"
         
+        # 决定是否传入system prompt - 修复：对于新任务总是传入
+        system_prompt = None
+        if is_first_call:
+            system_prompt = self._build_enhanced_system_prompt()
+            self.logger.info(f"📝 [VERILOG_AGENT] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.info(f"📝 [VERILOG_AGENT] System Prompt前200字: {system_prompt[:200]}...")
+            # 检查关键规则是否存在
+            has_mandatory_tools = "必须调用工具" in system_prompt
+            has_write_file = "write_file" in system_prompt
+            has_json_format = "JSON格式输出" in system_prompt
+            self.logger.info(f"🔍 [VERILOG_AGENT] System Prompt检查 - 强制工具: {has_mandatory_tools}, 文件写入: {has_write_file}, JSON格式: {has_json_format}")
+        else:
+            self.logger.info("🔄 [VERILOG_AGENT] 后续调用 - 依赖缓存System Prompt")
+        
+        self.logger.info(f"📤 [VERILOG_AGENT] 用户消息长度: {len(user_message)}")
+        self.logger.info(f"📤 [VERILOG_AGENT] 用户消息前200字: {user_message[:200]}...")
+        
         try:
             # 使用优化的LLM调用方法
+            self.logger.info(f"🤖 [VERILOG_AGENT] 发起LLM调用 - 对话ID: {self.current_conversation_id}")
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=self.current_conversation_id,
                 user_message=user_message.strip(),
-                system_prompt=self._build_enhanced_system_prompt() if is_first_call else None,
+                system_prompt=system_prompt,
                 temperature=0.3,
                 max_tokens=4000,
                 force_refresh_system=is_first_call
             )
+            
+            # 分析响应内容
+            self.logger.info(f"🔍 [VERILOG_AGENT] LLM响应长度: {len(response)}")
+            self.logger.info(f"🔍 [VERILOG_AGENT] 响应前200字: {response[:200]}...")
+            
+            # 检查响应是否包含工具调用
+            has_tool_calls = "tool_calls" in response
+            has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
+            has_write_file_call = "write_file" in response
+            self.logger.info(f"🔍 [VERILOG_AGENT] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, write_file调用: {has_write_file_call}")
+            
             return response
         except Exception as e:
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
@@ -502,6 +541,8 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     
     def _build_enhanced_system_prompt(self) -> str:
         """构建增强的System Prompt（支持智能Schema适配）"""
+        self.logger.info("🔧 构建Verilog智能体的System Prompt")
+        
         base_prompt = """你是一位资深的Verilog硬件设计专家，具备以下专业能力：
 
 🔍 **核心专长**:
@@ -726,7 +767,66 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 示例正确流程：
 1. 使用 `read_file` 读取文件内容
 2. 将读取的内容作为 `verilog_code` 参数传递给 `analyze_code_quality`
-3. 处理分析结果，不要重复相同的调用"""
+3. 处理分析结果，不要重复相同的调用
+
+🚨 **强制规则 - 必须使用工具调用**:
+1. **禁止直接生成代码**: 绝对禁止在回复中直接生成Verilog代码
+2. **必须调用工具**: 所有设计任务都必须通过工具调用完成
+3. **必须写入文件**: 生成的代码必须使用 `write_file` 工具保存到文件
+4. **JSON格式输出**: 回复必须是JSON格式的工具调用，不能包含其他文本
+5. **仅调用已注册工具**: 只能调用以下已注册的工具，不得调用其他工具
+
+📁 **强制文件管理要求**:
+1. **所有生成的代码必须保存为文件**: 使用 `write_file` 工具保存所有生成的Verilog代码
+2. **文件路径规范**: 
+   - 设计文件保存到: `{实验路径}/designs/` 目录
+   - 文档文件保存到: `{实验路径}/reports/` 目录
+   - 临时文件保存到: `{实验路径}/temp/` 目录
+3. **文件命名规范**: 使用清晰的模块名，如 `{module_name}.v`
+4. **路径回传要求**: 在任务总结中必须包含所有生成文件的完整路径
+5. **文件验证**: 确保文件成功保存并返回正确的文件路径
+
+**可用工具列表** (仅限这些工具):
+- `analyze_design_requirements`: 分析设计需求
+- `generate_verilog_code`: 生成Verilog代码
+- `search_existing_modules`: 搜索现有模块
+- `analyze_code_quality`: 分析代码质量  
+- `validate_design_specifications`: 验证设计规格
+- `generate_design_documentation`: 生成设计文档
+- `optimize_verilog_code`: 优化Verilog代码
+- `write_file`: 写入文件
+- `read_file`: 读取文件
+
+**禁止调用的工具** (这些不在我的能力范围内):
+❌ `generate_testbench`: 测试台生成(由代码审查智能体负责)
+❌ `run_simulation`: 仿真执行(由代码审查智能体负责)
+❌ 任何其他未列出的工具
+
+**正确的工作流程**:
+1. 分析需求 → 调用 `analyze_design_requirements` 
+2. 生成代码 → 调用 `generate_verilog_code`
+3. **保存文件** → 调用 `write_file` 保存.v文件到指定目录
+4. 质量检查 → 调用 `analyze_code_quality` (可选)
+5. **生成文档** → 调用 `generate_design_documentation` 并保存到reports目录
+6. **路径回传** → 在任务总结中列出所有生成文件的完整路径
+
+**禁止的行为**:
+❌ 直接在回复中写Verilog代码
+❌ 不使用工具就完成任务
+❌ 不保存生成的代码到文件
+❌ 回复非JSON格式的文本
+❌ 调用未注册或不存在的工具
+❌ 不返回生成文件的路径信息
+❌ 将文件保存到错误的目录
+
+立即开始工具调用，不要直接生成任何代码！"""
+        
+        self.logger.info("✅ Verilog智能体System Prompt构建完成")
+        self.logger.debug(f"📝 System Prompt长度: {len(base_prompt)} 字符")
+        # 记录关键规则是否存在
+        has_tool_requirement = "必须调用工具" in base_prompt
+        has_file_requirement = "write_file" in base_prompt
+        self.logger.info(f"🔍 System Prompt检查 - 工具调用要求: {has_tool_requirement}, 文件写入要求: {has_file_requirement}")
         
         return base_prompt
     
@@ -756,12 +856,17 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             
             if result["success"]:
                 self.logger.info(f"✅ Verilog设计任务完成: {task_id}")
+                
+                # 提取生成的文件路径信息
+                generated_files = self._extract_generated_files_from_tool_results(result.get("tool_results", []))
+                
                 return {
                     "success": True,
                     "task_id": task_id,
                     "response": result.get("response", ""),
                     "tool_results": result.get("tool_results", []),
                     "iterations": result.get("iterations", 1),
+                    "generated_files": generated_files,  # 新增：生成的文件路径列表
                     "quality_metrics": {
                         "schema_validation_passed": True,
                         "parameter_errors_fixed": result.get("iterations", 1) > 1,
@@ -793,6 +898,79 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
                     "验证工具配置是否正确"
                 ]
             }
+    
+    # =============================================================================
+    # 新增：文件路径提取和管理
+    # =============================================================================
+    
+    def _extract_generated_files_from_tool_results(self, tool_results: List[Dict]) -> List[Dict]:
+        """从工具结果中提取生成的文件路径信息"""
+        generated_files = []
+        
+        for tool_result in tool_results:
+            if not isinstance(tool_result, dict):
+                continue
+                
+            tool_name = tool_result.get("tool_name", "")
+            result_data = tool_result.get("result", {})
+            
+            # 检查write_file工具的结果
+            if tool_name == "write_file" and isinstance(result_data, dict):
+                if result_data.get("success", False):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "verilog_code",
+                        "description": result_data.get("description", ""),
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查generate_verilog_code工具的结果
+            elif tool_name == "generate_verilog_code" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "verilog_design",
+                        "module_name": result_data.get("module_name", ""),
+                        "description": f"Generated Verilog module: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查generate_design_documentation工具的结果
+            elif tool_name == "generate_design_documentation" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "design_documentation",
+                        "module_name": result_data.get("module_name", ""),
+                        "description": f"Design documentation for: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查optimize_verilog_code工具的结果
+            elif tool_name == "optimize_verilog_code" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "optimized_verilog",
+                        "module_name": result_data.get("module_name", ""),
+                        "optimization_target": result_data.get("optimization_target", ""),
+                        "description": f"Optimized Verilog code for: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+        
+        self.logger.info(f"📁 提取到 {len(generated_files)} 个生成文件")
+        for file_info in generated_files:
+            self.logger.info(f"📄 生成文件: {file_info.get('file_path', '')} - {file_info.get('description', '')}")
+        
+        return generated_files
     
     # =============================================================================
     # 新增：智能设计类型检测和动态prompt生成
@@ -1191,17 +1369,42 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     # 这样可以更好地分离职责：设计智能体专注代码生成，审查智能体负责验证
 
 
-    async def _tool_generate_verilog_code(self, module_name: str, requirements: str,
+    async def _tool_generate_verilog_code(self, module_name: str, requirements: str = None,
                                         input_ports: List[Dict] = None,
                                         output_ports: List[Dict] = None,
                                         clock_domain: Dict = None,
                                         coding_style: str = "rtl",
                                         parameters: List[Dict] = None,
                                         additional_constraints: List[str] = None,
-                                        comments_required: bool = True) -> Dict[str, Any]:
+                                        comments_required: bool = True,
+                                        # 添加备用参数用于自动合成requirements
+                                        description: str = None,
+                                        behavior: str = None,
+                                        **kwargs) -> Dict[str, Any]:
         """生成Verilog代码工具实现"""
         try:
             self.logger.info(f"🔧 生成Verilog代码: {module_name}")
+            
+            # 🔧 修复：自动合成requirements参数
+            if not requirements and (description or behavior):
+                requirements = ""
+                if description:
+                    requirements += f"设计描述: {description}\n"
+                if behavior:
+                    requirements += f"行为规格: {behavior}\n"
+                # 添加其他可能的备用参数
+                for key, value in kwargs.items():
+                    if key in ['specification', 'specs', 'functionality', 'design_spec'] and value:
+                        requirements += f"{key}: {value}\n"
+                        
+                self.logger.info(f"🔧 自动合成requirements参数: {requirements[:200]}...")
+            
+            if not requirements:
+                self.logger.error("❌ 无法获取requirements参数，已提供的参数: description={}, behavior={}, kwargs={}".format(description, behavior, list(kwargs.keys())))
+                return {
+                    "success": False,
+                    "error": "缺少必需的requirements参数，无法生成Verilog代码"
+                }
             
             # 增强：从requirements中提取错误分析和改进建议
             enhanced_context = self._extract_enhanced_context_from_requirements(requirements)
@@ -1435,6 +1638,12 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         try:
             self.logger.info(f"🔍 验证设计规格符合性: {design_type}")
             
+            # Build code section separately to avoid backslash in f-string
+            if generated_code:
+                code_section = f"**生成的代码**:\n```verilog\n{generated_code}\n```"
+            else:
+                code_section = "**注意**: 暂无生成代码，仅验证需求完整性"
+            
             validation_prompt = f"""
 请验证以下设计需求与生成代码的符合性：
 
@@ -1443,7 +1652,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 
 **设计类型**: {design_type}
 
-{f"**生成的代码**:\n```verilog\n{generated_code}\n```" if generated_code else "**注意**: 暂无生成代码，仅验证需求完整性"}
+{code_section}
 
 请从以下方面进行验证：
 1. **功能完整性**: 需求中的所有功能是否在代码中实现
