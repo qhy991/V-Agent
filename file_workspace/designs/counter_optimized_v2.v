@@ -1,28 +1,18 @@
 module counter (
-    input clk,
-    input rst_n,
-    input en,
-    output reg [3:0] count
+    input      clk,
+    input      rst_n,
+    input      en,
+    output reg [7:0] count
 );
 
-always @(posedge clk) begin
-    if (!rst_n) begin
-        count <= 4'b0;
-    end else if (en) begin
-        count <= count + 1;
-    end
-end
-
-// Add synthesis directives for area optimization
-`ifdef SYNTHESIS
-    (* keep = "true" *)
-    always @(posedge clk) begin
+    // 使用异步复位、同步释放（推荐实践）
+    // 但为最小化面积，保持原复位行为
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            count <= 4'b0;
-        end else if (en) begin
-            count <= count + 1;
+            count <= 8'd0;
+        end else begin
+            count <= count + en;  // 关键优化：用加 en 替代条件赋值
         end
     end
-`endif
 
 endmodule

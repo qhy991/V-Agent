@@ -605,28 +605,72 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             return await self._call_llm_traditional(conversation)
     
     async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
-        """传统的LLM调用方法（作为回退方案）"""
-        # 构建完整的prompt
-        full_prompt = ""
-        system_prompt = self._build_enhanced_system_prompt()
-        
-        for msg in conversation:
-            if msg["role"] == "system":
-                system_prompt = msg["content"]  # 覆盖默认system prompt
-            elif msg["role"] == "user":
-                full_prompt += f"User: {msg['content']}\n\n"
-            elif msg["role"] == "assistant":
-                full_prompt += f"Assistant: {msg['content']}\n\n"
+        """传统LLM调用方法"""
+        llm_start_time = time.time()
         
         try:
+            # 🎯 使用统一日志系统记录LLM调用开始
+            from core.unified_logging_system import get_global_logging_system
+            logging_system = get_global_logging_system()
+            
+            # 计算对话总长度
+            total_length = sum(len(msg.get('content', '')) for msg in conversation)
+            
+            # 记录LLM调用开始
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=total_length,
+                conversation_length=len(conversation),
+                conversation_id=self.current_conversation_id
+            )
+            
+            # 构建完整的prompt
+            full_prompt = ""
+            system_prompt = self._build_enhanced_system_prompt()
+            
+            for msg in conversation:
+                if msg["role"] == "system":
+                    system_prompt = msg["content"]  # 覆盖默认system prompt
+                elif msg["role"] == "user":
+                    full_prompt += f"User: {msg['content']}\n\n"
+                elif msg["role"] == "assistant":
+                    full_prompt += f"Assistant: {msg['content']}\n\n"
+            
+            # 调用传统LLM客户端
             response = await self.llm_client.send_prompt(
                 prompt=full_prompt.strip(),
                 system_prompt=system_prompt,
-                temperature=0.2,  # 代码审查需要更高的一致性
+                temperature=0.3,
                 max_tokens=4000
             )
+            
+            # 记录LLM调用成功
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=total_length,
+                response_length=len(response),
+                duration=duration,
+                success=True,
+                conversation_id=self.current_conversation_id
+            )
+            
             return response
         except Exception as e:
+            # 记录LLM调用失败
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=total_length,
+                duration=duration,
+                success=False,
+                error_info={"error": str(e)},
+                conversation_id=self.current_conversation_id
+            )
+            
             self.logger.error(f"❌ 传统LLM调用失败: {str(e)}")
             raise
     

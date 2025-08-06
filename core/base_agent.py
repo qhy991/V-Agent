@@ -429,9 +429,25 @@ class BaseAgent(ABC):
     
     async def _call_llm_optimized(self, user_message: str, is_first_call: bool = False) -> str:
         """优化的LLM调用方法"""
+        llm_start_time = time.time()
+        
         try:
             # 获取system prompt
             system_prompt = self.system_prompt
+            
+            # 🎯 使用统一日志系统记录LLM调用开始
+            from core.unified_logging_system import get_global_logging_system
+            logging_system = get_global_logging_system()
+            
+            # 记录LLM调用开始
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",  # 从配置中获取
+                prompt_length=len(user_message),
+                system_prompt_length=len(system_prompt) if system_prompt else 0,
+                is_first_call=is_first_call,
+                conversation_id=self.current_conversation_id
+            )
             
             # 调用优化的LLM客户端
             response = await self.llm_client.send_prompt_optimized(
@@ -442,8 +458,33 @@ class BaseAgent(ABC):
                 max_tokens=4000,
                 force_refresh_system=is_first_call
             )
+            
+            # 记录LLM调用成功
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=len(user_message),
+                response_length=len(response),
+                duration=duration,
+                success=True,
+                conversation_id=self.current_conversation_id
+            )
+            
             return response
         except Exception as e:
+            # 记录LLM调用失败
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=len(user_message),
+                duration=duration,
+                success=False,
+                error_info={"error": str(e)},
+                conversation_id=self.current_conversation_id
+            )
+            
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
             raise
     
@@ -1309,7 +1350,18 @@ class BaseAgent(ABC):
                         self.logger.warning(f"⚠️ 工具内部报告失败 {tool_call.tool_name}: {error_msg}")
                         raise Exception(error_msg)
                 
-                self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
+                # 🎯 使用统一日志系统记录工具执行
+                from core.unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                
+                # 记录工具执行结果
+                logging_system.log_tool_result(
+                    agent_id=self.agent_id,
+                    tool_name=tool_call.tool_name,
+                    success=True,
+                    result=result,
+                    duration=time.time() - tool_call_start_time
+                )
                 
                 # 🔧 TaskContext对话记录 - 工具调用成功
                 if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
@@ -1325,48 +1377,6 @@ class BaseAgent(ABC):
                             "status": "completed"
                         }
                     )
-                
-                # 🆕 数据收集用于Gradio可视化
-                if self.current_task_context:
-                    import time
-                    execution_timestamp = time.time()
-                    
-                    # 记录工具执行
-                    self.current_task_context.tool_executions.append({
-                        "timestamp": execution_timestamp,
-                        "agent_id": self.agent_id,
-                        "tool_name": tool_call.tool_name,
-                        "parameters": tool_call.parameters,
-                        "success": True,
-                        "result_summary": str(result)[:100] + ("..." if len(str(result)) > 100 else ""),
-                        "attempt": attempt + 1
-                    })
-                    
-                    # 记录文件操作（如果是文件相关工具）
-                    if tool_call.tool_name in ['write_file', 'read_file'] and isinstance(result, dict):
-                        file_path = tool_call.parameters.get('file_path') or tool_call.parameters.get('filename')
-                        if file_path:
-                            self.current_task_context.file_operations.append({
-                                "timestamp": execution_timestamp,
-                                "agent_id": self.agent_id,
-                                "operation": tool_call.tool_name,
-                                "file_path": file_path,
-                                "success": True,
-                                "details": result.get('message', '')
-                            })
-                    
-                    # 记录执行时间线
-                    self.current_task_context.execution_timeline.append({
-                        "timestamp": execution_timestamp,
-                        "event_type": "tool_execution",
-                        "agent_id": self.agent_id,
-                        "description": f"{self.agent_id} 成功执行 {tool_call.tool_name}",
-                        "details": {
-                            "tool_name": tool_call.tool_name,
-                            "success": True,
-                            "attempt": attempt + 1
-                        }
-                    })
                 
                 return ToolResult(
                     call_id=tool_call.call_id or "unknown",
@@ -2338,6 +2348,12 @@ class BaseAgent(ABC):
     
     async def _tool_write_file(self, filename: str = None, content: str = None, directory: str = None, file_path: str = None, **kwargs) -> Dict[str, Any]:
         """基础工具：写入文件（增强版，支持中央文件管理）"""
+        file_start_time = time.time()
+        
+        # 🎯 在方法开始就初始化统一日志系统，确保所有代码路径都能访问
+        from core.unified_logging_system import get_global_logging_system
+        logging_system = get_global_logging_system()
+        
         try:
             # 支持file_path参数作为filename的别名
             if file_path is not None and filename is None:
@@ -2357,6 +2373,15 @@ class BaseAgent(ABC):
                 }
             
             self.logger.info(f"📝 写入文件: {filename}")
+            
+            # 记录文件写入开始
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="write",
+                file_path=filename,
+                success=True,
+                details=f"开始写入文件，大小: {len(content)} 字符"
+            )
             
             # 🆕 优先尝试使用当前任务上下文中的实验路径
             try:
@@ -2436,6 +2461,16 @@ class BaseAgent(ABC):
                         
                         self.logger.info(f"✅ 文件已保存到实验目录并注册到管理器: {exp_file_path}")
                         
+                        # 记录文件写入成功
+                        duration = time.time() - file_start_time
+                        logging_system.log_file_operation(
+                            agent_id=self.agent_id,
+                            operation="write",
+                            file_path=str(exp_file_path),
+                            success=True,
+                            details=f"文件写入成功，类型: {file_ref.file_type}, ID: {file_ref.file_id}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
+                        )
+                        
                         return {
                             "success": True,
                             "message": f"文件 {filename} 已成功保存到实验目录",
@@ -2458,6 +2493,17 @@ class BaseAgent(ABC):
                     except Exception as e:
                         self.logger.warning(f"⚠️ 中央文件管理器注册失败: {e}")
                         # 即使中央管理器失败，文件已经保存到实验目录
+                        
+                        # 记录文件写入成功
+                        duration = time.time() - file_start_time
+                        logging_system.log_file_operation(
+                            agent_id=self.agent_id,
+                            operation="write",
+                            file_path=str(exp_file_path),
+                            success=True,
+                            details=f"文件写入成功，类型: {file_type}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
+                        )
+                        
                         return {
                             "success": True,
                             "message": f"文件 {filename} 已成功保存到实验目录",
@@ -2496,6 +2542,16 @@ class BaseAgent(ABC):
                 )
                 
                 self.logger.info(f"✅ 文件已通过中央管理器保存: {filename} (file path: {file_ref.file_path}) (ID: {file_ref.file_id})")
+                
+                # 记录文件写入成功
+                duration = time.time() - file_start_time
+                logging_system.log_file_operation(
+                    agent_id=self.agent_id,
+                    operation="write",
+                    file_path=file_ref.file_path,
+                    success=True,
+                    details=f"文件写入成功，类型: {file_ref.file_type}, ID: {file_ref.file_id}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
+                )
                 
                 return {
                     "success": True,
@@ -2546,6 +2602,16 @@ class BaseAgent(ABC):
             
             self.logger.info(f"✅ 文件写入成功: {file_path}")
             
+            # 记录文件写入成功
+            duration = time.time() - file_start_time
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="write",
+                file_path=str(file_path),
+                success=True,
+                details=f"文件写入成功，目录: {str(output_dir)}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
+            )
+            
             return {
                 "success": True,
                 "file_path": str(file_path),
@@ -2556,6 +2622,16 @@ class BaseAgent(ABC):
             }
             
         except Exception as e:
+            # 记录文件写入失败
+            duration = time.time() - file_start_time
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="write",
+                file_path=filename,
+                success=False,
+                details=f"文件写入失败，错误: {str(e)}, 耗时: {duration:.2f}秒"
+            )
+            
             self.logger.error(f"❌ 文件写入失败: {str(e)}")
             return {
                 "success": False,
@@ -2587,8 +2663,23 @@ class BaseAgent(ABC):
     
     async def _tool_read_file(self, filepath: str, **kwargs) -> Dict[str, Any]:
         """基础工具：读取文件"""
+        file_start_time = time.time()
+        
+        # 🎯 在方法开始就初始化统一日志系统，确保所有代码路径都能访问
+        from core.unified_logging_system import get_global_logging_system
+        logging_system = get_global_logging_system()
+        
         try:
             self.logger.info(f"📖 读取文件: {filepath}")
+            
+            # 记录文件读取开始
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="read",
+                file_path=filepath,
+                success=True,
+                details="开始读取文件"
+            )
             
             file_path = Path(filepath)
             if not file_path.is_absolute():
@@ -2598,6 +2689,16 @@ class BaseAgent(ABC):
                     file_path = Path(filepath)
             
             if not file_path.exists():
+                # 记录文件读取失败
+                duration = time.time() - file_start_time
+                logging_system.log_file_operation(
+                    agent_id=self.agent_id,
+                    operation="read",
+                    file_path=filepath,
+                    success=False,
+                    details=f"文件不存在: {filepath}, 耗时: {duration:.2f}秒"
+                )
+                
                 return {
                     "success": False,
                     "error": f"文件不存在: {filepath}",
@@ -2609,6 +2710,16 @@ class BaseAgent(ABC):
             
             self.logger.info(f"✅ 文件读取成功: {file_path} ({len(content)} 字符)")
             
+            # 记录文件读取成功
+            duration = time.time() - file_start_time
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="read",
+                file_path=str(file_path),
+                success=True,
+                details=f"文件读取成功，大小: {len(content)} 字符, 耗时: {duration:.2f}秒, 来源: file_system"
+            )
+            
             return {
                 "success": True,
                 "content": content,
@@ -2618,6 +2729,16 @@ class BaseAgent(ABC):
             }
             
         except Exception as e:
+            # 记录文件读取失败
+            duration = time.time() - file_start_time
+            logging_system.log_file_operation(
+                agent_id=self.agent_id,
+                operation="read",
+                file_path=filepath,
+                success=False,
+                details=f"文件读取失败，错误: {str(e)}, 耗时: {duration:.2f}秒"
+            )
+            
             self.logger.error(f"❌ 文件读取失败: {str(e)}")
             return {
                 "success": False,
