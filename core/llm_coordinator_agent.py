@@ -823,8 +823,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         from core.experiment_manager import ExperimentManager
         experiment_manager = ExperimentManager()
         
-        # 从用户请求中提取实验名称（取前20个字符作为实验名）
-        experiment_name = "".join(c for c in user_request[:20] if c.isalnum() or c in ['_', '-']).strip() or "experiment"
+        # 🎯 优化：使用智能实验名称生成
+        experiment_name = experiment_manager.generate_experiment_name(user_request, task_type="design")
         
         # 创建实验
         experiment_info = experiment_manager.create_experiment(
@@ -3388,7 +3388,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         # 计算迭代效率
         if task_context.iteration_count > 0:
-            metrics["iteration_efficiency"] = completion_score / task_context.iteration_count
+            # 🎯 修复：使用task_context中的quality_score而不是未定义的completion_score
+            metrics["iteration_efficiency"] = task_context.quality_score / task_context.iteration_count
         
         # 智能体利用率
         for agent_id, agent_info in self.registered_agents.items():
@@ -3871,9 +3872,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         self.logger.info(f"🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
         
         # 调试：打印对话历史内容
-        for i, msg in enumerate(conversation):
+        for i in range(len(conversation)):
+            msg = conversation[i]
             self.logger.info(f"🔍 [COORDINATOR] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
-            self.logger.info(f"🔍 [COORDINATOR] 内容前100字: {msg['content'][:100]}...")
+            self.logger.debug(f"🔍 [COORDINATOR] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
             if msg["role"] == "user":

@@ -63,11 +63,77 @@ class ExperimentManager:
         
         self.logger.info(f"🧪 实验管理器已初始化，基础工作空间: {self.base_workspace}")
     
+    def generate_experiment_name(self, user_request: str, task_type: str = "design") -> str:
+        """
+        智能生成实验名称
+        
+        Args:
+            user_request: 用户请求
+            task_type: 任务类型 (design, verification, analysis等)
+            
+        Returns:
+            生成的实验名称
+        """
+        from datetime import datetime
+        
+        # 提取关键词
+        keywords = self._extract_keywords(user_request)
+        
+        # 生成时间戳
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # 组合实验名称
+        if keywords:
+            # 使用关键词 + 时间戳
+            experiment_name = f"{task_type}_{keywords[0]}_{timestamp}"
+        else:
+            # 使用默认格式
+            experiment_name = f"{task_type}_{timestamp}"
+        
+        return experiment_name
+    
+    def _extract_keywords(self, user_request: str) -> List[str]:
+        """
+        从用户请求中提取关键词
+        
+        Args:
+            user_request: 用户请求
+            
+        Returns:
+            关键词列表
+        """
+        import re
+        
+        # 常见的Verilog模块关键词
+        verilog_keywords = [
+            'counter', 'adder', 'multiplier', 'alu', 'register', 'memory',
+            'fifo', 'uart', 'spi', 'i2c', 'pwm', 'timer', 'fsm', 'state',
+            'decoder', 'encoder', 'mux', 'demux', 'shifter', 'comparator'
+        ]
+        
+        # 转换为小写进行匹配
+        request_lower = user_request.lower()
+        
+        # 查找匹配的关键词
+        found_keywords = []
+        for keyword in verilog_keywords:
+            if keyword in request_lower:
+                found_keywords.append(keyword)
+        
+        # 如果没有找到预定义关键词，尝试提取其他有意义的词
+        if not found_keywords:
+            # 提取英文单词（至少3个字符）
+            words = re.findall(r'\b[a-zA-Z]{3,}\b', user_request)
+            if words:
+                found_keywords = words[:2]  # 最多取前2个词
+        
+        return found_keywords
+    
     def create_experiment(self, experiment_name: str, task_description: str, 
                          metadata: Dict[str, Any] = None) -> ExperimentInfo:
         """创建新实验"""
-        # 生成实验ID
-        experiment_id = f"{experiment_name}_{int(time.time())}"
+        # 生成实验ID - 直接使用实验名称，因为实验名称已经包含时间戳
+        experiment_id = experiment_name
         
         # 创建实验工作目录
         workspace_path = self.base_workspace / experiment_id

@@ -477,10 +477,11 @@ class EnhancedLLMClient:
         # 详细记录对话内容
         if system_prompt:
             self.logger.info(f"📋 System Prompt ({len(system_prompt)} 字符):")
+            # self.logger.info(f"📋 System Prompt:\n {system_prompt}")  # Assuming similar structure, comment out if exists
             self.logger.info(f"📋 {system_prompt}")
         
         self.logger.info(f"👤 User Prompt ({len(prompt)} 字符):")
-        self.logger.info(f"👤 User Prompt:\n {prompt}")
+        # self.logger.info(f"👤 User Prompt:\n {prompt}")  # Comment out full prompt logging to reduce redundancy
         self.logger.info("="*100)
         
         for attempt in range(max_retries):

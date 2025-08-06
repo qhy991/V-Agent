@@ -547,9 +547,10 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         self.logger.info(f"🔄 [CODE_REVIEWER] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
         
         # 调试：打印对话历史内容
-        for i, msg in enumerate(conversation):
+        for i in range(len(conversation)):
+            msg = conversation[i]
             self.logger.info(f"🔍 [CODE_REVIEWER] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
-            self.logger.info(f"🔍 [CODE_REVIEWER] 内容前100字: {msg['content'][:100]}...")
+            self.logger.debug(f"🔍 [CODE_REVIEWER] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
             if msg["role"] == "user":

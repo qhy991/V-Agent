@@ -1646,9 +1646,16 @@ class BaseAgent(ABC):
             self.logger.info(f"🧹 使用智能代码提取处理Verilog文件")
             extracted_code = self.extract_verilog_code(cleaned_content)
             
-            if extracted_code != cleaned_content:
-                self.logger.info(f"🧹 Verilog代码提取成功：{len(cleaned_content)} -> {len(extracted_code)} 字符")
-                cleaned_content = extracted_code
+            # 🎯 修复：检查提取的代码是否有效，而不是比较长度
+            if extracted_code and len(extracted_code.strip()) > 0:
+                # 检查是否包含Verilog关键字，确认是有效代码
+                verilog_keywords = ['module', 'endmodule', 'input', 'output', 'wire', 'reg', 'always', 'assign']
+                if any(keyword in extracted_code.lower() for keyword in verilog_keywords):
+                    self.logger.info(f"🧹 Verilog代码提取成功：长度 {len(extracted_code)} 字符")
+                    cleaned_content = extracted_code
+                else:
+                    self.logger.warning(f"⚠️ 提取的内容不包含Verilog关键字，使用传统清理方法")
+                    cleaned_content = self._traditional_clean_content(cleaned_content)
             else:
                 self.logger.warning(f"⚠️ Verilog代码提取失败，使用传统清理方法")
                 # 回退到传统清理方法
@@ -1772,8 +1779,13 @@ class BaseAgent(ABC):
             self.logger.info(f"✅ 成功提取Verilog代码，长度: {len(best_code)}")
             return best_code
         else:
-            self.logger.warning("⚠️ 未能提取到有效的Verilog代码")
-            return content  # 返回原始内容作为后备
+            # 🎯 优化：检查原始内容是否已经是有效的Verilog代码
+            if self._is_valid_verilog_code(content):
+                self.logger.info(f"✅ 原始内容已经是有效的Verilog代码，长度: {len(content)}")
+                return content
+            else:
+                self.logger.warning("⚠️ 未能提取到有效的Verilog代码")
+                return content  # 返回原始内容作为后备
     
     def _is_valid_verilog_code(self, code: str) -> bool:
         """

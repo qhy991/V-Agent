@@ -7,19 +7,15 @@ module counter (
 
 // 时序逻辑：在时钟上升沿触发
 always @(posedge clk) begin
-    // 异步复位，低有效，优先级最高
+    // 同步复位：当rst_n为低电平时，计数器清零
     if (!rst_n) begin
         count <= 8'd0;
-    end else if (en) begin
-        // 当使能有效时，计数器递增
-        // 达到最大值255后自动回绕到0
-        if (count == 8'd255) begin
-            count <= 8'd0;
-        end else begin
-            count <= count + 1'b1;
-        end
     end
-    // 否则保持当前值（en无效时）
+    // 当使能信号有效且未复位时，计数器递增
+    else if (en) begin
+        count <= count + 1'b1;
+    end
+    // 否则保持当前值（不递增）
 end
 
 endmodule
