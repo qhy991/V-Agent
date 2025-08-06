@@ -1,0 +1,105 @@
+{
+    "file_patterns": {
+        "experiment_reports": [
+            "*.json",
+            "reports/*.json", 
+            "**/experiment_report.json",
+            "**/report.json"
+        ],
+        "experiment_summaries": [
+            "*.txt",
+            "reports/*.txt",
+            "**/experiment_summary.txt",
+            "**/summary.txt",
+            "**/README.txt"
+        ],
+        "design_files": [
+            "*.v",
+            "designs/*.v",
+            "**/*.v",
+            "**/design*.v",
+            "**/module*.v"
+        ],
+        "testbench_files": [
+            "*testbench*.v",
+            "*tb*.v",
+            "testbenches/*.v",
+            "**/testbench*.v",
+            "**/tb*.v",
+            "**/*_tb.v"
+        ],
+        "log_files": [
+            "*.txt",
+            "*.log",
+            "logs/*.txt",
+            "logs/*.log",
+            "**/log*.txt",
+            "**/test*.txt",
+            "counter_test_*.txt"
+        ]
+    },
+    "experiment_discovery": {
+        "patterns": [
+            "llm_experiments/*",
+            "experiments/*",
+            "*/llm_coordinator_*",
+            "llm_coordinator_*",
+            "**/llm_*_*"
+        ],
+        "sort_by": "mtime"
+    },
+    "content_display": {
+        "preview_length": 200,
+        "show_full_content": true,
+        "expandable_sections": true,
+        "highlight_keywords": [
+            "LLM响应",
+            "工具执行",
+            "错误",
+            "成功",
+            "失败"
+        ],
+        "content_filters": {
+            "show_llm_responses": true,
+            "show_tool_executions": true,
+            "show_errors": true,
+            "show_system_messages": true
+        }
+    },
+    "chart_settings": {
+        "colors": {
+            "user": "#4CAF50",
+            "assistant": "#2196F3", 
+            "system": "#FF9800",
+            "llm_call": "#9C27B0",
+            "tool_execution": "#4CAF50",
+            "tool_failure": "#F44336",
+            "agent_completion": "#4CAF50",
+            "error": "#F44336"
+        },
+        "chart_height": 500,
+        "timeline_height": 400
+    },
+    "html_template": {
+        "title": "V-Agent 实验可视化报告 - 增强版",
+        "subtitle": "基于统一日志系统的实验结果可视化展示 - 完整内容版本",
+        "theme": {
+            "primary_color": "#667eea",
+            "secondary_color": "#764ba2",
+            "background_gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            "content_background": "#f8f9fa",
+            "content_border": "#dee2e6"
+        }
+    },
+    "output": {
+        "default_output_dir": ".",
+        "filename_template": "enhanced_experiment_visualization_{experiment_name}.html",
+        "create_directories": true
+    },
+    "logging": {
+        "level": "INFO",
+        "show_progress": true,
+        "show_file_loading": true,
+        "show_content_parsing": true
+    }
+} 

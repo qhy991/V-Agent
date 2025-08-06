@@ -13,7 +13,8 @@ from typing import Dict, Any, List, Optional, Set
 from dataclasses import dataclass
 from pathlib import Path
 
-from .base_agent import BaseAgent, TaskMessage, FileReference
+from .base_agent import BaseAgent
+from .types import TaskMessage, FileReference
 from .enums import AgentCapability, AgentStatus, ConversationState
 from .response_format import ResponseFormat, StandardizedResponse
 from .response_parser import ResponseParser, ResponseParseError
@@ -179,6 +180,29 @@ class CentralizedCoordinator(BaseAgent):
             self.agent_instances[agent.agent_id] = agent
             
             self.logger.info(f"✅ 智能体注册成功: {agent.agent_id} ({agent.role})")
+            
+            # 记录到增强日志系统
+            try:
+                from .unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                
+                logging_system.log_event(
+                    level=logging_system.LogLevel.INFO,
+                    category=logging_system.EventCategory.AGENT,
+                    title=f"智能体注册: {agent.agent_id}",
+                    message=f"角色: {agent.role}, 能力: {len(agent.get_capabilities())}项",
+                    agent_id=self.agent_id,
+                    details={
+                        "registered_agent_id": agent.agent_id,
+                        "role": agent.role,
+                        "capabilities": [cap.value for cap in agent.get_capabilities()],
+                        "specialty_description": agent.get_specialty_description(),
+                        "total_registered_agents": len(self.registered_agents)
+                    }
+                )
+            except Exception as log_error:
+                self.logger.warning(f"⚠️ 智能体注册日志记录失败: {log_error}")
+            
             return True
             
         except Exception as e:
@@ -648,7 +672,7 @@ Your selection:"""
         # 从task_analysis中提取初始文件引用
         initial_files = task_analysis.get('context', {}).get('file_references', [])
         if initial_files:
-            from core.base_agent import FileReference
+            from core.types import FileReference
             for file_data in initial_files:
                 if isinstance(file_data, dict):
                     file_ref = FileReference(

@@ -13,7 +13,8 @@ __description__ = "中心化智能体协调框架，用于Verilog设计任务的
 # 核心组件导入
 from config.config import FrameworkConfig, LLMConfig, CoordinatorConfig, AgentConfig
 from core.centralized_coordinator import CentralizedCoordinator
-from core.base_agent import BaseAgent, TaskMessage, FileReference
+from core.base_agent import BaseAgent
+from core.types import TaskMessage, FileReference
 from core.enums import AgentCapability, AgentStatus, ConversationState
 
 # 专业智能体导入

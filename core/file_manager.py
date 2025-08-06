@@ -98,63 +98,47 @@ class CentralFileManager:
         
         # 检查是否已存在同名文件
         existing_file_id = None
-        for fid, file_ref in self.file_registry.items():
-            if Path(file_ref.file_path).name == filename and file_ref.file_type == file_type:
-                existing_file_id = fid
+        for file_id, file_ref in self.file_registry.items():
+            if file_ref.filename == filename and file_ref.file_type == file_type:
+                existing_file_id = file_id
                 break
         
-        # 如果存在同名文件，检查端口一致性
+        # 如果存在同名文件，进行版本管理
         if existing_file_id:
-            existing_ref = self.file_registry[existing_file_id]
-            if not self._validate_port_consistency(existing_ref.port_info, port_info):
-                self.logger.warning(f"⚠️ 端口信息不一致，创建新版本: {filename}")
-                # 创建新版本而不是覆盖
-                file_id = str(uuid.uuid4())[:8]
-                version = existing_ref.version + 1
-            else:
-                file_id = existing_file_id
-                version = existing_ref.version
-                self.logger.info(f"🔄 使用现有文件ID: {file_id}")
+            old_file_ref = self.file_registry[existing_file_id]
+            
+            # 🎯 新增：端口一致性验证
+            if file_type == "verilog" and old_file_ref.port_info:
+                if not self._validate_port_consistency(old_file_ref.port_info, port_info):
+                    self.logger.warning(f"⚠️ 端口信息不一致: {filename}")
+            
+            # 创建新版本
+            new_version = old_file_ref.version + 1
+            versioned_filename = f"{filename}_v{new_version}"
+            self.logger.info(f"📝 创建新版本: {versioned_filename}")
         else:
-            file_id = str(uuid.uuid4())[:8]
-            version = 1
-            self.logger.info(f"🆔 生成新文件ID: {file_id}")
+            versioned_filename = filename
+            new_version = 1
         
-        # 确定保存目录
+        # 确定目标目录
         target_dir = self._get_target_directory(file_type)
+        file_path = target_dir / versioned_filename
         
-        # 生成唯一的文件路径
-        file_extension = self._get_file_extension(file_type)
-        if not filename.endswith(file_extension):
-            filename = f"{filename}{file_extension}"
-        
-        # 如果是新版本，添加版本号
-        if version > 1:
-            name_without_ext = Path(filename).stem
-            ext = Path(filename).suffix
-            filename = f"{name_without_ext}_v{version}{ext}"
-        
-        file_path = target_dir / filename
+        # 添加文件扩展名
+        if not file_path.suffix:
+            extension = self._get_file_extension(file_type)
+            file_path = file_path.with_suffix(extension)
         
         # 保存文件
-        file_path.write_text(content, encoding='utf-8')
-        
-        # 计算内容哈希
-        content_hash = str(hash(content))
-        
-        # 创建或更新文件引用
-        if existing_file_id and version == existing_ref.version:
-            # 更新现有文件引用
-            file_ref = self.file_registry[file_id]
-            file_ref.file_path = str(file_path)
-            file_ref.content_hash = content_hash
-            file_ref.created_by = created_by
-            file_ref.created_at = datetime.now().isoformat()
-            file_ref.description = description
-            file_ref.port_info = port_info
-            self.logger.info(f"🔄 更新现有文件引用: {file_id}")
-        else:
-            # 创建新文件引用
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            
+            # 计算内容哈希
+            content_hash = hashlib.md5(content.encode()).hexdigest()
+            
+            # 创建文件引用
+            file_id = str(uuid.uuid4())
             file_ref = FileReference(
                 file_id=file_id,
                 file_path=str(file_path),
@@ -164,18 +148,41 @@ class CentralFileManager:
                 created_at=datetime.now().isoformat(),
                 description=description,
                 port_info=port_info,
-                version=version
+                version=new_version
             )
+            
+            # 注册文件
             self.file_registry[file_id] = file_ref
-            self.logger.info(f"🆕 创建新文件引用: {file_id} (版本: {version})")
-        
-        # 🎯 新增：更新端口信息缓存
-        self.port_info_cache[file_id] = port_info
-        
-        self._save_registry()
-        
-        self.logger.info(f"💾 文件已保存: {filename} (ID: {file_id}, 类型: {file_type}, 版本: {version})")
-        return file_ref
+            self._save_registry()
+            
+            self.logger.info(f"💾 文件已保存: {file_path} (ID: {file_id})")
+            
+            # 🆕 记录到TaskContext（如果可用）
+            if hasattr(self, 'task_context') and self.task_context and hasattr(self.task_context, 'add_file_operation'):
+                self.task_context.add_file_operation(
+                    operation_type="create",
+                    file_path=str(file_path),
+                    agent_id=created_by,
+                    success=True,
+                    file_size=len(content.encode('utf-8'))
+                )
+            
+            return file_ref
+            
+        except Exception as e:
+            self.logger.error(f"❌ 保存文件失败: {file_path} - {str(e)}")
+            
+            # 🆕 记录失败到TaskContext（如果可用）
+            if hasattr(self, 'task_context') and self.task_context and hasattr(self.task_context, 'add_file_operation'):
+                self.task_context.add_file_operation(
+                    operation_type="create",
+                    file_path=str(file_path),
+                    agent_id=created_by,
+                    success=False,
+                    error=str(e)
+                )
+            
+            raise
     
     def _extract_port_info(self, content: str, file_type: str) -> Dict[str, Any]:
         """提取Verilog模块的端口信息"""

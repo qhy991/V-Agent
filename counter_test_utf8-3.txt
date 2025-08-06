@@ -1,0 +1,37 @@
+Traceback (most recent call last):
+  File "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/test_llm_coordinator_enhanced.py", line 276, in create_llm_coordinator
+    self.coordinator = LLMCoordinatorAgent(self.config)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/core/llm_coordinator_agent.py", line 182, in __init__
+    super().__init__(
+  File "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/core/schema_system/enhanced_base_agent.py", line 56, in __init__
+    super().__init__(agent_id, role, capabilities)
+  File "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/core/base_agent.py", line 121, in __init__
+    self.tool_execution_engine.register_tools(self.function_calling_registry)
+  File "/Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/core/function_calling/executor.py", line 61, in register_tools
+    func=tool_info.get('func'),
+         ^^^^^^^^^^^^^
+AttributeError: 'function' object has no attribute 'get'
+🧠 增强LLM协调智能体测试
+============================================================
+   设计类型: counter
+   配置档案: standard
+   最大迭代: 3
+   实验ID: llm_coordinator_counter_1754471945
+   输出目录: /Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/llm_experiments/llm_coordinator_counter_1754471945
+============================================================
+
+🔧 设置实验环境...
+✅ 成功加载环境配置: /Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/.env
+   ✅ 实验目录创建: /Users/haiyan/Library/Mobile Documents/com~apple~CloudDocs/Documents/Study/V-Agent/llm_experiments/llm_coordinator_counter_1754471945
+   ✅ 元数据保存: experiment_metadata.json
+
+🤖 创建LLM协调智能体...
+✅ 增强日志系统初始化成功
+📂 实验目录: logs/experiment_20250806_171905
+📁 工件目录: logs/experiment_20250806_171905/artifacts
+📋 主日志目录: logs
+   ❌ 协调智能体创建失败: 'function' object has no attribute 'get'
+   📋 详细错误信息:
+
+💥 实验失败: 协调智能体创建失败

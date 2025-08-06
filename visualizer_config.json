@@ -1,0 +1,84 @@
+{
+    "file_patterns": {
+        "experiment_reports": [
+            "*.json",
+            "reports/*.json", 
+            "**/experiment_report.json",
+            "**/report.json"
+        ],
+        "experiment_summaries": [
+            "*.txt",
+            "reports/*.txt",
+            "**/experiment_summary.txt",
+            "**/summary.txt",
+            "**/README.txt"
+        ],
+        "design_files": [
+            "*.v",
+            "designs/*.v",
+            "**/*.v",
+            "**/design*.v",
+            "**/module*.v"
+        ],
+        "testbench_files": [
+            "*testbench*.v",
+            "*tb*.v",
+            "testbenches/*.v",
+            "**/testbench*.v",
+            "**/tb*.v",
+            "**/*_tb.v"
+        ],
+        "log_files": [
+            "*.txt",
+            "*.log",
+            "logs/*.txt",
+            "logs/*.log",
+            "**/log*.txt",
+            "**/test*.txt",
+            "counter_test_*.txt"
+        ]
+    },
+    "experiment_discovery": {
+        "patterns": [
+            "llm_experiments/*",
+            "experiments/*",
+            "*/llm_coordinator_*",
+            "llm_coordinator_*",
+            "**/llm_*_*"
+        ],
+        "sort_by": "mtime"
+    },
+    "chart_settings": {
+        "colors": {
+            "user": "#4CAF50",
+            "assistant": "#2196F3", 
+            "system": "#FF9800",
+            "llm_call": "#9C27B0",
+            "tool_execution": "#4CAF50",
+            "tool_failure": "#F44336",
+            "agent_completion": "#4CAF50",
+            "error": "#F44336"
+        },
+        "chart_height": 500,
+        "timeline_height": 400
+    },
+    "html_template": {
+        "title": "V-Agent 实验可视化报告",
+        "subtitle": "基于统一日志系统的实验结果可视化展示",
+        "theme": {
+            "primary_color": "#667eea",
+            "secondary_color": "#764ba2",
+            "background_gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+        }
+    },
+    "output": {
+        "default_output_dir": ".",
+        "filename_template": "experiment_visualization_{experiment_name}.html",
+        "create_directories": true
+    },
+    "logging": {
+        "level": "INFO",
+        "show_progress": true,
+        "show_file_loading": true
+    }
+} 

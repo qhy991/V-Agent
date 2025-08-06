@@ -14,7 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .centralized_coordinator import CentralizedCoordinator, AgentInfo, ConversationRecord
-from .base_agent import BaseAgent, TaskMessage, FileReference
+from .base_agent import BaseAgent
+from .types import TaskMessage, FileReference
 from .schema_system.enhanced_base_agent import EnhancedBaseAgent
 from .enums import AgentCapability, AgentStatus, ConversationState
 from .response_format import ResponseFormat, StandardizedResponse

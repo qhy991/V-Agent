@@ -6,7 +6,8 @@ Core Components Module for Centralized Agent Framework
 """
 
 from .centralized_coordinator import CentralizedCoordinator, AgentInfo, ConversationRecord
-from .base_agent import BaseAgent, TaskMessage, FileReference
+from .base_agent import BaseAgent
+from .types import TaskMessage, FileReference
 from .enums import AgentCapability, AgentStatus, ConversationState
 
 __all__ = [

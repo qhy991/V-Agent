@@ -389,25 +389,31 @@ class EnhancedLLMCoordinatorTest:
             workflow_stages = task_context.get('workflow_stages', [])
             file_operations = task_context.get('file_operations', [])
             execution_timeline = task_context.get('execution_timeline', [])
+            data_collection_summary = task_context.get('data_collection_summary', {})
+            llm_conversations = task_context.get('llm_conversations', [])
             
+            # 🆕 增强数据分析
             analysis.update({
-                "total_iterations": execution_summary.get('total_iterations', 0),
-                "assigned_agents": execution_summary.get('assigned_agents', []),
-                "coordination_result_length": len(result.get('coordination_result', '')),
-                "agent_count": len(agent_results),
-                "agent_performance": {},
-                # 🆕 增强数据字段用于Gradio可视化
                 "tool_executions": tool_executions,
                 "agent_interactions": agent_interactions,
                 "performance_metrics": performance_metrics,
                 "workflow_stages": workflow_stages,
                 "file_operations": file_operations,
                 "execution_timeline": execution_timeline,
+                "data_collection_summary": data_collection_summary,
+                "llm_conversations": llm_conversations,
                 # 🆕 统计信息
                 "tool_execution_count": len(tool_executions),
                 "agent_interaction_count": len(agent_interactions),
                 "workflow_stage_count": len(workflow_stages),
-                "file_operation_count": len(file_operations)
+                "file_operation_count": len(file_operations),
+                "execution_timeline_count": len(execution_timeline),
+                "llm_conversation_count": len(llm_conversations),
+                # 🆕 基础统计信息
+                "total_iterations": execution_summary.get('total_iterations', 0),
+                "agent_count": len(agent_results),
+                "coordination_result_length": len(result.get('coordination_result', '')),
+                "agent_performance": {}
             })
             
             # 分析每个智能体的表现
@@ -483,6 +489,42 @@ class EnhancedLLMCoordinatorTest:
                 f.write(f"- 参与智能体: {analysis.get('agent_count', 0)} 个\n")
                 f.write(f"- 协调结果长度: {analysis.get('coordination_result_length', 0)} 字符\n\n")
                 
+                # 🆕 数据收集统计
+                data_summary = analysis.get('data_collection_summary', {})
+                if data_summary:
+                    f.write("数据收集统计:\n")
+                    
+                    tool_stats = data_summary.get('tool_executions', {})
+                    f.write(f"- 工具调用: {tool_stats.get('total', 0)} 次 (成功: {tool_stats.get('successful', 0)}, 失败: {tool_stats.get('failed', 0)})\n")
+                    f.write(f"- 使用工具: {', '.join(tool_stats.get('unique_tools', []))}\n")
+                    f.write(f"- 工具执行总时间: {tool_stats.get('total_execution_time', 0):.2f}秒\n")
+                    
+                    file_stats = data_summary.get('file_operations', {})
+                    f.write(f"- 文件操作: {file_stats.get('total', 0)} 次 (成功: {file_stats.get('successful', 0)}, 失败: {file_stats.get('failed', 0)})\n")
+                    f.write(f"- 操作类型: {', '.join(file_stats.get('operation_types', []))}\n")
+                    f.write(f"- 总文件大小: {file_stats.get('total_file_size', 0)} 字节\n")
+                    
+                    workflow_stats = data_summary.get('workflow_stages', {})
+                    f.write(f"- 工作流阶段: {workflow_stats.get('total', 0)} 个 (成功: {workflow_stats.get('successful', 0)}, 失败: {workflow_stats.get('failed', 0)})\n")
+                    f.write(f"- 工作流总时间: {workflow_stats.get('total_duration', 0):.2f}秒\n")
+                    
+                    agent_stats = data_summary.get('agent_interactions', {})
+                    f.write(f"- 智能体交互: {agent_stats.get('total', 0)} 次 (成功: {agent_stats.get('successful', 0)}, 失败: {agent_stats.get('failed', 0)})\n")
+                    f.write(f"- 参与智能体: {', '.join(agent_stats.get('unique_agents', []))}\n")
+                    
+                    timeline_stats = data_summary.get('execution_timeline', {})
+                    f.write(f"- 执行事件: {timeline_stats.get('total_events', 0)} 个\n")
+                    f.write(f"- 事件类型: {', '.join(timeline_stats.get('event_types', []))}\n\n")
+                    
+                    # 🆕 LLM对话统计
+                    llm_stats = data_summary.get('llm_conversations', {})
+                    f.write(f"- LLM对话: {llm_stats.get('total', 0)} 次 (成功: {llm_stats.get('successful', 0)}, 失败: {llm_stats.get('failed', 0)})\n")
+                    f.write(f"- 参与智能体: {', '.join(llm_stats.get('unique_agents', []))}\n")
+                    f.write(f"- 使用模型: {', '.join(llm_stats.get('unique_models', []))}\n")
+                    f.write(f"- 首次调用: {llm_stats.get('first_calls', 0)} 次\n")
+                    f.write(f"- 总对话时间: {llm_stats.get('total_duration', 0):.2f}秒\n")
+                    f.write(f"- 总Token数: {llm_stats.get('total_tokens', 0)} 个\n\n")
+                
                 # 智能体性能分析
                 agent_perf = analysis.get('agent_performance', {})
                 if agent_perf:
@@ -492,7 +534,8 @@ class EnhancedLLMCoordinatorTest:
                         f.write(f"  执行时间: {perf['execution_time']:.2f}秒\n")
                         f.write(f"  执行状态: {'成功' if perf['success'] else '失败'}\n")
                         f.write(f"  结果长度: {perf['result_length']} 字符\n")
-                        f.write(f"  处理效率: {perf['efficiency']:.1f} 字符/秒\n\n")
+                        f.write(f"  处理效率: {perf['efficiency']:.1f} 字符/秒\n")
+                        f.write(f"  工具使用: {perf.get('tool_usage_count', 0)} 次\n\n")
             else:
                 f.write(f"失败原因: {analysis.get('error_message', '未知错误')}\n")
                 f.write(f"失败阶段: {analysis.get('failure_stage', '未知')}\n")

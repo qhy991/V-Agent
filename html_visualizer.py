@@ -6,6 +6,7 @@ HTML Visualizer - Generate HTML files directly
 
 import json
 import os
+import glob
 from pathlib import Path
 from datetime import datetime
 import plotly.graph_objects as go
@@ -13,46 +14,300 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 
 class HTMLVisualizer:
-    def __init__(self):
-        self.experiment_id = "llm_coordinator_counter_1754463430"
-        self.base_path = Path("llm_experiments") / self.experiment_id
+    def __init__(self, experiment_path=None, output_dir=None, config_file=None):
+        """
+        初始化可视化器
         
+        Args:
+            experiment_path: 实验路径，如果为None则自动发现最新的实验
+            output_dir: 输出目录，如果为None则使用当前目录
+            config_file: 配置文件路径，如果为None则使用默认配置
+        """
+        # 加载配置
+        self.config = self._load_config(config_file)
+        
+        self.experiment_path = Path(experiment_path) if experiment_path else self._find_latest_experiment()
+        self.output_dir = Path(output_dir) if output_dir else Path(self.config['output']['default_output_dir'])
+        
+        # 验证实验路径
+        if not self.experiment_path or not self.experiment_path.exists():
+            raise ValueError(f"实验路径不存在: {self.experiment_path}")
+        
+        if self.config['logging']['show_progress']:
+            print(f"📁 使用实验路径: {self.experiment_path}")
+    
+    def _load_config(self, config_file=None):
+        """加载配置文件"""
+        default_config = {
+            "file_patterns": {
+                "experiment_reports": ["*.json", "reports/*.json", "**/experiment_report.json"],
+                "experiment_summaries": ["*.txt", "reports/*.txt", "**/experiment_summary.txt"],
+                "design_files": ["*.v", "designs/*.v", "**/*.v"],
+                "testbench_files": ["*testbench*.v", "*tb*.v", "testbenches/*.v"],
+                "log_files": ["*.txt", "*.log", "logs/*.txt", "logs/*.log"]
+            },
+            "experiment_discovery": {
+                "patterns": ["llm_experiments/*", "experiments/*", "*/llm_coordinator_*"],
+                "sort_by": "mtime"
+            },
+            "chart_settings": {
+                "colors": {
+                    "user": "#4CAF50", "assistant": "#2196F3", "system": "#FF9800",
+                    "llm_call": "#9C27B0", "tool_execution": "#4CAF50", "tool_failure": "#F44336"
+                },
+                "chart_height": 500, "timeline_height": 400
+            },
+            "html_template": {
+                "title": "V-Agent 实验可视化报告",
+                "subtitle": "基于统一日志系统的实验结果可视化展示"
+            },
+            "output": {
+                "default_output_dir": ".", "filename_template": "experiment_visualization_{experiment_name}.html"
+            },
+            "logging": {"level": "INFO", "show_progress": True, "show_file_loading": True}
+        }
+        
+        if config_file and Path(config_file).exists():
+            try:
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    user_config = json.load(f)
+                # 深度合并配置
+                return self._deep_merge(default_config, user_config)
+            except Exception as e:
+                print(f"⚠️ 加载配置文件失败: {e}，使用默认配置")
+        
+        return default_config
+    
+    def _deep_merge(self, default, user):
+        """深度合并配置"""
+        result = default.copy()
+        for key, value in user.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = self._deep_merge(result[key], value)
+            else:
+                result[key] = value
+        return result
+        
+    def _find_latest_experiment(self):
+        """自动发现最新的实验目录"""
+        experiments_dir = Path("llm_experiments")
+        if not experiments_dir.exists():
+            experiments_dir = Path.cwd()
+        
+        patterns = self.config['experiment_discovery']['patterns']
+        all_experiments = []
+        for pattern in patterns:
+            all_experiments.extend(glob.glob(pattern))
+        
+        if not all_experiments:
+            raise ValueError("未找到任何实验目录")
+        
+        # 按修改时间排序，选择最新的
+        latest_experiment = max(all_experiments, key=lambda x: Path(x).stat().st_mtime)
+        return Path(latest_experiment)
+    
+    def _find_files_by_pattern(self, directory, patterns, file_type="文件"):
+        """根据模式查找文件"""
+        if not directory.exists():
+            print(f"⚠️ {file_type}目录不存在: {directory}")
+            return []
+        
+        files = []
+        for pattern in patterns:
+            files.extend(directory.glob(pattern))
+        
+        return sorted(files, key=lambda x: x.stat().st_mtime, reverse=True)
+    
+    def _load_file_content(self, file_path, default_content="文件不存在"):
+        """安全加载文件内容"""
+        try:
+            if file_path.exists():
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            else:
+                return default_content
+        except Exception as e:
+            print(f"⚠️ 读取文件失败 {file_path}: {e}")
+            return f"读取失败: {e}"
+    
     def load_experiment_data(self):
         """加载实验数据"""
         try:
-            # 加载实验报告
-            report_path = self.base_path / "reports" / "experiment_report.json"
-            with open(report_path, 'r', encoding='utf-8') as f:
-                self.experiment_report = json.load(f)
+            print(f"🔄 正在加载实验数据...")
             
-            # 加载实验摘要
-            summary_path = self.base_path / "reports" / "experiment_summary.txt"
-            with open(summary_path, 'r', encoding='utf-8') as f:
-                self.experiment_summary = f.read()
+            # 1. 查找并加载实验报告
+            report_patterns = self.config['file_patterns']['experiment_reports']
+            report_files = self._find_files_by_pattern(self.experiment_path, report_patterns, "报告")
             
-            # 加载设计文件
-            design_path = self.base_path / "designs" / "counter_v2.v"
-            with open(design_path, 'r', encoding='utf-8') as f:
-                self.design_code = f.read()
+            if report_files:
+                self.experiment_report = json.loads(self._load_file_content(report_files[0]))
+                print(f"✅ 加载实验报告: {report_files[0].name}")
+            else:
+                print("⚠️ 未找到实验报告文件")
+                self.experiment_report = {"experiment_id": self.experiment_path.name}
             
-            # 加载测试台文件
-            testbench_path = self.base_path / "testbenches" / "testbench_counter.v"
-            with open(testbench_path, 'r', encoding='utf-8') as f:
-                self.testbench_code = f.read()
+            # 2. 查找并加载实验摘要
+            summary_patterns = self.config['file_patterns']['experiment_summaries']
+            summary_files = self._find_files_by_pattern(self.experiment_path, summary_patterns, "摘要")
             
-            # 加载日志文件
-            log_file = "counter_test_utf8_fixed_20250806_145707.txt"
-            if os.path.exists(log_file):
-                with open(log_file, 'r', encoding='utf-8') as f:
-                    self.log_data = f.read()
+            if summary_files:
+                self.experiment_summary = self._load_file_content(summary_files[0])
+                print(f"✅ 加载实验摘要: {summary_files[0].name}")
+            else:
+                self.experiment_summary = "实验摘要文件不存在"
+            
+            # 3. 查找并加载设计文件
+            design_patterns = self.config['file_patterns']['design_files']
+            design_files = self._find_files_by_pattern(self.experiment_path, design_patterns, "设计")
+            
+            if design_files:
+                self.design_code = self._load_file_content(design_files[0])
+                print(f"✅ 加载设计文件: {design_files[0].name}")
+            else:
+                self.design_code = "// 设计文件不存在"
+            
+            # 4. 查找并加载测试台文件
+            testbench_patterns = self.config['file_patterns']['testbench_files']
+            testbench_files = self._find_files_by_pattern(self.experiment_path, testbench_patterns, "测试台")
+            
+            if testbench_files:
+                self.testbench_code = self._load_file_content(testbench_files[0])
+                print(f"✅ 加载测试台文件: {testbench_files[0].name}")
+            else:
+                self.testbench_code = "// 测试台文件不存在"
+            
+            # 5. 查找并加载日志文件
+            log_patterns = self.config['file_patterns']['log_files']
+            log_files = self._find_files_by_pattern(self.experiment_path, log_patterns, "日志")
+            
+            # 也在当前目录查找日志文件
+            current_log_patterns = ["counter_test_*.txt", "*.log", "test_*.txt"]
+            current_log_files = self._find_files_by_pattern(Path.cwd(), current_log_patterns, "当前目录日志")
+            log_files.extend(current_log_files)
+            
+            if log_files:
+                self.log_data = self._load_file_content(log_files[0])
+                print(f"✅ 加载日志文件: {log_files[0].name}")
             else:
                 self.log_data = "日志文件不存在"
-                
+            
+            # 6. 收集文件结构信息
+            self.file_structure = self._generate_file_structure()
+            
+            print(f"✅ 实验数据加载完成")
             return True
+            
         except Exception as e:
-            print(f"加载实验数据失败: {e}")
+            print(f"❌ 加载实验数据失败: {e}")
             return False
     
+    def _generate_file_structure(self):
+        """生成文件结构信息"""
+        structure = []
+        
+        def scan_directory(path, level=0):
+            try:
+                for item in sorted(path.iterdir()):
+                    if item.name.startswith('.'):
+                        continue
+                    
+                    if item.is_file():
+                        size = item.stat().st_size
+                        size_str = f"({self._format_size(size)})"
+                        structure.append({
+                            'type': 'file',
+                            'name': item.name,
+                            'path': str(item.relative_to(self.experiment_path)),
+                            'size': size_str,
+                            'level': level
+                        })
+                    elif item.is_dir():
+                        structure.append({
+                            'type': 'dir',
+                            'name': item.name,
+                            'path': str(item.relative_to(self.experiment_path)),
+                            'level': level
+                        })
+                        scan_directory(item, level + 1)
+            except PermissionError:
+                pass
+        
+        scan_directory(self.experiment_path)
+        return structure
+    
+    def _format_size(self, size_bytes):
+        """格式化文件大小"""
+        if size_bytes == 0:
+            return "0B"
+        
+        size_names = ["B", "KB", "MB", "GB"]
+        i = 0
+        while size_bytes >= 1024 and i < len(size_names) - 1:
+            size_bytes /= 1024.0
+            i += 1
+        
+        return f"{size_bytes:.1f}{size_names[i]}"
+    
+    def _get_agent_generated_files(self, agent_id):
+        """获取智能体生成的文件内容"""
+        try:
+            # 根据智能体ID确定可能生成的文件
+            file_patterns = []
+            if "verilog" in agent_id.lower():
+                file_patterns = ["*.v", "designs/*.v", "**/*.v"]
+            elif "review" in agent_id.lower() or "test" in agent_id.lower():
+                file_patterns = ["*testbench*.v", "*tb*.v", "testbenches/*.v", "**/*testbench*.v"]
+            
+            if not file_patterns:
+                return None
+            
+            # 在实验目录中查找文件
+            found_files = []
+            for pattern in file_patterns:
+                found_files.extend(self.experiment_path.glob(pattern))
+            
+            if not found_files:
+                return None
+            
+            # 读取文件内容
+            file_contents = []
+            for file_path in sorted(found_files):
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        if content.strip():  # 确保文件不为空
+                            file_contents.append(f"📄 {file_path.name}:\n```verilog\n{content}\n```")
+                except Exception as e:
+                    file_contents.append(f"📄 {file_path.name}: 读取失败 - {e}")
+            
+            if file_contents:
+                return "\n\n".join(file_contents)
+            else:
+                return None
+                
+        except Exception as e:
+            print(f"⚠️ 获取智能体生成文件失败: {e}")
+            return None
+    
+    def _generate_file_structure_html(self, structure, level=0):
+        """生成文件结构的HTML"""
+        html = ""
+        for item in structure:
+            if item['level'] == level:
+                indent = "  " * level
+                if item['type'] == 'dir':
+                    html += f"{indent}📂 {item['name']}<br>"
+                    # 递归处理子目录
+                    children = [s for s in structure if s['level'] == level + 1 and 
+                               s['path'].startswith(item['path'])]
+                    if children:
+                        html += f"{indent}<div style='margin-left: 20px;'>"
+                        html += self._generate_file_structure_html(children, level + 1)
+                        html += "</div>"
+                else:
+                    html += f"{indent}📄 {item['name']} {item['size']}<br>"
+        return html
+
     def parse_conversation_data(self):
         """解析对话数据"""
         conversation_data = []
@@ -77,11 +332,13 @@ class HTMLVisualizer:
             else:
                 time_str = "N/A"
             
+            # 不再截断内容，提供完整内容
             conversation_data.append({
                 'time': time_str,
                 'role': role,
                 'agent_id': agent_id,
-                'content': content[:500] + '...' if len(content) > 500 else content,
+                'content': content,  # 完整内容
+                'preview': content[:200] + '...' if len(content) > 200 else content,  # 预览
                 'full_content': content
             })
         
@@ -95,9 +352,9 @@ class HTMLVisualizer:
             return log_conversations
         
         lines = self.log_data.split('\n')
-        current_conversation = []
         
-        for line in lines:
+        # 改进的日志解析，提取更多信息
+        for i, line in enumerate(lines):
             if 'LLM响应长度:' in line:
                 # 提取LLM响应信息
                 parts = line.split(' - ')
@@ -106,19 +363,214 @@ class HTMLVisualizer:
                     agent_part = parts[1]
                     response_length = line.split('LLM响应长度: ')[-1].strip()
                     
-                    # 查找对应的LLM调用信息
-                    for i in range(max(0, len(lines) - 50), len(lines)):
-                        if i < len(lines) and '发起LLM调用' in lines[i] and agent_part in lines[i]:
-                            llm_call_time = lines[i].split(' - ')[0] if ' - ' in lines[i] else time_str
+                    # 查找对应的LLM调用信息和响应内容
+                    llm_call_time = time_str
+                    response_content = ""
+                    
+                    # 向前查找LLM调用信息
+                    for j in range(max(0, i-10), i):
+                        if j < len(lines) and '发起LLM调用' in lines[j] and agent_part in lines[j]:
+                            llm_call_time = lines[j].split(' - ')[0] if ' - ' in lines[j] else time_str
                             break
-                    else:
-                        llm_call_time = time_str
+                    
+                    # 尝试从实验报告中获取响应内容
+                    if hasattr(self, 'experiment_report'):
+                        detailed_result = self.experiment_report.get('detailed_result', {})
+                        conversation_history = detailed_result.get('conversation_history', [])
+                        
+                        # 查找对应时间的对话记录
+                        for conv in conversation_history:
+                            # 修复智能体匹配逻辑
+                            conv_agent_id = conv.get('agent_id', '')
+                            # 移除Agent.前缀进行比较
+                            conv_agent_clean = conv_agent_id.replace('Agent.', '')
+                            agent_part_clean = agent_part.replace('Agent.', '')
+                            
+                            # 直接匹配智能体ID
+                            if conv_agent_clean == agent_part_clean:
+                                response_content = conv.get('content', '')
+                                break
+                            # 或者检查是否包含在agent_part中
+                            elif conv_agent_clean in agent_part_clean:
+                                response_content = conv.get('content', '')
+                                break
+                    
+                    # 如果实验报告中没有，尝试从LLM对话记录中获取响应内容
+                    if not response_content and hasattr(self, 'experiment_report'):
+                        llm_conversations = self.experiment_report.get('llm_conversations', [])
+                        for llm_conv in llm_conversations:
+                            llm_agent_id = llm_conv.get('agent_id', '')
+                            # 检查是否是目标智能体
+                            if agent_part.replace('Agent.', '') in llm_agent_id:
+                                response_content = llm_conv.get('assistant_response', '')
+                                if response_content:
+                                    break
+                    
+                    # 🔧 新增：优先从LLM对话记录的user_message中提取真实的智能体响应内容
+                    if not response_content and hasattr(self, 'experiment_report'):
+                        llm_conversations = self.experiment_report.get('llm_conversations', [])
+                        for llm_conv in llm_conversations:
+                            user_msg = llm_conv.get('user_message', '')
+                            
+                            # 方法1: 在协调器的LLM对话中查找智能体执行结果
+                            if ('assign_task_to_agent' in user_msg and 
+                                agent_part.replace('Agent.', '') in user_msg and
+                                'response:' in user_msg):
+                                
+                                # 从user_message中提取真实的agent响应内容
+                                try:
+                                    # 查找 "response: '" 之后的内容
+                                    start_idx = user_msg.find("response: '") + len("response: '")
+                                    if start_idx > len("response: '") - 1:
+                                        # 查找结束位置
+                                        end_markers = ["'[截断]", "'...", "', '"]
+                                        end_idx = len(user_msg)
+                                        for marker in end_markers:
+                                            marker_pos = user_msg.find(marker, start_idx)
+                                            if marker_pos > start_idx:
+                                                end_idx = marker_pos
+                                                break
+                                        
+                                        # 提取响应内容
+                                        extracted_response = user_msg[start_idx:end_idx].strip()
+                                        
+                                        # 处理转义字符
+                                        extracted_response = extracted_response.replace('\\n', '\n').replace('\\t', '\t')
+                                        
+                                        if extracted_response and len(extracted_response) > 50:
+                                            response_content = extracted_response
+                                            break
+                                        elif extracted_response and len(extracted_response) > 10:
+                                            # 短响应也记录，但标注为短响应，并尝试提供更多上下文
+                                            additional_info = ""
+                                            # 检查是否有生成的文件可以提供更多信息
+                                            file_content = self._get_agent_generated_files(agent_part.replace('Agent.', ''))
+                                            if file_content:
+                                                additional_info = f"\n\n📝 **实际生成的文件内容**:\n{file_content}"
+                                            else:
+                                                # 提供任务上下文信息
+                                                if hasattr(self, 'experiment_report'):
+                                                    detailed_result = self.experiment_report.get('detailed_result', {})
+                                                    task_context = detailed_result.get('task_context', {})
+                                                    agent_interactions = task_context.get('agent_interactions', [])
+                                                    for interaction in agent_interactions:
+                                                        if interaction.get('target_agent_id') == agent_part.replace('Agent.', ''):
+                                                            task_desc = interaction.get('task_description', '')
+                                                            exec_time = interaction.get('execution_time', 0)
+                                                            additional_info = f"\n\n📋 **任务上下文**:\n任务描述: {task_desc}\n执行时间: {exec_time:.2f} 秒\n任务状态: 成功"
+                                                            break
+                                            
+                                            response_content = f"⚠️ **智能体短响应**（{len(extracted_response)} 字符）:\n\n{extracted_response}{additional_info}"
+                                            break
+                                except Exception as e:
+                                    print(f"解析智能体响应时出错: {e}")
+                                    continue
+                            
+                            # 方法2: 查找包含完整响应的user_message（针对被截断的情况）
+                            if (not response_content and 
+                                agent_part.replace('Agent.', '') in user_msg and
+                                ('✅ 任务完成报告' in user_msg or '### 📌 任务概述' in user_msg or '🧪 仿真结果' in user_msg)):
+                                
+                                try:
+                                    # 查找完整响应的开始和结束
+                                    response_markers = ["response: '## ✅", "response: '### 📌", "response: '🧪"]
+                                    for marker in response_markers:
+                                        if marker in user_msg:
+                                            start_idx = user_msg.find(marker) + len("response: '")
+                                            # 查找响应结束位置
+                                            end_markers = ["'[截断]", "'...", "', '", "'\\n**执行结果**"]
+                                            end_idx = len(user_msg)
+                                            for end_marker in end_markers:
+                                                marker_pos = user_msg.find(end_marker, start_idx)
+                                                if marker_pos > start_idx:
+                                                    end_idx = marker_pos
+                                                    break
+                                            
+                                            extracted_response = user_msg[start_idx:end_idx].strip()
+                                            extracted_response = extracted_response.replace('\\n', '\n').replace('\\t', '\t')
+                                            
+                                            if extracted_response and len(extracted_response) > 100:
+                                                # 添加被截断的提示
+                                                if "'[截断]" in user_msg[end_idx:end_idx+10]:
+                                                    extracted_response += "\n\n📝 **注意**: 此响应在实验报告中被截断，完整内容可查看实验目录下的相关文件。"
+                                                
+                                                response_content = extracted_response
+                                                break
+                                except Exception as e:
+                                    print(f"解析完整响应时出错: {e}")
+                                    continue
+                    
+                    # 如果没有找到内容，尝试从智能体交互记录中获取信息
+                    if not response_content and hasattr(self, 'experiment_report'):
+                        detailed_result = self.experiment_report.get('detailed_result', {})
+                        task_context = detailed_result.get('task_context', {})
+                        agent_interactions = task_context.get('agent_interactions', [])
+                        for interaction in agent_interactions:
+                            target_agent = interaction.get('target_agent_id', '')
+                            if agent_part.replace('Agent.', '') == target_agent:
+                                response_length = interaction.get('response_length', 0)
+                                execution_time = interaction.get('execution_time', 0)
+                                success = interaction.get('success', False)
+                                task_description = interaction.get('task_description', '')
+                                
+                                # 🆕 新增：如果响应内容很短，尝试从生成的文件中读取实际内容
+                                if response_length < 100:  # 响应内容很短
+                                    # 尝试读取生成的文件内容
+                                    file_content = self._get_agent_generated_files(target_agent)
+                                    if file_content:
+                                        response_content = f"""LLM响应内容（长度: {response_length} 字符）
+
+任务描述: {task_description}
+执行时间: {execution_time:.2f} 秒
+执行状态: {'成功' if success else '失败'}
+
+📝 **实际生成的文件内容**:
+{file_content}
+
+💡 **说明**: 子智能体的LLM响应内容较短，但已成功生成相关文件。"""
+                                    else:
+                                        # 创建更详细的占位符内容
+                                        response_content = f"""LLM响应内容（长度: {response_length} 字符）
+
+任务描述: {task_description}
+执行时间: {execution_time:.2f} 秒
+执行状态: {'成功' if success else '失败'}
+
+由于系统架构设计，子智能体的详细响应内容未在此处显示。
+子智能体的响应已被协调智能体处理并转换为任务执行结果。
+
+请查看以下位置获取更多信息：
+1. 实验报告中的智能体交互记录
+2. 生成的设计文件和测试台文件
+3. 工作流执行时间线"""
+                                else:
+                                    # 响应内容较长，使用原来的占位符
+                                    response_content = f"""LLM响应内容（长度: {response_length} 字符）
+
+任务描述: {task_description}
+执行时间: {execution_time:.2f} 秒
+执行状态: {'成功' if success else '失败'}
+
+由于系统架构设计，子智能体的详细响应内容未在此处显示。
+子智能体的响应已被协调智能体处理并转换为任务执行结果。
+
+请查看以下位置获取更多信息：
+1. 实验报告中的智能体交互记录
+2. 生成的设计文件和测试台文件
+3. 工作流执行时间线"""
+                                break
+                    
+                    # 如果仍然没有找到内容，使用默认占位符
+                    if not response_content:
+                        response_content = f"LLM响应内容（长度: {response_length} 字符）\n\n由于日志格式限制，完整的LLM响应内容未在此处显示。\n请查看实验报告中的详细对话历史以获取完整内容。"
                     
                     log_conversations.append({
                         'time': llm_call_time,
                         'agent': agent_part.replace('Agent.', ''),
                         'type': 'LLM调用',
                         'details': f'响应长度: {response_length} 字符',
+                        'content': response_content,  # 添加响应内容
+                        'preview': response_content[:100] + '...' if len(response_content) > 100 else response_content,
                         'duration': '约4-6秒'
                     })
             
@@ -130,11 +582,25 @@ class HTMLVisualizer:
                     agent_part = parts[1]
                     tool_name = line.split('工具执行成功: ')[-1].strip()
                     
+                    # 查找工具执行的详细信息
+                    tool_details = ""
+                    for j in range(i+1, min(len(lines), i+10)):
+                        if j < len(lines) and lines[j].strip() and not lines[j].startswith(' - ') and 'Agent.' not in lines[j]:
+                            tool_details += lines[j] + '\n'
+                        elif j < len(lines) and lines[j].startswith(' - ') and 'Agent.' in lines[j]:
+                            break
+                    
+                    # 如果没有找到详细信息，使用占位符
+                    if not tool_details.strip():
+                        tool_details = f"工具 {tool_name} 执行成功\n\n执行时间: {time_str}\n智能体: {agent_part.replace('Agent.', '')}"
+                    
                     log_conversations.append({
                         'time': time_str,
                         'agent': agent_part.replace('Agent.', ''),
                         'type': '工具执行',
                         'details': f'成功执行: {tool_name}',
+                        'content': tool_details.strip(),
+                        'preview': tool_details[:100] + '...' if len(tool_details) > 100 else tool_details,
                         'duration': 'N/A'
                     })
             
@@ -146,11 +612,25 @@ class HTMLVisualizer:
                     agent_part = parts[1]
                     tool_name = line.split('工具执行失败: ')[-1].strip()
                     
+                    # 查找错误详细信息
+                    error_details = ""
+                    for j in range(i+1, min(len(lines), i+10)):
+                        if j < len(lines) and lines[j].strip() and not lines[j].startswith(' - ') and 'Agent.' not in lines[j]:
+                            error_details += lines[j] + '\n'
+                        elif j < len(lines) and lines[j].startswith(' - ') and 'Agent.' in lines[j]:
+                            break
+                    
+                    # 如果没有找到错误详情，使用占位符
+                    if not error_details.strip():
+                        error_details = f"工具 {tool_name} 执行失败\n\n执行时间: {time_str}\n智能体: {agent_part.replace('Agent.', '')}\n\n请查看日志文件获取详细错误信息。"
+                    
                     log_conversations.append({
                         'time': time_str,
                         'agent': agent_part.replace('Agent.', ''),
                         'type': '工具失败',
                         'details': f'失败: {tool_name}',
+                        'content': error_details.strip(),
+                        'preview': error_details[:100] + '...' if len(error_details) > 100 else error_details,
                         'duration': 'N/A'
                     })
         
@@ -169,11 +649,7 @@ class HTMLVisualizer:
         # 添加对话历史数据
         for i, conv in enumerate(conversation_data):
             # 设置颜色
-            colors = {
-                'user': '#4CAF50',
-                'assistant': '#2196F3',
-                'system': '#FF9800'
-            }
+            colors = self.config['chart_settings']['colors']
             color = colors.get(conv['role'], '#9E9E9E')
             
             fig.add_trace(go.Scatter(
@@ -196,11 +672,7 @@ class HTMLVisualizer:
             offset = len(conversation_data) + i
             
             # 设置颜色
-            colors = {
-                'LLM调用': '#9C27B0',
-                '工具执行': '#4CAF50',
-                '工具失败': '#F44336'
-            }
+            colors = self.config['chart_settings']['colors']
             color = colors.get(log_conv['type'], '#9E9E9E')
             
             fig.add_trace(go.Scatter(
@@ -222,7 +694,7 @@ class HTMLVisualizer:
             title="💬 对话时间线",
             xaxis_title="时间",
             yaxis_title="对话事件",
-            height=500,
+            height=self.config['chart_settings']['chart_height'],
             showlegend=True,
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)'
@@ -249,11 +721,7 @@ class HTMLVisualizer:
             relative_time = timestamp - timeline_data[0]['timestamp'] if timeline_data else 0
             
             # 设置颜色
-            colors = {
-                'agent_completion': '#4CAF50',
-                'tool_execution': '#2196F3',
-                'error': '#F44336'
-            }
+            colors = self.config['chart_settings']['colors']
             color = colors.get(event_type, '#9E9E9E')
             
             fig.add_trace(go.Scatter(
@@ -275,7 +743,7 @@ class HTMLVisualizer:
             title="🔄 工作流执行时间线",
             xaxis_title="时间 (秒)",
             yaxis_title="事件",
-            height=400,
+            height=self.config['chart_settings']['timeline_height'],
             showlegend=False,
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)'
@@ -442,8 +910,9 @@ class HTMLVisualizer:
         conversation_html = ""
         if conversation_data:
             conversation_html += "<h3>📝 对话历史</h3>"
-            for conv in conversation_data:
+            for i, conv in enumerate(conversation_data):
                 role_icon = "👤" if conv['role'] == 'user' else "🤖" if conv['role'] == 'assistant' else "⚙️"
+                has_full_content = len(conv['content']) > 200
                 conversation_html += f"""
                 <div class="conversation-item">
                     <div class="conversation-header">
@@ -451,17 +920,24 @@ class HTMLVisualizer:
                         <span class="role-name">{conv['role'].title()}</span>
                         <span class="agent-id">({conv['agent_id']})</span>
                         <span class="time">{conv['time']}</span>
+                        {f'<button class="expand-btn" onclick="toggleContent(\'conv_{i}\')">📖 展开</button>' if has_full_content else ''}
                     </div>
                     <div class="conversation-content">
-                        <pre>{conv['content']}</pre>
+                        <div class="content-preview">{conv['preview']}</div>
+                        {f'<div class="content-full" id="conv_{i}" style="display: none;"><pre>{conv['content']}</pre></div>' if has_full_content else ''}
                     </div>
                 </div>
                 """
         
         if log_conversations:
             conversation_html += "<h3>📋 交互记录</h3>"
-            for log_conv in log_conversations:
+            for i, log_conv in enumerate(log_conversations):
                 type_icon = "🧠" if log_conv['type'] == 'LLM调用' else "🔧" if log_conv['type'] == '工具执行' else "❌"
+                has_content = log_conv.get('content', '').strip()
+                # 确保所有记录都有内容（至少是占位符）
+                if not has_content:
+                    has_content = log_conv.get('details', '')
+                
                 conversation_html += f"""
                 <div class="conversation-item">
                     <div class="conversation-header">
@@ -469,9 +945,13 @@ class HTMLVisualizer:
                         <span class="role-name">{log_conv['type']}</span>
                         <span class="agent-id">({log_conv['agent']})</span>
                         <span class="time">{log_conv['time']}</span>
+                        <button class="expand-btn" onclick="toggleContent('log_{i}')">📖 展开</button>
                     </div>
                     <div class="conversation-content">
-                        <p>{log_conv['details']}</p>
+                        <p class="details">{log_conv['details']}</p>
+                        <div class="content-full" id="log_{i}" style="display: none;">
+                            <pre>{log_conv.get('content', log_conv['details'])}</pre>
+                        </div>
                     </div>
                 </div>
                 """
@@ -483,7 +963,7 @@ class HTMLVisualizer:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>V-Agent 实验可视化报告</title>
+    <title>{self.config['html_template']['title']}</title>
     <style>
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -665,6 +1145,54 @@ class HTMLVisualizer:
             margin: 0;
             line-height: 1.4;
         }}
+        .content-preview {{
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }}
+        .content-full {{
+            margin-top: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }}
+        .content-full pre {{
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+            color: #333;
+        }}
+        .expand-btn {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }}
+        .expand-btn:hover {{
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }}
+        .details {{
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #e3f2fd;
+            border-radius: 4px;
+        }}
         @media (max-width: 768px) {{
             .overview-grid {{
                 grid-template-columns: 1fr;
@@ -685,8 +1213,8 @@ class HTMLVisualizer:
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎯 V-Agent 实验可视化报告</h1>
-            <p>基于统一日志系统的实验结果可视化展示</p>
+            <h1>{self.config['html_template']['title']}</h1>
+            <p>{self.config['html_template']['subtitle']}</p>
             <p>实验ID: {self.experiment_report.get('experiment_id', 'N/A')} | 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
         </div>
         
@@ -823,30 +1351,9 @@ class HTMLVisualizer:
                     <div class="file-structure">
                         📂 llm_experiments/
                         <div style="margin-left: 20px;">
-                            📂 {self.experiment_id}/
+                            📂 {self.experiment_path.name}/
                             <div style="margin-left: 20px;">
-                                📂 designs/
-                                <div style="margin-left: 20px;">
-                                    📄 counter_v2.v (279B)
-                                    <br>📄 counter_optimized_v2.v (474B)
-                                </div>
-                                📂 testbenches/
-                                <div style="margin-left: 20px;">
-                                    📄 testbench_counter.v (5.3KB)
-                                </div>
-                                📂 reports/
-                                <div style="margin-left: 20px;">
-                                    📄 experiment_report.json (26KB)
-                                    <br>📄 experiment_summary.txt (476B)
-                                </div>
-                                📂 artifacts/
-                                <div style="margin-left: 20px;">
-                                    📄 (仿真相关文件)
-                                </div>
-                                📂 logs/
-                                <div style="margin-left: 20px;">
-                                    📄 (日志文件)
-                                </div>
+                                {self._generate_file_structure_html(self.file_structure)}
                             </div>
                         </div>
                     </div>
@@ -873,13 +1380,24 @@ class HTMLVisualizer:
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
         }}
+
+        function toggleContent(id) {{
+            const contentFull = document.getElementById(id);
+            if (contentFull) {{
+                contentFull.style.display = contentFull.style.display === 'none' ? 'block' : 'none';
+            }}
+        }}
     </script>
 </body>
 </html>
         """
         
         # 保存HTML文件
-        output_path = f"experiment_visualization_{self.experiment_id}.html"
+        output_path = self.output_dir / self.config['output']['filename_template'].format(experiment_name=self.experiment_path.name)
+        
+        # 确保输出目录存在
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
@@ -890,7 +1408,19 @@ def main():
     """主函数"""
     print("🎯 开始生成V-Agent实验可视化HTML报告...")
     
-    visualizer = HTMLVisualizer()
+    import argparse
+    parser = argparse.ArgumentParser(description="生成V-Agent实验可视化HTML报告")
+    parser.add_argument("--experiment-path", type=str, help="实验路径，例如：./llm_experiments/my_experiment")
+    parser.add_argument("--output-dir", type=str, help="输出目录，例如：./reports")
+    parser.add_argument("--config-file", type=str, help="自定义配置文件路径")
+    
+    args = parser.parse_args()
+    
+    experiment_path = args.experiment_path if args.experiment_path else None
+    output_dir = args.output_dir if args.output_dir else None
+    config_file = args.config_file if args.config_file else None
+    
+    visualizer = HTMLVisualizer(experiment_path=experiment_path, output_dir=output_dir, config_file=config_file)
     output_file = visualizer.generate_html_report()
     
     if output_file:

@@ -1,14 +1,14 @@
 module counter(
     input      clk,
-    input      reset,
-    input      enable,
+    input      rst_n,
+    input      en,
     output reg [7:0] count
 );
 
-    always @(posedge clk) begin
-        if (reset)
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
             count <= 8'd0;
-        else if (enable)
+        else if (en)
             count <= count + 1;
     end
 

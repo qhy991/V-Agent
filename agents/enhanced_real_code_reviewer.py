@@ -56,7 +56,308 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         # 注册增强工具
         self._register_enhanced_code_review_tools()
         
+        # 错误处理相关属性
+        self.error_classification_cache = {}
+        self.simulation_error_patterns = {
+            "compilation_syntax": [
+                "syntax error", "Syntax in assignment statement", "Malformed statement",
+                "unexpected token", "missing semicolon", "unexpected end of file"
+            ],
+            "compilation_semantic": [
+                "type mismatch", "width mismatch", "port connection", "module not found",
+                "undefined variable", "undeclared identifier"
+            ],
+            "simulation_runtime": [
+                "runtime error", "simulation timeout", "infinite loop", "deadlock",
+                "assertion failure", "testbench failure"
+            ],
+            "testbench_logic": [
+                "testbench error", "assertion", "coverage", "test case",
+                "stimulus", "monitor"
+            ],
+            "system_resource": [
+                "command not found", "file not found", "permission denied",
+                "no space left", "timeout"
+            ]
+        }
+        
         self.logger.debug(f"🔍 代码审查智能体初始化完成")
+    
+    def _classify_simulation_error(self, error_message: str, error_context: Dict = None) -> Dict[str, Any]:
+        """
+        错误分类处理：根据错误类型选择不同的处理策略
+        
+        Args:
+            error_message: 错误信息
+            error_context: 错误上下文信息
+            
+        Returns:
+            错误分类结果
+        """
+        error_info = {
+            "error_type": "unknown",
+            "severity": "medium",
+            "category": "general",
+            "suggested_actions": [],
+            "fix_priority": "normal",
+            "detailed_analysis": {}
+        }
+        
+        error_lower = error_message.lower()
+        
+        # 1. 编译语法错误
+        if any(pattern in error_lower for pattern in self.simulation_error_patterns["compilation_syntax"]):
+            error_info.update({
+                "error_type": "compilation_syntax",
+                "severity": "high",
+                "category": "compilation",
+                "suggested_actions": [
+                    "检查Verilog语法错误",
+                    "验证模块端口定义",
+                    "检查信号声明和赋值",
+                    "修复语法结构问题"
+                ],
+                "fix_priority": "high",
+                "detailed_analysis": {
+                    "issue": "语法错误导致编译失败",
+                    "common_causes": ["缺少分号", "端口连接错误", "信号类型不匹配", "模块定义不完整"],
+                    "fix_strategy": "逐行检查语法，重点关注错误行及其上下文"
+                }
+            })
+        
+        # 2. 编译语义错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["compilation_semantic"]):
+            error_info.update({
+                "error_type": "compilation_semantic",
+                "severity": "high",
+                "category": "compilation",
+                "suggested_actions": [
+                    "检查模块连接关系",
+                    "验证信号宽度匹配",
+                    "确认模块实例化正确",
+                    "检查变量声明和类型"
+                ],
+                "fix_priority": "high",
+                "detailed_analysis": {
+                    "issue": "语义错误导致编译失败",
+                    "common_causes": ["端口宽度不匹配", "模块未找到", "变量未声明", "类型不兼容"],
+                    "fix_strategy": "检查模块接口定义和连接关系"
+                }
+            })
+        
+        # 3. 仿真运行时错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["simulation_runtime"]):
+            error_info.update({
+                "error_type": "simulation_runtime",
+                "severity": "medium",
+                "category": "simulation",
+                "suggested_actions": [
+                    "检查仿真时间设置",
+                    "验证时钟生成逻辑",
+                    "检查复位信号时序",
+                    "分析仿真超时原因"
+                ],
+                "fix_priority": "medium",
+                "detailed_analysis": {
+                    "issue": "仿真运行时出现错误",
+                    "common_causes": ["仿真超时", "无限循环", "死锁", "资源不足"],
+                    "fix_strategy": "优化仿真参数，检查时序逻辑"
+                }
+            })
+        
+        # 4. 系统资源错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["system_resource"]):
+            error_info.update({
+                "error_type": "system_resource",
+                "severity": "low",
+                "category": "system",
+                "suggested_actions": [
+                    "检查磁盘空间",
+                    "验证文件权限",
+                    "重启仿真环境",
+                    "清理临时文件"
+                ],
+                "fix_priority": "low",
+                "detailed_analysis": {
+                    "issue": "系统资源不足",
+                    "common_causes": ["磁盘空间不足", "内存不足", "文件权限问题", "进程冲突"],
+                    "fix_strategy": "释放系统资源，检查环境配置"
+                }
+            })
+        
+        # 缓存错误分类结果
+        error_key = hash(error_message)
+        self.error_classification_cache[error_key] = error_info
+        
+        return error_info
+    
+    def _enhance_error_information(self, error_message: str, error_context: Dict = None, 
+                                 simulation_result: Dict = None) -> Dict[str, Any]:
+        """
+        增强错误信息：提供完整的错误上下文给LLM
+        
+        Args:
+            error_message: 原始错误信息
+            error_context: 错误上下文
+            simulation_result: 仿真结果
+            
+        Returns:
+            增强的错误信息
+        """
+        enhanced_error = {
+            "original_error": error_message,
+            "error_classification": self._classify_simulation_error(error_message, error_context),
+            "context_information": {},
+            "technical_details": {},
+            "recovery_suggestions": [],
+            "debug_information": {}
+        }
+        
+        # 1. 添加上下文信息
+        if error_context:
+            enhanced_error["context_information"] = {
+                "file_paths": error_context.get("file_paths", []),
+                "compilation_stage": error_context.get("stage", "unknown"),
+                "simulator_info": error_context.get("simulator", "unknown"),
+                "command_executed": error_context.get("command", ""),
+                "timestamp": error_context.get("timestamp", ""),
+                "working_directory": error_context.get("working_directory", "")
+            }
+        
+        # 2. 添加技术细节
+        if simulation_result:
+            enhanced_error["technical_details"] = {
+                "success": simulation_result.get("success", False),
+                "stage": simulation_result.get("stage", "unknown"),
+                "return_code": simulation_result.get("return_code", -1),
+                "compilation_output": simulation_result.get("compilation_output", ""),
+                "simulation_output": simulation_result.get("simulation_output", ""),
+                "error_output": simulation_result.get("error_output", "")
+            }
+        
+        # 3. 生成恢复建议
+        error_class = enhanced_error["error_classification"]
+        if error_class["error_type"] == "compilation_syntax":
+            enhanced_error["recovery_suggestions"] = [
+                "立即检查错误行及其前后几行的语法",
+                "验证所有信号声明和端口定义",
+                "确保模块定义完整且语法正确",
+                "检查是否有未闭合的括号或引号"
+            ]
+        elif error_class["error_type"] == "compilation_semantic":
+            enhanced_error["recovery_suggestions"] = [
+                "检查模块间的连接关系",
+                "验证信号宽度和类型匹配",
+                "确认所有引用的模块都已正确定义",
+                "检查变量声明和初始化"
+            ]
+        elif error_class["error_type"] == "simulation_runtime":
+            enhanced_error["recovery_suggestions"] = [
+                "检查仿真时间设置是否合理",
+                "验证时钟和复位信号的生成逻辑",
+                "分析是否存在无限循环或死锁",
+                "考虑增加仿真超时时间"
+            ]
+        
+        # 4. 添加调试信息
+        enhanced_error["debug_information"] = {
+            "error_patterns_found": [pattern for pattern in self.simulation_error_patterns.get(error_class["error_type"], []) 
+                                   if pattern in error_message.lower()],
+            "similar_errors_encountered": len(self.error_classification_cache),
+            "suggested_debug_steps": [
+                "查看完整的编译/仿真输出",
+                "检查相关文件的语法",
+                "验证模块接口定义",
+                "确认仿真参数设置"
+            ]
+        }
+        
+        return enhanced_error
+    
+    def _generate_simulation_error_prompt(self, enhanced_error: Dict[str, Any], 
+                                        design_code: str = None, testbench_code: str = None) -> str:
+        """
+        特殊Prompt设计：针对仿真错误设计专门的prompt
+        
+        Args:
+            enhanced_error: 增强的错误信息
+            design_code: 设计代码
+            testbench_code: 测试台代码
+            
+        Returns:
+            专门针对仿真错误的prompt
+        """
+        error_class = enhanced_error["error_classification"]
+        context_info = enhanced_error["context_information"]
+        tech_details = enhanced_error["technical_details"]
+        
+        prompt = f"""
+🚨 **仿真错误诊断与修复专家模式**
+
+## 📋 错误分类信息
+- **错误类型**: {error_class['error_type']}
+- **严重程度**: {error_class['severity']}
+- **错误类别**: {error_class['category']}
+- **修复优先级**: {error_class['fix_priority']}
+
+## 🔍 错误详情
+**原始错误信息**:
+```
+{enhanced_error['original_error']}
+```
+
+**错误分析**:
+{error_class['detailed_analysis']['issue']}
+
+**常见原因**:
+{', '.join(error_class['detailed_analysis']['common_causes'])}
+
+**修复策略**:
+{error_class['detailed_analysis']['fix_strategy']}
+
+## 📊 上下文信息
+- **编译阶段**: {context_info.get('compilation_stage', 'unknown')}
+- **仿真器**: {context_info.get('simulator_info', 'unknown')}
+- **工作目录**: {context_info.get('working_directory', 'unknown')}
+- **执行命令**: {context_info.get('command_executed', 'unknown')}
+
+## 🛠️ 技术细节
+- **执行状态**: {'成功' if tech_details.get('success') else '失败'}
+- **返回码**: {tech_details.get('return_code', -1)}
+- **错误输出**: {tech_details.get('error_output', '无')}
+
+## 🎯 建议的修复行动
+{chr(10).join(f"- {action}" for action in enhanced_error['recovery_suggestions'])}
+
+## 📝 调试指导
+{chr(10).join(f"- {step}" for step in enhanced_error['debug_information']['suggested_debug_steps'])}
+
+## 🔧 你的任务
+作为硬件验证专家，请：
+
+1. **深入分析错误原因**：基于错误分类和上下文信息，准确识别问题的根本原因
+2. **提供具体修复方案**：给出详细的代码修改建议，包括具体的语法修正
+3. **验证修复效果**：确保修复后的代码能够通过编译和仿真
+4. **预防类似问题**：提供最佳实践建议，避免类似错误再次发生
+
+## 📋 可用工具
+- `generate_testbench`: 重新生成测试台
+- `run_simulation`: 重新运行仿真
+- `analyze_test_failures`: 分析测试失败原因
+- `write_file`: 保存修复后的代码
+
+请开始分析和修复这个仿真错误。
+"""
+        
+        # 如果有设计代码，添加到prompt中
+        if design_code:
+            prompt += f"\n## 📄 设计代码\n```verilog\n{design_code}\n```\n"
+        
+        # 如果有测试台代码，添加到prompt中
+        if testbench_code:
+            prompt += f"\n## 🧪 测试台代码\n```verilog\n{testbench_code}\n```\n"
+        
+        return prompt
     
     def _register_enhanced_code_review_tools(self):
         """注册带Schema验证的代码审查工具"""
@@ -1042,6 +1343,51 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 🎯 **重要提示 - 文件名传递**:
 """
         base_prompt += "\n\n【重要】每当你调用任何工具时，都要思考本次操作后是否需要进行仿真测试（run_simulation）来验证修改的正确性。只有在需要验证功能正确性或修改后有影响时，才应安排仿真测试。"
+        
+        base_prompt += """
+
+📝 **完成任务后的响应格式**:
+当所有必要的代码审查和验证工具调用都已完成后，你应该提供一个详细的任务完成总结，包括：
+- 完成的主要工作概述
+- 代码审查结果和发现的问题
+- 生成的测试台和仿真结果
+- 代码质量评分和改进建议
+- 生成的文件列表和内容说明
+
+示例完成响应格式：
+```
+✅ 代码审查和验证任务完成
+
+🔧 **完成的工作**：
+- 对counter.v模块进行了全面代码审查
+- 生成了专用测试台testbench_counter.v
+- 执行了功能仿真验证
+- 分析了代码质量和可综合性
+
+📋 **审查结果**：
+- 代码质量评分：85/100
+- 发现问题：2个语法警告，1个时序优化建议
+- 测试覆盖率：95%
+- 所有功能测试通过
+
+🧪 **仿真验证**：
+- 测试用例数：16个
+- 通过测试：16个
+- 失败测试：0个
+- 验证了计数功能、复位行为、边界条件
+
+📁 **生成文件**：
+- testbench_counter.v - 完整的功能测试台
+- simulation_results.txt - 仿真输出日志
+- quality_report.json - 代码质量分析报告
+
+💡 **改进建议**：
+- 建议添加参数化支持提高可重用性
+- 可优化时序路径减少组合延迟
+- 建议添加更多边界条件测试
+```
+"""
+        
         return base_prompt
     
     def get_capabilities(self) -> Set[AgentCapability]:
@@ -1726,42 +2072,137 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             # 使用智能仿真执行
             sim_result = await self._run_iverilog_simulation_with_deps(files_to_compile, simulation_options)
             self.logger.info(f"🔍 仿真结果: {sim_result}")
+            
             # ✅ 修复错误处理 - 准确反映仿真状态
             actual_success = sim_result.get("success", False)
             
             if actual_success:
                 self.logger.info(f"✅ 仿真执行成功")
+                return {
+                    "success": actual_success,
+                    "simulator": simulator,
+                    "simulation_output": sim_result.get("output", ""),
+                    "compilation_output": sim_result.get("compilation_output", ""),
+                    "waveform_file": sim_result.get("waveform_file"),
+                    "simulation_time": sim_result.get("simulation_time", 0),
+                    "errors": sim_result.get("errors", []),
+                    "warnings": sim_result.get("warnings", []),
+                    "stage": sim_result.get("stage", "complete"),
+                    "files_compiled": [str(f) for f in files_to_compile],
+                    "dependency_analysis": sim_result.get("dependency_analysis", {}),
+                    "error_message": "",
+                    "compilation_errors": "",
+                    "simulation_errors": ""
+                }
             else:
-                error_info = sim_result.get("error", "未知错误")
+                # 🚨 新的错误处理机制
+                error_message = sim_result.get("error", "未知错误")
                 stage = sim_result.get("stage", "unknown")
-                self.logger.error(f"❌ 仿真执行失败 ({stage}): {error_info}")
-            
-            return {
-                "success": actual_success,  # 📌 准确反映实际状态
-                "simulator": simulator,
-                "simulation_output": sim_result.get("output", ""),
-                "compilation_output": sim_result.get("compilation_output", ""),
-                "waveform_file": sim_result.get("waveform_file"),
-                "simulation_time": sim_result.get("simulation_time", 0),
-                "errors": sim_result.get("errors", []),
-                "warnings": sim_result.get("warnings", []),
-                "stage": sim_result.get("stage", "complete"),
-                "files_compiled": [str(f) for f in files_to_compile],
-                "dependency_analysis": sim_result.get("dependency_analysis", {}),
-                "error_message": sim_result.get("error", ""),  # 添加错误信息字段
-                "compilation_errors": sim_result.get("compilation_output", ""),  # 添加编译错误字段
-                "simulation_errors": sim_result.get("simulation_output", "")  # 添加仿真错误字段
-            }
+                self.logger.error(f"❌ 仿真执行失败 ({stage}): {error_message}")
+                
+                # 1. 错误分类处理
+                error_context = {
+                    "file_paths": [str(f) for f in files_to_compile],
+                    "stage": stage,
+                    "simulator": simulator,
+                    "command": sim_result.get("command", ""),
+                    "timestamp": str(time.time()),
+                    "working_directory": str(Path.cwd())
+                }
+                
+                enhanced_error = self._enhance_error_information(
+                    error_message=error_message,
+                    error_context=error_context,
+                    simulation_result=sim_result
+                )
+                
+                # 2. 记录增强的错误信息
+                self.logger.info(f"🔍 错误分类: {enhanced_error['error_classification']['error_type']}")
+                self.logger.info(f"🔍 错误严重程度: {enhanced_error['error_classification']['severity']}")
+                self.logger.info(f"🔍 修复优先级: {enhanced_error['error_classification']['fix_priority']}")
+                
+                # 3. 生成特殊错误处理prompt
+                design_code = module_code if module_code else ""
+                testbench_code = testbench_code if testbench_code else ""
+                
+                error_prompt = self._generate_simulation_error_prompt(
+                    enhanced_error=enhanced_error,
+                    design_code=design_code,
+                    testbench_code=testbench_code
+                )
+                
+                # 4. 将错误prompt存储到实例变量中，供后续使用
+                self._last_error_prompt = error_prompt
+                self._last_enhanced_error = enhanced_error
+                
+                # 5. 返回增强的错误信息
+                return {
+                    "success": False,
+                    "simulator": simulator,
+                    "simulation_output": sim_result.get("output", ""),
+                    "compilation_output": sim_result.get("compilation_output", ""),
+                    "waveform_file": sim_result.get("waveform_file"),
+                    "simulation_time": sim_result.get("simulation_time", 0),
+                    "errors": sim_result.get("errors", []),
+                    "warnings": sim_result.get("warnings", []),
+                    "stage": stage,
+                    "files_compiled": [str(f) for f in files_to_compile],
+                    "dependency_analysis": sim_result.get("dependency_analysis", {}),
+                    "error_message": error_message,
+                    "compilation_errors": sim_result.get("compilation_output", ""),
+                    "simulation_errors": sim_result.get("simulation_output", ""),
+                    # 🆕 新增：增强错误处理信息
+                    "enhanced_error_info": enhanced_error,
+                    "error_classification": enhanced_error["error_classification"],
+                    "recovery_suggestions": enhanced_error["recovery_suggestions"],
+                    "debug_information": enhanced_error["debug_information"],
+                    "error_prompt_available": True
+                }
             
         except Exception as e:
             self.logger.error(f"❌ 仿真执行异常: {str(e)}")
+            
+            # 🚨 对异常也应用错误处理机制
+            error_message = f"仿真执行异常: {str(e)}"
+            error_context = {
+                "file_paths": [str(f) for f in files_to_compile] if 'files_to_compile' in locals() else [],
+                "stage": "exception",
+                "simulator": simulator,
+                "command": "",
+                "timestamp": str(time.time()),
+                "working_directory": str(Path.cwd())
+            }
+            
+            simulation_result = {
+                "success": False,
+                "stage": "exception",
+                "return_code": -1,
+                "error_output": str(e)
+            }
+            
+            enhanced_error = self._enhance_error_information(
+                error_message=error_message,
+                error_context=error_context,
+                simulation_result=simulation_result
+            )
+            
+            # 记录增强的错误信息
+            self.logger.info(f"🔍 异常错误分类: {enhanced_error['error_classification']['error_type']}")
+            self.logger.info(f"🔍 异常错误严重程度: {enhanced_error['error_classification']['severity']}")
+            
             return {
                 "success": False,
-                "error": f"仿真执行异常: {str(e)}",
-                "error_message": f"仿真执行异常: {str(e)}",
+                "error": error_message,
+                "error_message": error_message,
                 "compilation_errors": "",
                 "simulation_errors": "",
-                "stage": "exception"
+                "stage": "exception",
+                # 🆕 新增：增强错误处理信息
+                "enhanced_error_info": enhanced_error,
+                "error_classification": enhanced_error["error_classification"],
+                "recovery_suggestions": enhanced_error["recovery_suggestions"],
+                "debug_information": enhanced_error["debug_information"],
+                "error_prompt_available": True
             }
     
     async def _find_missing_dependencies(self, missing_modules: List[str]) -> List[str]:
@@ -1856,12 +2297,48 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             if compile_result.returncode != 0:
                 self.logger.error(f"❌ 编译失败，返回码: {compile_result.returncode}")
                 self.logger.error(f"编译错误: {compile_stderr_str}")
+                
+                # 🚨 在底层方法中也应用错误处理机制
+                error_message = f"编译失败: {compile_stderr_str}"
+                error_context = {
+                    "file_paths": [str(f) for f in files_to_compile],
+                    "stage": "compilation",
+                    "simulator": "iverilog",
+                    "command": " ".join(compile_cmd),
+                    "timestamp": str(time.time()),
+                    "working_directory": str(Path.cwd())
+                }
+                
+                simulation_result = {
+                    "success": False,
+                    "stage": "compilation",
+                    "return_code": compile_result.returncode,
+                    "compilation_output": compile_stderr_str,
+                    "error_output": compile_stderr_str
+                }
+                
+                enhanced_error = self._enhance_error_information(
+                    error_message=error_message,
+                    error_context=error_context,
+                    simulation_result=simulation_result
+                )
+                
+                # 记录增强的错误信息
+                self.logger.info(f"🔍 编译错误分类: {enhanced_error['error_classification']['error_type']}")
+                self.logger.info(f"🔍 编译错误严重程度: {enhanced_error['error_classification']['severity']}")
+                
                 return {
                     "success": False,
-                    "error": f"编译失败: {compile_stderr_str}",
+                    "error": error_message,
                     "stage": "compilation",
                     "compilation_output": compile_stderr_str,
-                    "command": " ".join(compile_cmd)
+                    "command": " ".join(compile_cmd),
+                    # 🆕 新增：增强错误处理信息
+                    "enhanced_error_info": enhanced_error,
+                    "error_classification": enhanced_error["error_classification"],
+                    "recovery_suggestions": enhanced_error["recovery_suggestions"],
+                    "debug_information": enhanced_error["debug_information"],
+                    "error_prompt_available": True
                 }
             
             # 验证输出文件已创建
@@ -1896,29 +2373,112 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 self.logger.info(f"✅ 仿真执行成功")
                 if stdout_text:
                     self.logger.debug(f"仿真输出: {stdout_text[:200]}...")
+                
+                return {
+                    "success": simulation_success,
+                    "output": stdout_text,
+                    "compilation_output": compile_stdout_str,
+                    "waveform_file": str(vcd_file) if vcd_file.exists() else None,
+                    "errors": [stderr_text] if stderr_text else [],
+                    "warnings": [],
+                    "return_code": run_result.returncode,
+                    "command": " ".join(run_cmd),
+                    "stage": "simulation"
+                }
             else:
                 self.logger.error(f"❌ 仿真执行失败，返回码: {run_result.returncode}")
                 if stderr_text:
                     self.logger.error(f"仿真错误: {stderr_text}")
-            
-            return {
-                "success": simulation_success,
-                "output": stdout_text,
-                "compilation_output": compile_stdout_str,
-                "waveform_file": str(vcd_file) if vcd_file.exists() else None,
-                "errors": [stderr_text] if stderr_text else [],
-                "warnings": [],
-                "return_code": run_result.returncode,
-                "command": " ".join(run_cmd),
-                "stage": "simulation" if simulation_success else "simulation_failed"
-            }
+                
+                # 🚨 在底层方法中也应用错误处理机制
+                error_message = f"仿真执行失败: {stderr_text}" if stderr_text else f"仿真执行失败，返回码: {run_result.returncode}"
+                error_context = {
+                    "file_paths": [str(f) for f in files_to_compile],
+                    "stage": "simulation_failed",
+                    "simulator": "iverilog",
+                    "command": " ".join(run_cmd),
+                    "timestamp": str(time.time()),
+                    "working_directory": str(Path.cwd())
+                }
+                
+                simulation_result = {
+                    "success": False,
+                    "stage": "simulation_failed",
+                    "return_code": run_result.returncode,
+                    "simulation_output": stdout_text,
+                    "error_output": stderr_text
+                }
+                
+                enhanced_error = self._enhance_error_information(
+                    error_message=error_message,
+                    error_context=error_context,
+                    simulation_result=simulation_result
+                )
+                
+                # 记录增强的错误信息
+                self.logger.info(f"🔍 仿真错误分类: {enhanced_error['error_classification']['error_type']}")
+                self.logger.info(f"🔍 仿真错误严重程度: {enhanced_error['error_classification']['severity']}")
+                
+                return {
+                    "success": False,
+                    "error": error_message,
+                    "output": stdout_text,
+                    "compilation_output": compile_stdout_str,
+                    "waveform_file": str(vcd_file) if vcd_file.exists() else None,
+                    "errors": [stderr_text] if stderr_text else [],
+                    "warnings": [],
+                    "return_code": run_result.returncode,
+                    "command": " ".join(run_cmd),
+                    "stage": "simulation_failed",
+                    # 🆕 新增：增强错误处理信息
+                    "enhanced_error_info": enhanced_error,
+                    "error_classification": enhanced_error["error_classification"],
+                    "recovery_suggestions": enhanced_error["recovery_suggestions"],
+                    "debug_information": enhanced_error["debug_information"],
+                    "error_prompt_available": True
+                }
             
         except Exception as e:
             self.logger.error(f"❌ 仿真执行异常: {str(e)}")
+            
+            # 🚨 对异常也应用错误处理机制
+            error_message = f"仿真执行异常: {str(e)}"
+            error_context = {
+                "file_paths": [str(f) for f in files_to_compile] if 'files_to_compile' in locals() else [],
+                "stage": "exception",
+                "simulator": "iverilog",
+                "command": "",
+                "timestamp": str(time.time()),
+                "working_directory": str(Path.cwd())
+            }
+            
+            simulation_result = {
+                "success": False,
+                "stage": "exception",
+                "return_code": -1,
+                "error_output": str(e)
+            }
+            
+            enhanced_error = self._enhance_error_information(
+                error_message=error_message,
+                error_context=error_context,
+                simulation_result=simulation_result
+            )
+            
+            # 记录增强的错误信息
+            self.logger.info(f"🔍 异常错误分类: {enhanced_error['error_classification']['error_type']}")
+            self.logger.info(f"🔍 异常错误严重程度: {enhanced_error['error_classification']['severity']}")
+            
             return {
                 "success": False,
-                "error": str(e),
-                "stage": "exception"
+                "error": error_message,
+                "stage": "exception",
+                # 🆕 新增：增强错误处理信息
+                "enhanced_error_info": enhanced_error,
+                "error_classification": enhanced_error["error_classification"],
+                "recovery_suggestions": enhanced_error["recovery_suggestions"],
+                "debug_information": enhanced_error["debug_information"],
+                "error_prompt_available": True
             }
 
     async def _run_iverilog_simulation(self, module_file: Path, testbench_file: Path,

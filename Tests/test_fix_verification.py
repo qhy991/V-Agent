@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from core.base_agent import FileReference
+from core.types import FileReference
 
 def test_filereference_handling():
     """测试FileReference对象处理"""

@@ -201,36 +201,50 @@ class EnhancedBaseAgent(BaseAgent):
                         tool_results.append(skipped_result)
                         continue
                     
-                    # 执行工具调用
-                    result = await self._execute_enhanced_tool_call(tool_call)
-                    tool_results.append(result)
+                                    # 执行工具调用
+                result = await self._execute_enhanced_tool_call(tool_call)
+                tool_results.append(result)
+                
+                if not result.success:
+                    all_tools_successful = False
+                    current_iteration_failed_tools.add(tool_call.tool_name)
                     
-                    if not result.success:
-                        all_tools_successful = False
-                        current_iteration_failed_tools.add(tool_call.tool_name)
-                        
-                        # 检查是否为参数验证失败
-                        if "参数验证失败" in result.error:
-                            param_validation_failed_tools.add(tool_call.tool_name)
-                            self.logger.warning(f"⚠️ 工具 {tool_call.tool_name} 参数验证失败，将在下次迭代重试")
-                        else:
-                            # 真正的执行失败，标记为永久失败
-                            permanently_failed_tools.add(tool_call.tool_name)
-                            self.logger.error(f"❌ {tool_call.tool_name} 执行失败，标记为永久失败")
+                    # 🚨 新的错误处理机制：检查是否为仿真错误
+                    if tool_call.tool_name == "run_simulation" and result.result:
+                        # 检查是否有增强错误信息
+                        if result.result.get("enhanced_error_info"):
+                            self.logger.info(f"🔍 检测到仿真错误，使用增强错误处理机制")
                             
-                            # 如果是关键工具的真正失败，停止执行后续工具
-                            if self._is_critical_tool(tool_call.tool_name):
-                                self.logger.error(f"❌ 关键工具永久失败: {tool_call.tool_name}，停止后续工具执行")
-                                remaining_tools = tool_calls[i+1:]
-                                for remaining_tool in remaining_tools:
-                                    skipped_result = ToolResult(
-                                        call_id=remaining_tool.call_id,
-                                        success=False,
-                                        error=f"跳过执行：关键工具 {tool_call.tool_name} 已永久失败",
-                                        result=None
-                                    )
-                                    tool_results.append(skipped_result)
-                                break
+                            # 将增强错误信息存储到实例变量中
+                            self._last_simulation_error = result.result.get("enhanced_error_info")
+                            self._last_error_prompt = result.result.get("error_prompt_available", False)
+                            
+                            # 如果是仿真错误，不标记为永久失败，而是使用特殊处理
+                            self.logger.info(f"🔄 仿真错误将使用特殊处理机制，不标记为永久失败")
+                            # 不继续，让错误正常传播到错误反馈处理
+                    
+                    # 检查是否为参数验证失败
+                    if "参数验证失败" in result.error:
+                        param_validation_failed_tools.add(tool_call.tool_name)
+                        self.logger.warning(f"⚠️ 工具 {tool_call.tool_name} 参数验证失败，将在下次迭代重试")
+                    else:
+                        # 真正的执行失败，标记为永久失败
+                        permanently_failed_tools.add(tool_call.tool_name)
+                        self.logger.error(f"❌ {tool_call.tool_name} 执行失败，标记为永久失败")
+                        
+                        # 如果是关键工具的真正失败，停止执行后续工具
+                        if self._is_critical_tool(tool_call.tool_name):
+                            self.logger.error(f"❌ 关键工具永久失败: {tool_call.tool_name}，停止后续工具执行")
+                            remaining_tools = tool_calls[i+1:]
+                            for remaining_tool in remaining_tools:
+                                skipped_result = ToolResult(
+                                    call_id=remaining_tool.call_id,
+                                    success=False,
+                                    error=f"跳过执行：关键工具 {tool_call.tool_name} 已永久失败",
+                                    result=None
+                                )
+                                tool_results.append(skipped_result)
+                            break
                 
                 # 4. 检查是否所有工具都成功
                 if all_tools_successful:
@@ -273,11 +287,30 @@ class EnhancedBaseAgent(BaseAgent):
                 # 5. 处理工具执行失败，准备下一次迭代
                 self.logger.warning(f"⚠️ 第 {iteration_count} 次迭代有工具执行失败，准备重试")
                 
-                # 🎯 新增：构建错误反馈并添加到对话历史
-                error_feedback = self._build_enhanced_error_feedback(
-                    tool_calls, tool_results, param_validation_failed_tools, 
-                    permanently_failed_tools, iteration_count
-                )
+                # 🎯 新增：检查是否有仿真错误需要特殊处理
+                if hasattr(self, '_last_simulation_error') and self._last_simulation_error:
+                    self.logger.info(f"🚨 检测到仿真错误，使用特殊错误处理prompt")
+                    
+                    # 使用存储的仿真错误prompt
+                    if hasattr(self, '_last_error_prompt') and self._last_error_prompt:
+                        error_feedback = self._last_error_prompt
+                        self.logger.info(f"📝 使用预生成的仿真错误prompt")
+                    else:
+                        # 如果没有预生成的prompt，构建增强错误反馈
+                        error_feedback = self._build_enhanced_error_feedback(
+                            tool_calls, tool_results, param_validation_failed_tools, 
+                            permanently_failed_tools, iteration_count
+                        )
+                    
+                    # 清除存储的错误信息，避免重复使用
+                    self._last_simulation_error = None
+                    self._last_error_prompt = None
+                else:
+                    # 普通错误处理
+                    error_feedback = self._build_enhanced_error_feedback(
+                        tool_calls, tool_results, param_validation_failed_tools, 
+                        permanently_failed_tools, iteration_count
+                    )
                 
                 # 将错误反馈作为用户输入添加到对话历史
                 conversation_history.append({

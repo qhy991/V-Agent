@@ -5,14 +5,12 @@ module counter (
     output reg [7:0] count
 );
 
-    // 使用异步复位、同步释放（推荐实践）
-    // 但为最小化面积，保持原复位行为
+    // 使用异步复位、同步使能的计数器，减少控制逻辑复杂度
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+        if (!rst_n)
             count <= 8'd0;
-        end else begin
-            count <= count + en;  // 关键优化：用加 en 替代条件赋值
-        end
+        else
+            count <= count + en;  // 利用 en 作为加法的使能条件（0 或 1）
     end
 
 endmodule

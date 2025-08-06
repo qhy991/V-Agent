@@ -27,45 +27,14 @@ from .agent_prompts import agent_prompt_manager
 from .function_calling import ToolCall, ToolResult
 from .enhanced_logging_config import get_component_logger, get_artifacts_dir
 
-
-@dataclass
-class FileReference:
-    """文件引用"""
-    file_path: str
-    file_type: str  # "verilog", "testbench", "report", "config"
-    description: str
-    metadata: Dict[str, Any] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "file_path": self.file_path,
-            "file_type": self.file_type,
-            "description": self.description,
-            "metadata": self.metadata or {}
-        }
-
-
-@dataclass
-class TaskMessage:
-    """任务消息 - 支持文件路径传递"""
-    task_id: str
-    sender_id: str
-    receiver_id: str
-    message_type: str
-    content: str
-    file_references: List[FileReference] = None
-    metadata: Dict[str, Any] = None
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "task_id": self.task_id,
-            "sender_id": self.sender_id,
-            "receiver_id": self.receiver_id,
-            "message_type": self.message_type,
-            "content": self.content,
-            "file_references": [ref.to_dict() for ref in (self.file_references or [])],
-            "metadata": self.metadata or {}
-        }
+# 🔧 新增：导入已分解的组件
+from .context.agent_context import AgentContext
+from .conversation.manager import ConversationManager
+from .function_calling.parser import ToolCallParser
+from .function_calling.executor import ToolExecutionEngine, ExecutionContext
+from .error_analysis.analyzer import ErrorAnalyzer
+from .file_operations.manager import FileOperationManager, FileOperationConfig
+from .types import FileReference, TaskMessage
 
 
 class BaseAgent(ABC):
@@ -94,6 +63,36 @@ class BaseAgent(ABC):
         except:
             self.default_artifacts_dir = Path("./output")
         
+        # 🔧 新增：初始化组件
+        self.agent_context = AgentContext(
+            agent_id=agent_id,
+            role=role,
+            capabilities=capabilities or set()
+        )
+        self.conversation_manager = ConversationManager(agent_id, self.logger)
+        self.tool_call_parser = ToolCallParser(self.logger)
+        
+        # Function Calling配置
+        self.max_tool_retry_attempts = 3
+        self.tool_failure_contexts: List[Dict[str, Any]] = []
+        
+        # 🔧 任务上下文支持 - 用于协调器集成
+        self.current_task_context: Optional[Any] = None  # TaskContext实例
+        
+        # 初始化新的组件
+        execution_context = ExecutionContext(
+            agent_id=agent_id,
+            max_retry_attempts=self.max_tool_retry_attempts,
+            task_context=self.current_task_context
+        )
+        self.tool_execution_engine = ToolExecutionEngine(execution_context, self.logger)
+        self.error_analyzer = ErrorAnalyzer(self.logger)
+        
+        file_config = FileOperationConfig(
+            default_artifacts_dir=str(self.default_artifacts_dir)
+        )
+        self.file_operation_manager = FileOperationManager(file_config, self.logger)
+        
         # Function Calling工具注册表 (新的方式)
         self.function_calling_registry = {}
         self.function_descriptions = {}
@@ -115,15 +114,11 @@ class BaseAgent(ABC):
         self.conversation_start_time: Optional[float] = None
         self._last_conversation_id: Optional[str] = None  # 🔧 新增：记录上一次对话ID，用于智能体独立上下文管理
         
-        # 🔧 任务上下文支持 - 用于协调器集成
-        self.current_task_context: Optional[Any] = None  # TaskContext实例
-        
-        # Function Calling配置
-        self.max_tool_retry_attempts = 3
-        self.tool_failure_contexts: List[Dict[str, Any]] = []
-        
         # 注册Function Calling工具
         self._register_function_calling_tools()
+        
+        # 将工具注册到执行引擎
+        self.tool_execution_engine.register_tools(self.function_calling_registry)
         
         # 生成system prompt (包含工具信息)
         self.system_prompt = self._build_enhanced_system_prompt()
@@ -157,7 +152,17 @@ class BaseAgent(ABC):
     
     def register_function_calling_tool(self, name: str, func, description: str, parameters: Dict[str, Any] = None):
         """注册Function Calling工具"""
-        self.function_calling_registry[name] = func
+        # 为了向后兼容，同时存储两种格式
+        # 1. 完整信息格式（用于ToolExecutionEngine）
+        self.function_calling_registry[name] = {
+            "func": func,
+            "description": description,
+            "parameters": parameters or {}
+        }
+        # 2. 直接函数格式（用于向后兼容）
+        self._function_registry_backup = getattr(self, '_function_registry_backup', {})
+        self._function_registry_backup[name] = func
+        
         self.function_descriptions[name] = {
             "name": name,
             "description": description,
@@ -174,6 +179,22 @@ class BaseAgent(ABC):
         self.current_task_context = task_context
         if task_context:
             self.logger.info(f"🔗 设置任务上下文: {task_context.task_id}")
+            
+            # 🔧 更新FileOperationManager的默认目录为实验路径
+            if hasattr(task_context, 'experiment_path') and task_context.experiment_path:
+                experiment_path = Path(task_context.experiment_path)
+                # 创建实验目录结构
+                designs_dir = experiment_path / "designs"
+                testbenches_dir = experiment_path / "testbenches"
+                designs_dir.mkdir(parents=True, exist_ok=True)
+                testbenches_dir.mkdir(parents=True, exist_ok=True)
+                
+                # 更新FileOperationManager配置
+                new_config = FileOperationConfig(
+                    default_artifacts_dir=str(designs_dir)
+                )
+                self.file_operation_manager.config = new_config
+                self.logger.info(f"📁 更新文件操作目录为实验路径: {designs_dir}")
         else:
             self.logger.info("🔗 清除任务上下文")
     
@@ -439,16 +460,6 @@ class BaseAgent(ABC):
             from core.unified_logging_system import get_global_logging_system
             logging_system = get_global_logging_system()
             
-            # 记录LLM调用开始
-            logging_system.log_llm_call(
-                agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",  # 从配置中获取
-                prompt_length=len(user_message),
-                system_prompt_length=len(system_prompt) if system_prompt else 0,
-                is_first_call=is_first_call,
-                conversation_id=self.current_conversation_id
-            )
-            
             # 调用优化的LLM客户端
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=self.current_conversation_id,
@@ -459,31 +470,83 @@ class BaseAgent(ABC):
                 force_refresh_system=is_first_call
             )
             
-            # 记录LLM调用成功
+            # 计算持续时间
             duration = time.time() - llm_start_time
-            logging_system.log_llm_call(
-                agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
-                prompt_length=len(user_message),
-                response_length=len(response),
-                duration=duration,
-                success=True,
-                conversation_id=self.current_conversation_id
-            )
+            conversation_id = getattr(self, 'current_conversation_id', f"{self.agent_id}_{int(time.time())}")
+            
+            # 记录详细的LLM对话 - 使用新的增强方法
+            try:
+                from core.unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                logging_system.log_detailed_llm_conversation(
+                    agent_id=self.agent_id,
+                    model_name="claude-3.5-sonnet",
+                    system_prompt=system_prompt or "",
+                    user_message=user_message,
+                    assistant_response=response,
+                    conversation_id=conversation_id,
+                    duration=duration,
+                    temperature=0.3,
+                    max_tokens=4000,
+                    is_first_call=is_first_call,
+                    success=True
+                )
+                
+                # 保持向后兼容的日志记录
+                logging_system.log_llm_call(
+                    agent_id=self.agent_id,
+                    model_name="claude-3.5-sonnet",
+                    user_message=user_message,
+                    response=response,
+                    prompt_length=len(user_message),
+                    response_length=len(response),
+                    duration=duration,
+                    success=True,
+                    conversation_id=conversation_id
+                )
+            except Exception as log_error:
+                self.logger.warning(f"⚠️ 详细对话记录失败: {log_error}")
             
             return response
         except Exception as e:
             # 记录LLM调用失败
             duration = time.time() - llm_start_time
-            logging_system.log_llm_call(
-                agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
-                prompt_length=len(user_message),
-                duration=duration,
-                success=False,
-                error_info={"error": str(e)},
-                conversation_id=self.current_conversation_id
-            )
+            conversation_id = getattr(self, 'current_conversation_id', f"{self.agent_id}_{int(time.time())}")
+            error_info = {"error": str(e), "error_type": type(e).__name__}
+            
+            # 记录详细的失败LLM对话
+            try:
+                from core.unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                logging_system.log_detailed_llm_conversation(
+                    agent_id=self.agent_id,
+                    model_name="claude-3.5-sonnet",
+                    system_prompt=system_prompt or "",
+                    user_message=user_message,
+                    assistant_response="[调用失败]",
+                    conversation_id=conversation_id,
+                    duration=duration,
+                    temperature=0.3,
+                    max_tokens=4000,
+                    is_first_call=is_first_call,
+                    success=False,
+                    error_info=error_info
+                )
+                
+                # 保持向后兼容的日志记录
+                logging_system.log_llm_call(
+                    agent_id=self.agent_id,
+                    model_name="claude-3.5-sonnet",
+                    user_message=user_message,
+                    response="",
+                    prompt_length=len(user_message),
+                    duration=duration,
+                    success=False,
+                    error_info=error_info,
+                    conversation_id=conversation_id
+                )
+            except Exception as log_error:
+                self.logger.warning(f"⚠️ 失败对话记录失败: {log_error}")
             
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
             raise
@@ -530,6 +593,65 @@ class BaseAgent(ABC):
         
         return current_result
     
+    async def _generate_task_completion_summary(self, conversation: List[Dict[str, str]], original_response: str) -> str:
+        """生成任务完成的详细总结"""
+        try:
+            # 分析对话历史中的工具调用情况
+            tool_calls_made = []
+            files_created = []
+            
+            for msg in conversation:
+                if msg.get("role") == "user" and "工具执行结果" in msg.get("content", ""):
+                    # 从工具结果消息中提取工具调用信息
+                    content = msg.get("content", "")
+                    if "write_file" in content:
+                        # 提取写入的文件名
+                        import re
+                        file_match = re.search(r'写入文件:\s*([^\s,]+)', content)
+                        if file_match:
+                            files_created.append(file_match.group(1))
+                    
+                    # 提取其他工具调用
+                    if "工具:" in content:
+                        tool_match = re.search(r'工具:\s*([^\s,]+)', content)
+                        if tool_match:
+                            tool_calls_made.append(tool_match.group(1))
+            
+            # 构建总结提示
+            summary_prompt = f"""
+请基于以下对话历史为用户生成一个详细的任务完成总结。原始响应只有{len(original_response)}个字符可能过于简短。
+
+对话过程中调用的工具: {', '.join(set(tool_calls_made)) if tool_calls_made else '无'}
+创建的文件: {', '.join(files_created) if files_created else '无'}
+原始简短响应: {original_response}
+
+请生成一个详细的任务完成总结，包括：
+1. 完成的主要工作概述
+2. 具体执行的操作和生成的内容
+3. 创建的文件和其内容说明
+4. 任务的关键成果和特点
+
+请用中文回复，格式要清晰专业。
+"""
+            
+            # 创建临时对话用于生成总结
+            summary_conversation = [
+                {"role": "system", "content": "你是一个专业的任务总结助手，能够基于对话历史生成详细的工作总结。"},
+                {"role": "user", "content": summary_prompt}
+            ]
+            
+            # 调用LLM生成详细总结
+            summary_response = await self._call_llm_for_function_calling(summary_conversation)
+            
+            if summary_response and len(summary_response.strip()) > 50:
+                return summary_response.strip()
+            else:
+                return original_response
+                
+        except Exception as e:
+            self.logger.warning(f"⚠️ 生成任务总结时出错: {e}")
+            return original_response
+    
     def get_llm_optimization_stats(self) -> Dict[str, Any]:
         """获取LLM优化统计信息"""
         if hasattr(self.llm_client, 'get_optimization_stats'):
@@ -556,19 +678,91 @@ class BaseAgent(ABC):
             self.logger.info(f"🔄 Function Calling 迭代 {iteration + 1}/{max_iterations}")
             
             try:
+                # 记录LLM调用前的状态
+                llm_start_time = time.time()
+                conversation_length = len(conversation)
+                is_first_call = (iteration == 0)
+                
+                # 准备LLM调用的日志信息
+                from core.unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                
+                # 构建用户消息和系统提示
+                system_prompt = conversation[0]["content"] if conversation and conversation[0]["role"] == "system" else ""
+                user_messages = [msg["content"] for msg in conversation if msg["role"] == "user"]
+                current_user_message = user_messages[-1] if user_messages else ""
+                
+                # 记录准备LLM调用的日志信息 
+                self.logger.info(f"🔄 [{self.role.upper()}] 准备LLM调用 - 对话历史长度: {conversation_length}, assistant消息数: {len([m for m in conversation if m.get('role') == 'assistant'])}, 是否首次调用: {is_first_call}")
+                self.logger.info(f"🤖 [{self.role.upper()}] 发起LLM调用 - 对话ID: {getattr(self, 'current_conversation_id', 'unknown')}")
+                
                 # 调用LLM
                 llm_response = await self._call_llm_for_function_calling(conversation)
+                
+                # 计算持续时间
+                duration = time.time() - llm_start_time
+                conversation_id = getattr(self, 'current_conversation_id', f"{self.agent_id}_{int(time.time())}")
+                
+                self.logger.info(f"🔍 [{self.role.upper()}] LLM响应长度: {len(llm_response)}")
+                
+                # 记录详细的LLM对话
+                try:
+                    from core.unified_logging_system import get_global_logging_system
+                    logging_system = get_global_logging_system()
+                    logging_system.log_detailed_llm_conversation(
+                        agent_id=self.agent_id,
+                        model_name="claude-3.5-sonnet",
+                        system_prompt=system_prompt,
+                        user_message=current_user_message,
+                        assistant_response=llm_response,
+                        conversation_id=conversation_id,
+                        duration=duration,
+                        is_first_call=is_first_call,
+                        success=True
+                    )
+                except Exception as log_error:
+                    self.logger.warning(f"⚠️ 详细对话记录失败: {log_error}")
+                
+                # 🆕 记录到TaskContext（如果可用）
+                if hasattr(self, 'current_task_context') and self.current_task_context and hasattr(self.current_task_context, 'add_llm_conversation'):
+                    self.current_task_context.add_llm_conversation(
+                        agent_id=self.agent_id,
+                        conversation_id=conversation_id,
+                        system_prompt=system_prompt,
+                        user_message=current_user_message,
+                        assistant_response=llm_response,
+                        model_name="claude-3.5-sonnet",
+                        duration=duration,
+                        success=True,
+                        is_first_call=is_first_call
+                    )
                 
                 # 解析工具调用
                 tool_calls = self._parse_tool_calls_from_response(llm_response)
                 
                 if not tool_calls:
-                    # 没有工具调用，返回最终结果
-                    conversation.append({"role": "assistant", "content": llm_response})
+                    # 没有工具调用，检查是否需要生成详细总结
+                    final_response = llm_response
+                    
+                    # 如果响应太短（可能只是确认消息），尝试生成更详细的总结
+                    if len(llm_response.strip()) < 100:
+                        self.logger.info(f"🔍 检测到短响应({len(llm_response)}字符)，尝试生成详细总结...")
+                        try:
+                            # 生成任务完成总结
+                            summary_response = await self._generate_task_completion_summary(conversation, llm_response)
+                            if summary_response and len(summary_response) > len(llm_response):
+                                final_response = summary_response
+                                self.logger.info(f"✅ 生成了更详细的总结({len(summary_response)}字符)")
+                            else:
+                                self.logger.warning("⚠️ 无法生成更详细的总结，使用原始响应")
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ 生成详细总结失败: {e}")
+                    
+                    conversation.append({"role": "assistant", "content": final_response})
                     # 🧠 更新并保存最终对话历史
                     self.conversation_history = conversation.copy()
                     self.logger.info(f"✅ 任务完成，无需调用工具。最终对话历史: {len(self.conversation_history)} 条消息")
-                    return llm_response
+                    return final_response
                 
                 # 执行工具调用
                 conversation.append({"role": "assistant", "content": llm_response})
@@ -592,7 +786,51 @@ class BaseAgent(ABC):
         
         # 达到最大迭代次数，获取最终响应
         try:
+            # 记录最终LLM调用的详细信息
+            llm_start_time = time.time()
+            conversation_id = getattr(self, 'current_conversation_id', f"{self.agent_id}_{int(time.time())}")
+            
             final_response = await self._call_llm_for_function_calling(conversation)
+            
+            # 记录最终调用的详细日志
+            duration = time.time() - llm_start_time
+            
+            try:
+                from core.unified_logging_system import get_global_logging_system
+                logging_system = get_global_logging_system()
+                
+                system_prompt = conversation[0]["content"] if conversation and conversation[0]["role"] == "system" else ""
+                user_messages = [msg["content"] for msg in conversation if msg["role"] == "user"]
+                current_user_message = user_messages[-1] if user_messages else ""
+                
+                logging_system.log_detailed_llm_conversation(
+                    agent_id=self.agent_id,
+                    model_name="claude-3.5-sonnet",
+                    system_prompt=system_prompt,
+                    user_message=current_user_message,
+                    assistant_response=final_response,
+                    conversation_id=conversation_id,
+                    duration=duration,
+                    is_first_call=False,
+                    success=True
+                )
+            except Exception as log_error:
+                self.logger.warning(f"⚠️ 最终对话详细记录失败: {log_error}")
+            
+            # 🆕 记录到TaskContext（如果可用）
+            if hasattr(self, 'current_task_context') and self.current_task_context and hasattr(self.current_task_context, 'add_llm_conversation'):
+                self.current_task_context.add_llm_conversation(
+                    agent_id=self.agent_id,
+                    conversation_id=conversation_id,
+                    system_prompt=system_prompt,
+                    user_message=current_user_message,
+                    assistant_response=final_response,
+                    model_name="claude-3.5-sonnet",
+                    duration=duration,
+                    success=True,
+                    is_first_call=False
+                )
+            
             # 🧠 保存最终对话状态
             conversation.append({"role": "assistant", "content": final_response})
             self.conversation_history = conversation.copy()
@@ -987,166 +1225,12 @@ class BaseAgent(ABC):
 """
     
     def _parse_tool_calls_from_response(self, response: str) -> List[ToolCall]:
-        """解析LLM响应中的工具调用"""
-        tool_calls = []
-        
-        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 开始解析工具调用 - 响应长度: {len(response)}")
-        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应前500字: {response[:500]}...")
-        
-        # 基础检查
-        has_tool_calls_key = "tool_calls" in response
-        has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
-        has_json_block = "```json" in response
-        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 初步检查 - tool_calls关键字: {has_tool_calls_key}, JSON结构: {has_json_structure}, JSON代码块: {has_json_block}")
-        
-        try:
-            # 方法1: 直接解析JSON格式
-            cleaned_response = response.strip()
-            if cleaned_response.startswith('{') and cleaned_response.endswith('}'):
-                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法1: 尝试直接解析JSON")
-                try:
-                    data = json.loads(cleaned_response)
-                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON解析成功 - 顶级键: {list(data.keys())}")
-                    if 'tool_calls' in data and isinstance(data['tool_calls'], list):
-                        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到tool_calls数组 - 长度: {len(data['tool_calls'])}")
-                        for i, tool_call_data in enumerate(data['tool_calls']):
-                            if isinstance(tool_call_data, dict) and 'tool_name' in tool_call_data:
-                                tool_call = ToolCall(
-                                    tool_name=tool_call_data['tool_name'],
-                                    parameters=tool_call_data.get('parameters', {}),
-                                    call_id=tool_call_data.get('call_id', f"call_{len(tool_calls)}")
-                                )
-                                tool_calls.append(tool_call)
-                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 解析到工具调用 {i}: {tool_call.tool_name}")
-                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 参数: {list(tool_call.parameters.keys())}")
-                            else:
-                                self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] 工具调用 {i} 格式错误: {tool_call_data}")
-                    else:
-                        self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有找到有效的tool_calls数组")
-                except json.JSONDecodeError as e:
-                    self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON解析失败: {str(e)}")
-            
-            # 方法2: 查找JSON代码块
-            if not tool_calls:
-                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法2: 查找JSON代码块")
-                json_pattern = r'```json\s*(\{.*?\})\s*```'
-                matches = re.findall(json_pattern, response, re.DOTALL)
-                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到 {len(matches)} 个JSON代码块")
-                for i, match in enumerate(matches):
-                    try:
-                        data = json.loads(match)
-                        if 'tool_calls' in data:
-                            self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含tool_calls")
-                            for tool_call_data in data['tool_calls']:
-                                tool_call = ToolCall(
-                                    tool_name=tool_call_data['tool_name'],
-                                    parameters=tool_call_data.get('parameters', {}),
-                                    call_id=tool_call_data.get('call_id', f"call_{len(tool_calls)}")
-                                )
-                                tool_calls.append(tool_call)
-                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到工具调用: {tool_call.tool_name}")
-                    except json.JSONDecodeError as e:
-                        self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON代码块 {i} 解析失败: {str(e)}")
-                        continue
-            
-            # 方法3: 文本模式匹配备用方案
-            if not tool_calls:
-                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法3: 文本模式匹配")
-                tool_patterns = [
-                    r'调用工具\s*[：:]\s*(\w+)',
-                    r'使用工具\s*[：:]\s*(\w+)',
-                    r'tool[：:]\s*(\w+)',
-                    r'function[：:]\s*(\w+)'
-                ]
-                
-                for pattern in tool_patterns:
-                    matches = re.findall(pattern, response, re.IGNORECASE)
-                    if matches:
-                        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 模式 '{pattern}' 匹配到 {len(matches)} 个工具")
-                    for match in matches:
-                        tool_call = ToolCall(
-                            tool_name=match,
-                            parameters={},
-                            call_id=f"call_{len(tool_calls)}"
-                        )
-                        tool_calls.append(tool_call)
-                        self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从文本中解析到工具调用: {tool_call.tool_name}")
-            
-            # 最终结果
-            self.logger.debug(f"✅ [TOOL_CALL_DEBUG] 解析完成 - 总计找到 {len(tool_calls)} 个工具调用")
-            if not tool_calls:
-                self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有解析到任何工具调用！")
-                # 提供调试信息
-                if "write_file" in response.lower():
-                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'write_file'但没有被解析为工具调用")
-                if "generate_verilog" in response.lower():
-                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'generate_verilog'但没有被解析为工具调用")
-            
-            return tool_calls
-            
-        except json.JSONDecodeError as e:
-            self.logger.warning(f"⚠️ JSON解析失败: {str(e)}")
-            return []
-        except Exception as e:
-            self.logger.error(f"❌ 工具调用解析失败: {str(e)}")
-            return []
+        """解析LLM响应中的工具调用 - 使用ToolCallParser组件"""
+        return self.tool_call_parser.parse_tool_calls_from_response(response)
     
     def _normalize_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """标准化工具参数，解决Schema不一致问题"""
-        try:
-            # 获取工具的实际函数签名
-            if tool_name in self.function_calling_registry:
-                tool_func = self.function_calling_registry[tool_name]
-                import inspect
-                
-                # 获取函数签名
-                sig = inspect.signature(tool_func)
-                actual_params = list(sig.parameters.keys())
-                
-                self.logger.debug(f"🔍 工具 {tool_name} 实际参数: {actual_params}")
-                self.logger.debug(f"🔍 传入参数: {list(parameters.keys())}")
-                
-                # 构建参数映射表
-                param_mappings = self._build_parameter_mappings(tool_name, actual_params)
-                
-                # 应用映射
-                normalized = parameters.copy()
-                mapped_params = {}
-                
-                for input_param, value in normalized.items():
-                    # 查找映射
-                    mapped_param = param_mappings.get(input_param, input_param)
-                    
-                    if mapped_param != input_param:
-                        self.logger.info(f"🔄 参数映射: {input_param} -> {mapped_param}")
-                        mapped_params[mapped_param] = value
-                    else:
-                        mapped_params[input_param] = value
-                
-                # 验证映射后的参数是否在函数签名中
-                invalid_params = []
-                for param in mapped_params.keys():
-                    if param not in actual_params and param != 'self':
-                        invalid_params.append(param)
-                
-                if invalid_params:
-                    self.logger.warning(f"⚠️ 工具 {tool_name} 存在无效参数: {invalid_params}")
-                    # 移除无效参数
-                    for invalid_param in invalid_params:
-                        if invalid_param in mapped_params:
-                            del mapped_params[invalid_param]
-                            self.logger.info(f"🗑️ 移除无效参数: {invalid_param}")
-                
-                self.logger.debug(f"✅ 参数标准化完成: {list(mapped_params.keys())}")
-                return mapped_params
-                
-            else:
-                self.logger.warning(f"⚠️ 工具 {tool_name} 未找到，使用基本映射")
-                return self._apply_basic_parameter_mapping(parameters)
-                
-        except Exception as e:
-            self.logger.error(f"❌ 参数标准化失败: {str(e)}")
-            return self._apply_basic_parameter_mapping(parameters)
+        """标准化工具参数 - 使用ToolCallParser组件"""
+        return self.tool_call_parser.normalize_tool_parameters(tool_name, parameters)
     
     def _build_parameter_mappings(self, tool_name: str, actual_params: List[str]) -> Dict[str, str]:
         """构建参数映射表"""
@@ -1288,31 +1372,21 @@ class BaseAgent(ABC):
             return parameters
     
     async def _execute_tool_call_with_retry(self, tool_call: ToolCall) -> ToolResult:
-        """执行工具调用，支持失败重试和LLM反馈"""
-        last_error = None
+        """执行工具调用 - 向后兼容版本"""
+        import asyncio
+        import time
         
-        # 🔧 TaskContext对话记录 - 工具调用开始
-        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
-            self.current_task_context.add_conversation_message(
-                role="tool_call",
-                content=f"开始调用工具: {tool_call.tool_name}",
-                agent_id=self.agent_id,
-                tool_info={
-                    "tool_name": tool_call.tool_name,
-                    "parameters": tool_call.parameters,
-                    "status": "started"
-                }
-            )
+        start_time = time.time()
+        last_error = None
         
         for attempt in range(self.max_tool_retry_attempts):
             try:
                 self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name} (尝试 {attempt + 1}/{self.max_tool_retry_attempts})")
                 
-                # 标准化参数（解决Schema不一致问题）
+                # 标准化参数
                 normalized_parameters = self._normalize_tool_parameters(tool_call.tool_name, tool_call.parameters)
                 if normalized_parameters != tool_call.parameters:
                     self.logger.info(f"🎯 {tool_call.tool_name} 参数已标准化")
-                    # 使用标准化后的参数创建新的工具调用
                     tool_call = ToolCall(
                         tool_name=tool_call.tool_name,
                         parameters=normalized_parameters,
@@ -1320,16 +1394,16 @@ class BaseAgent(ABC):
                     )
                 
                 # 检查工具是否存在
-                if tool_call.tool_name not in self.function_calling_registry:
+                if tool_call.tool_name not in self._function_registry_backup:
                     return ToolResult(
                         call_id=tool_call.call_id or "unknown",
                         success=False,
                         result=None,
-                        error=f"工具 '{tool_call.tool_name}' 不存在。可用工具: {list(self.function_calling_registry.keys())}"
+                        error=f"工具 '{tool_call.tool_name}' 不存在。可用工具: {list(self._function_registry_backup.keys())}"
                     )
                 
                 # 获取并执行工具函数
-                tool_func = self.function_calling_registry[tool_call.tool_name]
+                tool_func = self._function_registry_backup[tool_call.tool_name]
                 
                 if asyncio.iscoroutinefunction(tool_func):
                     result = await tool_func(**tool_call.parameters)
@@ -1344,39 +1418,31 @@ class BaseAgent(ABC):
                     tool_success = result.get('success', True)
                     tool_error = result.get('error', None)
                     
-                    # 如果工具内部报告失败，记录并抛出异常以触发重试
-                    if not tool_success:
+                    # 🚨 修复：检查是否为增强错误处理结果
+                    if not tool_success and result.get('enhanced_error_info'):
+                        # 这是增强错误处理的结果，不应该抛出异常
+                        self.logger.info(f"🔍 检测到增强错误处理结果: {tool_call.tool_name}")
+                        # 直接返回结果，不抛出异常
+                    elif not tool_success:
+                        # 这是普通的工具失败，抛出异常以触发重试
                         error_msg = tool_error or "工具内部执行失败"
                         self.logger.warning(f"⚠️ 工具内部报告失败 {tool_call.tool_name}: {error_msg}")
                         raise Exception(error_msg)
                 
-                # 🎯 使用统一日志系统记录工具执行
-                from core.unified_logging_system import get_global_logging_system
-                logging_system = get_global_logging_system()
-                
-                # 记录工具执行结果
-                logging_system.log_tool_result(
-                    agent_id=self.agent_id,
-                    tool_name=tool_call.tool_name,
-                    success=True,
-                    result=result,
-                    duration=time.time() - tool_call_start_time
-                )
-                
-                # 🔧 TaskContext对话记录 - 工具调用成功
-                if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
-                    self.current_task_context.add_conversation_message(
-                        role="tool_result",
-                        content=f"工具执行成功: {tool_call.tool_name}",
+                # 记录成功的工具执行结果
+                duration = time.time() - start_time
+                try:
+                    from core.unified_logging_system import get_global_logging_system
+                    logging_system = get_global_logging_system()
+                    logging_system.log_tool_result(
                         agent_id=self.agent_id,
-                        tool_info={
-                            "tool_name": tool_call.tool_name,
-                            "parameters": tool_call.parameters,
-                            "success": True,
-                            "result": str(result)[:200] + ("..." if len(str(result)) > 200 else ""),  # 限制结果长度
-                            "status": "completed"
-                        }
+                        tool_name=tool_call.tool_name,
+                        success=True,
+                        result=result,
+                        duration=duration
                     )
+                except Exception as log_error:
+                    self.logger.warning(f"⚠️ 工具成功日志记录失败: {log_error}")
                 
                 return ToolResult(
                     call_id=tool_call.call_id or "unknown",
@@ -1387,9 +1453,24 @@ class BaseAgent(ABC):
                 
             except Exception as e:
                 last_error = str(e)
+                duration = time.time() - start_time
                 self.logger.warning(f"⚠️ 工具执行失败 {tool_call.tool_name} (尝试 {attempt + 1}): {str(e)}")
                 
-                # 记录详细的失败上下文，用于LLM分析和智能重试
+                # 记录详细的工具执行失败日志
+                try:
+                    from core.unified_logging_system import get_global_logging_system
+                    logging_system = get_global_logging_system()
+                    logging_system.log_tool_result(
+                        agent_id=self.agent_id,
+                        tool_name=tool_call.tool_name,
+                        success=False,
+                        error=str(e),
+                        duration=duration
+                    )
+                except Exception as log_error:
+                    self.logger.warning(f"⚠️ 工具失败日志记录失败: {log_error}")
+                
+                # 记录详细的失败上下文
                 failure_context = {
                     "tool_name": tool_call.tool_name,
                     "parameters": tool_call.parameters,
@@ -1407,67 +1488,19 @@ class BaseAgent(ABC):
                 
                 self.tool_failure_contexts.append(failure_context)
                 
-                # 如果是最后一次尝试，记录完整错误链
-                if attempt == self.max_tool_retry_attempts - 1:
-                    self.logger.error(f"❌ 工具调用最终失败 {tool_call.tool_name}: {last_error}")
-                    self.logger.error(f"📊 失败上下文: {json.dumps(failure_context, indent=2, default=str)}")
-                else:
-                    # 使用LLM分析错误并提供重试建议
-                    retry_advice = await self._get_llm_retry_advice(failure_context)
-                    self.logger.info(f"💡 重试建议: {retry_advice}")
+                # 如果不是最后一次尝试，等待后重试
+                if attempt < self.max_tool_retry_attempts - 1:
+                    self.logger.info(f"⏳ 等待 1 秒后重试...")
                     await asyncio.sleep(1)
+                else:
+                    self.logger.error(f"❌ 工具执行最终失败: {tool_call.tool_name}")
         
-        # 所有重试都失败了，记录到TaskContext并返回增强的错误信息
-        # 🔧 TaskContext对话记录 - 工具调用失败
-        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
-            self.current_task_context.add_conversation_message(
-                role="tool_result",
-                content=f"工具执行失败: {tool_call.tool_name}",
-                agent_id=self.agent_id,
-                tool_info={
-                    "tool_name": tool_call.tool_name,
-                    "parameters": tool_call.parameters,
-                    "success": False,
-                    "error": last_error,
-                    "retry_attempts": self.max_tool_retry_attempts,
-                    "status": "failed"
-                }
-            )
-            
-        # 🆕 数据收集用于Gradio可视化 - 失败情况
-        if self.current_task_context:
-            import time
-            failure_timestamp = time.time()
-            
-            # 记录工具执行失败
-            self.current_task_context.tool_executions.append({
-                "timestamp": failure_timestamp,
-                "agent_id": self.agent_id,
-                "tool_name": tool_call.tool_name,
-                "parameters": tool_call.parameters,
-                "success": False,
-                "error": last_error,
-                "retry_attempts": self.max_tool_retry_attempts
-            })
-            
-            # 记录执行时间线 - 失败事件
-            self.current_task_context.execution_timeline.append({
-                "timestamp": failure_timestamp,
-                "event_type": "tool_failure",
-                "agent_id": self.agent_id,
-                "description": f"{self.agent_id} 工具执行失败: {tool_call.tool_name}",
-                "details": {
-                    "tool_name": tool_call.tool_name,
-                    "error": last_error,
-                    "retry_attempts": self.max_tool_retry_attempts
-                }
-            })
-        
+        # 所有重试都失败了
         return ToolResult(
             call_id=tool_call.call_id or "unknown",
             success=False,
             result=None,
-            error=f"工具执行失败 (已重试{self.max_tool_retry_attempts}次): {last_error}"
+            error=last_error or "工具执行失败"
         )
     
     def _format_tool_results(self, tool_calls: List[ToolCall], tool_results: List[ToolResult]) -> str:
@@ -1758,15 +1791,13 @@ class BaseAgent(ABC):
         """调用LLM进行Function Calling - 子类必须实现"""
         pass
     
-    @abstractmethod
     def get_capabilities(self) -> Set[AgentCapability]:
-        """获取智能体能力"""
-        return self._capabilities
+        """获取智能体能力 - 使用AgentContext组件"""
+        return self.agent_context.get_capabilities()
     
-    @abstractmethod
     def get_specialty_description(self) -> str:
-        """获取专业描述"""
-        pass
+        """获取专业描述 - 使用AgentContext组件"""
+        return self.agent_context.get_specialty_description()
     
     @abstractmethod
     async def execute_enhanced_task(self, enhanced_prompt: str,
@@ -1780,69 +1811,23 @@ class BaseAgent(ABC):
     # ==========================================================================
     
     async def autonomous_file_read(self, file_ref: FileReference) -> Optional[str]:
-        """自主读取文件内容"""
-        file_path = file_ref.file_path
-        
-        # 检查缓存
-        if file_path in self.file_cache:
-            self.logger.debug(f"📋 使用缓存文件: {file_path}")
-            return self.file_cache[file_path]
-        
-        try:
-            # 读取文件
-            if os.path.exists(file_path):
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                # 缓存内容
-                self.file_cache[file_path] = content
-                self.file_metadata_cache[file_path] = {
-                    "size": len(content),
-                    "read_time": time.time()
-                }
-                
-                self.logger.info(f"✅ 成功读取文件: {file_path} ({len(content)} bytes)")
-                return content
-            else:
-                self.logger.warning(f"⚠️ 文件不存在: {file_path}")
-                return None
-                
-        except Exception as e:
-            self.logger.error(f"❌ 读取文件失败 {file_path}: {str(e)}")
-            return None
+        """自主读取文件内容 - 使用FileOperationManager组件"""
+        return await self.file_operation_manager.read_file(file_ref.file_path)
     
     async def save_result_to_file(self, content: str, file_path: str, 
                                 file_type: str = "verilog") -> FileReference:
-        """保存结果到文件"""
-        try:
-            # 确保目录存在
-            Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-            
-            # 清理内容：移除markdown格式标记
-            cleaned_content = self._clean_file_content(content, file_type)
-            
-            # 写入文件
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(cleaned_content)
-            
-            # 创建文件引用
-            file_ref = FileReference(
-                file_path=file_path,
-                file_type=file_type,
-                description=f"{self.agent_id}生成的{file_type}文件",
-                metadata={
-                    "size": len(content),
-                    "created_by": self.agent_id,
-                    "creation_time": time.time()
-                }
-            )
-            
-            self.logger.info(f"💾 成功保存文件: {file_path}")
-            return file_ref
-            
-        except Exception as e:
-            self.logger.error(f"❌ 保存文件失败 {file_path}: {str(e)}")
-            raise
+        """保存结果到文件 - 使用FileOperationManager组件"""
+        file_ref = await self.file_operation_manager.write_file(
+            content=content,
+            file_path=file_path,
+            file_type=file_type
+        )
+        if file_ref:
+            # 更新元数据
+            file_ref.metadata.update({
+                "created_by": self.agent_id
+            })
+        return file_ref
     
     def _clean_file_content(self, content: str, file_type: str) -> str:
         """清理文件内容，移除不必要的格式标记"""
@@ -2306,8 +2291,12 @@ class BaseAgent(ABC):
     # ==========================================================================
     
     def get_status(self) -> Dict[str, Any]:
-        """获取智能体状态"""
-        return {
+        """获取智能体状态 - 使用AgentContext组件"""
+        # 获取组件状态
+        context_status = self.agent_context.to_dict()
+        
+        # 合并原有状态
+        status = {
             "agent_id": self.agent_id,
             "role": self.role,
             "status": self.status.value,
@@ -2315,6 +2304,10 @@ class BaseAgent(ABC):
             "task_count": len(self.task_history),
             "cache_size": len(self.file_cache)
         }
+        
+        # 合并组件状态
+        status.update(context_status)
+        return status
     
     def clear_cache(self):
         """清空缓存"""
@@ -2323,16 +2316,21 @@ class BaseAgent(ABC):
         self.logger.info("🧹 缓存已清空")
     
     def clear_conversation_history(self):
-        """清空对话历史 - 新增方法"""
+        """清空对话历史 - 使用ConversationManager组件"""
         old_count = len(self.conversation_history)
+        self.conversation_manager.clear_all_conversations()
         self.conversation_history.clear()
         self.current_conversation_id = None
         self.conversation_start_time = None
         self.logger.info(f"🧹 对话历史已清空: 删除了 {old_count} 条消息")
     
     def get_conversation_summary(self) -> Dict[str, Any]:
-        """获取对话摘要 - 新增方法"""
-        return {
+        """获取对话摘要 - 使用ConversationManager组件"""
+        # 获取组件管理的对话摘要
+        component_summary = self.conversation_manager.get_all_conversations_summary()
+        
+        # 合并原有的摘要信息
+        summary = {
             "conversation_id": self.current_conversation_id,
             "message_count": len(self.conversation_history),
             "conversation_duration": time.time() - (self.conversation_start_time or time.time()) if self.conversation_start_time else 0,
@@ -2341,302 +2339,56 @@ class BaseAgent(ABC):
             "agent_id": self.agent_id,
             "role": self.role
         }
+        
+        # 合并组件摘要
+        summary.update(component_summary)
+        return summary
     
     # ==========================================================================
     # 🔧 基础Function Calling工具实现
     # ==========================================================================
     
     async def _tool_write_file(self, filename: str = None, content: str = None, directory: str = None, file_path: str = None, **kwargs) -> Dict[str, Any]:
-        """基础工具：写入文件（增强版，支持中央文件管理）"""
-        file_start_time = time.time()
+        """基础工具：写入文件 - 使用FileOperationManager组件"""
+        # 支持file_path参数作为filename的别名
+        if file_path is not None and filename is None:
+            filename = file_path
+            self.logger.info(f"🔄 参数映射: file_path -> filename: {filename}")
         
-        # 🎯 在方法开始就初始化统一日志系统，确保所有代码路径都能访问
-        from core.unified_logging_system import get_global_logging_system
-        logging_system = get_global_logging_system()
-        
-        try:
-            # 支持file_path参数作为filename的别名
-            if file_path is not None and filename is None:
-                filename = file_path
-                self.logger.info(f"🔄 参数映射: file_path -> filename: {filename}")
-            
-            if filename is None:
-                return {
-                    "success": False,
-                    "error": "缺少必需参数: filename 或 file_path"
-                }
-            
-            if content is None:
-                return {
-                    "success": False,
-                    "error": "缺少必需参数: content"
-                }
-            
-            self.logger.info(f"📝 写入文件: {filename}")
-            
-            # 记录文件写入开始
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="write",
-                file_path=filename,
-                success=True,
-                details=f"开始写入文件，大小: {len(content)} 字符"
-            )
-            
-            # 🆕 优先尝试使用当前任务上下文中的实验路径
-            try:
-                experiment_path = None
-                
-                # 1. 首先尝试从任务上下文获取实验路径
-                if hasattr(self, 'current_task_context') and self.current_task_context:
-                    task_context = self.current_task_context
-                    if hasattr(task_context, 'experiment_path') and task_context.experiment_path:
-                        experiment_path = Path(task_context.experiment_path)
-                        self.logger.info(f"🧪 使用任务上下文实验路径: {experiment_path}")
-                
-                # 2. 如果任务上下文没有，尝试实验管理器
-                if not experiment_path:
-                    try:
-                        from core.experiment_manager import get_experiment_manager
-                        exp_manager = get_experiment_manager()
-                        
-                        self.logger.info(f"🔍 实验管理器检查:")
-                        self.logger.info(f"   - 实验管理器存在: {exp_manager is not None}")
-                        self.logger.info(f"   - 当前实验路径: {exp_manager.current_experiment_path if exp_manager else None}")
-                        
-                        if exp_manager and exp_manager.current_experiment_path:
-                            experiment_path = Path(exp_manager.current_experiment_path)
-                            self.logger.info(f"🧪 使用实验管理器路径: {experiment_path}")
-                    except (ImportError, Exception) as e:
-                        self.logger.debug(f"实验管理器不可用: {e}")
-                
-                # 3. 如果还是没有找到，尝试从活跃任务中查找
-                if not experiment_path:
-                    try:
-                        # 尝试从协调智能体的活跃任务中获取实验路径
-                        from core.llm_coordinator_agent import LLMCoordinatorAgent
-                        if hasattr(self, 'coordinator') and isinstance(self.coordinator, LLMCoordinatorAgent):
-                            for task in self.coordinator.active_tasks.values():
-                                if hasattr(task, 'experiment_path') and task.experiment_path:
-                                    experiment_path = Path(task.experiment_path)
-                                    self.logger.info(f"🧪 从协调智能体活跃任务获取实验路径: {experiment_path}")
-                                    break
-                    except Exception as e:
-                        self.logger.debug(f"从协调智能体获取实验路径失败: {e}")
-                
-                # 4. 如果有实验路径，直接保存到实验目录
-                if experiment_path:
-                    # 清理内容
-                    cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
-                    file_type = self._determine_file_type(filename, cleaned_content)
-                    
-                    # 确定子文件夹
-                    if "testbench" in filename.lower() or "_tb" in filename.lower():
-                        subdir = "testbenches"
-                    elif filename.endswith('.v'):
-                        subdir = "designs"
-                    else:
-                        subdir = "artifacts"
-                    
-                    # 创建目标目录并保存文件
-                    exp_subdir_path = experiment_path / subdir
-                    exp_subdir_path.mkdir(parents=True, exist_ok=True)
-                    exp_file_path = exp_subdir_path / filename
-                    
-                    # 写入文件
-                    with open(exp_file_path, 'w', encoding='utf-8') as f:
-                        f.write(cleaned_content)
-                    
-                    # 尝试同时注册到中央文件管理器（可选）
-                    try:
-                        from core.file_manager import get_file_manager
-                        file_manager = get_file_manager()
-                        file_ref = file_manager.save_file(
-                            content=cleaned_content,
-                            filename=filename,
-                            file_type=file_type,
-                            created_by=self.agent_id,
-                            description=f"由{self.agent_id}创建的{file_type}文件"
-                        )
-                        
-                        self.logger.info(f"✅ 文件已保存到实验目录并注册到管理器: {exp_file_path}")
-                        
-                        # 记录文件写入成功
-                        duration = time.time() - file_start_time
-                        logging_system.log_file_operation(
-                            agent_id=self.agent_id,
-                            operation="write",
-                            file_path=str(exp_file_path),
-                            success=True,
-                            details=f"文件写入成功，类型: {file_ref.file_type}, ID: {file_ref.file_id}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
-                        )
-                        
-                        return {
-                            "success": True,
-                            "message": f"文件 {filename} 已成功保存到实验目录",
-                            "file_path": str(exp_file_path),
-                            "file_id": file_ref.file_id,
-                            "file_type": file_ref.file_type,
-                            "filename": filename,
-                            "content_length": len(cleaned_content),
-                            "experiment_path": str(experiment_path),
-                            "subdir": subdir,
-                            "file_reference": {
-                                "file_id": file_ref.file_id,
-                                "file_path": str(exp_file_path),
-                                "file_type": file_ref.file_type,
-                                "created_by": file_ref.created_by,
-                                "created_at": file_ref.created_at,
-                                "description": file_ref.description
-                            }
-                        }
-                    except Exception as e:
-                        self.logger.warning(f"⚠️ 中央文件管理器注册失败: {e}")
-                        # 即使中央管理器失败，文件已经保存到实验目录
-                        
-                        # 记录文件写入成功
-                        duration = time.time() - file_start_time
-                        logging_system.log_file_operation(
-                            agent_id=self.agent_id,
-                            operation="write",
-                            file_path=str(exp_file_path),
-                            success=True,
-                            details=f"文件写入成功，类型: {file_type}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
-                        )
-                        
-                        return {
-                            "success": True,
-                            "message": f"文件 {filename} 已成功保存到实验目录",
-                            "file_path": str(exp_file_path),
-                            "file_id": None,
-                            "file_type": file_type,
-                            "filename": filename,
-                            "content_length": len(cleaned_content),
-                            "experiment_path": str(experiment_path),
-                            "subdir": subdir
-                        }
-            except Exception as e:
-                self.logger.warning(f"实验路径保存失败: {e}")
-            
-            # 回退到中央文件管理器
-            try:
-                from core.file_manager import get_file_manager
-                file_manager = get_file_manager()
-                self.logger.info(f"🔍 filename: {filename}")
-                self.logger.info(f"🔍 file type: {self._detect_file_type(filename)}")
-                
-                # 清理内容（移除markdown标记等）
-                cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
-                
-                # 确定文件类型
-                file_type = self._determine_file_type(filename, cleaned_content)
-
-                
-                # 使用中央文件管理器保存文件
-                file_ref = file_manager.save_file(
-                    content=cleaned_content,
-                    filename=filename,
-                    file_type=file_type,
-                    created_by=self.agent_id,
-                    description=f"由{self.agent_id}创建的{file_type}文件"
-                )
-                
-                self.logger.info(f"✅ 文件已通过中央管理器保存: {filename} (file path: {file_ref.file_path}) (ID: {file_ref.file_id})")
-                
-                # 记录文件写入成功
-                duration = time.time() - file_start_time
-                logging_system.log_file_operation(
-                    agent_id=self.agent_id,
-                    operation="write",
-                    file_path=file_ref.file_path,
-                    success=True,
-                    details=f"文件写入成功，类型: {file_ref.file_type}, ID: {file_ref.file_id}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
-                )
-                
-                return {
-                    "success": True,
-                    "message": f"文件 {filename} 已成功保存到中央管理器",
-                    "file_path": file_ref.file_path,
-                    "file_id": file_ref.file_id,
-                    "file_type": file_ref.file_type,
-                    "filename": filename,
-                    "content_length": len(cleaned_content),
-                    "file_reference": {
-                        "file_id": file_ref.file_id,
-                        "file_path": file_ref.file_path,
-                        "file_type": file_ref.file_type,
-                        "created_by": file_ref.created_by,
-                        "created_at": file_ref.created_at,
-                        "description": file_ref.description
-                    }
-                }
-            except ImportError:
-                self.logger.warning("中央文件管理器不可用，使用传统文件保存方法")
-            except Exception as e:
-                self.logger.warning(f"中央文件管理器保存失败: {e}，回退到传统方法")
-            
-            # 传统文件保存方法（保持向后兼容性）
-            # 如果没有指定目录，使用默认工件目录
-            if directory is None:
-                output_dir = self.default_artifacts_dir
-            else:
-                output_dir = Path(directory)
-            
-            # 确保目录存在
-            output_dir.mkdir(parents=True, exist_ok=True)
-            
-            # 构建完整文件路径 - 处理可能的路径重复问题
-            # 如果filename已经包含路径信息，只取文件名部分
-            if '/' in filename or '\\' in filename:
-                filename = Path(filename).name
-                self.logger.info(f"🔧 提取文件名: {filename}")
-            
-            file_path = output_dir / filename
-            
-            # 清理内容（移除markdown标记等）
-            cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
-            
-            # 写入文件
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(cleaned_content)
-            
-            self.logger.info(f"✅ 文件写入成功: {file_path}")
-            
-            # 记录文件写入成功
-            duration = time.time() - file_start_time
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="write",
-                file_path=str(file_path),
-                success=True,
-                details=f"文件写入成功，目录: {str(output_dir)}, 大小: {len(cleaned_content)} 字符, 耗时: {duration:.2f}秒"
-            )
-            
-            return {
-                "success": True,
-                "file_path": str(file_path),
-                "filename": filename,
-                "directory": str(output_dir),
-                "content_length": len(cleaned_content),
-                "message": f"成功写入文件: {file_path}"
-            }
-            
-        except Exception as e:
-            # 记录文件写入失败
-            duration = time.time() - file_start_time
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="write",
-                file_path=filename,
-                success=False,
-                details=f"文件写入失败，错误: {str(e)}, 耗时: {duration:.2f}秒"
-            )
-            
-            self.logger.error(f"❌ 文件写入失败: {str(e)}")
+        if filename is None:
             return {
                 "success": False,
-                "error": f"文件写入异常: {str(e)}",
-                "file_path": None
+                "error": "缺少必需参数: filename 或 file_path"
+            }
+        
+        if content is None:
+            return {
+                "success": False,
+                "error": "缺少必需参数: content"
+            }
+        
+        self.logger.info(f"📝 写入文件: {filename}")
+        
+        # 使用FileOperationManager组件
+        file_ref = await self.file_operation_manager.write_file(
+            filename=filename,
+            content=content,
+            directory=directory
+        )
+        
+        if file_ref is not None:
+            return {
+                "success": True,
+                "file_path": file_ref.file_path,
+                "file_type": file_ref.file_type,
+                "description": file_ref.description,
+                "metadata": file_ref.metadata
+            }
+        else:
+            return {
+                "success": False,
+                "error": f"写入文件失败: {filename}",
+                "filename": filename
             }
     
     def _determine_file_type(self, filename: str, content: str) -> str:
@@ -2662,88 +2414,26 @@ class BaseAgent(ABC):
             return "temp"
     
     async def _tool_read_file(self, filepath: str, **kwargs) -> Dict[str, Any]:
-        """基础工具：读取文件"""
-        file_start_time = time.time()
+        """基础工具：读取文件 - 使用FileOperationManager组件"""
+        self.logger.info(f"📖 读取文件: {filepath}")
         
-        # 🎯 在方法开始就初始化统一日志系统，确保所有代码路径都能访问
-        from core.unified_logging_system import get_global_logging_system
-        logging_system = get_global_logging_system()
+        # 使用FileOperationManager组件
+        content = await self.file_operation_manager.read_file(
+            file_path=filepath
+        )
         
-        try:
-            self.logger.info(f"📖 读取文件: {filepath}")
-            
-            # 记录文件读取开始
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="read",
-                file_path=filepath,
-                success=True,
-                details="开始读取文件"
-            )
-            
-            file_path = Path(filepath)
-            if not file_path.is_absolute():
-                # 尝试相对路径
-                file_path = Path("./output") / filepath
-                if not file_path.exists():
-                    file_path = Path(filepath)
-            
-            if not file_path.exists():
-                # 记录文件读取失败
-                duration = time.time() - file_start_time
-                logging_system.log_file_operation(
-                    agent_id=self.agent_id,
-                    operation="read",
-                    file_path=filepath,
-                    success=False,
-                    details=f"文件不存在: {filepath}, 耗时: {duration:.2f}秒"
-                )
-                
-                return {
-                    "success": False,
-                    "error": f"文件不存在: {filepath}",
-                    "content": None
-                }
-            
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            self.logger.info(f"✅ 文件读取成功: {file_path} ({len(content)} 字符)")
-            
-            # 记录文件读取成功
-            duration = time.time() - file_start_time
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="read",
-                file_path=str(file_path),
-                success=True,
-                details=f"文件读取成功，大小: {len(content)} 字符, 耗时: {duration:.2f}秒, 来源: file_system"
-            )
-            
+        if content is not None:
             return {
                 "success": True,
                 "content": content,
-                "file_path": str(file_path),
-                "content_length": len(content),
-                "message": f"成功读取文件: {file_path}"
+                "file_path": filepath,
+                "content_length": len(content)
             }
-            
-        except Exception as e:
-            # 记录文件读取失败
-            duration = time.time() - file_start_time
-            logging_system.log_file_operation(
-                agent_id=self.agent_id,
-                operation="read",
-                file_path=filepath,
-                success=False,
-                details=f"文件读取失败，错误: {str(e)}, 耗时: {duration:.2f}秒"
-            )
-            
-            self.logger.error(f"❌ 文件读取失败: {str(e)}")
+        else:
             return {
                 "success": False,
-                "error": f"文件读取异常: {str(e)}",
-                "content": None
+                "error": f"无法读取文件: {filepath}",
+                "file_path": filepath
             }
     
     # ==========================================================================
@@ -2751,187 +2441,11 @@ class BaseAgent(ABC):
     # ==========================================================================
     
     async def _enhance_error_with_context(self, failure_context: Dict[str, Any]) -> str:
-        """增强错误信息，基于上下文生成详细分析"""
-        try:
-            tool_name = failure_context.get("tool_name", "unknown")
-            error = failure_context.get("error", "unknown error")
-            error_type = failure_context.get("error_type", "Exception")
-            parameters = failure_context.get("parameters", {})
-            attempt = failure_context.get("attempt", 1)
-            
-            # 分析错误类型和常见原因
-            error_analysis = self._analyze_error_type(error, error_type, tool_name, parameters)
-            
-            # 构建增强的错误描述
-            enhanced_error = f"""
-=== 工具执行失败详细分析 ===
-🔧 工具名称: {tool_name}
-📝 错误类型: {error_type}
-🔍 原始错误: {error}
-📊 尝试次数: {attempt}/{self.max_tool_retry_attempts}
-⚙️ 调用参数: {parameters}
-
-🎯 错误分析:
-{error_analysis['category']}: {error_analysis['description']}
-
-💡 可能原因:
-{chr(10).join(f"• {cause}" for cause in error_analysis['possible_causes'])}
-
-🔧 建议修复:
-{chr(10).join(f"• {fix}" for fix in error_analysis['suggested_fixes'])}
-
-⚠️ 影响评估: {error_analysis['impact']}
-""".strip()
-            
-            return enhanced_error
-            
-        except Exception as e:
-            self.logger.warning(f"⚠️ 错误增强失败: {str(e)}")
-            return f"工具 {failure_context.get('tool_name', 'unknown')} 执行失败: {failure_context.get('error', 'unknown')}"
-    
-    def _analyze_error_type(self, error: str, error_type: str, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """分析错误类型并提供详细信息"""
-        error_lower = error.lower()
-        
-        # 文件相关错误
-        if "no such file or directory" in error_lower or "filenotfounderror" in error_type.lower():
-            return {
-                "category": "文件访问错误",
-                "description": "指定的文件或目录不存在",
-                "possible_causes": [
-                    "文件路径不正确或文件未创建",
-                    "相对路径解析错误",
-                    "文件被删除或移动",
-                    "权限不足无法访问文件"
-                ],
-                "suggested_fixes": [
-                    "检查文件路径是否正确",
-                    "使用绝对路径替代相对路径",
-                    "先创建文件或目录再访问",
-                    "检查文件权限设置"
-                ],
-                "impact": "中等 - 可通过修正路径或创建文件解决"
-            }
-        
-        # 权限相关错误
-        elif "permission denied" in error_lower or "permissionerror" in error_type.lower():
-            return {
-                "category": "权限访问错误", 
-                "description": "没有足够权限执行操作",
-                "possible_causes": [
-                    "文件或目录权限设置不当",
-                    "用户权限不足",
-                    "文件被其他进程占用",
-                    "目录为只读状态"
-                ],
-                "suggested_fixes": [
-                    "检查并修改文件权限",
-                    "使用具有足够权限的用户运行",
-                    "确保文件未被其他进程占用",
-                    "检查目录写入权限"
-                ],
-                "impact": "中等 - 需要调整权限设置"
-            }
-        
-        # 参数相关错误
-        elif "typeerror" in error_type.lower() or "missing" in error_lower or "required" in error_lower:
-            return {
-                "category": "参数错误",
-                "description": "工具调用参数不正确或缺失",
-                "possible_causes": [
-                    "必需参数未提供",
-                    "参数类型不匹配",
-                    "参数值格式错误",
-                    "参数名称拼写错误"
-                ],
-                "suggested_fixes": [
-                    "检查所有必需参数是否提供",
-                    "验证参数类型和格式",
-                    "参考工具文档确认参数要求",
-                    "使用正确的参数名称"
-                ],
-                "impact": "低 - 通过修正参数即可解决"
-            }
-        
-        # 编程语言特定错误（Verilog等）
-        elif "syntax error" in error_lower or "parse error" in error_lower:
-            return {
-                "category": "语法错误",
-                "description": "代码存在语法错误",
-                "possible_causes": [
-                    "Verilog语法不正确",
-                    "缺少分号或括号不匹配",
-                    "关键字拼写错误",
-                    "模块定义不完整"
-                ],
-                "suggested_fixes": [
-                    "检查代码语法规范",
-                    "验证括号和分号匹配",
-                    "确认关键字拼写正确",
-                    "补全模块定义"
-                ],
-                "impact": "中等 - 需要修复代码语法"
-            }
-        
-        # 网络/连接相关错误
-        elif "connection" in error_lower or "timeout" in error_lower:
-            return {
-                "category": "连接错误",
-                "description": "网络连接或服务连接失败",
-                "possible_causes": [
-                    "网络连接不稳定",
-                    "服务器响应超时",
-                    "API密钥或认证失败",
-                    "服务暂时不可用"
-                ],
-                "suggested_fixes": [
-                    "检查网络连接状态",
-                    "增加连接超时时间",
-                    "验证API密钥和认证信息",
-                    "稍后重试或使用备用服务"
-                ],
-                "impact": "高 - 影响外部服务调用"
-            }
-        
-        # 内存/资源相关错误
-        elif "memory" in error_lower or "resource" in error_lower:
-            return {
-                "category": "资源不足错误",
-                "description": "系统资源不足",
-                "possible_causes": [
-                    "内存不足",
-                    "磁盘空间不够",
-                    "文件句柄耗尽",
-                    "CPU资源紧张"
-                ],
-                "suggested_fixes": [
-                    "释放不必要的内存",
-                    "清理磁盘空间",
-                    "关闭不用的文件句柄",
-                    "优化资源使用"
-                ],
-                "impact": "高 - 需要释放系统资源"
-            }
-        
-        # 通用错误
-        else:
-            return {
-                "category": "通用执行错误",
-                "description": f"工具执行过程中发生异常: {error_type}",
-                "possible_causes": [
-                    "工具内部逻辑错误",
-                    "输入数据格式问题",
-                    "环境配置不当",
-                    "依赖库版本冲突"
-                ],
-                "suggested_fixes": [
-                    "检查工具输入数据",
-                    "验证环境配置",
-                    "更新或重装依赖库",
-                    "查看详细错误日志"
-                ],
-                "impact": "中等 - 需要具体分析解决"
-            }
+        """增强错误信息，基于上下文生成详细分析 - 使用ErrorAnalyzer组件"""
+        return await self.error_analyzer.enhance_error_with_context(
+            failure_context, 
+            max_retry_attempts=self.max_tool_retry_attempts
+        )
     
     async def _get_llm_retry_advice(self, failure_context: Dict[str, Any]) -> str:
         """使用LLM分析错误并提供重试建议"""
@@ -3126,109 +2640,6 @@ class BaseAgent(ABC):
             return f"文件路径错误，请检查路径是否正确。"
         else:
             return f"工具 {tool_name} 执行失败，请检查参数和调用方式。"
-
-    async def _execute_tool_call_with_retry(self, tool_call: ToolCall) -> ToolResult:
-        """执行工具调用，失败时返回给智能体处理"""
-        try:
-            self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name}")
-            
-            # 标准化参数（解决Schema不一致问题）
-            normalized_parameters = self._normalize_tool_parameters(tool_call.tool_name, tool_call.parameters)
-            if normalized_parameters != tool_call.parameters:
-                self.logger.info(f"🎯 {tool_call.tool_name} 参数已标准化")
-                # 使用标准化后的参数创建新的工具调用
-                tool_call = ToolCall(
-                    tool_name=tool_call.tool_name,
-                    parameters=normalized_parameters,
-                    call_id=tool_call.call_id
-                )
-            
-            # 检查工具是否存在
-            if tool_call.tool_name not in self.function_calling_registry:
-                tool_spec = self.get_tool_specification(tool_call.tool_name)
-                suggested_fix = self.get_suggested_fix(tool_call.tool_name, f"工具 '{tool_call.tool_name}' 不存在")
-                
-                return ToolResult(
-                    call_id=tool_call.call_id or "unknown",
-                    success=False,
-                    result=None,
-                    error=f"工具 '{tool_call.tool_name}' 不存在。可用工具: {list(self.function_calling_registry.keys())}",
-                    tool_specification=tool_spec,
-                    suggested_fix=suggested_fix,
-                    context={
-                        "available_tools": list(self.function_calling_registry.keys()),
-                        "called_tool": tool_call.tool_name
-                    }
-                )
-            
-            # 获取并执行工具函数
-            tool_func = self.function_calling_registry[tool_call.tool_name]
-            
-            if asyncio.iscoroutinefunction(tool_func):
-                result = await tool_func(**tool_call.parameters)
-            else:
-                result = tool_func(**tool_call.parameters)
-            
-            # 检查工具内部是否报告失败
-            tool_success = True
-            tool_error = None
-            
-            if isinstance(result, dict):
-                tool_success = result.get('success', True)
-                tool_error = result.get('error', None)
-                
-                # 如果工具内部报告失败，记录并抛出异常
-                if not tool_success:
-                    error_msg = tool_error or "工具内部执行失败"
-                    self.logger.warning(f"⚠️ 工具内部报告失败 {tool_call.tool_name}: {error_msg}")
-                    raise Exception(error_msg)
-            
-            self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
-            return ToolResult(
-                call_id=tool_call.call_id or "unknown",
-                success=True,
-                result=result,
-                error=None
-            )
-            
-        except Exception as e:
-            error_msg = str(e)
-            self.logger.warning(f"⚠️ 工具执行失败 {tool_call.tool_name}: {error_msg}")
-            
-            # 记录详细的失败上下文
-            failure_context = {
-                "tool_name": tool_call.tool_name,
-                "parameters": tool_call.parameters,
-                "error": error_msg,
-                "error_type": type(e).__name__,
-                "timestamp": time.time(),
-                "agent_id": self.agent_id,
-                "role": self.role
-            }
-            
-            # 增强错误信息格式
-            detailed_error = await self._enhance_error_with_context(failure_context)
-            failure_context["detailed_error"] = detailed_error
-            
-            self.tool_failure_contexts.append(failure_context)
-            
-            # 获取工具规范和修复建议
-            tool_spec = self.get_tool_specification(tool_call.tool_name)
-            suggested_fix = self.get_suggested_fix(tool_call.tool_name, error_msg)
-            
-            self.logger.error(f"❌ 工具调用失败 {tool_call.tool_name}: {error_msg}")
-            self.logger.info(f"📋 返回工具规范给智能体处理")
-            
-            # 返回给智能体处理，不进行重试
-            return ToolResult(
-                call_id=tool_call.call_id or "unknown",
-                success=False,
-                result=None,
-                error=error_msg,
-                tool_specification=tool_spec,
-                suggested_fix=suggested_fix,
-                context=failure_context
-            )
 
     async def handle_tool_failure(self, tool_result: ToolResult) -> str:
         """智能体处理工具失败，返回给LLM的提示信息"""

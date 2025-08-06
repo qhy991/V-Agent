@@ -96,6 +96,8 @@ class TaskContext:
     workflow_stages: List[Dict[str, Any]] = field(default_factory=list)
     file_operations: List[Dict[str, Any]] = field(default_factory=list)
     execution_timeline: List[Dict[str, Any]] = field(default_factory=list)
+    # 🆕 新增：LLM对话记录
+    llm_conversations: List[Dict[str, Any]] = field(default_factory=list)
     
     def add_conversation_message(self, role: str, content: str, agent_id: str = None, 
                                tool_info: Dict[str, Any] = None, metadata: Dict[str, Any] = None):
@@ -160,6 +162,173 @@ class TaskContext:
             "unique_tools_used": list(set(tool_names)),
             "tool_usage_count": {name: tool_names.count(name) for name in set(tool_names)}
         }
+    
+    def add_tool_execution(self, tool_name: str, parameters: Dict[str, Any], 
+                          agent_id: str, success: bool = True, 
+                          result: Any = None, error: str = None, 
+                          execution_time: float = 0.0):
+        """记录工具调用执行"""
+        tool_execution = {
+            "timestamp": time.time(),
+            "tool_name": tool_name,
+            "parameters": parameters,
+            "agent_id": agent_id,
+            "success": success,
+            "result": str(result)[:500] if result else None,  # 限制结果长度
+            "error": error,
+            "execution_time": execution_time
+        }
+        self.tool_executions.append(tool_execution)
+        
+        # 同时记录到执行时间线
+        self.execution_timeline.append({
+            "timestamp": time.time(),
+            "event_type": "tool_execution",
+            "agent_id": agent_id,
+            "tool_name": tool_name,
+            "success": success,
+            "duration": execution_time
+        })
+    
+    def add_file_operation(self, operation_type: str, file_path: str, 
+                          agent_id: str, success: bool = True, 
+                          file_size: int = 0, error: str = None):
+        """记录文件操作"""
+        file_operation = {
+            "timestamp": time.time(),
+            "operation_type": operation_type,  # read, write, create, delete
+            "file_path": file_path,
+            "agent_id": agent_id,
+            "success": success,
+            "file_size": file_size,
+            "error": error
+        }
+        self.file_operations.append(file_operation)
+        
+        # 同时记录到执行时间线
+        self.execution_timeline.append({
+            "timestamp": time.time(),
+            "event_type": "file_operation",
+            "agent_id": agent_id,
+            "operation_type": operation_type,
+            "file_path": file_path,
+            "success": success
+        })
+    
+    def add_workflow_stage(self, stage_name: str, description: str, 
+                          agent_id: str = None, duration: float = 0.0, 
+                          success: bool = True, metadata: Dict[str, Any] = None):
+        """记录工作流阶段"""
+        stage = {
+            "timestamp": time.time(),
+            "stage_name": stage_name,
+            "description": description,
+            "agent_id": agent_id,
+            "duration": duration,
+            "success": success,
+            "metadata": metadata or {}
+        }
+        self.workflow_stages.append(stage)
+        
+        # 同时记录到执行时间线
+        self.execution_timeline.append({
+            "timestamp": time.time(),
+            "event_type": "workflow_stage",
+            "stage_name": stage_name,
+            "agent_id": agent_id,
+            "success": success,
+            "duration": duration
+        })
+    
+    def update_performance_metrics(self, metrics: Dict[str, Any]):
+        """更新性能指标"""
+        self.performance_metrics.update(metrics)
+    
+    def get_data_collection_summary(self) -> Dict[str, Any]:
+        """获取数据收集摘要"""
+        return {
+            "tool_executions": {
+                "total": len(self.tool_executions),
+                "successful": len([t for t in self.tool_executions if t.get("success", True)]),
+                "failed": len([t for t in self.tool_executions if not t.get("success", True)]),
+                "unique_tools": list(set(t.get("tool_name") for t in self.tool_executions)),
+                "total_execution_time": sum(t.get("execution_time", 0) or 0 for t in self.tool_executions)
+            },
+            "file_operations": {
+                "total": len(self.file_operations),
+                "successful": len([f for f in self.file_operations if f.get("success", True)]),
+                "failed": len([f for f in self.file_operations if not f.get("success", True)]),
+                "operation_types": list(set(f.get("operation_type") for f in self.file_operations)),
+                "total_file_size": sum(f.get("file_size", 0) or 0 for f in self.file_operations)
+            },
+            "workflow_stages": {
+                "total": len(self.workflow_stages),
+                "successful": len([w for w in self.workflow_stages if w.get("success", True)]),
+                "failed": len([w for w in self.workflow_stages if not w.get("success", True)]),
+                "total_duration": sum(w.get("duration", 0) or 0 for w in self.workflow_stages)
+            },
+            "agent_interactions": {
+                "total": len(self.agent_interactions),
+                "unique_agents": list(set(i.get("target_agent_id") for i in self.agent_interactions)),
+                "successful": len([i for i in self.agent_interactions if i.get("success", True)]),
+                "failed": len([i for i in self.agent_interactions if not i.get("success", True)])
+            },
+            "execution_timeline": {
+                "total_events": len(self.execution_timeline),
+                "event_types": list(set(e.get("event_type") for e in self.execution_timeline))
+            },
+            "llm_conversations": {
+                "total": len(self.llm_conversations),
+                "successful": len([l for l in self.llm_conversations if l.get("success", True)]),
+                "failed": len([l for l in self.llm_conversations if not l.get("success", True)]),
+                "unique_agents": list(set(l.get("agent_id") for l in self.llm_conversations)),
+                "unique_models": list(set(l.get("model_name") for l in self.llm_conversations)),
+                "total_duration": sum(l.get("duration", 0) or 0 for l in self.llm_conversations),
+                "first_calls": len([l for l in self.llm_conversations if l.get("is_first_call", False)]),
+                "total_tokens": sum(l.get("total_tokens", 0) or 0 for l in self.llm_conversations)
+            }
+        }
+    
+    def add_llm_conversation(self, agent_id: str, conversation_id: str,
+                           system_prompt: str, user_message: str, 
+                           assistant_response: str, model_name: str = "claude-3.5-sonnet",
+                           duration: float = 0.0, success: bool = True,
+                           error_info: str = None, is_first_call: bool = False,
+                           temperature: float = None, max_tokens: int = None,
+                           prompt_tokens: int = None, completion_tokens: int = None,
+                           total_tokens: int = None):
+        """记录LLM对话"""
+        llm_conversation = {
+            "timestamp": time.time(),
+            "agent_id": agent_id,
+            "conversation_id": conversation_id,
+            "system_prompt": system_prompt[:1000] + ("..." if len(system_prompt) > 1000 else ""),  # 限制长度
+            "user_message": user_message[:2000] + ("..." if len(user_message) > 2000 else ""),  # 限制长度
+            "assistant_response": assistant_response[:2000] + ("..." if len(assistant_response) > 2000 else ""),  # 限制长度
+            "model_name": model_name,
+            "duration": duration,
+            "success": success,
+            "error_info": error_info,
+            "is_first_call": is_first_call,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "prompt_tokens": prompt_tokens,
+            "completion_tokens": completion_tokens,
+            "total_tokens": total_tokens
+        }
+        self.llm_conversations.append(llm_conversation)
+        
+        # 同时记录到执行时间线
+        self.execution_timeline.append({
+            "timestamp": time.time(),
+            "event_type": "llm_conversation",
+            "agent_id": agent_id,
+            "conversation_id": conversation_id,
+            "model_name": model_name,
+            "success": success,
+            "duration": duration,
+            "is_first_call": is_first_call
+        })
 
 
 class LLMCoordinatorAgent(EnhancedBaseAgent):
@@ -1310,14 +1479,57 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 agent_info.total_execution_time += execution_time
                 agent_info.average_response_time = agent_info.total_execution_time / (agent_info.success_count + agent_info.failure_count + 1)
                 
+                # 🔧 检查响应质量，如果太短则请求详细总结
+                enhanced_response = agent_response
+                if len(agent_response.strip()) < 100:
+                    self.logger.info(f"🔍 检测到智能体{agent_id}响应较短({len(agent_response)}字符)，请求详细总结...")
+                    try:
+                        # 请求智能体提供详细的工作总结
+                        summary_request = f"""
+请为刚才完成的任务提供一个详细的工作总结，包括：
+1. 完成的主要工作和操作
+2. 生成或修改的文件及其内容要点
+3. 关键的技术选择和设计考虑
+4. 任务的完成状态和结果
+
+原始简短响应: {agent_response}
+"""
+                        summary_response = await agent.process_with_function_calling(
+                            user_request=summary_request,
+                            conversation_id=f"{task_id}_summary",
+                            max_iterations=1
+                        )
+                        
+                        if summary_response and len(summary_response) > len(agent_response):
+                            enhanced_response = summary_response
+                            self.logger.info(f"✅ 获得更详细的总结({len(summary_response)}字符)")
+                        
+                    except Exception as e:
+                        self.logger.warning(f"⚠️ 获取详细总结失败: {e}")
+                
                 # 更新任务上下文
                 task_context.agent_results[agent_id] = {
-                    "response": agent_response,
+                    "response": enhanced_response,  # 使用增强的响应
+                    "original_response": agent_response,  # 保留原始响应
                     "execution_time": execution_time,
                     "success": True,
                     "design_file_path": design_file_path,  # 🔧 新增：保存设计文件路径
                     "experiment_path": current_experiment_path  # 🔧 新增：保存实验路径
                 }
+                
+                # 🆕 新增：将子智能体的增强响应保存到对话历史
+                task_context.add_conversation_message(
+                    role="assistant",
+                    content=enhanced_response,  # 使用增强的响应
+                    agent_id=agent_id,
+                    metadata={
+                        "type": "agent_response",
+                        "task_id": task_id,
+                        "execution_time": execution_time,
+                        "response_length": len(str(enhanced_response)),
+                        "original_response_length": len(str(agent_response))
+                    }
+                )
                 
                 # 🆕 数据收集用于Gradio可视化 - 智能体交互
                 if hasattr(self, 'current_task_context') and self.current_task_context:
@@ -1342,21 +1554,31 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                         "success": True
                     })
                     
-                    # 记录执行时间线
-                    self.current_task_context.execution_timeline.append({
-                        "timestamp": completion_timestamp,
-                        "event_type": "agent_completion",
-                        "agent_id": agent_id,
-                        "description": f"{agent_id} 成功完成任务分配",
-                        "details": {
-                            "task_type": task_type,
-                            "execution_time": execution_time,
-                            "priority": priority
-                        }
-                    })
+                    # 🆕 记录工作流阶段到TaskContext
+                    if hasattr(self.current_task_context, 'add_workflow_stage'):
+                        self.current_task_context.add_workflow_stage(
+                            stage_name=f"agent_execution_{agent_id}",
+                            description=f"智能体 {agent_id} 执行任务",
+                            agent_id=agent_id,
+                            duration=execution_time,
+                            success=True,
+                            metadata={
+                                "task_type": task_type,
+                                "priority": priority,
+                                "response_length": len(str(agent_response))
+                            }
+                        )
                 
                 # 恢复智能体状态
                 agent_info.status = AgentStatus.IDLE
+                
+                # 🆕 新增：记录任务完成状态
+                task_context.add_conversation_message(
+                    role="system",
+                    content=f"任务协调完成，任务ID: {task_id}",
+                    agent_id=self.agent_id,
+                    metadata={"type": "task_completion", "success": True}
+                )
                 
                 self.logger.info(f"✅ 智能体 {agent_id} 任务执行完成，耗时: {execution_time:.2f}秒")
                 
@@ -3700,6 +3922,19 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                             coordination_result: str) -> Dict[str, Any]:
         """收集最终结果"""
         
+        # 🆕 计算性能指标
+        total_execution_time = time.time() - task_context.start_time
+        performance_metrics = {
+            "total_execution_time": total_execution_time,
+            "average_tool_execution_time": sum(t.get("execution_time", 0) or 0 for t in task_context.tool_executions) / max(len(task_context.tool_executions), 1),
+            "total_file_operations": len(task_context.file_operations),
+            "total_workflow_stages": len(task_context.workflow_stages),
+            "success_rate": len([t for t in task_context.tool_executions if t.get("success", True)]) / max(len(task_context.tool_executions), 1)
+        }
+        
+        # 更新TaskContext的性能指标
+        task_context.update_performance_metrics(performance_metrics)
+        
         return {
             "success": True,
             "task_id": task_context.task_id,
@@ -3708,7 +3943,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "execution_summary": {
                 "total_iterations": task_context.iteration_count,
                 "assigned_agents": list(task_context.agent_results.keys()),
-                "execution_time": time.time() - task_context.start_time
+                "execution_time": total_execution_time
             },
             "conversation_history": task_context.conversation_history,
             # 🆕 包含完整的TaskContext数据用于Gradio可视化
@@ -3718,7 +3953,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "performance_metrics": task_context.performance_metrics,
                 "workflow_stages": task_context.workflow_stages,
                 "file_operations": task_context.file_operations,
-                "execution_timeline": task_context.execution_timeline
+                "execution_timeline": task_context.execution_timeline,
+                "llm_conversations": task_context.llm_conversations,
+                "data_collection_summary": task_context.get_data_collection_summary()
             }
         }
     
@@ -3998,9 +4235,22 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 conversation_id=self.current_conversation_id
             )
             
+            # 构建完整的prompt
+            full_prompt = ""
+            system_prompt = self._build_enhanced_system_prompt()
+            
+            for msg in conversation:
+                if msg["role"] == "system":
+                    system_prompt = msg["content"]  # 覆盖默认system prompt
+                elif msg["role"] == "user":
+                    full_prompt += f"User: {msg['content']}\n\n"
+                elif msg["role"] == "assistant":
+                    full_prompt += f"Assistant: {msg['content']}\n\n"
+            
             # 调用传统LLM客户端
-            response = await self.llm_client.send_prompt_traditional(
-                conversation=conversation,
+            response = await self.llm_client.send_prompt(
+                prompt=full_prompt.strip(),
+                system_prompt=system_prompt,
                 temperature=0.3,
                 max_tokens=4000
             )
