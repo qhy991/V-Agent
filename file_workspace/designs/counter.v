@@ -1,20 +1,14 @@
-module counter (
-    input      clk,
-    input      reset,
-    input      enable,
-    output reg [7:0] count
+module counter(
+    input wire clk,
+    input wire reset,
+    output reg [3:0] count
 );
 
-// 8-bit counter with clock, asynchronous active-low reset, and enable control
-
-always @(posedge clk) begin : counter_proc
-    // Handle asynchronous reset (active low)
-    if (!reset) begin
-        count <= 8'h00;  // Reset the counter to zero
-    end else if (enable) begin
-        count <= count + 1;  // Increment counter when enable is asserted
-    end
-    // No action when enable is low
+always @(posedge clk or posedge reset) begin
+    if (reset)
+        count <= 4'b0;
+    else
+        count <= count + 1;
 end
 
 endmodule

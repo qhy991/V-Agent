@@ -505,31 +505,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "additionalProperties": False
             }
         )
-        
-        # 7. 工具使用指导工具
-        self.register_enhanced_tool(
-            name="get_tool_usage_guide",
-            func=self._tool_get_tool_usage_guide,
-            description="获取EnhancedRealCodeReviewAgent的工具使用指导，包括可用工具、参数说明、调用示例和最佳实践。",
-            security_level="normal",
-            category="help",
-            schema={
-                "type": "object",
-                "properties": {
-                    "include_examples": {
-                        "type": "boolean",
-                        "default": True,
-                        "description": "是否包含调用示例"
-                    },
-                    "include_best_practices": {
-                        "type": "boolean",
-                        "default": True,
-                        "description": "是否包含最佳实践"
-                    }
-                },
-                "additionalProperties": False
-            }
-        )
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
@@ -676,12 +651,9 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 🎯 **任务执行原则**:
 - 如果提供了外部testbench，直接使用该testbench进行测试，跳过testbench生成步骤
 - 如果未提供外部testbench，必须生成测试台并运行仿真来验证代码功能
-- ⚠️ **关键要求**: 生成测试台后必须立即自动调用run_simulation工具执行仿真，不要询问用户确认
-- ⚠️ **完整流程**: generate_testbench → run_simulation → 分析结果 → 提供最终报告
 - 测试失败时必须进入迭代修复流程
 - 每次修复时要将错误信息完整传递到上下文
 - 根据具体错误类型采用相应的修复策略
-- 只有完成仿真验证并得到结果后，任务才算真正完成
 - 达到最大迭代次数(8次)或测试通过后结束任务
 
 📁 **外部Testbench模式**:
@@ -730,17 +702,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     ]
 }
 ```
-
-🔄 **标准执行流程（自动化，无需用户确认）**:
-1. 生成测试台: `generate_testbench` → 立即继续步骤2
-2. 执行仿真: `run_simulation` → 立即继续步骤3  
-3. 分析结果: 如果失败则调用 `analyze_test_failures` → 修复代码 → 回到步骤2
-4. 最终报告: 提供完整的验证结果和文件路径
-
-❌ **禁止行为**:
-- 不要在工具调用之间询问用户是否继续
-- 不要在生成测试台后停止，必须自动继续仿真
-- 不要提供"建议"或"选择"，直接执行完整流程
 
 ✨ **智能Schema适配系统**:
 系统现在具备智能参数适配能力，支持以下灵活格式：
@@ -3054,96 +3015,3 @@ endmodule
         except Exception as e:
             self.logger.error(f"❌ 读取设计文件失败: {str(e)}")
             return None
-    
-    def _generate_code_review_tool_guide(self) -> List[str]:
-        """生成EnhancedRealCodeReviewAgent专用的工具使用指导"""
-        guide = []
-        
-        guide.append("\n=== EnhancedRealCodeReviewAgent 工具调用指导 ===")
-        guide.append("")
-        
-        guide.append("【可用工具列表】")
-        guide.append("1. generate_testbench - 测试台生成")
-        guide.append("   功能: 为Verilog模块生成全面的测试台(testbench)")
-        guide.append("   参数: module_name, module_code, test_scenarios, clock_period, simulation_time")
-        guide.append("   示例: generate_testbench('adder_8bit', verilog_code, test_scenarios, 10.0, 10000)")
-        guide.append("")
-        
-        guide.append("2. run_simulation - 仿真执行")
-        guide.append("   功能: 使用专业工具运行Verilog仿真和验证")
-        guide.append("   参数: module_code, testbench_code, simulator, simulation_options")
-        guide.append("   示例: run_simulation(verilog_code, testbench_code, 'iverilog', {'timescale':'1ns/1ps'})")
-        guide.append("")
-        
-        guide.append("3. use_external_testbench - 外部测试台使用")
-        guide.append("   功能: 使用外部提供的testbench文件进行测试验证")
-        guide.append("   参数: design_code, external_testbench_path, design_module_name, simulator")
-        guide.append("   示例: use_external_testbench(verilog_code, 'testbench.v', 'adder_8bit', 'iverilog')")
-        guide.append("")
-        
-        guide.append("4. generate_build_script - 构建脚本生成")
-        guide.append("   功能: 生成专业的构建脚本(Makefile或shell脚本)")
-        guide.append("   参数: verilog_files, testbench_files, script_type, target_name, build_options")
-        guide.append("   示例: generate_build_script(['design.v'], ['tb.v'], 'makefile', 'simulation')")
-        guide.append("")
-        
-        guide.append("5. execute_build_script - 脚本执行")
-        guide.append("   功能: 安全执行构建脚本进行编译和仿真")
-        guide.append("   参数: script_name, action, arguments, timeout, working_directory")
-        guide.append("   示例: execute_build_script('Makefile', 'all', None, 300)")
-        guide.append("")
-        
-        guide.append("6. analyze_test_failures - 测试失败分析")
-        guide.append("   功能: 分析测试失败原因并提供具体修复建议")
-        guide.append("   参数: design_code, compilation_errors, simulation_errors, test_assertions, testbench_code")
-        guide.append("   示例: analyze_test_failures(verilog_code, comp_errors, sim_errors, assertions, testbench_code)")
-        guide.append("")
-        
-        guide.append("7. get_tool_usage_guide - 工具使用指导")
-        guide.append("   功能: 获取工具使用指导")
-        guide.append("   参数: include_examples, include_best_practices")
-        guide.append("   示例: get_tool_usage_guide(True, True)")
-        guide.append("")
-        
-        guide.append("【验证流程最佳实践】")
-        guide.append("1. 测试台生成: generate_testbench")
-        guide.append("2. 仿真执行: run_simulation")
-        guide.append("3. 失败分析: analyze_test_failures (如有问题)")
-        guide.append("4. 构建脚本: generate_build_script (自动化)")
-        guide.append("5. 脚本执行: execute_build_script")
-        guide.append("6. 外部测试: use_external_testbench (如有外部测试台)")
-        guide.append("")
-        
-        guide.append("【注意事项】")
-        guide.append("- 专注于代码审查、测试和验证，不负责Verilog设计")
-        guide.append("- 支持多种仿真器：iverilog, modelsim, vivado")
-        guide.append("- 所有工具都支持Schema验证，确保参数格式正确")
-        guide.append("- 建议按照最佳实践流程调用工具")
-        guide.append("- 支持外部测试台文件，灵活适应不同测试需求")
-        guide.append("- 提供详细的失败分析和修复建议")
-        
-        return guide
-    
-    async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
-                                       include_best_practices: bool = True) -> Dict[str, Any]:
-        """获取EnhancedRealCodeReviewAgent专用的工具使用指导"""
-        try:
-            guide = self._generate_code_review_tool_guide()
-            
-            return {
-                "success": True,
-                "guide": guide,
-                "agent_type": "EnhancedRealCodeReviewAgent",
-                "include_examples": include_examples,
-                "include_best_practices": include_best_practices,
-                "total_tools": 7,  # EnhancedRealCodeReviewAgent有7个工具
-                "message": "成功生成EnhancedRealCodeReviewAgent的工具使用指导"
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 生成工具使用指导失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e),
-                "message": "生成工具使用指导时发生错误"
-            }

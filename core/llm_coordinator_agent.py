@@ -86,72 +86,6 @@ class TaskContext:
     stage_history: List[Dict[str, Any]] = field(default_factory=list)
     agent_assignments: List[Dict[str, Any]] = field(default_factory=list)
     design_file_path: Optional[str] = None
-    # 🆕 添加实验路径字段，为每个任务创建独立的实验目录
-    experiment_path: Optional[str] = None
-    
-    def add_conversation_message(self, role: str, content: str, agent_id: str = None, 
-                               tool_info: Dict[str, Any] = None, metadata: Dict[str, Any] = None):
-        """添加对话消息到历史记录"""
-        message = {
-            "timestamp": time.time(),
-            "role": role,
-            "content": content,
-            "agent_id": agent_id or "unknown",
-        }
-        
-        if tool_info:
-            message["tool_info"] = tool_info
-        if metadata:
-            message["metadata"] = metadata
-            
-        self.conversation_history.append(message)
-        
-        # 记录日志
-        import logging
-        logger = logging.getLogger("TaskContext")
-        logger.info(f"📝 记录对话消息: {role} - {agent_id or 'unknown'} - 长度: {len(content)}")
-    
-    def get_conversation_summary(self) -> Dict[str, Any]:
-        """获取对话统计摘要"""
-        agents_involved = list(set(msg.get('agent_id', 'unknown') for msg in self.conversation_history))
-        message_types = {}
-        
-        for msg in self.conversation_history:
-            role = msg.get('role', 'unknown')
-            message_types[role] = message_types.get(role, 0) + 1
-        
-        return {
-            "total_messages": len(self.conversation_history),
-            "agents_involved": agents_involved,
-            "message_types": message_types,
-            "conversation_duration": time.time() - self.start_time if self.conversation_history else 0
-        }
-    
-    def get_agent_conversation_count(self, agent_id: str) -> int:
-        """获取特定智能体的对话消息数量"""
-        return len([msg for msg in self.conversation_history if msg.get('agent_id') == agent_id])
-    
-    def get_tool_calls_summary(self) -> Dict[str, Any]:
-        """获取工具调用统计摘要"""
-        tool_calls = [msg for msg in self.conversation_history if msg.get('tool_info')]
-        
-        tool_names = []
-        successful_calls = 0
-        
-        for msg in tool_calls:
-            tool_info = msg.get('tool_info', {})
-            if 'tool_name' in tool_info:
-                tool_names.append(tool_info['tool_name'])
-            if tool_info.get('success', False):
-                successful_calls += 1
-        
-        return {
-            "total_tool_calls": len(tool_calls),
-            "successful_calls": successful_calls,
-            "failure_rate": (len(tool_calls) - successful_calls) / max(len(tool_calls), 1),
-            "unique_tools_used": list(set(tool_names)),
-            "tool_usage_count": {name: tool_names.count(name) for name in set(tool_names)}
-        }
 
 
 class LLMCoordinatorAgent(EnhancedBaseAgent):
@@ -478,31 +412,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "required": ["final_summary", "task_status"]
             }
         )
-        
-        # 8. 新增：工具使用指导工具
-        self.register_enhanced_tool(
-            name="get_tool_usage_guide",
-            func=self._tool_get_tool_usage_guide,
-            description="获取LLMCoordinatorAgent的工具使用指导，包括可用工具、参数说明、调用示例和最佳实践。",
-            security_level="normal",
-            category="help",
-            schema={
-                "type": "object",
-                "properties": {
-                    "include_examples": {
-                        "type": "boolean",
-                        "default": True,
-                        "description": "是否包含调用示例"
-                    },
-                    "include_best_practices": {
-                        "type": "boolean",
-                        "default": True,
-                        "description": "是否包含最佳实践"
-                    }
-                },
-                "additionalProperties": False
-            }
-        )
     
     def _build_enhanced_system_prompt(self) -> str:
         """构建支持动态决策和多智能体协作的系统提示词"""
@@ -608,45 +517,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 }}
 ```
 
-## ✅ 正确示例 4 - 分析智能体执行结果
-```json
-{{
-    "tool_calls": [
-        {{
-            "tool_name": "analyze_agent_result",
-            "parameters": {{
-                "agent_id": "enhanced_real_verilog_agent",
-                "result": {{
-                    "success": true,
-                    "generated_files": ["counter.v"],
-                    "quality_score": 85
-                }},
-                "quality_threshold": 80.0
-            }}
-        }}
-    ]
-}}
-```
-
-## ✅ 正确示例 5 - 检查任务完成状态
-```json
-{{
-    "tool_calls": [
-        {{
-            "tool_name": "check_task_completion",
-            "parameters": {{
-                "task_id": "task_001",
-                "all_results": {{
-                    "design": {{"success": true, "files": ["counter.v"]}},
-                    "verification": {{"success": true, "files": ["counter_tb.v"]}}
-                }},
-                "original_requirements": "设计一个名为counter的Verilog模块并验证"
-            }}
-        }}
-    ]
-}}
-```
-
 ## ❌❌❌ 错误示例 - 绝对禁止！！！
 ```json
 {{
@@ -673,88 +543,22 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 **主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
 **任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
 
-# 🎯 完整协调流程 (必须严格遵守)
-
-## 📋 标准工作流程
+# 📋 标准工作流程
 1. **第一步**: 调用 `identify_task_type` 识别任务类型
-2. **第二步**: 调用 `recommend_agent` 推荐最合适的智能体
-3. **第三步**: 调用 `assign_task_to_agent` 分配任务给智能体
-4. **第四步**: 调用 `analyze_agent_result` 分析智能体执行结果
-5. **第五步**: 根据分析结果决定下一步行动
-6. **第六步**: 调用 `check_task_completion` 检查任务完成状态
-7. **第七步**: 调用 `provide_final_answer` 提供最终答案
+2. **第二步**: 根据识别结果，调用 `assign_task_to_agent` 分配任务
+3. **第三步**: 调用 `analyze_agent_result` 分析执行结果
+4. **第四步**: 根据需要继续分配任务或调用 `provide_final_answer`
 
-## 🔄 智能体协作逻辑 (关键！！！)
-
-### 🎯 设计任务协作流程
-**当用户要求设计Verilog模块时**:
-1. **第一阶段**: 分配给 `enhanced_real_verilog_agent` 进行设计
-2. **分析结果**: 调用 `analyze_agent_result` 分析设计结果
-3. **第二阶段**: 如果设计成功，必须分配给 `enhanced_real_code_review_agent` 进行验证
-4. **最终检查**: 调用 `check_task_completion` 确认设计和验证都完成
-
-### 🚨 重要协作规则
-- **不要重复任务识别**: 一旦开始执行，不要重新调用 `identify_task_type`
-- **必须分析结果**: 每个智能体执行后，必须调用 `analyze_agent_result`
-- **自动继续验证**: 如果设计完成且质量合格，必须自动分配给验证智能体
-- **完整流程**: 只有完成设计和验证两个阶段才算任务完成
-
-### 📊 结果分析决策逻辑
-**analyze_agent_result 返回结果分析后**:
-- **如果质量分数 >= 80**: 继续下一步（分配给验证智能体或完成任务）
-- **如果质量分数 < 80**: 重新分配给同一智能体进行改进
-- **如果设计完成且需要验证**: 必须分配给 `enhanced_real_code_review_agent`
-- **如果验证完成**: 调用 `check_task_completion` 检查整体完成状态
-
-### 🔄 多智能体协作模式
+# 🔄 多智能体协作模式
 - **设计阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_verilog_agent
 - **验证阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_code_review_agent
 - **结果分析**: 使用 analyze_agent_result 分析每个阶段的结果
-- **完成检查**: 使用 check_task_completion 确认整体任务完成
 
 # 🚨 关键提醒
 1. **绝对不要**在 tool_name 字段中使用智能体名称
 2. **必须使用** assign_task_to_agent 工具来调用智能体
 3. **agent_id 参数**才是指定智能体的正确位置
 4. **所有工具调用**都必须是有效的JSON格式
-
-# 🎯 决策逻辑指导 (重要！！！)
-
-## 📊 智能体执行结果分析后的决策
-**当 analyze_agent_result 返回结果后，根据以下逻辑决定下一步**:
-
-### 🔍 分析结果质量分数
-- **质量分数 >= 80**: 继续下一步流程
-- **质量分数 < 80**: 重新分配给同一智能体进行改进
-
-### 🎯 具体决策规则
-1. **如果 Verilog设计智能体完成且质量 >= 80**:
-   - 必须调用 `assign_task_to_agent` 分配给 `enhanced_real_code_review_agent`
-   - 任务描述: "审查已生成的Verilog代码，生成测试台并执行仿真验证"
-
-2. **如果代码审查智能体完成且质量 >= 80**:
-   - 调用 `check_task_completion` 检查整体任务完成状态
-   - 如果完成，调用 `provide_final_answer` 提供最终答案
-
-3. **如果任何智能体质量分数 < 80**:
-   - 重新分配给同一智能体，要求改进
-   - 在任务描述中明确指出需要改进的问题
-
-4. **不要重复调用**:
-   - 不要重新调用 `identify_task_type`
-   - 不要重新调用 `recommend_agent`
-   - 专注于当前阶段的执行和结果分析
-
-## 🔄 完整流程示例
-**用户请求**: "设计一个名为counter的Verilog模块"
-1. `identify_task_type` → 识别为设计任务
-2. `recommend_agent` → 推荐 enhanced_real_verilog_agent
-3. `assign_task_to_agent` → 分配给 enhanced_real_verilog_agent
-4. `analyze_agent_result` → 分析设计结果
-5. `assign_task_to_agent` → 分配给 enhanced_real_code_review_agent (如果设计成功)
-6. `analyze_agent_result` → 分析验证结果
-7. `check_task_completion` → 检查整体完成状态
-8. `provide_final_answer` → 提供最终答案
 
 # 可用工具
 {tools_json}
@@ -775,6 +579,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 }}
 ```
 
+⚡ **立即开始**: 收到用户请求后，立即调用 `identify_task_type` 工具开始任务分析，不要生成任何其他内容。
 """
     
     async def register_agent(self, agent: EnhancedBaseAgent):
@@ -810,68 +615,23 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 生成任务ID
         task_id = f"task_{int(time.time())}"
         
-        # 🆕 创建独立的实验目录
-        from core.experiment_manager import ExperimentManager
-        experiment_manager = ExperimentManager()
-        
-        # 从用户请求中提取实验名称（取前20个字符作为实验名）
-        experiment_name = "".join(c for c in user_request[:20] if c.isalnum() or c in ['_', '-']).strip() or "experiment"
-        
-        # 创建实验
-        experiment_info = experiment_manager.create_experiment(
-            experiment_name=experiment_name,
-            task_description=user_request,
-            metadata={
-                "task_id": task_id,
-                "created_by": "llm_coordinator_agent",
-                "conversation_id": conversation_id
-            }
-        )
-        
-        # 创建任务上下文，包含实验路径
+        # 创建任务上下文
         task_context = TaskContext(
             task_id=task_id,
             original_request=user_request,
-            max_iterations=max_iterations,
-            experiment_path=experiment_info.workspace_path
-        )
-        
-        # 🆕 记录初始用户请求到对话历史
-        task_context.add_conversation_message(
-            role="user",
-            content=user_request,
-            agent_id="user",
-            metadata={"task_id": task_id, "conversation_id": conversation_id}
+            max_iterations=max_iterations
         )
         
         # 如果提供了外部testbench，添加到任务上下文
         if external_testbench_path:
             task_context.external_testbench_path = external_testbench_path
             self.logger.info(f"📁 使用外部testbench: {external_testbench_path}")
-            # 记录外部testbench信息
-            task_context.add_conversation_message(
-                role="system",
-                content=f"使用外部testbench文件: {external_testbench_path}",
-                agent_id=self.agent_id,
-                metadata={"type": "external_testbench"}
-            )
         
         self.active_tasks[task_id] = task_context
-        
-        # 🆕 设置任务上下文到当前实例，用于后续对话记录
-        self.current_task_context = task_context
         
         try:
             # 构建协调任务
             coordination_task = self._build_coordination_task(user_request, task_context)
-            
-            # 🆕 记录系统提示（协调任务）到对话历史
-            task_context.add_conversation_message(
-                role="system",
-                content=coordination_task,
-                agent_id=self.agent_id,
-                metadata={"type": "coordination_task", "task_stage": "initial"}
-            )
             
             # 使用Function Calling执行协调
             result = await self.process_with_function_calling(
@@ -881,14 +641,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 preserve_context=True,
                 enable_self_continuation=True,
                 max_self_iterations=3
-            )
-            
-            # 🆕 记录协调器的响应到对话历史
-            task_context.add_conversation_message(
-                role="assistant",
-                content=result,
-                agent_id=self.agent_id,
-                metadata={"type": "coordination_response", "task_stage": "initial"}
             )
             
             # 🔍 检查是否实际调用了工具
@@ -922,35 +674,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                         }
                     }
             
-            # 🆕 收集智能体对话历史到任务上下文
-            await self._collect_agent_conversations(task_context)
-            
             # 收集最终结果
             final_result = self._collect_final_result(task_context, result)
             
-            # 🆕 记录任务完成
-            task_context.add_conversation_message(
-                role="system",
-                content=f"任务协调完成，任务ID: {task_id}",
-                agent_id=self.agent_id,
-                metadata={"type": "task_completion", "success": True}
-            )
-            
-            self.logger.info(f"✅ 任务协调完成: {task_id}, 对话历史长度: {len(task_context.conversation_history)}")
+            self.logger.info(f"✅ 任务协调完成: {task_id}")
             return final_result
             
         except Exception as e:
             self.logger.error(f"❌ 任务协调失败: {str(e)}")
-            
-            # 🆕 记录错误到对话历史
-            if 'task_context' in locals():
-                task_context.add_conversation_message(
-                    role="error",
-                    content=f"任务协调失败: {str(e)}",
-                    agent_id=self.agent_id,
-                    metadata={"type": "task_error", "error_type": type(e).__name__}
-                )
-            
             return {
                 "success": False,
                 "error": str(e),
@@ -984,19 +715,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         # Escape quotes in user_request
         escaped_user_request = user_request.replace('"', '\\"')
-        
-        # 获取LLMCoordinatorAgent的工具使用指导（简化版）
-        coordinator_guide_simple = """
-**🛠️ 正确的工具调用方式**:
-1. identify_task_type - 识别任务类型
-2. recommend_agent - 推荐智能体
-3. assign_task_to_agent - 分配任务给智能体
-
-⚠️ **严禁直接调用智能体名称作为工具**:
-❌ enhanced_real_verilog_agent
-❌ enhanced_real_code_review_agent
-✅ 使用 assign_task_to_agent 工具来分配任务
-"""
 
         return f"""
 # 🚨🚨🚨 强制指令 🚨🚨🚨
@@ -1005,7 +723,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 **用户需求**:
 {user_request}
 
-{coordinator_guide_simple}
+# 🚨 绝对禁止以下工具名称 🚨
+❌ enhanced_real_verilog_agent
+❌ enhanced_real_code_review_agent  
+❌ 任何智能体名称
 
 # ✅ 唯一正确的工具调用格式:
 ```json
@@ -1058,9 +779,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 说明: 用户已提供testbench文件，审查智能体应直接使用此文件进行测试，无需生成新的testbench
 - 工作模式: 审查智能体专注于代码审查、测试执行和问题修复，跳过testbench生成步骤"""
 
-        # 获取LLMCoordinatorAgent的工具使用指导
-        coordinator_tool_guide = self._get_agent_specific_tool_guide("llm_coordinator_agent")
-
         return f"""
 🧠 协调任务
 
@@ -1079,14 +797,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 开始时间: {datetime.fromtimestamp(task_context.start_time).strftime('%Y-%m-%d %H:%M:%S')}
 - 已分配智能体: {task_context.assigned_agent or '无'}
 - 执行结果: {len(task_context.agent_results)} 个结果
-
-{coordinator_tool_guide}
-
-**执行要求**:
-1. 严格按照上述工具使用指导进行操作
-2. 绝对禁止直接调用智能体名称作为工具
-3. 必须使用 assign_task_to_agent 工具来分配任务
-4. 按照推荐的协调流程执行
 
 请根据用户需求和可用智能体能力，制定最优的执行策略并开始协调。
 """
@@ -1191,19 +901,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 agent_conversation_summary = agent.get_conversation_summary() if hasattr(agent, 'get_conversation_summary') else {}
                 self.logger.info(f"📋 调用前 agent 对话状态: {agent_conversation_summary}")
                 
-                # 🆕 设置任务上下文给智能体，用于对话历史记录
-                if hasattr(agent, 'set_task_context'):
-                    agent.set_task_context(task_context)
-                    self.logger.info(f"🔗 已设置任务上下文给智能体 {agent_id}")
-                
-                # 🆕 记录任务分配到对话历史
-                task_context.add_conversation_message(
-                    role="system",
-                    content=f"分配任务给智能体 {agent_id}: {task_description}",
-                    agent_id=self.agent_id,
-                    metadata={"type": "task_assignment", "target_agent": agent_id}
-                )
-                
                 agent_response = await agent.process_with_function_calling(
                     user_request=enhanced_task,
                     conversation_id=task_id,
@@ -1304,19 +1001,16 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         if task_context and hasattr(task_context, 'experiment_path') and task_context.experiment_path:
             current_experiment_path = task_context.experiment_path
-            self.logger.info(f"🧪 使用任务上下文中的实验路径: {current_experiment_path}")
         else:
             # 尝试从活跃任务中获取实验路径
             for task in self.active_tasks.values():
                 if hasattr(task, 'experiment_path') and task.experiment_path:
                     current_experiment_path = task.experiment_path
-                    self.logger.info(f"🧪 从活跃任务中获取实验路径: {current_experiment_path}")
                     break
             
             # 如果没有找到，则使用默认的文件工作空间路径
             if not current_experiment_path:
                 current_experiment_path = "./file_workspace"
-                self.logger.warning(f"⚠️ 没有找到实验路径，使用默认路径: {current_experiment_path}")
         
         if current_experiment_path:
             experiment_path_section = f"""
@@ -1334,9 +1028,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 3. 文档和报告保存到reports目录
 4. 必须在任务总结中返回所有生成文件的完整路径
 5. 文件命名应该清晰，避免重复和冲突"""
-        
-        # 根据智能体类型添加专用的工具使用指导
-        agent_tool_guide = self._get_agent_specific_tool_guide(task_context.assigned_agent if task_context else "unknown")
         
         # 根据include_full_context参数决定是否包含完整上下文
         if include_full_context:
@@ -1361,17 +1052,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 {design_file_section}
 {experiment_path_section}
 
-{agent_tool_guide}
-
 **执行要求**:
 1. 仔细分析任务需求
-2. 根据上述工具指导选择合适的工具
-3. 生成高质量的代码并保存为文件
-4. 提供详细的说明文档
-5. 确保代码可读性和可维护性
-6. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
+2. 生成高质量的代码并保存为文件
+3. 提供详细的说明文档
+4. 确保代码可读性和可维护性
+5. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
 
-请开始执行任务，严格按照工具使用指导进行操作。
+请开始执行任务。
 """
         else:
             # 简化版本，只包含核心任务描述
@@ -1381,425 +1069,17 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 **当前任务**: {task_description}
 {design_file_section}
 
-{agent_tool_guide}
-
 **执行要求**:
 1. 继续之前的任务执行
-2. 根据上述工具指导选择合适的工具
-3. 生成高质量的代码并保存为文件
-4. 提供详细的说明文档
-5. 确保代码可读性和可维护性
-6. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
+2. 生成高质量的代码并保存为文件
+3. 提供详细的说明文档
+4. 确保代码可读性和可维护性
+5. **强制要求**: 在任务完成后，在响应中明确列出所有生成文件的路径
 
-请继续执行任务，严格按照工具使用指导进行操作。
+请继续执行任务。
 """
         
         return enhanced_task
-    
-    def _get_agent_specific_tool_guide(self, agent_id: str) -> str:
-        """根据智能体类型获取专用的工具使用指导"""
-        
-        if agent_id == "enhanced_real_verilog_agent":
-            return """
-**🛠️ EnhancedRealVerilogAgent 专用工具使用指导**
-
-📋 **可用工具列表**:
-
-### 1. **analyze_design_requirements** - 设计需求分析
-   **功能**: 分析和解析Verilog设计需求，提取关键设计参数
-   **参数**:
-   - `requirements` (必填, string): 设计需求描述，包含功能规格和约束条件
-   - `design_type` (可选, string): 设计类型，可选值: "combinational", "sequential", "mixed", "custom"，默认"mixed"
-   - `complexity_level` (可选, string): 设计复杂度级别，可选值: "simple", "medium", "complex", "advanced"，默认"medium"
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "analyze_design_requirements",
-       "parameters": {
-           "requirements": "设计一个名为counter的Verilog模块",
-           "design_type": "sequential",
-           "complexity_level": "medium"
-       }
-   }
-   ```
-
-### 2. **generate_verilog_code** - Verilog代码生成
-   **功能**: 生成高质量的Verilog HDL代码
-   **参数**:
-   - `module_name` (必填, string): 模块名称
-   - `requirements` (必填, string): 设计需求和功能描述
-   - `input_ports` (必填, array): 输入端口列表，格式: [{"name": "端口名", "width": 位宽, "type": "类型"}]
-   - `output_ports` (必填, array): 输出端口列表，格式同上
-   - `coding_style` (可选, string): 编码风格，可选值: "rtl", "behavioral", "structural"，默认"rtl"
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "generate_verilog_code",
-       "parameters": {
-           "module_name": "counter",
-           "requirements": "4位计数器，支持复位和使能",
-           "input_ports": [
-               {"name": "clk", "width": 1, "type": "input"},
-               {"name": "rst_n", "width": 1, "type": "input"},
-               {"name": "en", "width": 1, "type": "input"}
-           ],
-           "output_ports": [
-               {"name": "count", "width": 4, "type": "output"}
-           ],
-           "coding_style": "rtl"
-       }
-   }
-   ```
-
-### 3. **analyze_code_quality** - 代码质量分析
-   **功能**: 分析Verilog代码质量，提供详细的评估报告
-   **参数**:
-   - `verilog_code` (必填, string): 要分析的Verilog代码
-   - `module_name` (必填, string): 模块名称
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "analyze_code_quality",
-       "parameters": {
-           "verilog_code": "module counter(...); ... endmodule",
-           "module_name": "counter"
-       }
-   }
-   ```
-
-### 5. **optimize_verilog_code** - 代码优化
-   **功能**: 优化Verilog代码，支持面积、速度、功耗等优化目标
-   **参数**:
-   - `verilog_code` (必填, string): 要优化的Verilog代码
-   - `optimization_target` (必填, string): 优化目标，可选值: "area", "speed", "power", "timing"
-   - `module_name` (必填, string): 模块名称
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "optimize_verilog_code",
-       "parameters": {
-           "verilog_code": "module counter(...); ... endmodule",
-           "optimization_target": "area",
-           "module_name": "counter"
-       }
-   }
-   ```
-
-⭐ **推荐执行流程**:
-1. analyze_design_requirements → 2. generate_verilog_code → 3. analyze_code_quality 
-→ 4. optimize_verilog_code (可选)
-
-💡 **重要提示**: 专注于Verilog HDL设计，不负责测试台生成
-"""
-
-        elif agent_id == "enhanced_real_code_review_agent":
-            return """
-**🛠️ EnhancedRealCodeReviewAgent 专用工具使用指导**
-
-📋 **可用工具列表**:
-
-### 1. **generate_testbench** - 测试台生成
-   **功能**: 为Verilog模块生成全面的测试台(testbench)
-   **参数**:
-   - `module_name` (必填, string): 目标模块名称
-   - `module_code` (必填, string): 目标模块代码 (也可使用 `code`, `design_code`)
-   - `test_scenarios` (可选, array): 测试场景列表 (也可使用 `test_cases`)
-   - `clock_period` (可选, number): 时钟周期(ns)，范围0.1-1000.0，默认10.0
-   - `simulation_time` (可选, integer): 仿真时间，范围100-1000000，默认10000
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "generate_testbench",
-       "parameters": {
-           "module_name": "counter",
-           "module_code": "module counter(...); ... endmodule",
-           "test_scenarios": [
-               {"name": "basic_test", "description": "基本功能验证"},
-               {"name": "reset_test", "description": "复位功能测试"}
-           ],
-           "clock_period": 10.0,
-           "simulation_time": 10000
-       }
-   }
-   ```
-
-### 2. **run_simulation** - 仿真执行
-   **功能**: 使用专业工具运行Verilog仿真和验证
-   **参数**:
-   - `module_file` 或 `module_code` (必填): 模块文件路径或代码内容
-   - `testbench_file` 或 `testbench_code` (必填): 测试台文件路径或代码内容
-   - `simulator` (可选, string): 仿真器类型，可选值: "iverilog", "modelsim", "vivado", "auto"，默认"iverilog"
-   - `simulation_options` (可选, object): 仿真选项配置
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "run_simulation",
-       "parameters": {
-           "module_file": "counter.v",
-           "testbench_file": "testbench_counter.v",
-           "simulator": "iverilog",
-           "simulation_options": {"timescale": "1ns/1ps"}
-       }
-   }
-   ```
-
-### 3. **use_external_testbench** - 外部测试台使用
-   **功能**: 使用外部提供的testbench文件进行测试验证
-   **参数**:
-   - `design_code` (必填, string): 设计代码
-   - `external_testbench_path` (必填, string): 外部testbench文件路径
-   - `design_module_name` (必填, string): 设计模块名称
-   - `simulator` (可选, string): 仿真器类型，默认"iverilog"
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "use_external_testbench",
-       "parameters": {
-           "design_code": "module counter(...); ... endmodule",
-           "external_testbench_path": "./testbenches/counter_tb.v",
-           "design_module_name": "counter",
-           "simulator": "iverilog"
-       }
-   }
-   ```
-
-### 4. **generate_build_script** - 构建脚本生成
-   **功能**: 生成专业的构建脚本(Makefile或shell脚本)
-   **参数**:
-   - `verilog_files` (必填, array): Verilog文件列表 (也可使用 `design_files`)
-   - `testbench_files` (必填, array): 测试台文件列表
-   - `script_type` (可选, string): 脚本类型，可选值: "makefile", "bash", "tcl", "python"，默认"makefile"
-   - `target_name` (可选, string): 目标名称，默认"simulation"
-   - `build_options` (可选, object): 构建选项配置
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "generate_build_script",
-       "parameters": {
-           "verilog_files": ["counter.v"],
-           "testbench_files": ["testbench_counter.v"],
-           "script_type": "makefile",
-           "target_name": "simulation",
-           "build_options": {"simulator": "iverilog"}
-       }
-   }
-   ```
-
-### 5. **execute_build_script** - 脚本执行
-   **功能**: 安全执行构建脚本进行编译和仿真
-   **参数**:
-   - `script_name` (必填, string): 脚本文件名
-   - `action` (可选, string): 执行动作，可选值: "all", "compile", "simulate", "clean"，默认"all"
-   - `arguments` (可选, array): 附加参数列表
-   - `timeout` (可选, integer): 超时时间(秒)，默认300
-   - `working_directory` (可选, string): 工作目录
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "execute_build_script",
-       "parameters": {
-           "script_name": "Makefile",
-           "action": "all",
-           "timeout": 300,
-           "working_directory": "./file_workspace"
-       }
-   }
-   ```
-
-### 6. **analyze_test_failures** - 测试失败分析
-   **功能**: 分析测试失败原因并提供具体修复建议
-   **参数**:
-   - `design_code` (必填, string): 需要分析的设计代码
-   - `compilation_errors` (可选, string): 编译错误输出
-   - `simulation_errors` (可选, string): 仿真错误输出
-   - `test_assertions` (可选, string): 测试断言失败信息
-   - `testbench_code` (可选, string): 测试台代码
-   - `iteration_number` (可选, integer): 当前TDD迭代次数
-   - `previous_fixes` (可选, array): 之前尝试的修复方法
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "analyze_test_failures",
-       "parameters": {
-           "design_code": "module counter(...); ... endmodule",
-           "compilation_errors": "Error: undefined signal 'clk'",
-           "simulation_errors": "simulation failed at time 100ns",
-           "testbench_code": "module testbench; ... endmodule",
-           "iteration_number": 1
-       }
-   }
-   ```
-
-⭐ **推荐执行流程**:
-1. generate_testbench → 2. run_simulation → 3. analyze_test_failures (如有问题) 
-→ 4. generate_build_script → 5. execute_build_script → 6. use_external_testbench (如有外部测试台)
-
-💡 **重要提示**: 专注于代码审查、测试和验证，不负责Verilog设计
-"""
-
-        elif agent_id in ["llm_coordinator_agent", "coordinator", "unknown"]:
-            # 对于LLMCoordinatorAgent或其他agent，返回协调工具指导
-            return """
-**🛠️ LLMCoordinatorAgent 协调工具使用指导**
-
-📋 **可用工具列表**:
-
-### 1. **assign_task_to_agent** - 智能任务分配
-   **功能**: 将任务分配给最合适的智能体
-   **参数**:
-   - `agent_id` (必填, string): 智能体ID，可选值: "enhanced_real_verilog_agent", "enhanced_real_code_review_agent"
-   - `task_description` (必填, string): 详细的任务描述
-   - `expected_output` (可选, string): 期望的输出格式，默认空字符串
-   - `task_type` (可选, string): 任务类型，可选值: "design", "review", "composite"，默认"design"
-   - `priority` (可选, string): 任务优先级，可选值: "low", "medium", "high"，默认"medium"
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "assign_task_to_agent",
-       "parameters": {
-           "agent_id": "enhanced_real_verilog_agent",
-           "task_description": "设计一个名为counter的Verilog模块",
-           "expected_output": "生成完整的Verilog代码文件",
-           "task_type": "design",
-           "priority": "medium"
-       }
-   }
-   ```
-
-### 2. **analyze_agent_result** - 结果质量分析
-   **功能**: 分析智能体执行结果的质量和完整性
-   **参数**:
-   - `agent_id` (必填, string): 智能体ID
-   - `result` (必填, object): 智能体返回的结果数据
-   - `task_context` (可选, object): 任务上下文信息，默认{}
-   - `quality_threshold` (可选, number): 质量阈值，范围0-100，默认80.0
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "analyze_agent_result",
-       "parameters": {
-           "agent_id": "enhanced_real_verilog_agent",
-           "result": {"status": "success", "generated_files": ["counter.v"]},
-           "task_context": {"task_id": "task_001"},
-           "quality_threshold": 80.0
-       }
-   }
-   ```
-
-### 3. **check_task_completion** - 任务完成检查
-   **功能**: 检查任务是否已完成并符合要求
-   **参数**:
-   - `task_id` (必填, string): 任务标识符
-   - `all_results` (必填, array): 所有相关结果列表
-   - `original_requirements` (必填, string): 原始需求描述
-   - `completion_criteria` (可选, object): 完成标准，默认{}
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "check_task_completion",
-       "parameters": {
-           "task_id": "task_001",
-           "all_results": [{"status": "success", "files": ["counter.v"]}],
-           "original_requirements": "设计一个名为counter的Verilog模块",
-           "completion_criteria": {"require_testbench": true}
-       }
-   }
-   ```
-
-### 4. **query_agent_status** - 智能体状态查询
-   **功能**: 查询智能体的当前状态和性能信息
-   **参数**:
-   - `agent_id` (必填, string): 智能体ID
-   - `include_performance` (可选, boolean): 是否包含性能数据，默认true
-   - `include_history` (可选, boolean): 是否包含历史记录，默认false
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "query_agent_status",
-       "parameters": {
-           "agent_id": "enhanced_real_verilog_agent",
-           "include_performance": true,
-           "include_history": false
-       }
-   }
-   ```
-
-### 5. **identify_task_type** - 任务类型识别
-   **功能**: 识别和分类用户任务的类型
-   **参数**:
-   - `user_request` (必填, string): 用户的原始请求
-   - `context` (可选, object): 上下文信息，默认{}
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "identify_task_type",
-       "parameters": {
-           "user_request": "设计一个名为counter的Verilog模块",
-           "context": {}
-       }
-   }
-   ```
-
-### 6. **recommend_agent** - 智能体推荐
-   **功能**: 基于任务类型推荐最合适的智能体
-   **参数**:
-   - `task_type` (必填, string): 任务类型
-   - `task_description` (必填, string): 任务描述
-   - `priority` (可选, string): 优先级，可选值: "low", "medium", "high"，默认"medium"
-   - `constraints` (可选, object): 约束条件，默认null
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "recommend_agent",
-       "parameters": {
-           "task_type": "design",
-           "task_description": "设计一个名为counter的Verilog模块",
-           "priority": "medium",
-           "constraints": {}
-       }
-   }
-   ```
-
-### 7. **provide_final_answer** - 最终答案提供
-   **功能**: 提供任务执行的最终答案和总结
-   **参数**:
-   - `final_summary` (必填, string): 最终总结
-   - `task_status` (必填, string): 任务状态，可选值: "success", "partial", "failed"
-   - `results_summary` (可选, object): 结果摘要，默认{}
-   **调用示例**:
-   ```json
-   {
-       "tool_name": "provide_final_answer",
-       "parameters": {
-           "final_summary": "成功设计并生成了counter模块",
-           "task_status": "success",
-           "results_summary": {"generated_files": ["counter.v", "counter_tb.v"]}
-       }
-   }
-   ```
-
-⭐ **推荐协调流程**:
-1. identify_task_type → 2. recommend_agent → 3. assign_task_to_agent 
-→ 4. analyze_agent_result → 5. check_task_completion → 6. provide_final_answer
-
-💡 **重要提示**: 作为协调者，主要负责任务分配和结果分析
-"""
-        
-        else:
-            # 未知agent类型，返回通用指导
-            return """
-**🛠️ 通用工具使用指导**
-
-⚠️ **重要提示**: 未识别的智能体类型，请确保使用正确的工具调用方式。
-
-📋 **基本原则**:
-- 严格按照工具的JSON schema调用
-- 确保参数类型和格式正确
-- 避免调用不存在的工具
-- 详细阅读工具描述和参数说明
-
-如需获取具体的工具使用指导，请调用 get_tool_usage_guide 工具。
-"""
     
     async def _tool_analyze_agent_result(self, agent_id: str, result: Dict[str, Any],
                                        task_context: Dict[str, Any] = None,
@@ -2580,7 +1860,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             return "continue_iteration"
     
     def _generate_improvement_suggestions(self, analysis: Dict[str, Any], agent_id: str) -> List[str]:
-        """生成改进建议 - 包含具体的智能体协作建议和工具调用指导"""
+        """生成改进建议 - 包含具体的智能体协作建议"""
         suggestions = []
         
         # 获取验证结果
@@ -2598,15 +1878,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             if "测试台文件" in missing_files or "仿真验证执行" in missing_executions:
                 suggestions.append("建议调用 enhanced_real_code_review_agent 生成测试台并执行仿真")
-                suggestions.append("  - 可用工具: generate_testbench, run_simulation, use_external_testbench")
-                suggestions.append("  - 工具调用示例: generate_testbench(module_name='xxx', module_code='...')")
-                suggestions.append("  - 工具调用示例: run_simulation(module_code='...', testbench_code='...')")
             
             if "Verilog模块文件" in missing_files:
                 suggestions.append("建议重新调用 enhanced_real_verilog_agent 生成完整的Verilog模块")
-                suggestions.append("  - 可用工具: analyze_design_requirements, generate_verilog_code, search_existing_modules")
-                suggestions.append("  - 工具调用示例: analyze_design_requirements(requirements='...')")
-                suggestions.append("  - 工具调用示例: generate_verilog_code(module_name='xxx', requirements='...')")
             
             # 基于测试流程缺失步骤的建议
             if missing_testing_steps:
@@ -2616,13 +1890,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                     suggestions.append("需要设计全面的测试用例，包括功能测试、边界测试和异常测试")
                 if "测试台生成" in missing_testing_steps:
                     suggestions.append("需要生成完整的测试台文件，包含测试激励和结果验证")
-                    suggestions.append("  - 使用 enhanced_real_code_review_agent 的 generate_testbench 工具")
                 if "仿真执行" in missing_testing_steps:
                     suggestions.append("需要实际执行仿真验证，并提供仿真结果和波形分析")
-                    suggestions.append("  - 使用 enhanced_real_code_review_agent 的 run_simulation 工具")
                 if "测试结果分析" in missing_testing_steps:
                     suggestions.append("需要对测试结果进行详细分析，验证功能正确性和时序正确性")
-                    suggestions.append("  - 使用 enhanced_real_code_review_agent 的 analyze_test_failures 工具")
                 if "覆盖率分析" in missing_testing_steps:
                     suggestions.append("需要进行代码覆盖率分析，确保测试的完整性")
                 if "测试报告生成" in missing_testing_steps:
@@ -2640,136 +1911,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             suggestions.append(f"测试流程完整性不足 ({workflow_completeness:.1f}%)，需要完善测试流程")
         elif workflow_completeness < 80:
             suggestions.append(f"测试流程基本完整 ({workflow_completeness:.1f}%)，但仍有改进空间")
-        
-        # 添加智能体工具调用指导
-        suggestions.append("\n=== 智能体工具调用指导 ===")
-        suggestions.append("LLMCoordinatorAgent 可用工具:")
-        suggestions.append("  - assign_task_to_agent: 分配任务给指定智能体")
-        suggestions.append("    调用示例: assign_task_to_agent(agent_id='enhanced_real_verilog_agent', task_description='...')")
-        suggestions.append("  - analyze_agent_result: 分析智能体执行结果")
-        suggestions.append("    调用示例: analyze_agent_result(agent_id='xxx', result={...}, quality_threshold=80)")
-        suggestions.append("  - check_task_completion: 检查任务完成状态")
-        suggestions.append("    调用示例: check_task_completion(task_id='xxx', all_results={...}, original_requirements='...')")
-        suggestions.append("  - query_agent_status: 查询智能体状态")
-        suggestions.append("    调用示例: query_agent_status(agent_id='enhanced_real_verilog_agent', include_performance=True)")
-        suggestions.append("  - identify_task_type: 识别任务类型")
-        suggestions.append("    调用示例: identify_task_type(user_request='...', context={...})")
-        suggestions.append("  - recommend_agent: 推荐合适的智能体")
-        suggestions.append("    调用示例: recommend_agent(task_type='design', task_description='...', priority='high')")
-        suggestions.append("  - provide_final_answer: 提供最终答案")
-        suggestions.append("    调用示例: provide_final_answer(final_summary='...', task_status='success')")
-        
-        suggestions.append("\nenhanced_real_verilog_agent 可用工具:")
-        suggestions.append("  - analyze_design_requirements: 分析设计需求")
-        suggestions.append("    调用示例: analyze_design_requirements(requirements='设计一个8位加法器', design_type='combinational')")
-        suggestions.append("  - generate_verilog_code: 生成Verilog代码")
-        suggestions.append("    调用示例: generate_verilog_code(module_name='adder_8bit', requirements='8位加法器', input_ports=[...])")
-        suggestions.append("  - search_existing_modules: 搜索现有模块")
-        suggestions.append("    调用示例: search_existing_modules(module_type='arithmetic', functionality='加法器')")
-        suggestions.append("  - analyze_code_quality: 分析代码质量")
-        suggestions.append("    调用示例: analyze_code_quality(verilog_code='...', module_name='adder_8bit')")
-        suggestions.append("  - validate_design_specifications: 验证设计规格")
-        suggestions.append("    调用示例: validate_design_specifications(requirements='...', generated_code='...')")
-        suggestions.append("  - generate_design_documentation: 生成设计文档")
-        suggestions.append("    调用示例: generate_design_documentation(module_name='adder_8bit', verilog_code='...', requirements='...')")
-        suggestions.append("  - optimize_verilog_code: 优化Verilog代码")
-        suggestions.append("    调用示例: optimize_verilog_code(verilog_code='...', optimization_target='area')")
-        
-        suggestions.append("\nenhanced_real_code_review_agent 可用工具:")
-        suggestions.append("  - generate_testbench: 生成测试台")
-        suggestions.append("    调用示例: generate_testbench(module_name='adder_8bit', module_code='...', test_scenarios=[...])")
-        suggestions.append("  - run_simulation: 运行仿真")
-        suggestions.append("    调用示例: run_simulation(module_code='...', testbench_code='...', simulator='iverilog')")
-        suggestions.append("  - use_external_testbench: 使用外部测试台")
-        suggestions.append("    调用示例: use_external_testbench(design_code='...', external_testbench_path='testbench.v', design_module_name='adder_8bit')")
-        suggestions.append("  - generate_build_script: 生成构建脚本")
-        suggestions.append("    调用示例: generate_build_script(verilog_files=['design.v'], testbench_files=['tb.v'], script_type='makefile')")
-        suggestions.append("  - execute_build_script: 执行构建脚本")
-        suggestions.append("    调用示例: execute_build_script(script_name='Makefile', action='all', timeout=300)")
-        suggestions.append("  - analyze_test_failures: 分析测试失败")
-        suggestions.append("    调用示例: analyze_test_failures(design_code='...', compilation_errors='...', testbench_code='...')")
-        
-        suggestions.append("\n=== 工具参数详细说明 ===")
-        suggestions.append("LLMCoordinatorAgent 工具参数:")
-        suggestions.append("  assign_task_to_agent:")
-        suggestions.append("    - agent_id: 智能体ID ('enhanced_real_verilog_agent' 或 'enhanced_real_code_review_agent')")
-        suggestions.append("    - task_description: 详细任务描述")
-        suggestions.append("    - expected_output: 期望输出格式")
-        suggestions.append("    - task_type: 任务类型 ('design', 'verification', 'analysis', 'debug', 'composite')")
-        suggestions.append("    - priority: 优先级 ('high', 'medium', 'low')")
-        
-        suggestions.append("  analyze_agent_result:")
-        suggestions.append("    - agent_id: 智能体ID")
-        suggestions.append("    - result: 智能体执行结果")
-        suggestions.append("    - task_context: 任务上下文")
-        suggestions.append("    - quality_threshold: 质量阈值 (0-100)")
-        
-        suggestions.append("\nenhanced_real_verilog_agent 工具参数:")
-        suggestions.append("  generate_verilog_code:")
-        suggestions.append("    - module_name: 模块名称 (字母开头)")
-        suggestions.append("    - requirements: 设计需求描述")
-        suggestions.append("    - input_ports: 输入端口列表 [{'name': 'clk', 'width': 1}]")
-        suggestions.append("    - output_ports: 输出端口列表 [{'name': 'result', 'width': 8}]")
-        suggestions.append("    - coding_style: 编码风格 ('behavioral', 'structural', 'rtl', 'mixed')")
-        
-        suggestions.append("  analyze_design_requirements:")
-        suggestions.append("    - requirements: 设计需求描述")
-        suggestions.append("    - design_type: 设计类型 ('combinational', 'sequential', 'mixed', 'custom')")
-        suggestions.append("    - complexity_level: 复杂度 ('simple', 'medium', 'complex', 'advanced')")
-        
-        suggestions.append("\nenhanced_real_code_review_agent 工具参数:")
-        suggestions.append("  generate_testbench:")
-        suggestions.append("    - module_name: 目标模块名称")
-        suggestions.append("    - module_code: 完整的Verilog模块代码")
-        suggestions.append("    - test_scenarios: 测试场景列表")
-        suggestions.append("    - clock_period: 时钟周期 (ns)")
-        suggestions.append("    - simulation_time: 仿真时间 (时钟周期数)")
-        
-        suggestions.append("  run_simulation:")
-        suggestions.append("    - module_code: 模块代码内容")
-        suggestions.append("    - testbench_code: 测试台代码内容")
-        suggestions.append("    - simulator: 仿真器 ('iverilog', 'modelsim', 'vivado', 'auto')")
-        suggestions.append("    - simulation_options: 仿真选项")
-        
-        suggestions.append("  analyze_test_failures:")
-        suggestions.append("    - design_code: 设计代码")
-        suggestions.append("    - compilation_errors: 编译错误信息")
-        suggestions.append("    - simulation_errors: 仿真错误信息")
-        suggestions.append("    - test_assertions: 测试断言失败信息")
-        suggestions.append("    - testbench_code: 测试台代码")
-        suggestions.append("    - iteration_number: 当前迭代次数")
-        
-        suggestions.append("\n=== 工具调用最佳实践 ===")
-        suggestions.append("1. 任务分配流程:")
-        suggestions.append("   - 先使用 identify_task_type 识别任务类型")
-        suggestions.append("   - 使用 recommend_agent 推荐合适的智能体")
-        suggestions.append("   - 使用 assign_task_to_agent 分配任务")
-        suggestions.append("   - 使用 analyze_agent_result 分析结果")
-        suggestions.append("   - 使用 check_task_completion 检查完成状态")
-        
-        suggestions.append("2. Verilog设计流程:")
-        suggestions.append("   - 使用 analyze_design_requirements 分析需求")
-        suggestions.append("   - 使用 search_existing_modules 搜索现有模块")
-        suggestions.append("   - 使用 generate_verilog_code 生成代码")
-        suggestions.append("   - 使用 analyze_code_quality 分析质量")
-        suggestions.append("   - 使用 validate_design_specifications 验证规格")
-        
-        suggestions.append("3. 测试验证流程:")
-        suggestions.append("   - 使用 generate_testbench 生成测试台")
-        suggestions.append("   - 使用 run_simulation 执行仿真")
-        suggestions.append("   - 使用 analyze_test_failures 分析失败")
-        suggestions.append("   - 使用 generate_build_script 生成构建脚本")
-        suggestions.append("   - 使用 execute_build_script 执行构建")
-        
-        suggestions.append("4. 错误处理策略:")
-        suggestions.append("   - 编译错误: 检查语法和端口定义")
-        suggestions.append("   - 仿真错误: 检查时序和逻辑")
-        suggestions.append("   - 测试失败: 分析断言和期望值")
-        suggestions.append("   - 质量不足: 重新设计或优化代码")
-        
-        # 添加LLMCoordinatorAgent的工具使用指导
-        coordinator_guide = self._generate_coordinator_tool_guide()
-        suggestions.extend(coordinator_guide)
         
         # 基于测试质量分数的建议
         testing_quality_score = testing_workflow.get("testing_quality_score", 0)
@@ -2789,78 +1930,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 suggestions.append("该智能体连续失败次数较多，建议更换智能体")
         
         return suggestions
-    
-    def _generate_coordinator_tool_guide(self) -> List[str]:
-        """生成LLMCoordinatorAgent专用的工具使用指导"""
-        guide = []
-        
-        guide.append("\n=== LLMCoordinatorAgent 工具调用指导 ===")
-        guide.append("")
-        
-        guide.append("【可用工具列表】")
-        guide.append("1. assign_task_to_agent - 智能任务分配")
-        guide.append("   功能: 将任务分配给最合适的智能体")
-        guide.append("   参数: agent_id, task_description, expected_output, task_type, priority")
-        guide.append("   示例: assign_task_to_agent('enhanced_real_verilog_agent', '设计8位加法器', '', 'design', 'high')")
-        guide.append("")
-        
-        guide.append("2. analyze_agent_result - 结果质量分析")
-        guide.append("   功能: 深度分析智能体执行结果的质量和完整性")
-        guide.append("   参数: agent_id, result, task_context, quality_threshold")
-        guide.append("   示例: analyze_agent_result('verilog_agent', result_data, context, 80.0)")
-        guide.append("")
-        
-        guide.append("3. check_task_completion - 任务完成检查")
-        guide.append("   功能: 检查任务是否真正完成，评估整体质量")
-        guide.append("   参数: task_id, all_results, original_requirements, completion_criteria")
-        guide.append("   示例: check_task_completion('task_001', results, '设计8位加法器')")
-        guide.append("")
-        
-        guide.append("4. query_agent_status - 智能体状态查询")
-        guide.append("   功能: 查询智能体的详细状态和性能指标")
-        guide.append("   参数: agent_id, include_performance, include_history")
-        guide.append("   示例: query_agent_status('enhanced_real_verilog_agent', True, False)")
-        guide.append("")
-        
-        guide.append("5. identify_task_type - 任务类型识别")
-        guide.append("   功能: 智能识别任务类型，支持设计、验证、分析等")
-        guide.append("   参数: user_request, context")
-        guide.append("   示例: identify_task_type('设计一个计数器', {})")
-        guide.append("")
-        
-        guide.append("6. recommend_agent - 智能体推荐")
-        guide.append("   功能: 基于任务特征推荐最合适的智能体")
-        guide.append("   参数: task_type, task_description, priority, constraints")
-        guide.append("   示例: recommend_agent('design', '设计ALU', 'high')")
-        guide.append("")
-        
-        guide.append("7. provide_final_answer - 最终答案提供")
-        guide.append("   功能: 当任务完成时提供最终的完整答案")
-        guide.append("   参数: final_summary, task_status, results_summary")
-        guide.append("   示例: provide_final_answer('任务完成', 'success', results)")
-        guide.append("")
-        
-        guide.append("8. get_tool_usage_guide - 工具使用指导")
-        guide.append("   功能: 获取完整的工具使用指导")
-        guide.append("   参数: agent_type, include_examples, include_best_practices")
-        guide.append("   示例: get_tool_usage_guide('coordinator', True, True)")
-        guide.append("")
-        
-        guide.append("【协调流程最佳实践】")
-        guide.append("1. 任务分析: identify_task_type → recommend_agent")
-        guide.append("2. 任务分配: assign_task_to_agent")
-        guide.append("3. 结果分析: analyze_agent_result")
-        guide.append("4. 完成检查: check_task_completion")
-        guide.append("5. 最终答案: provide_final_answer")
-        guide.append("")
-        
-        guide.append("【注意事项】")
-        guide.append("- 作为协调者，主要负责任务分配和结果分析")
-        guide.append("- 具体的设计和验证工作交给专门的智能体")
-        guide.append("- 确保任务描述清晰，便于其他智能体理解执行")
-        guide.append("- 定期检查任务执行状态和质量")
-        
-        return guide
     
     async def _tool_check_task_completion(self, task_id: str, 
                                         all_results: Dict[str, Any],
@@ -3405,43 +2474,6 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             recommended.append("time_sensitive_tasks")
         
         return list(set(recommended))  # 去重
-    
-    async def _collect_agent_conversations(self, task_context: TaskContext):
-        """收集已分配智能体的对话历史到任务上下文"""
-        try:
-            for agent_id, agent_result in task_context.agent_results.items():
-                # 获取智能体实例
-                agent_instance = None
-                
-                # 从注册的智能体中查找
-                for registered_agent_id, registered_agent in self.registered_agents.items():
-                    if registered_agent_id == agent_id or registered_agent.agent_id == agent_id:
-                        agent_instance = registered_agent
-                        break
-                
-                if agent_instance and hasattr(agent_instance, 'conversation_history'):
-                    self.logger.info(f"📥 收集智能体 {agent_id} 的对话历史: {len(agent_instance.conversation_history)} 条消息")
-                    
-                    # 将智能体的对话历史合并到任务上下文
-                    for msg in agent_instance.conversation_history:
-                        # 避免重复添加相同的消息
-                        msg_signature = f"{msg.get('role', '')}_{msg.get('agent_id', '')}_{hash(msg.get('content', ''))}"
-                        existing_signatures = [
-                            f"{existing_msg.get('role', '')}_{existing_msg.get('agent_id', '')}_{hash(existing_msg.get('content', ''))}"
-                            for existing_msg in task_context.conversation_history
-                        ]
-                        
-                        if msg_signature not in existing_signatures:
-                            # 标记消息来源并添加到任务上下文
-                            msg_copy = msg.copy()
-                            msg_copy['source_agent'] = agent_id
-                            msg_copy['collected_timestamp'] = time.time()
-                            task_context.conversation_history.append(msg_copy)
-                else:
-                    self.logger.warning(f"⚠️ 无法找到智能体 {agent_id} 的实例或对话历史")
-                    
-        except Exception as e:
-            self.logger.error(f"❌ 收集智能体对话历史失败: {str(e)}")
     
     def _collect_final_result(self, task_context: TaskContext, 
                             coordination_result: str) -> Dict[str, Any]:
@@ -4218,27 +3250,3 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         except Exception as e:
             self.logger.error(f"❌ 提取设计文件路径时出错: {str(e)}")
             return None
-    
-    async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
-                                       include_best_practices: bool = True) -> Dict[str, Any]:
-        """获取LLMCoordinatorAgent专用的工具使用指导"""
-        try:
-            guide = self._generate_coordinator_tool_guide()
-            
-            return {
-                "success": True,
-                "guide": guide,
-                "agent_type": "LLMCoordinatorAgent",
-                "include_examples": include_examples,
-                "include_best_practices": include_best_practices,
-                "total_tools": 8,  # LLMCoordinatorAgent有8个工具
-                "message": "成功生成LLMCoordinatorAgent的工具使用指导"
-            }
-            
-        except Exception as e:
-            self.logger.error(f"❌ 生成工具使用指导失败: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e),
-                "message": "生成工具使用指导时发生错误"
-            }
