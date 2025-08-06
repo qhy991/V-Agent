@@ -381,12 +381,33 @@ class EnhancedLLMCoordinatorTest:
             execution_summary = result.get('execution_summary', {})
             agent_results = result.get('agent_results', {})
             
+            # 🆕 获取增强的数据收集字段
+            task_context = result.get('task_context', {})
+            tool_executions = task_context.get('tool_executions', [])
+            agent_interactions = task_context.get('agent_interactions', [])
+            performance_metrics = task_context.get('performance_metrics', {})
+            workflow_stages = task_context.get('workflow_stages', [])
+            file_operations = task_context.get('file_operations', [])
+            execution_timeline = task_context.get('execution_timeline', [])
+            
             analysis.update({
                 "total_iterations": execution_summary.get('total_iterations', 0),
                 "assigned_agents": execution_summary.get('assigned_agents', []),
                 "coordination_result_length": len(result.get('coordination_result', '')),
                 "agent_count": len(agent_results),
-                "agent_performance": {}
+                "agent_performance": {},
+                # 🆕 增强数据字段用于Gradio可视化
+                "tool_executions": tool_executions,
+                "agent_interactions": agent_interactions,
+                "performance_metrics": performance_metrics,
+                "workflow_stages": workflow_stages,
+                "file_operations": file_operations,
+                "execution_timeline": execution_timeline,
+                # 🆕 统计信息
+                "tool_execution_count": len(tool_executions),
+                "agent_interaction_count": len(agent_interactions),
+                "workflow_stage_count": len(workflow_stages),
+                "file_operation_count": len(file_operations)
             })
             
             # 分析每个智能体的表现
@@ -395,16 +416,23 @@ class EnhancedLLMCoordinatorTest:
                 agent_success = agent_result.get('success', False)
                 result_length = len(str(agent_result.get('result', '')))
                 
+                # 🆕 从工具执行记录中计算智能体工具使用统计
+                agent_tool_count = len([t for t in tool_executions if t.get('agent_id') == agent_id])
+                
                 analysis["agent_performance"][agent_id] = {
                     "execution_time": agent_exec_time,
                     "success": agent_success,
                     "result_length": result_length,
-                    "efficiency": result_length / max(agent_exec_time, 0.1)  # 字符/秒
+                    "efficiency": result_length / max(agent_exec_time, 0.1),  # 字符/秒
+                    "tool_usage_count": agent_tool_count  # 🆕 工具使用次数
                 }
             
             print(f"   ✅ 实验成功完成")
             print(f"   📈 总迭代次数: {analysis['total_iterations']}")
             print(f"   🤖 参与智能体: {len(agent_results)}")
+            print(f"   🔧 工具执行次数: {analysis['tool_execution_count']}")
+            print(f"   💬 智能体交互次数: {analysis['agent_interaction_count']}")
+            print(f"   📁 文件操作次数: {analysis['file_operation_count']}")
             print(f"   ⏱️ 任务执行时间: {task_duration:.1f}秒")
         else:
             analysis.update({

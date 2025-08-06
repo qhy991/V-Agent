@@ -1,125 +1,131 @@
 `timescale 1ns / 1ps
 
-module counter_tb;
+module tb_counter;
 
     // 信号声明
     reg clk;
-    reg reset;
-    wire [3:0] count;
+    reg rst_n;
+    reg en;
+    wire [7:0] count;
 
     // 测试计数器变量
     integer passed_count = 0;
     integer failed_count = 0;
     integer total_count = 0;
-    integer test_number = 0;
 
     // 被测模块实例化
     counter uut (
         .clk(clk),
-        .reset(reset),
+        .rst_n(rst_n),
+        .en(en),
         .count(count)
     );
 
-    // 时钟生成（周期10ns）
+    // 时钟生成：周期 10.0ns
     always begin
-        #5 clk = ~clk;
+        #5 clk = ~clk;  // 5ns 高电平，5ns 低电平 → 周期=10ns
     end
 
-    // 初始过程
+    // 初始化复位和使能
     initial begin
-        // 初始化信号
         clk = 0;
-        reset = 1;
+        rst_n = 0;
+        en = 0;
 
-        // 波形转储设置
-        $dumpfile("counter_tb.vcd");
-        $dumpvars(0, counter_tb);
+        // 波形转储设置（可选，用于仿真工具查看波形）
+        $dumpfile("counter.vcd");
+        $dumpvars(0, tb_counter);
 
-        // 开始测试
-        $display("Starting counter_tb simulation...");
+        // 初始等待稳定
+        #100;
 
-        // 测试1: reset_test - 验证复位功能
-        test_number = test_number + 1;
+        // === 测试用例 1: reset_release_timing ===
         total_count = total_count + 1;
-
-        reset = 1;
-        #10; // 等待一个时钟周期
-
-        if (count === 4'b0) begin
-            $display("Time=%0t: Test Case %0d - reset_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: PASS", 4'b0, count);
-            passed_count = passed_count + 1;
-        end else begin
-            $display("Time=%0t: Test Case %0d - reset_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: FAIL", 4'b0, count);
+        $display("Time=%0t: Test Case %0d - %s", $time, total_count, "reset_release_timing");
+        rst_n = 0;
+        en = 0;
+        #20;  // 复位保持两个周期
+        rst_n = 1;
+        #10;  // 释放复位
+        if (count != 8'h0) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'h0, count, "FAIL");
             failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'h0, count, "PASS");
+            passed_count = passed_count + 1;
         end
 
-        // 测试2: counting_test - 验证计数功能
-        test_number = test_number + 1;
+        // === 测试用例 2: enable_toggle ===
         total_count = total_count + 1;
-
-        reset = 0;
-        #10; // clk 1
-        if (count === 4'b0001) begin
-            $display("Time=%0t: Test Case %0d - counting_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: PASS", 4'b0001, count);
-            passed_count = passed_count + 1;
-        end else begin
-            $display("Time=%0t: Test Case %0d - counting_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: FAIL", 4'b0001, count);
-            failed_count = failed_count + 1;
-        end
-
-        // 测试3: boundary_test - 验证边界条件（计数到最大值后回0）
-        test_number = test_number + 1;
-        total_count = total_count + 1;
-
-        // 设置count为最大值
-        count = 4'b1110;
-        #10; // clk 1 -> count = 4'b1111
-        #10; // clk 2 -> count = 4'b0000
-
-        if (count === 4'b0000) begin
-            $display("Time=%0t: Test Case %0d - boundary_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: PASS", 4'b0000, count);
-            passed_count = passed_count + 1;
-        end else begin
-            $display("Time=%0t: Test Case %0d - boundary_test", $time, test_number);
-            $display("Expected: %h, Got: %h, Status: FAIL", 4'b0000, count);
-            failed_count = failed_count + 1;
-        end
-
-        // 测试4: long_run_test - 验证500个周期内计数是否连续正确
-        test_number = test_number + 1;
-        total_count = total_count + 1;
-
-        reset = 1;
+        $display("Time=%0t: Test Case %0d - %s", $time, total_count, "enable_toggle");
+        en = 1;
         #10;
-        reset = 0;
-
-        integer i;
-        reg [3:0] expected;
-
-        expected = 4'b0000;
-        for (i = 0; i < 500; i = i + 1) begin
-            #10; // 等待一个时钟周期
-            expected = expected + 1;
-            if (count !== expected) begin
-                $display("Time=%0t: Test Case %0d - long_run_test (cycle %0d)", $time, test_number, i);
-                $display("Expected: %h, Got: %h, Status: FAIL", expected, count);
-                failed_count = failed_count + 1;
-                break;
-            end
+        if (count != 8'h1) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'h1, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'h1, count, "PASS");
+            passed_count = passed_count + 1;
         end
-
-        if (i == 500) begin
-            $display("Time=%0t: Test Case %0d - long_run_test", $time, test_number);
-            $display("Expected: %h (after 500 cycles), Got: %h, Status: PASS", expected, count);
+        en = 0;
+        #10;
+        if (count != 8'h1) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'h1, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'h1, count, "PASS");
             passed_count = passed_count + 1;
         end
 
-        // 输出统计信息
+        // === 测试用例 3: boundary_values ===
+        total_count = total_count + 1;
+        $display("Time=%0t: Test Case %0d - %s", $time, total_count, "boundary_values");
+        en = 1;
+        for (integer i = 0; i < 255; i = i + 1) begin
+            #10;
+        end
+        if (count != 8'hFF) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'hFF, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'hFF, count, "PASS");
+            passed_count = passed_count + 1;
+        end
+        en = 0;
+        #10;
+        if (count != 8'hFF) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'hFF, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'hFF, count, "PASS");
+            passed_count = passed_count + 1;
+        end
+
+        // === 测试用例 4: multi_cycle_hold ===
+        total_count = total_count + 1;
+        $display("Time=%0t: Test Case %0d - %s", $time, total_count, "multi_cycle_hold");
+        en = 1;
+        #10;
+        if (count != 8'h0) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'h0, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'h0, count, "PASS");
+            passed_count = passed_count + 1;
+        end
+        en = 0;
+        for (integer i = 0; i < 10; i = i + 1) begin
+            #10;
+        end
+        if (count != 8'h0) begin
+            $display("Expected: %h, Got: %h, Status: FAIL", 8'h0, count, "FAIL");
+            failed_count = failed_count + 1;
+        end else begin
+            $display("Expected: %h, Got: %h, Status: PASS", 8'h0, count, "PASS");
+            passed_count = passed_count + 1;
+        end
+
+        // 最终统计输出
         $display("==================================================");
         $display("Test Summary:");
         $display("Total Tests: %0d", total_count);
@@ -132,6 +138,7 @@ module counter_tb;
         $display("==================================================");
 
         // 结束仿真
+        #100;
         $finish;
     end
 

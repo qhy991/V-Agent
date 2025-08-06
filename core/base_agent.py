@@ -115,6 +115,9 @@ class BaseAgent(ABC):
         self.conversation_start_time: Optional[float] = None
         self._last_conversation_id: Optional[str] = None  # 🔧 新增：记录上一次对话ID，用于智能体独立上下文管理
         
+        # 🔧 任务上下文支持 - 用于协调器集成
+        self.current_task_context: Optional[Any] = None  # TaskContext实例
+        
         # Function Calling配置
         self.max_tool_retry_attempts = 3
         self.tool_failure_contexts: List[Dict[str, Any]] = []
@@ -161,6 +164,18 @@ class BaseAgent(ABC):
             "parameters": parameters or {}
         }
         self.logger.info(f"🔧 注册Function Calling工具: {name}")
+    
+    def set_task_context(self, task_context):
+        """设置任务上下文，用于协调器集成
+        
+        Args:
+            task_context: TaskContext实例，包含对话历史管理功能
+        """
+        self.current_task_context = task_context
+        if task_context:
+            self.logger.info(f"🔗 设置任务上下文: {task_context.task_id}")
+        else:
+            self.logger.info("🔗 清除任务上下文")
     
     def enable_tool_calling(self):
         """启用工具调用能力"""
@@ -315,14 +330,32 @@ class BaseAgent(ABC):
         # 记录对话统计信息
         self.logger.info(f"📊 对话统计: 总消息数={len(conversation)}, 对话时长={time.time() - (self.conversation_start_time or time.time()):.1f}秒")
         
+        # 🔧 TaskContext对话记录 - 记录用户请求
+        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
+            self.current_task_context.add_conversation_message(
+                role="user",
+                content=user_request,
+                agent_id=self.agent_id
+            )
+        
         # 🎯 执行初始任务
         initial_result = await self._execute_single_task_cycle(conversation, user_request, max_iterations)
         
         # 🔄 如果启用自主继续，则进行自我评估和任务继续
         if enable_self_continuation:
-            return await self._execute_self_continuation(conversation, initial_result, user_request, max_self_iterations, max_iterations)
+            final_result = await self._execute_self_continuation(conversation, initial_result, user_request, max_self_iterations, max_iterations)
         else:
-            return initial_result
+            final_result = initial_result
+        
+        # 🔧 TaskContext对话记录 - 记录智能体响应
+        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
+            self.current_task_context.add_conversation_message(
+                role="assistant",
+                content=final_result,
+                agent_id=self.agent_id
+            )
+        
+        return final_result
     
     async def process_with_optimized_function_calling(self, user_request: str, max_iterations: int = 10,
                                                     conversation_id: str = None, preserve_context: bool = True,
@@ -1020,6 +1053,19 @@ class BaseAgent(ABC):
         """执行工具调用，支持失败重试和LLM反馈"""
         last_error = None
         
+        # 🔧 TaskContext对话记录 - 工具调用开始
+        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
+            self.current_task_context.add_conversation_message(
+                role="tool_call",
+                content=f"开始调用工具: {tool_call.tool_name}",
+                agent_id=self.agent_id,
+                tool_info={
+                    "tool_name": tool_call.tool_name,
+                    "parameters": tool_call.parameters,
+                    "status": "started"
+                }
+            )
+        
         for attempt in range(self.max_tool_retry_attempts):
             try:
                 self.logger.info(f"🔧 执行工具调用: {tool_call.tool_name} (尝试 {attempt + 1}/{self.max_tool_retry_attempts})")
@@ -1067,6 +1113,64 @@ class BaseAgent(ABC):
                         raise Exception(error_msg)
                 
                 self.logger.info(f"✅ 工具执行成功: {tool_call.tool_name}")
+                
+                # 🔧 TaskContext对话记录 - 工具调用成功
+                if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
+                    self.current_task_context.add_conversation_message(
+                        role="tool_result",
+                        content=f"工具执行成功: {tool_call.tool_name}",
+                        agent_id=self.agent_id,
+                        tool_info={
+                            "tool_name": tool_call.tool_name,
+                            "parameters": tool_call.parameters,
+                            "success": True,
+                            "result": str(result)[:200] + ("..." if len(str(result)) > 200 else ""),  # 限制结果长度
+                            "status": "completed"
+                        }
+                    )
+                
+                # 🆕 数据收集用于Gradio可视化
+                if self.current_task_context:
+                    import time
+                    execution_timestamp = time.time()
+                    
+                    # 记录工具执行
+                    self.current_task_context.tool_executions.append({
+                        "timestamp": execution_timestamp,
+                        "agent_id": self.agent_id,
+                        "tool_name": tool_call.tool_name,
+                        "parameters": tool_call.parameters,
+                        "success": True,
+                        "result_summary": str(result)[:100] + ("..." if len(str(result)) > 100 else ""),
+                        "attempt": attempt + 1
+                    })
+                    
+                    # 记录文件操作（如果是文件相关工具）
+                    if tool_call.tool_name in ['write_file', 'read_file'] and isinstance(result, dict):
+                        file_path = tool_call.parameters.get('file_path') or tool_call.parameters.get('filename')
+                        if file_path:
+                            self.current_task_context.file_operations.append({
+                                "timestamp": execution_timestamp,
+                                "agent_id": self.agent_id,
+                                "operation": tool_call.tool_name,
+                                "file_path": file_path,
+                                "success": True,
+                                "details": result.get('message', '')
+                            })
+                    
+                    # 记录执行时间线
+                    self.current_task_context.execution_timeline.append({
+                        "timestamp": execution_timestamp,
+                        "event_type": "tool_execution",
+                        "agent_id": self.agent_id,
+                        "description": f"{self.agent_id} 成功执行 {tool_call.tool_name}",
+                        "details": {
+                            "tool_name": tool_call.tool_name,
+                            "success": True,
+                            "attempt": attempt + 1
+                        }
+                    })
+                
                 return ToolResult(
                     call_id=tool_call.call_id or "unknown",
                     success=True,
@@ -1106,7 +1210,52 @@ class BaseAgent(ABC):
                     self.logger.info(f"💡 重试建议: {retry_advice}")
                     await asyncio.sleep(1)
         
-        # 所有重试都失败了，返回增强的错误信息
+        # 所有重试都失败了，记录到TaskContext并返回增强的错误信息
+        # 🔧 TaskContext对话记录 - 工具调用失败
+        if self.current_task_context and hasattr(self.current_task_context, 'add_conversation_message'):
+            self.current_task_context.add_conversation_message(
+                role="tool_result",
+                content=f"工具执行失败: {tool_call.tool_name}",
+                agent_id=self.agent_id,
+                tool_info={
+                    "tool_name": tool_call.tool_name,
+                    "parameters": tool_call.parameters,
+                    "success": False,
+                    "error": last_error,
+                    "retry_attempts": self.max_tool_retry_attempts,
+                    "status": "failed"
+                }
+            )
+            
+        # 🆕 数据收集用于Gradio可视化 - 失败情况
+        if self.current_task_context:
+            import time
+            failure_timestamp = time.time()
+            
+            # 记录工具执行失败
+            self.current_task_context.tool_executions.append({
+                "timestamp": failure_timestamp,
+                "agent_id": self.agent_id,
+                "tool_name": tool_call.tool_name,
+                "parameters": tool_call.parameters,
+                "success": False,
+                "error": last_error,
+                "retry_attempts": self.max_tool_retry_attempts
+            })
+            
+            # 记录执行时间线 - 失败事件
+            self.current_task_context.execution_timeline.append({
+                "timestamp": failure_timestamp,
+                "event_type": "tool_failure",
+                "agent_id": self.agent_id,
+                "description": f"{self.agent_id} 工具执行失败: {tool_call.tool_name}",
+                "details": {
+                    "tool_name": tool_call.tool_name,
+                    "error": last_error,
+                    "retry_attempts": self.max_tool_retry_attempts
+                }
+            })
+        
         return ToolResult(
             call_id=tool_call.call_id or "unknown",
             success=False,
@@ -1123,10 +1272,15 @@ class BaseAgent(ABC):
         successful_calls = sum(1 for tr in tool_results if tr.success)
         failed_calls = total_calls - successful_calls
         
-        result_message += f"📊 **执行摘要**: {successful_calls}/{total_calls} 个工具成功执行"
+        result_message += f"📊 **当前轮次执行摘要**: {successful_calls}/{total_calls} 个工具成功执行"
         if failed_calls > 0:
             result_message += f" ({failed_calls} 个失败)"
         result_message += "\n\n"
+        
+        # 添加历史工具调用统计
+        historical_summary = self._get_historical_tool_summary()
+        if historical_summary:
+            result_message += f"📈 **对话历史工具统计**: {historical_summary}\n\n"
         
         # 详细结果
         for i, (tool_call, tool_result) in enumerate(zip(tool_calls, tool_results), 1):
@@ -1210,6 +1364,68 @@ class BaseAgent(ABC):
         result_message += "\n💭 **重要提示**: 请仔细分析上述结果，基于具体的成功/失败情况做出明智的下一步决策。"
         
         return result_message
+    
+    def _get_historical_tool_summary(self) -> str:
+        """获取对话历史中的工具调用统计摘要"""
+        if not self.conversation_history:
+            return ""
+        
+        tool_calls_history = []
+        tool_stats = {}
+        
+        # 遍历对话历史，提取工具调用信息
+        for message in self.conversation_history:
+            if message.get("role") == "user" and "工具执行结果详细报告" in message.get("content", ""):
+                # 解析工具执行结果中的工具名称
+                content = message.get("content", "")
+                import re
+                
+                # 提取成功的工具调用
+                success_pattern = r"### ✅ 工具 \d+: (\w+) - 执行成功"
+                success_matches = re.findall(success_pattern, content)
+                
+                # 提取失败的工具调用
+                failure_pattern = r"### ❌ 工具 \d+: (\w+) - 执行失败"
+                failure_matches = re.findall(failure_pattern, content)
+                
+                for tool_name in success_matches:
+                    if tool_name not in tool_stats:
+                        tool_stats[tool_name] = {"success": 0, "failure": 0}
+                    tool_stats[tool_name]["success"] += 1
+                    
+                for tool_name in failure_matches:
+                    if tool_name not in tool_stats:
+                        tool_stats[tool_name] = {"success": 0, "failure": 0}
+                    tool_stats[tool_name]["failure"] += 1
+        
+        if not tool_stats:
+            return ""
+        
+        # 格式化统计信息
+        summary_parts = []
+        total_success = sum(stats["success"] for stats in tool_stats.values())
+        total_failure = sum(stats["failure"] for stats in tool_stats.values())
+        total_calls = total_success + total_failure
+        
+        summary_parts.append(f"总计调用 {total_calls} 次工具 (成功: {total_success}, 失败: {total_failure})")
+        
+        # 按工具分类统计
+        tool_summaries = []
+        for tool_name, stats in sorted(tool_stats.items()):
+            success_count = stats["success"]
+            failure_count = stats["failure"]
+            total_tool_calls = success_count + failure_count
+            success_rate = (success_count / total_tool_calls * 100) if total_tool_calls > 0 else 0
+            
+            if failure_count > 0:
+                tool_summaries.append(f"{tool_name}: {total_tool_calls}次 ({success_count}✅/{failure_count}❌, {success_rate:.0f}%成功率)")
+            else:
+                tool_summaries.append(f"{tool_name}: {total_tool_calls}次 (全部成功)")
+        
+        if tool_summaries:
+            summary_parts.append(" | ".join(tool_summaries))
+        
+        return " - ".join(summary_parts)
     
     def _format_parameters(self, parameters: Dict[str, Any]) -> str:
         """格式化参数显示"""
@@ -1933,93 +2149,122 @@ class BaseAgent(ABC):
             
             self.logger.info(f"📝 写入文件: {filename}")
             
-            # 尝试使用实验管理器 + 中央文件管理器
+            # 🆕 优先尝试使用当前任务上下文中的实验路径
             try:
-                # 先尝试实验管理器
-                try:
-                    from core.experiment_manager import get_experiment_manager
-                    exp_manager = get_experiment_manager()
-                    
-                    self.logger.info(f"🔍 实验管理器检查:")
-                    self.logger.info(f"   - 实验管理器存在: {exp_manager is not None}")
-                    self.logger.info(f"   - 当前实验路径: {exp_manager.current_experiment_path}")
-                    
-                    if exp_manager.current_experiment_path:
-                        # 清理内容
-                        cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
-                        file_type = self._determine_file_type(filename, cleaned_content)
-                        
-                        # 确定子文件夹
-                        if "testbench" in filename.lower() or "_tb" in filename.lower():
-                            subdir = "testbenches"
-                        elif filename.endswith('.v'):
-                            subdir = "designs"
-                        else:
-                            subdir = "artifacts"
-                        
-                        # 🎯 修复：直接保存到实验文件夹，不使用不存在的save_file方法
-                        exp_subdir_path = exp_manager.current_experiment_path / subdir
-                        exp_subdir_path.mkdir(parents=True, exist_ok=True)
-                        exp_file_path = exp_subdir_path / filename
-                        
-                        # 写入文件
-                        with open(exp_file_path, 'w', encoding='utf-8') as f:
-                            f.write(cleaned_content)
-                        
-                        if exp_file_path:
-                            # 同时注册到中央文件管理器
-                            try:
-                                from core.file_manager import get_file_manager
-                                file_manager = get_file_manager()
-                                file_ref = file_manager.save_file(
-                                    content=cleaned_content,
-                                    filename=filename,
-                                    file_type=file_type,
-                                    created_by=self.agent_id,
-                                    description=f"由{self.agent_id}创建的{file_type}文件"
-                                )
-                                
-                                self.logger.info(f"✅ 文件已保存到实验文件夹: {filename} (ID: {file_ref.file_id})")
-                                
-                                return {
-                                    "success": True,
-                                    "message": f"文件 {filename} 已成功保存到实验文件夹",
-                                    "file_path": str(exp_file_path),
-                                    "file_id": file_ref.file_id,
-                                    "file_type": file_ref.file_type,
-                                    "filename": filename,
-                                    "content_length": len(cleaned_content),
-                                    "experiment_path": str(exp_manager.current_experiment_path),
-                                    "subdir": subdir,
-                                    "file_reference": {
-                                        "file_id": file_ref.file_id,
-                                        "file_path": str(exp_file_path),
-                                        "file_type": file_ref.file_type,
-                                        "created_by": file_ref.created_by,
-                                        "created_at": file_ref.created_at,
-                                        "description": file_ref.description
-                                    }
-                                }
-                            except Exception as e:
-                                self.logger.warning(f"⚠️ 中央文件管理器注册失败: {e}")
-                                # 即使中央管理器失败，文件已经保存到实验文件夹
-                                return {
-                                    "success": True,
-                                    "message": f"文件 {filename} 已成功保存到实验文件夹",
-                                    "file_path": str(exp_file_path),
-                                    "file_id": None,
-                                    "file_type": file_type,
-                                    "filename": filename,
-                                    "content_length": len(cleaned_content),
-                                    "experiment_path": str(exp_manager.current_experiment_path),
-                                    "subdir": subdir
-                                }
-                except ImportError:
-                    self.logger.debug("实验管理器不可用")
-                except Exception as e:
-                    self.logger.warning(f"实验管理器保存失败: {e}")
+                experiment_path = None
                 
-                # 回退到纯中央文件管理器
+                # 1. 首先尝试从任务上下文获取实验路径
+                if hasattr(self, 'current_task_context') and self.current_task_context:
+                    task_context = self.current_task_context
+                    if hasattr(task_context, 'experiment_path') and task_context.experiment_path:
+                        experiment_path = Path(task_context.experiment_path)
+                        self.logger.info(f"🧪 使用任务上下文实验路径: {experiment_path}")
+                
+                # 2. 如果任务上下文没有，尝试实验管理器
+                if not experiment_path:
+                    try:
+                        from core.experiment_manager import get_experiment_manager
+                        exp_manager = get_experiment_manager()
+                        
+                        self.logger.info(f"🔍 实验管理器检查:")
+                        self.logger.info(f"   - 实验管理器存在: {exp_manager is not None}")
+                        self.logger.info(f"   - 当前实验路径: {exp_manager.current_experiment_path if exp_manager else None}")
+                        
+                        if exp_manager and exp_manager.current_experiment_path:
+                            experiment_path = Path(exp_manager.current_experiment_path)
+                            self.logger.info(f"🧪 使用实验管理器路径: {experiment_path}")
+                    except (ImportError, Exception) as e:
+                        self.logger.debug(f"实验管理器不可用: {e}")
+                
+                # 3. 如果还是没有找到，尝试从活跃任务中查找
+                if not experiment_path:
+                    try:
+                        # 尝试从协调智能体的活跃任务中获取实验路径
+                        from core.llm_coordinator_agent import LLMCoordinatorAgent
+                        if hasattr(self, 'coordinator') and isinstance(self.coordinator, LLMCoordinatorAgent):
+                            for task in self.coordinator.active_tasks.values():
+                                if hasattr(task, 'experiment_path') and task.experiment_path:
+                                    experiment_path = Path(task.experiment_path)
+                                    self.logger.info(f"🧪 从协调智能体活跃任务获取实验路径: {experiment_path}")
+                                    break
+                    except Exception as e:
+                        self.logger.debug(f"从协调智能体获取实验路径失败: {e}")
+                
+                # 4. 如果有实验路径，直接保存到实验目录
+                if experiment_path:
+                    # 清理内容
+                    cleaned_content = self._clean_file_content(content, self._detect_file_type(filename))
+                    file_type = self._determine_file_type(filename, cleaned_content)
+                    
+                    # 确定子文件夹
+                    if "testbench" in filename.lower() or "_tb" in filename.lower():
+                        subdir = "testbenches"
+                    elif filename.endswith('.v'):
+                        subdir = "designs"
+                    else:
+                        subdir = "artifacts"
+                    
+                    # 创建目标目录并保存文件
+                    exp_subdir_path = experiment_path / subdir
+                    exp_subdir_path.mkdir(parents=True, exist_ok=True)
+                    exp_file_path = exp_subdir_path / filename
+                    
+                    # 写入文件
+                    with open(exp_file_path, 'w', encoding='utf-8') as f:
+                        f.write(cleaned_content)
+                    
+                    # 尝试同时注册到中央文件管理器（可选）
+                    try:
+                        from core.file_manager import get_file_manager
+                        file_manager = get_file_manager()
+                        file_ref = file_manager.save_file(
+                            content=cleaned_content,
+                            filename=filename,
+                            file_type=file_type,
+                            created_by=self.agent_id,
+                            description=f"由{self.agent_id}创建的{file_type}文件"
+                        )
+                        
+                        self.logger.info(f"✅ 文件已保存到实验目录并注册到管理器: {exp_file_path}")
+                        
+                        return {
+                            "success": True,
+                            "message": f"文件 {filename} 已成功保存到实验目录",
+                            "file_path": str(exp_file_path),
+                            "file_id": file_ref.file_id,
+                            "file_type": file_ref.file_type,
+                            "filename": filename,
+                            "content_length": len(cleaned_content),
+                            "experiment_path": str(experiment_path),
+                            "subdir": subdir,
+                            "file_reference": {
+                                "file_id": file_ref.file_id,
+                                "file_path": str(exp_file_path),
+                                "file_type": file_ref.file_type,
+                                "created_by": file_ref.created_by,
+                                "created_at": file_ref.created_at,
+                                "description": file_ref.description
+                            }
+                        }
+                    except Exception as e:
+                        self.logger.warning(f"⚠️ 中央文件管理器注册失败: {e}")
+                        # 即使中央管理器失败，文件已经保存到实验目录
+                        return {
+                            "success": True,
+                            "message": f"文件 {filename} 已成功保存到实验目录",
+                            "file_path": str(exp_file_path),
+                            "file_id": None,
+                            "file_type": file_type,
+                            "filename": filename,
+                            "content_length": len(cleaned_content),
+                            "experiment_path": str(experiment_path),
+                            "subdir": subdir
+                        }
+            except Exception as e:
+                self.logger.warning(f"实验路径保存失败: {e}")
+            
+            # 回退到中央文件管理器
+            try:
                 from core.file_manager import get_file_manager
                 file_manager = get_file_manager()
                 self.logger.info(f"🔍 filename: {filename}")

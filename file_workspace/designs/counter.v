@@ -1,14 +1,15 @@
-module counter(
-    input wire clk,
-    input wire reset,
-    output reg [3:0] count
+module counter (
+    input clk,
+    input rst_n,
+    input en,
+    output reg [7:0] count
 );
 
-always @(posedge clk or posedge reset) begin
-    if (reset)
-        count <= 4'b0;
-    else
-        count <= count + 1;
-end
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n)
+            count <= 8'b0;
+        else if (en)
+            count <= count + 1;
+    end
 
 endmodule

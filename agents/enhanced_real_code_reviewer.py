@@ -505,6 +505,31 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "additionalProperties": False
             }
         )
+        
+        # 7. 工具使用指导工具
+        self.register_enhanced_tool(
+            name="get_tool_usage_guide",
+            func=self._tool_get_tool_usage_guide,
+            description="获取EnhancedRealCodeReviewAgent的工具使用指导，包括可用工具、参数说明、调用示例和最佳实践。",
+            security_level="normal",
+            category="help",
+            schema={
+                "type": "object",
+                "properties": {
+                    "include_examples": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": "是否包含调用示例"
+                    },
+                    "include_best_practices": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": "是否包含最佳实践"
+                    }
+                },
+                "additionalProperties": False
+            }
+        )
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
@@ -651,9 +676,12 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
 🎯 **任务执行原则**:
 - 如果提供了外部testbench，直接使用该testbench进行测试，跳过testbench生成步骤
 - 如果未提供外部testbench，必须生成测试台并运行仿真来验证代码功能
+- ⚠️ **关键要求**: 生成测试台后必须立即自动调用run_simulation工具执行仿真，不要询问用户确认
+- ⚠️ **完整流程**: generate_testbench → run_simulation → 分析结果 → 提供最终报告
 - 测试失败时必须进入迭代修复流程
 - 每次修复时要将错误信息完整传递到上下文
 - 根据具体错误类型采用相应的修复策略
+- 只有完成仿真验证并得到结果后，任务才算真正完成
 - 达到最大迭代次数(8次)或测试通过后结束任务
 
 📁 **外部Testbench模式**:
@@ -702,6 +730,17 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     ]
 }
 ```
+
+🔄 **标准执行流程（自动化，无需用户确认）**:
+1. 生成测试台: `generate_testbench` → 立即继续步骤2
+2. 执行仿真: `run_simulation` → 立即继续步骤3  
+3. 分析结果: 如果失败则调用 `analyze_test_failures` → 修复代码 → 回到步骤2
+4. 最终报告: 提供完整的验证结果和文件路径
+
+❌ **禁止行为**:
+- 不要在工具调用之间询问用户是否继续
+- 不要在生成测试台后停止，必须自动继续仿真
+- 不要提供"建议"或"选择"，直接执行完整流程
 
 ✨ **智能Schema适配系统**:
 系统现在具备智能参数适配能力，支持以下灵活格式：
@@ -975,55 +1014,75 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     async def execute_enhanced_task(self, enhanced_prompt: str,
                                   original_message: TaskMessage,
                                   file_contents: Dict[str, Dict]) -> Dict[str, Any]:
-        """执行增强的代码审查任务"""
+        """执行增强的代码审查和验证任务"""
         task_id = original_message.task_id
         self.logger.info(f"🎯 开始执行增强代码审查任务: {task_id}")
         
         try:
-            # 🔧 新增：从任务描述中提取设计文件路径
-            design_file_path = self._extract_design_file_path_from_task(enhanced_prompt)
-            if design_file_path:
-                self.logger.info(f"📁 从任务描述中提取到设计文件路径: {design_file_path}")
-                
-                # 读取设计文件内容
-                design_content = self._read_design_file_content(design_file_path)
-                if design_content:
-                    self.logger.info(f"✅ 成功读取设计文件内容，长度: {len(design_content)} 字符")
-                    
-                    # 将设计文件内容添加到 file_contents 中，供后续工具使用
-                    file_contents["design_file"] = {
-                        "path": design_file_path,
-                        "content": design_content,
-                        "type": "verilog"
-                    }
-                    
-                    # 增强任务描述，明确指定要使用的设计文件
-                    enhanced_prompt = f"""
-{enhanced_prompt}
-
-**🔧 重要提示**:
-- 已找到设计文件: {design_file_path}
-- 设计文件内容已加载，长度: {len(design_content)} 字符
-- 请直接使用此设计文件进行代码审查和测试台生成
-- 不需要重新生成或查找设计文件
-"""
-                else:
-                    self.logger.warning(f"⚠️ 无法读取设计文件内容: {design_file_path}")
-            else:
-                self.logger.info("ℹ️ 未从任务描述中找到设计文件路径，将使用默认流程")
+            # 🔧 新增：检查并设置实验路径
+            experiment_path = None
             
-            # 🔧 新增：将 file_contents 存储到实例变量中，供工具调用时使用
-            self._current_file_contents = file_contents
+            # 1. 从任务上下文获取实验路径
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                if hasattr(self.current_task_context, 'experiment_path') and self.current_task_context.experiment_path:
+                    experiment_path = self.current_task_context.experiment_path
+                    self.logger.info(f"🧪 从任务上下文获取实验路径: {experiment_path}")
             
-            # 使用增强验证处理流程 - 允许更多迭代次数进行错误修复
+            # 2. 如果没有找到，尝试从实验管理器获取
+            if not experiment_path:
+                try:
+                    from core.experiment_manager import get_experiment_manager
+                    exp_manager = get_experiment_manager()
+                    
+                    if exp_manager and exp_manager.current_experiment_path:
+                        experiment_path = exp_manager.current_experiment_path
+                        self.logger.info(f"🧪 从实验管理器获取实验路径: {experiment_path}")
+                except (ImportError, Exception) as e:
+                    self.logger.debug(f"实验管理器不可用: {e}")
+            
+            # 3. 如果还是没有找到，使用默认路径
+            if not experiment_path:
+                experiment_path = "./file_workspace"
+                self.logger.warning(f"⚠️ 没有找到实验路径，使用默认路径: {experiment_path}")
+            
+            # 设置实验路径到任务上下文
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                self.current_task_context.experiment_path = experiment_path
+                self.logger.info(f"✅ 设置任务实验路径: {experiment_path}")
+            
+            # 🔧 新增：提取设计文件路径
+            design_file_path = None
+            
+            # 1. 从任务上下文获取设计文件路径
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                if hasattr(self.current_task_context, 'design_file_path') and self.current_task_context.design_file_path:
+                    design_file_path = self.current_task_context.design_file_path
+                    self.logger.info(f"📁 从任务上下文获取设计文件路径: {design_file_path}")
+            
+            # 2. 如果没有找到，从任务描述中提取
+            if not design_file_path:
+                design_file_path = self._extract_design_file_path_from_task(enhanced_prompt)
+                if design_file_path:
+                    self.logger.info(f"📁 从任务描述中提取设计文件路径: {design_file_path}")
+            
+            # 3. 如果还是没有找到，尝试从文件内容中查找
+            if not design_file_path and file_contents:
+                for file_id, file_info in file_contents.items():
+                    if file_info.get("file_type") == "verilog" or file_info.get("file_path", "").endswith(".v"):
+                        design_file_path = file_info.get("file_path")
+                        self.logger.info(f"📁 从文件内容中获取设计文件路径: {design_file_path}")
+                        break
+            
+            # 设置设计文件路径到任务上下文
+            if design_file_path and hasattr(self, 'current_task_context') and self.current_task_context:
+                self.current_task_context.design_file_path = design_file_path
+                self.logger.info(f"✅ 设置设计文件路径: {design_file_path}")
+            
+            # 使用增强验证处理流程
             result = await self.process_with_enhanced_validation(
                 user_request=enhanced_prompt,
-                max_iterations=8  # 增加到8次迭代，给足够空间进行错误修复
+                max_iterations=6
             )
-            
-            # 🔧 新增：清理实例变量
-            if hasattr(self, '_current_file_contents'):
-                delattr(self, '_current_file_contents')
             
             if result["success"]:
                 self.logger.info(f"✅ 代码审查任务完成: {task_id}")
@@ -1031,18 +1090,29 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 # 提取生成的文件路径信息
                 generated_files = self._extract_generated_files_from_tool_results(result.get("tool_results", []))
                 
+                # 🔧 新增：更新文件路径为实验路径
+                for file_info in generated_files:
+                    if file_info.get("file_path") and experiment_path:
+                        # 如果文件路径是相对路径，更新为实验路径下的绝对路径
+                        if not file_info["file_path"].startswith("/"):
+                            file_info["file_path"] = f"{experiment_path}/{file_info['file_path']}"
+                            self.logger.info(f"📁 更新文件路径: {file_info['file_path']}")
+                
                 return {
                     "success": True,
                     "task_id": task_id,
                     "response": result.get("response", ""),
                     "tool_results": result.get("tool_results", []),
                     "iterations": result.get("iterations", 1),
-                    "generated_files": generated_files,  # 新增：生成的文件路径列表
-                    "design_file_path": design_file_path,  # 🔧 新增：记录使用的设计文件路径
+                    "generated_files": generated_files,
+                    "experiment_path": experiment_path,  # 🔧 新增：返回实验路径
+                    "design_file_path": design_file_path,  # 🔧 新增：返回设计文件路径
                     "quality_metrics": {
                         "schema_validation_passed": True,
                         "parameter_errors_fixed": result.get("iterations", 1) > 1,
-                        "security_checks_passed": True
+                        "security_checks_passed": True,
+                        "verification_type": result.get("verification_type", "unknown"),
+                        "test_coverage_score": result.get("test_coverage_score", 0.0)
                     }
                 }
             else:
@@ -1052,19 +1122,25 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                     "task_id": task_id,
                     "error": result.get("error", "Unknown error"),
                     "iterations": result.get("iterations", 1),
-                    "design_file_path": design_file_path  # 🔧 新增：记录使用的设计文件路径
+                    "last_error": result.get("last_error", ""),
+                    "suggestions": result.get("suggestions", []),
+                    "experiment_path": experiment_path,  # 🔧 新增：返回实验路径
+                    "design_file_path": design_file_path  # 🔧 新增：返回设计文件路径
                 }
                 
         except Exception as e:
-            # 🔧 新增：确保清理实例变量
-            if hasattr(self, '_current_file_contents'):
-                delattr(self, '_current_file_contents')
-                
             self.logger.error(f"❌ 代码审查任务执行异常: {task_id} - {str(e)}")
             return {
                 "success": False,
                 "task_id": task_id,
-                "error": f"执行异常: {str(e)}"
+                "error": f"执行异常: {str(e)}",
+                "suggestions": [
+                    "检查输入参数格式是否正确",
+                    "确认设计文件路径是否正确",
+                    "验证工具配置是否正确"
+                ],
+                "experiment_path": experiment_path if 'experiment_path' in locals() else None,  # 🔧 新增：返回实验路径
+                "design_file_path": design_file_path if 'design_file_path' in locals() else None  # 🔧 新增：返回设计文件路径
             }
     
     # =============================================================================
@@ -3015,3 +3091,96 @@ endmodule
         except Exception as e:
             self.logger.error(f"❌ 读取设计文件失败: {str(e)}")
             return None
+    
+    def _generate_code_review_tool_guide(self) -> List[str]:
+        """生成EnhancedRealCodeReviewAgent专用的工具使用指导"""
+        guide = []
+        
+        guide.append("\n=== EnhancedRealCodeReviewAgent 工具调用指导 ===")
+        guide.append("")
+        
+        guide.append("【可用工具列表】")
+        guide.append("1. generate_testbench - 测试台生成")
+        guide.append("   功能: 为Verilog模块生成全面的测试台(testbench)")
+        guide.append("   参数: module_name, module_code, test_scenarios, clock_period, simulation_time")
+        guide.append("   示例: generate_testbench('adder_8bit', verilog_code, test_scenarios, 10.0, 10000)")
+        guide.append("")
+        
+        guide.append("2. run_simulation - 仿真执行")
+        guide.append("   功能: 使用专业工具运行Verilog仿真和验证")
+        guide.append("   参数: module_code, testbench_code, simulator, simulation_options")
+        guide.append("   示例: run_simulation(verilog_code, testbench_code, 'iverilog', {'timescale':'1ns/1ps'})")
+        guide.append("")
+        
+        guide.append("3. use_external_testbench - 外部测试台使用")
+        guide.append("   功能: 使用外部提供的testbench文件进行测试验证")
+        guide.append("   参数: design_code, external_testbench_path, design_module_name, simulator")
+        guide.append("   示例: use_external_testbench(verilog_code, 'testbench.v', 'adder_8bit', 'iverilog')")
+        guide.append("")
+        
+        guide.append("4. generate_build_script - 构建脚本生成")
+        guide.append("   功能: 生成专业的构建脚本(Makefile或shell脚本)")
+        guide.append("   参数: verilog_files, testbench_files, script_type, target_name, build_options")
+        guide.append("   示例: generate_build_script(['design.v'], ['tb.v'], 'makefile', 'simulation')")
+        guide.append("")
+        
+        guide.append("5. execute_build_script - 脚本执行")
+        guide.append("   功能: 安全执行构建脚本进行编译和仿真")
+        guide.append("   参数: script_name, action, arguments, timeout, working_directory")
+        guide.append("   示例: execute_build_script('Makefile', 'all', None, 300)")
+        guide.append("")
+        
+        guide.append("6. analyze_test_failures - 测试失败分析")
+        guide.append("   功能: 分析测试失败原因并提供具体修复建议")
+        guide.append("   参数: design_code, compilation_errors, simulation_errors, test_assertions, testbench_code")
+        guide.append("   示例: analyze_test_failures(verilog_code, comp_errors, sim_errors, assertions, testbench_code)")
+        guide.append("")
+        
+        guide.append("7. get_tool_usage_guide - 工具使用指导")
+        guide.append("   功能: 获取工具使用指导")
+        guide.append("   参数: include_examples, include_best_practices")
+        guide.append("   示例: get_tool_usage_guide(True, True)")
+        guide.append("")
+        
+        guide.append("【验证流程最佳实践】")
+        guide.append("1. 测试台生成: generate_testbench")
+        guide.append("2. 仿真执行: run_simulation")
+        guide.append("3. 失败分析: analyze_test_failures (如有问题)")
+        guide.append("4. 构建脚本: generate_build_script (自动化)")
+        guide.append("5. 脚本执行: execute_build_script")
+        guide.append("6. 外部测试: use_external_testbench (如有外部测试台)")
+        guide.append("")
+        
+        guide.append("【注意事项】")
+        guide.append("- 专注于代码审查、测试和验证，不负责Verilog设计")
+        guide.append("- 支持多种仿真器：iverilog, modelsim, vivado")
+        guide.append("- 所有工具都支持Schema验证，确保参数格式正确")
+        guide.append("- 建议按照最佳实践流程调用工具")
+        guide.append("- 支持外部测试台文件，灵活适应不同测试需求")
+        guide.append("- 提供详细的失败分析和修复建议")
+        
+        return guide
+    
+    async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
+                                       include_best_practices: bool = True) -> Dict[str, Any]:
+        """获取EnhancedRealCodeReviewAgent专用的工具使用指导"""
+        try:
+            guide = self._generate_code_review_tool_guide()
+            
+            return {
+                "success": True,
+                "guide": guide,
+                "agent_type": "EnhancedRealCodeReviewAgent",
+                "include_examples": include_examples,
+                "include_best_practices": include_best_practices,
+                "total_tools": 7,  # EnhancedRealCodeReviewAgent有7个工具
+                "message": "成功生成EnhancedRealCodeReviewAgent的工具使用指导"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 生成工具使用指导失败: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "生成工具使用指导时发生错误"
+            }
