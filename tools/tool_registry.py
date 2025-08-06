@@ -61,7 +61,7 @@ class ToolRegistry:
         # 注册数据库工具
         self._register_database_tools()
         
-        self.logger.info("🛠️ 基础工具注册完成")
+        self.logger.debug("🛠️ 基础工具注册完成")
     
     def _register_database_tools(self):
         """注册数据库工具"""
@@ -127,7 +127,7 @@ class ToolRegistry:
             permissions={ToolPermission.DATABASE_READ, ToolPermission.WRITE_FILES}
         )
         
-        self.logger.info("🗄️ 数据库工具注册完成")
+        self.logger.debug("🗄️ 数据库工具注册完成")
     
     def register_tool(self, name: str, func: Callable, 
                      permissions: Set[ToolPermission]):

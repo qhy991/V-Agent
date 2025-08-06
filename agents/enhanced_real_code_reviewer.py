@@ -56,8 +56,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         # 注册增强工具
         self._register_enhanced_code_review_tools()
         
-        self.logger.info(f"🔍 增强代码审查智能体(Schema支持)初始化完成")
-        self.agent_logger.info("EnhancedRealCodeReviewAgent初始化完成")
+        self.logger.debug(f"🔍 代码审查智能体初始化完成")
     
     def _register_enhanced_code_review_tools(self):
         """注册带Schema验证的代码审查工具"""
@@ -549,7 +548,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         # 调试：打印对话历史内容
         for i in range(len(conversation)):
             msg = conversation[i]
-            self.logger.info(f"🔍 [CODE_REVIEWER] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.debug(f"🔍 [CODE_REVIEWER] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
             self.logger.debug(f"🔍 [CODE_REVIEWER] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
@@ -562,18 +561,18 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         system_prompt = None
         if is_first_call:
             system_prompt = self._build_enhanced_system_prompt()
-            self.logger.info(f"📝 [CODE_REVIEWER] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
-            self.logger.info(f"📝 [CODE_REVIEWER] System Prompt前200字: {system_prompt[:200]}...")
+            self.logger.debug(f"📝 [CODE_REVIEWER] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.debug(f"📝 [CODE_REVIEWER] System Prompt前200字: {system_prompt[:200]}...")
             # 检查关键规则是否存在
             has_mandatory_tools = "必须调用工具" in system_prompt
             has_testbench = "generate_testbench" in system_prompt
             has_simulation = "run_simulation" in system_prompt
-            self.logger.info(f"🔍 [CODE_REVIEWER] System Prompt检查 - 强制工具: {has_mandatory_tools}, 测试台生成: {has_testbench}, 仿真执行: {has_simulation}")
+            self.logger.debug(f"🔍 [CODE_REVIEWER] System Prompt检查 - 强制工具: {has_mandatory_tools}, 测试台生成: {has_testbench}, 仿真执行: {has_simulation}")
         else:
-            self.logger.info("🔄 [CODE_REVIEWER] 后续调用 - 依赖缓存System Prompt")
+            self.logger.debug("🔄 [CODE_REVIEWER] 后续调用 - 依赖缓存System Prompt")
         
-        self.logger.info(f"📤 [CODE_REVIEWER] 用户消息长度: {len(user_message)}")
-        self.logger.info(f"📤 [CODE_REVIEWER] 用户消息前200字: {user_message[:200]}...")
+        self.logger.debug(f"📤 [CODE_REVIEWER] 用户消息长度: {len(user_message)}")
+        self.logger.debug(f"📤 [CODE_REVIEWER] 用户消息前200字: {user_message[:200]}...")
         
         try:
             # 使用优化的LLM调用方法
@@ -589,14 +588,14 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             # 分析响应内容
             self.logger.info(f"🔍 [CODE_REVIEWER] LLM响应长度: {len(response)}")
-            self.logger.info(f"🔍 [CODE_REVIEWER] 响应前200字: {response[:200]}...")
+            self.logger.debug(f"🔍 [CODE_REVIEWER] 响应前200字: {response[:200]}...")
             
             # 检查响应是否包含工具调用
             has_tool_calls = "tool_calls" in response
             has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
             has_testbench_call = "generate_testbench" in response
             has_simulation_call = "run_simulation" in response
-            self.logger.info(f"🔍 [CODE_REVIEWER] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 测试台生成: {has_testbench_call}, 仿真执行: {has_simulation_call}")
+            self.logger.debug(f"🔍 [CODE_REVIEWER] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 测试台生成: {has_testbench_call}, 仿真执行: {has_simulation_call}")
             
             return response
         except Exception as e:

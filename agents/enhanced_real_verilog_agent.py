@@ -49,8 +49,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         # 注册增强工具
         self._register_enhanced_verilog_tools()
         
-        self.logger.info(f"🔧 增强Verilog设计智能体(Schema支持)初始化完成")
-        self.agent_logger.info("EnhancedRealVerilogAgent初始化完成")
+        self.logger.debug(f"🔧 Verilog智能体初始化完成")
     
     def _register_enhanced_verilog_tools(self):
         """注册带Schema验证的Verilog设计工具"""
@@ -373,7 +372,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         # 调试：打印对话历史内容
         for i in range(len(conversation)):
             msg = conversation[i]
-            self.logger.info(f"🔍 [VERILOG_AGENT] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.debug(f"🔍 [VERILOG_AGENT] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
             self.logger.debug(f"🔍 [VERILOG_AGENT] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
@@ -401,18 +400,18 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
         system_prompt = None
         if is_first_call:
             system_prompt = self._build_enhanced_system_prompt()
-            self.logger.info(f"📝 [VERILOG_AGENT] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
-            self.logger.info(f"📝 [VERILOG_AGENT] System Prompt前200字: {system_prompt[:200]}...")
+            self.logger.debug(f"📝 [VERILOG_AGENT] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.debug(f"📝 [VERILOG_AGENT] System Prompt前200字: {system_prompt[:200]}...")
             # 检查关键规则是否存在
             has_mandatory_tools = "必须调用工具" in system_prompt
             has_write_file = "write_file" in system_prompt
             has_json_format = "JSON格式输出" in system_prompt
-            self.logger.info(f"🔍 [VERILOG_AGENT] System Prompt检查 - 强制工具: {has_mandatory_tools}, 文件写入: {has_write_file}, JSON格式: {has_json_format}")
+            self.logger.debug(f"🔍 [VERILOG_AGENT] System Prompt检查 - 强制工具: {has_mandatory_tools}, 文件写入: {has_write_file}, JSON格式: {has_json_format}")
         else:
-            self.logger.info("🔄 [VERILOG_AGENT] 后续调用 - 依赖缓存System Prompt")
+            self.logger.debug("🔄 [VERILOG_AGENT] 后续调用 - 依赖缓存System Prompt")
         
-        self.logger.info(f"📤 [VERILOG_AGENT] 用户消息长度: {len(user_message)}")
-        self.logger.info(f"📤 [VERILOG_AGENT] 用户消息前200字: {user_message[:200]}...")
+        self.logger.debug(f"📤 [VERILOG_AGENT] 用户消息长度: {len(user_message)}")
+        self.logger.debug(f"📤 [VERILOG_AGENT] 用户消息前200字: {user_message[:200]}...")
         
         try:
             # 使用优化的LLM调用方法
@@ -428,13 +427,13 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
             
             # 分析响应内容
             self.logger.info(f"🔍 [VERILOG_AGENT] LLM响应长度: {len(response)}")
-            self.logger.info(f"🔍 [VERILOG_AGENT] 响应前200字: {response[:200]}...")
+            self.logger.debug(f"🔍 [VERILOG_AGENT] 响应前200字: {response[:200]}...")
             
             # 检查响应是否包含工具调用
             has_tool_calls = "tool_calls" in response
             has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
             has_write_file_call = "write_file" in response
-            self.logger.info(f"🔍 [VERILOG_AGENT] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, write_file调用: {has_write_file_call}")
+            self.logger.debug(f"🔍 [VERILOG_AGENT] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, write_file调用: {has_write_file_call}")
             
             return response
         except Exception as e:
@@ -486,7 +485,7 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
     
     def _build_enhanced_system_prompt(self) -> str:
         """构建增强的System Prompt（支持智能Schema适配）"""
-        self.logger.info("🔧 构建Verilog智能体的System Prompt")
+        self.logger.debug("🔧 构建Verilog智能体的System Prompt")
         
         base_prompt = """你是一位资深的Verilog硬件设计专家，具备以下专业能力：
 
@@ -776,12 +775,12 @@ class EnhancedRealVerilogAgent(EnhancedBaseAgent):
 
 立即开始工具调用，严格按照工具列表执行，不要直接生成任何代码！"""
         
-        self.logger.info("✅ Verilog智能体System Prompt构建完成")
+        self.logger.debug("✅ Verilog智能体System Prompt构建完成")
         self.logger.debug(f"📝 System Prompt长度: {len(base_prompt)} 字符")
         # 记录关键规则是否存在
         has_tool_requirement = "必须调用工具" in base_prompt
         has_file_requirement = "write_file" in base_prompt
-        self.logger.info(f"🔍 System Prompt检查 - 工具调用要求: {has_tool_requirement}, 文件写入要求: {has_file_requirement}")
+        self.logger.debug(f"🔍 System Prompt检查 - 工具调用要求: {has_tool_requirement}, 文件写入要求: {has_file_requirement}")
         
         return base_prompt
     

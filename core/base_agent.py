@@ -128,7 +128,7 @@ class BaseAgent(ABC):
         # 生成system prompt (包含工具信息)
         self.system_prompt = self._build_enhanced_system_prompt()
         
-        self.logger.info(f"✅ {self.__class__.__name__} (Function Calling支持) 初始化完成")
+        self.logger.debug(f"✅ {self.__class__.__name__} (Function Calling支持) 初始化完成")
         self.logger.debug(f"📝 System prompt 长度: {len(self.system_prompt)} 字符")
     
     def _register_function_calling_tools(self):
@@ -163,7 +163,7 @@ class BaseAgent(ABC):
             "description": description,
             "parameters": parameters or {}
         }
-        self.logger.info(f"🔧 注册Function Calling工具: {name}")
+        self.logger.debug(f"🔧 注册Function Calling工具: {name}")
     
     def set_task_context(self, task_context):
         """设置任务上下文，用于协调器集成
@@ -203,7 +203,7 @@ class BaseAgent(ABC):
             permissions.add(ToolPermission.DATABASE_READ)
         
         self.allowed_permissions = permissions
-        self.logger.info(f"🛠️ 传统工具调用已启用: 权限={len(permissions)}")
+        self.logger.debug(f"🛠️ 传统工具调用已启用: 权限={len(permissions)}")
     
     def _build_enhanced_system_prompt(self) -> str:
         """构建包含Function Calling信息的增强system prompt"""
@@ -654,7 +654,7 @@ class BaseAgent(ABC):
 """
     
     def _parse_self_evaluation(self, response: str, tool_execution_summary: Dict[str, Any] = None) -> Dict[str, Any]:
-        """解析自我评估结果"""
+        """解析自我评估结果 - 增强版，支持工具调用验证"""
         try:
             # 🔧 修复：首先检查工具执行结果，如果有关键工具失败，强制继续
             has_critical_failures = False
@@ -672,6 +672,12 @@ class BaseAgent(ABC):
                         "reason": f"关键工具执行失败: {', '.join(failed_tools)}，必须重新执行才能完成任务",
                         "suggested_actions": [f"修复并重新调用失败的工具: {tool}" for tool in failed_tools if tool in critical_tools]
                     }
+            
+            # 🆕 新增：工具调用验证机制
+            tool_validation_result = self._validate_required_tool_calls()
+            if tool_validation_result["needs_continuation"]:
+                self.logger.warning(f"⚠️ 工具调用验证失败: {tool_validation_result['reason']}")
+                return tool_validation_result
             
             # 尝试解析JSON格式
             import json
@@ -728,6 +734,197 @@ class BaseAgent(ABC):
                 "suggested_actions": []
             }
     
+    def _validate_required_tool_calls(self) -> Dict[str, Any]:
+        """验证必需的工具调用 - 增强版，支持循环检测"""
+        try:
+            # 获取工具调用历史
+            tool_calls = self._extract_tool_calls_from_history()
+            
+            # 🆕 新增：循环检测
+            loop_detection = self._detect_tool_call_loops(tool_calls)
+            if loop_detection["is_loop"]:
+                self.logger.warning(f"🔄 检测到工具调用循环: {loop_detection['pattern']}")
+                return {
+                    "needs_continuation": False,
+                    "reason": f"检测到工具调用循环，强制停止: {loop_detection['pattern']}",
+                    "suggested_actions": ["停止循环执行"]
+                }
+            
+            # 🆕 新增：重复操作检测
+            repetition_detection = self._detect_repetitive_operations(tool_calls)
+            if repetition_detection["is_repetitive"]:
+                self.logger.warning(f"🔄 检测到重复操作: {repetition_detection['pattern']}")
+                return {
+                    "needs_continuation": False,
+                    "reason": f"检测到重复操作，强制停止: {repetition_detection['pattern']}",
+                    "suggested_actions": ["停止重复执行"]
+                }
+            
+            # 原有的工具调用验证逻辑
+            agent_type = self.role.lower()
+            required_tools = self._get_required_tools_for_agent(agent_type)
+            
+            if not required_tools:
+                return {"needs_continuation": False, "reason": "无需验证工具调用"}
+            
+            # 检查必需工具是否都被调用
+            called_tools = [call["tool_name"] for call in tool_calls]
+            missing_tools = [tool for tool in required_tools if tool not in called_tools]
+            
+            if missing_tools:
+                self.logger.warning(f"⚠️ 缺少必需的工具调用: {missing_tools}")
+                return {
+                    "needs_continuation": True,
+                    "reason": f"缺少必需的工具调用: {', '.join(missing_tools)}",
+                    "suggested_actions": [f"调用必需工具: {tool}" for tool in missing_tools]
+                }
+            
+            # 验证工具调用顺序
+            order_validation = self._validate_tool_call_order(tool_calls, required_tools)
+            if not order_validation["valid"]:
+                return {
+                    "needs_continuation": True,
+                    "reason": f"工具调用顺序错误: {order_validation['reason']}",
+                    "suggested_actions": ["按照正确顺序调用工具"]
+                }
+            
+            return {"needs_continuation": False, "reason": "所有必需工具调用完成"}
+            
+        except Exception as e:
+            self.logger.error(f"❌ 工具调用验证失败: {e}")
+            return {"needs_continuation": False, "reason": f"验证过程出错: {e}"}
+    
+    def _detect_tool_call_loops(self, tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """检测工具调用循环模式"""
+        if len(tool_calls) < 6:  # 至少需要6次调用才能形成循环
+            return {"is_loop": False, "pattern": ""}
+        
+        # 分析最近的工具调用序列
+        recent_calls = tool_calls[-6:]  # 分析最近6次调用
+        call_sequence = [call["tool_name"] for call in recent_calls]
+        
+        # 检测重复模式
+        patterns = [
+            ["write_file", "analyze_code_quality", "write_file", "analyze_code_quality"],
+            ["generate_verilog_code", "write_file", "analyze_code_quality"],
+            ["write_file", "write_file", "analyze_code_quality"],
+        ]
+        
+        for pattern in patterns:
+            if self._sequence_contains_pattern(call_sequence, pattern):
+                return {"is_loop": True, "pattern": " -> ".join(pattern)}
+        
+        return {"is_loop": False, "pattern": ""}
+    
+    def _detect_repetitive_operations(self, tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """检测重复操作"""
+        if len(tool_calls) < 4:
+            return {"is_repetitive": False, "pattern": ""}
+        
+        # 分析最近的工具调用
+        recent_calls = tool_calls[-4:]
+        call_names = [call["tool_name"] for call in recent_calls]
+        
+        # 检测连续重复
+        if len(set(call_names)) == 1:  # 所有调用都是同一个工具
+            return {"is_repetitive": True, "pattern": f"连续重复调用 {call_names[0]}"}
+        
+        # 检测交替重复
+        if len(call_names) >= 4:
+            if call_names[-4:] == call_names[-2:] * 2:  # 模式重复
+                return {"is_repetitive": True, "pattern": f"交替重复: {' -> '.join(call_names[-2:])}"}
+        
+        return {"is_repetitive": False, "pattern": ""}
+    
+    def _sequence_contains_pattern(self, sequence: List[str], pattern: List[str]) -> bool:
+        """检查序列是否包含指定模式"""
+        if len(sequence) < len(pattern):
+            return False
+        
+        # 检查序列末尾是否匹配模式
+        return sequence[-len(pattern):] == pattern
+    
+    def _extract_tool_calls_from_history(self) -> List[Dict[str, Any]]:
+        """从对话历史中提取工具调用记录 - 返回列表格式"""
+        tool_calls = []
+        
+        if not self.conversation_history:
+            return tool_calls
+        
+        for message in self.conversation_history:
+            if message.get("role") == "user" and "工具执行结果详细报告" in message.get("content", ""):
+                content = message.get("content", "")
+                import re
+                
+                # 提取成功的工具调用
+                success_pattern = r"### ✅ 工具 \d+: (\w+) - 执行成功"
+                success_matches = re.findall(success_pattern, content)
+                
+                # 提取失败的工具调用
+                failure_pattern = r"### ❌ 工具 \d+: (\w+) - 执行失败"
+                failure_matches = re.findall(failure_pattern, content)
+                
+                # 记录成功的工具调用
+                for tool_name in success_matches:
+                    tool_calls.append({
+                        "tool_name": tool_name,
+                        "success": True,
+                        "timestamp": message.get("timestamp", time.time())
+                    })
+                
+                # 记录失败的工具调用
+                for tool_name in failure_matches:
+                    tool_calls.append({
+                        "tool_name": tool_name,
+                        "success": False,
+                        "timestamp": message.get("timestamp", time.time())
+                    })
+        
+        return tool_calls
+    
+    def _get_required_tools_for_agent(self, agent_type: str) -> List[str]:
+        """根据智能体类型获取必需的工具调用列表"""
+        # 定义各智能体类型的必需工具
+        required_tools_config = {
+            "verilog_designer": ["generate_verilog_code", "write_file", "analyze_code_quality"],
+            "code_reviewer": ["generate_testbench", "run_simulation", "write_file"],
+            "llm_coordinator": ["identify_task_type", "recommend_agent", "assign_task_to_agent", "write_file"]
+        }
+        
+        return required_tools_config.get(agent_type, [])
+    
+    def _validate_tool_call_order(self, tool_calls: List[Dict[str, Any]], required_tools: List[str]) -> Dict[str, Any]:
+        """验证工具调用顺序"""
+        if not tool_calls or not required_tools:
+            return {"valid": True, "reason": "无需验证顺序"}
+        
+        # 简化的顺序验证：检查关键工具是否按预期顺序调用
+        called_tools = [call["tool_name"] for call in tool_calls]
+        
+        # 对于Verilog设计智能体，确保generate_verilog_code在write_file之前
+        if "verilog_designer" in self.role.lower():
+            if "write_file" in called_tools and "generate_verilog_code" in called_tools:
+                write_index = called_tools.index("write_file")
+                generate_index = called_tools.index("generate_verilog_code")
+                if write_index < generate_index:
+                    return {
+                        "valid": False,
+                        "reason": "write_file在generate_verilog_code之前调用"
+                    }
+        
+        # 对于代码审查智能体，确保generate_testbench在run_simulation之前
+        if "code_reviewer" in self.role.lower():
+            if "run_simulation" in called_tools and "generate_testbench" in called_tools:
+                sim_index = called_tools.index("run_simulation")
+                testbench_index = called_tools.index("generate_testbench")
+                if sim_index < testbench_index:
+                    return {
+                        "valid": False,
+                        "reason": "run_simulation在generate_testbench之前调用"
+                    }
+        
+        return {"valid": True, "reason": "工具调用顺序正确"}
+    
     def _build_continuation_prompt(self, evaluation_result: Dict[str, Any]) -> str:
         """构建继续任务的prompt"""
         suggested_actions = evaluation_result.get("suggested_actions", [])
@@ -752,25 +949,25 @@ class BaseAgent(ABC):
         """解析LLM响应中的工具调用"""
         tool_calls = []
         
-        self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 开始解析工具调用 - 响应长度: {len(response)}")
-        self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 响应前500字: {response[:500]}...")
+        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 开始解析工具调用 - 响应长度: {len(response)}")
+        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应前500字: {response[:500]}...")
         
         # 基础检查
         has_tool_calls_key = "tool_calls" in response
         has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
         has_json_block = "```json" in response
-        self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 初步检查 - tool_calls关键字: {has_tool_calls_key}, JSON结构: {has_json_structure}, JSON代码块: {has_json_block}")
+        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 初步检查 - tool_calls关键字: {has_tool_calls_key}, JSON结构: {has_json_structure}, JSON代码块: {has_json_block}")
         
         try:
             # 方法1: 直接解析JSON格式
             cleaned_response = response.strip()
             if cleaned_response.startswith('{') and cleaned_response.endswith('}'):
-                self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 方法1: 尝试直接解析JSON")
+                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法1: 尝试直接解析JSON")
                 try:
                     data = json.loads(cleaned_response)
-                    self.logger.info(f"🔍 [TOOL_CALL_DEBUG] JSON解析成功 - 顶级键: {list(data.keys())}")
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON解析成功 - 顶级键: {list(data.keys())}")
                     if 'tool_calls' in data and isinstance(data['tool_calls'], list):
-                        self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 找到tool_calls数组 - 长度: {len(data['tool_calls'])}")
+                        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到tool_calls数组 - 长度: {len(data['tool_calls'])}")
                         for i, tool_call_data in enumerate(data['tool_calls']):
                             if isinstance(tool_call_data, dict) and 'tool_name' in tool_call_data:
                                 tool_call = ToolCall(
@@ -779,26 +976,26 @@ class BaseAgent(ABC):
                                     call_id=tool_call_data.get('call_id', f"call_{len(tool_calls)}")
                                 )
                                 tool_calls.append(tool_call)
-                                self.logger.info(f"🔧 [TOOL_CALL_DEBUG] 解析到工具调用 {i}: {tool_call.tool_name}")
-                                self.logger.info(f"🔧 [TOOL_CALL_DEBUG] 参数: {list(tool_call.parameters.keys())}")
+                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 解析到工具调用 {i}: {tool_call.tool_name}")
+                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 参数: {list(tool_call.parameters.keys())}")
                             else:
                                 self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] 工具调用 {i} 格式错误: {tool_call_data}")
                     else:
-                        self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] 没有找到有效的tool_calls数组")
+                        self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有找到有效的tool_calls数组")
                 except json.JSONDecodeError as e:
-                    self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] JSON解析失败: {str(e)}")
+                    self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON解析失败: {str(e)}")
             
             # 方法2: 查找JSON代码块
             if not tool_calls:
-                self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 方法2: 查找JSON代码块")
+                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法2: 查找JSON代码块")
                 json_pattern = r'```json\s*(\{.*?\})\s*```'
                 matches = re.findall(json_pattern, response, re.DOTALL)
-                self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 找到 {len(matches)} 个JSON代码块")
+                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到 {len(matches)} 个JSON代码块")
                 for i, match in enumerate(matches):
                     try:
                         data = json.loads(match)
                         if 'tool_calls' in data:
-                            self.logger.info(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含tool_calls")
+                            self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含tool_calls")
                             for tool_call_data in data['tool_calls']:
                                 tool_call = ToolCall(
                                     tool_name=tool_call_data['tool_name'],
@@ -806,14 +1003,14 @@ class BaseAgent(ABC):
                                     call_id=tool_call_data.get('call_id', f"call_{len(tool_calls)}")
                                 )
                                 tool_calls.append(tool_call)
-                                self.logger.info(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到工具调用: {tool_call.tool_name}")
+                                self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到工具调用: {tool_call.tool_name}")
                     except json.JSONDecodeError as e:
-                        self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] JSON代码块 {i} 解析失败: {str(e)}")
+                        self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON代码块 {i} 解析失败: {str(e)}")
                         continue
             
             # 方法3: 文本模式匹配备用方案
             if not tool_calls:
-                self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 方法3: 文本模式匹配")
+                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 方法3: 文本模式匹配")
                 tool_patterns = [
                     r'调用工具\s*[：:]\s*(\w+)',
                     r'使用工具\s*[：:]\s*(\w+)',
@@ -824,7 +1021,7 @@ class BaseAgent(ABC):
                 for pattern in tool_patterns:
                     matches = re.findall(pattern, response, re.IGNORECASE)
                     if matches:
-                        self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 模式 '{pattern}' 匹配到 {len(matches)} 个工具")
+                        self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 模式 '{pattern}' 匹配到 {len(matches)} 个工具")
                     for match in matches:
                         tool_call = ToolCall(
                             tool_name=match,
@@ -832,17 +1029,17 @@ class BaseAgent(ABC):
                             call_id=f"call_{len(tool_calls)}"
                         )
                         tool_calls.append(tool_call)
-                        self.logger.info(f"🔧 [TOOL_CALL_DEBUG] 从文本中解析到工具调用: {tool_call.tool_name}")
+                        self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从文本中解析到工具调用: {tool_call.tool_name}")
             
             # 最终结果
-            self.logger.info(f"✅ [TOOL_CALL_DEBUG] 解析完成 - 总计找到 {len(tool_calls)} 个工具调用")
+            self.logger.debug(f"✅ [TOOL_CALL_DEBUG] 解析完成 - 总计找到 {len(tool_calls)} 个工具调用")
             if not tool_calls:
-                self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] 没有解析到任何工具调用！")
+                self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有解析到任何工具调用！")
                 # 提供调试信息
                 if "write_file" in response.lower():
-                    self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'write_file'但没有被解析为工具调用")
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'write_file'但没有被解析为工具调用")
                 if "generate_verilog" in response.lower():
-                    self.logger.info(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'generate_verilog'但没有被解析为工具调用")
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 响应中包含'generate_verilog'但没有被解析为工具调用")
             
             return tool_calls
             

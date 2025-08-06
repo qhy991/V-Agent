@@ -223,8 +223,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "agent_utilization": {}
         }
         
-        self.logger.info("🧠 强化LLM协调智能体初始化完成")
-        self.logger.info(f"📊 系统启动时间: {datetime.fromtimestamp(self.start_time).strftime('%Y-%m-%d %H:%M:%S')}")
+        self.logger.debug("🧠 LLM协调智能体初始化完成")
     
     def _initialize_task_patterns(self) -> Dict[TaskType, List[str]]:
         """初始化任务类型识别模式"""
@@ -1170,10 +1169,29 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             # 创建任务上下文
             task_id = f"task_{int(time.time())}"
+            
+            # 🎯 修复：TaskType验证过于死板的问题
+            # 支持更多任务类型，包括"review"等
+            try:
+                task_type_enum = TaskType(task_type)
+            except ValueError:
+                # 如果task_type不在枚举中，映射到合适的类型
+                task_type_mapping = {
+                    "review": TaskType.VERIFICATION,
+                    "test": TaskType.VERIFICATION,
+                    "verify": TaskType.VERIFICATION,
+                    "analyze": TaskType.ANALYSIS,
+                    "debug": TaskType.DEBUG,
+                    "design": TaskType.DESIGN,
+                    "composite": TaskType.COMPOSITE
+                }
+                task_type_enum = task_type_mapping.get(task_type.lower(), TaskType.COMPOSITE)
+                self.logger.info(f"🎯 任务类型映射: '{task_type}' -> {task_type_enum.value}")
+            
             task_context = TaskContext(
                 task_id=task_id,
                 original_request=task_description,
-                task_type=TaskType(task_type),
+                task_type=task_type_enum,
                 priority=TaskPriority(priority),
                 current_stage=f"assigned_to_{agent_id}",
                 assigned_agent=agent_id,
@@ -3182,6 +3200,20 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "total_iterations": 0
         }
         
+        # 🎯 修复：处理all_results可能是列表的情况
+        if isinstance(all_results, list):
+            # 如果是列表，转换为字典格式
+            results_dict = {}
+            for i, result in enumerate(all_results):
+                if isinstance(result, dict):
+                    # 尝试从结果中提取智能体ID
+                    agent_id = result.get("agent_id", f"agent_{i}")
+                    results_dict[agent_id] = result
+                else:
+                    results_dict[f"result_{i}"] = result
+            all_results = results_dict
+            self.logger.info(f"🎯 将列表格式的all_results转换为字典格式，包含{len(all_results)}个结果")
+        
         # 检查设计完成情况
         if "design" in requirements or "模块" in requirements:
             design_results = []
@@ -3234,13 +3266,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         # 智能体性能分析
         for agent_id, result in all_results.items():
-            execution_time = result.get("execution_time", 0)
-            metrics["agent_performance"][agent_id] = {
-                "execution_time": execution_time,
-                "success": result.get("success", False),
-                "quality_score": result.get("quality_score", 0)
-            }
-            metrics["execution_time"] += execution_time
+            if isinstance(result, dict):
+                execution_time = result.get("execution_time", 0)
+                metrics["agent_performance"][agent_id] = {
+                    "execution_time": execution_time,
+                    "success": result.get("success", False),
+                    "quality_score": result.get("quality_score", 0)
+                }
+                metrics["execution_time"] += execution_time
         
         metrics["total_iterations"] = task_context.iteration_count
         
@@ -3370,17 +3403,31 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "iteration_efficiency": 0.0
         }
         
+        # 🎯 修复：处理all_results可能是列表的情况
+        if isinstance(all_results, list):
+            # 如果是列表，转换为字典格式
+            results_dict = {}
+            for i, result in enumerate(all_results):
+                if isinstance(result, dict):
+                    agent_id = result.get("agent_id", f"agent_{i}")
+                    results_dict[agent_id] = result
+                else:
+                    results_dict[f"result_{i}"] = result
+            all_results = results_dict
+            self.logger.info(f"🎯 性能指标计算中将列表格式的all_results转换为字典格式，包含{len(all_results)}个结果")
+        
         # 计算总执行时间
         total_time = 0.0
         success_count = 0
         total_count = len(all_results)
         
         for result in all_results.values():
-            execution_time = result.get("execution_time", 0)
-            total_time += execution_time
-            
-            if result.get("success", False):
-                success_count += 1
+            if isinstance(result, dict):
+                execution_time = result.get("execution_time", 0)
+                total_time += execution_time
+                
+                if result.get("success", False):
+                    success_count += 1
         
         metrics["total_execution_time"] = total_time
         metrics["average_execution_time"] = total_time / total_count if total_count > 0 else 0
@@ -3874,7 +3921,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 调试：打印对话历史内容
         for i in range(len(conversation)):
             msg = conversation[i]
-            self.logger.info(f"🔍 [COORDINATOR] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.debug(f"🔍 [COORDINATOR] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
             self.logger.debug(f"🔍 [COORDINATOR] 内容前100字: {msg['content'][:100]}...")
         
         for msg in conversation:
@@ -3887,18 +3934,18 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         system_prompt = None
         if is_first_call:
             system_prompt = self._build_enhanced_system_prompt()
-            self.logger.info(f"📝 [COORDINATOR] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
-            self.logger.info(f"📝 [COORDINATOR] System Prompt前200字: {system_prompt[:200]}...")
+            self.logger.debug(f"📝 [COORDINATOR] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.debug(f"📝 [COORDINATOR] System Prompt前200字: {system_prompt[:200]}...")
             # 检查关键规则是否存在
             has_mandatory_tools = "必须调用工具" in system_prompt
             has_task_identification = "identify_task_type" in system_prompt
             has_agent_assignment = "assign_task_to_agent" in system_prompt
-            self.logger.info(f"🔍 [COORDINATOR] System Prompt检查 - 强制工具: {has_mandatory_tools}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+            self.logger.debug(f"🔍 [COORDINATOR] System Prompt检查 - 强制工具: {has_mandatory_tools}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
         else:
-            self.logger.info("🔄 [COORDINATOR] 后续调用 - 依赖缓存System Prompt")
+            self.logger.debug("🔄 [COORDINATOR] 后续调用 - 依赖缓存System Prompt")
         
-        self.logger.info(f"📤 [COORDINATOR] 用户消息长度: {len(user_message)}")
-        self.logger.info(f"📤 [COORDINATOR] 用户消息前200字: {user_message[:200]}...")
+        self.logger.debug(f"📤 [COORDINATOR] 用户消息长度: {len(user_message)}")
+        self.logger.debug(f"📤 [COORDINATOR] 用户消息前200字: {user_message[:200]}...")
         
         try:
             # 使用优化的LLM调用方法
@@ -3914,14 +3961,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             # 分析响应内容
             self.logger.info(f"🔍 [COORDINATOR] LLM响应长度: {len(response)}")
-            self.logger.info(f"🔍 [COORDINATOR] 响应前200字: {response[:200]}...")
+            self.logger.debug(f"🔍 [COORDINATOR] 响应前200字: {response[:200]}...")
             
             # 检查响应是否包含工具调用
             has_tool_calls = "tool_calls" in response
             has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
             has_task_identification = "identify_task_type" in response
             has_agent_assignment = "assign_task_to_agent" in response
-            self.logger.info(f"🔍 [COORDINATOR] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+            self.logger.debug(f"🔍 [COORDINATOR] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
             
             return response
         except Exception as e:

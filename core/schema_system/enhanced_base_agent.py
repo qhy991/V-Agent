@@ -69,7 +69,7 @@ class EnhancedBaseAgent(BaseAgent):
         self.max_repair_attempts = 3  # 最大修复尝试次数
         self.enable_validation_cache = True
         
-        logger.info(f"✅ 增强BaseAgent初始化完成: {agent_id}")
+        logger.debug(f"✅ BaseAgent初始化: {agent_id}")
     
     def register_enhanced_tool(self, name: str, func: Callable, description: str,
                               schema: Dict[str, Any], security_level: str = "normal",
@@ -112,7 +112,7 @@ class EnhancedBaseAgent(BaseAgent):
                 parameters=self._convert_schema_to_legacy_format(schema)
             )
             
-            logger.info(f"🔧 增强工具注册成功: {name} (安全级别: {security_level})")
+            logger.debug(f"🔧 工具注册: {name}")
             
         except Exception as e:
             logger.error(f"❌ 增强工具注册失败 {name}: {str(e)}")

@@ -139,8 +139,7 @@ class OptimizedLLMClient:
             "min_context_messages": 3  # 最少保留的消息数
         }
         
-        self.logger.info(f"🚀 初始化优化LLM客户端 - 提供商: {provider_name}, 模型: {config.model_name}")
-        self.logger.info(f"🔧 优化配置: {self.optimization_config}")
+        self.logger.debug(f"🚀 优化LLM客户端初始化: {provider_name}, {config.model_name}")
     
     @asynccontextmanager
     async def _get_session(self) -> aiohttp.ClientSession:
@@ -213,29 +212,20 @@ class OptimizedLLMClient:
         """优化的提示发送方法，支持智能缓存和上下文管理"""
         start_time = time.time()
         
-        self.logger.info(f"🚀 [SYSTEM_PROMPT_DEBUG] 开始优化LLM调用")
-        self.logger.info(f"📝 [SYSTEM_PROMPT_DEBUG] 参数: conversation_id={conversation_id}, force_refresh_system={force_refresh_system}")
+        # 简化日志输出 - 只记录关键信息
+        self.logger.info(f"🚀 优化LLM调用 - 对话ID: {conversation_id}")
         
         # 获取对话上下文
         context = self._get_conversation_context(conversation_id)
-        
-        # 记录system prompt相关信息
-        if system_prompt:
-            system_prompt_hash = context._hash_prompt(system_prompt)
-            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 收到新system prompt: 长度={len(system_prompt)}, hash={system_prompt_hash[:8]}...")
-            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 当前上下文system prompt hash: {context.system_prompt_hash[:8] if context.system_prompt_hash else 'None'}...")
-        else:
-            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 没有提供system prompt")
         
         # 检查是否需要更新system prompt
         if system_prompt and (force_refresh_system or 
                              context.system_prompt_hash != context._hash_prompt(system_prompt)):
             context.update_system_prompt(system_prompt)
-            self.logger.info(f"🔄 [SYSTEM_PROMPT_DEBUG] 更新对话 {conversation_id} 的system prompt")
+            self.logger.info(f"🔄 更新system prompt: {len(system_prompt)} 字符")
         
-        # 判断是否包含system prompt - 修复：当force_refresh_system=True时，强制包含
+        # 判断是否包含system prompt
         include_system = force_refresh_system or self._should_include_system_prompt(context, system_prompt)
-        self.logger.info(f"🤔 [SYSTEM_PROMPT_DEBUG] 是否包含system prompt: {include_system}")
         
         # 构建消息列表
         messages = []
@@ -243,22 +233,10 @@ class OptimizedLLMClient:
         if include_system and context.system_prompt:
             messages.append({"role": "system", "content": context.system_prompt})
             self.stats["cache_misses"] += 1
-            cache_hit_rate = self._get_cache_hit_rate()
-            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] 包含system prompt (缓存未命中) - 长度: {len(context.system_prompt)}")
-            self.logger.info(f"📋 [SYSTEM_PROMPT_DEBUG] System prompt 内容前100字: {context.system_prompt[:100]}...")
-            self.logger.info(f"📊 [CACHE_DEBUG] 缓存统计 - 命中: {self.stats['cache_hits']}, 未命中: {self.stats['cache_misses']}, 命中率: {cache_hit_rate:.1%}")
+            self.logger.info(f"📋 包含system prompt: {len(context.system_prompt)} 字符")
         else:
             self.stats["cache_hits"] += 1
-            cache_hit_rate = self._get_cache_hit_rate()
-            self.logger.info(f"⚡ [SYSTEM_PROMPT_DEBUG] 跳过system prompt (缓存命中)")
-            self.logger.info(f"📊 [CACHE_DEBUG] 缓存统计 - 命中: {self.stats['cache_hits']}, 未命中: {self.stats['cache_misses']}, 命中率: {cache_hit_rate:.1%}")
-            
-            # 提供缓存命中的详细信息
-            if context.system_prompt:
-                self.logger.info(f"📋 [CACHE_DEBUG] 使用缓存的system prompt - 长度: {len(context.system_prompt)}")
-                self.logger.info(f"📋 [CACHE_DEBUG] 缓存prompt前100字: {context.system_prompt[:100]}...")
-            else:
-                self.logger.warning(f"⚠️ [CACHE_DEBUG] 缓存命中但没有system prompt内容！")
+            self.logger.info(f"⚡ 使用缓存的system prompt")
         
         # 添加历史消息（如果启用上下文压缩）
         if self.optimization_config["enable_context_compression"]:
@@ -346,9 +324,7 @@ class OptimizedLLMClient:
             self.stats["total_requests"] += 1
             self.stats["total_time"] += duration
             
-            self.logger.info(f"✅ 优化请求完成 - 对话: {conversation_id}, "
-                           f"Token: {total_tokens}, 时间: {duration:.2f}s, "
-                           f"缓存命中率: {self._get_cache_hit_rate():.1%}")
+            self.logger.info(f"✅ 优化请求完成 - Token: {total_tokens}, 时间: {duration:.2f}s")
             
             return response
             
@@ -448,7 +424,7 @@ class EnhancedLLMClient:
         # 创建优化客户端实例，传入自身作为父客户端
         self.optimized_client = OptimizedLLMClient(config, parent_client=self)
         
-        self.logger.info(f"🚀 初始化LLM客户端 - 提供商: {provider_name}, 模型: {config.model_name}")
+        self.logger.debug(f"🚀 LLM客户端初始化: {provider_name}, {config.model_name}")
     
     @asynccontextmanager
     async def _get_session(self) -> aiohttp.ClientSession:
@@ -471,18 +447,15 @@ class EnhancedLLMClient:
         base_delay = self.retry_config["base_delay"]
         last_exception = None
         
-        # 记录请求开始
-        self.logger.info(f"🤖 开始LLM请求 - 模型: {self.config.model_name}, JSON模式: {json_mode}")
+        # 记录请求开始 - 简化输出
+        self.logger.info(f"🤖 LLM调用 - 模型: {self.config.model_name}")
         
-        # 详细记录对话内容
+        # 只记录关键信息
         if system_prompt:
-            self.logger.info(f"📋 System Prompt ({len(system_prompt)} 字符):")
-            # self.logger.info(f"📋 System Prompt:\n {system_prompt}")  # Assuming similar structure, comment out if exists
-            self.logger.info(f"📋 {system_prompt}")
+            self.logger.info(f"📋 System Prompt: {len(system_prompt)} 字符")
         
-        self.logger.info(f"👤 User Prompt ({len(prompt)} 字符):")
-        # self.logger.info(f"👤 User Prompt:\n {prompt}")  # Comment out full prompt logging to reduce redundancy
-        self.logger.info("="*100)
+        self.logger.info(f"👤 User Prompt: {len(prompt)} 字符")
+        self.logger.info("="*50)
         
         for attempt in range(max_retries):
             try:
@@ -514,10 +487,10 @@ class EnhancedLLMClient:
                     if attempt > 0:
                         self.stats["retries"] += 1
                     
-                    # 详细记录响应内容
-                    self.logger.info(f"🤖 LLM响应 ({len(response_content)} 字符, {duration:.2f}s):")
-                    self.logger.info(f"🤖 {response_content}")
-                    self.logger.info("="*100)
+                    # 记录响应内容 - 简化输出
+                    self.logger.info(f"🤖 LLM响应: {len(response_content)} 字符, {duration:.2f}s")
+                    self.logger.info(f"🤖 响应内容: {response_content[:200]}{'...' if len(response_content) > 200 else ''}")
+                    self.logger.info("="*50)
                     
                     return response_content
                     
