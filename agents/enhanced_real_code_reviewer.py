@@ -23,6 +23,7 @@ from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
 from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
 from tools.script_tools import ScriptManager
+from core.llm_communication import UnifiedLLMClientManager, SystemPromptBuilder, CallType
 
 
 class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
@@ -42,8 +43,20 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             config=config
         )
         
-        # 初始化LLM客户端
+        # 初始化配置
         self.config = config or FrameworkConfig.from_env()
+        
+        # 使用统一的LLM通信管理器
+        self.llm_manager = UnifiedLLMClientManager(
+            agent_id=self.agent_id,
+            role="code_reviewer",
+            config=self.config
+        )
+        
+        # 使用统一的System Prompt构建器
+        self.prompt_builder = SystemPromptBuilder()
+        
+        # 初始化LLM客户端
         self.llm_client = EnhancedLLMClient(self.config.llm)
         
         # 设置专用日志器
