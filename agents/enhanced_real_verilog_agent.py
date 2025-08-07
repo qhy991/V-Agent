@@ -585,7 +585,15 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 "module_name": module_name,
                 "verilog_code": response,
                 "coding_style": coding_style,
-                "generation_time": time.time()
+                "generation_time": time.time(),
+                "save_reminder": f"⚠️ 重要提醒：代码已生成完成，请立即调用 `write_file` 工具保存到 `{{实验路径}}/designs/{module_name}.v` 文件中！",
+                "file_path": f"{{实验路径}}/designs/{module_name}.v",
+                "save_instructions": {
+                    "filename": f"{module_name}.v",
+                    "content": response,
+                    "description": f"生成的{module_name}模块Verilog代码",
+                    "target_directory": "{实验路径}/designs/"
+                }
             }
             
         except Exception as e:
@@ -681,7 +689,15 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 "optimized_code": response,
                 "optimization_target": optimization_target,
                 "module_name": module_name,
-                "optimization_time": time.time()
+                "optimization_time": time.time(),
+                "save_reminder": f"⚠️ 重要提醒：优化后的代码已生成完成，请立即调用 `write_file` 工具保存到 `{{实验路径}}/designs/{module_name or 'optimized'}.v` 文件中！",
+                "file_path": f"{{实验路径}}/designs/{module_name or 'optimized'}.v",
+                "save_instructions": {
+                    "filename": f"{module_name or 'optimized'}.v",
+                    "content": response,
+                    "description": f"优化后的{module_name or 'Verilog'}模块代码",
+                    "target_directory": "{实验路径}/designs/"
+                }
             }
             
         except Exception as e:

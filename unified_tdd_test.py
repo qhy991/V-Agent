@@ -274,10 +274,10 @@ module carry_lookahead_adder_16bit (
     
     # 预定义的实验配置
     EXPERIMENT_CONFIGS = {
-        "quick": {"max_iterations": 3, "timeout_per_iteration": 120, "deep_analysis": False},
-        "standard": {"max_iterations": 2, "timeout_per_iteration": 300, "deep_analysis": True},
-        "thorough": {"max_iterations": 8, "timeout_per_iteration": 600, "deep_analysis": True},
-        "debug": {"max_iterations": 10, "timeout_per_iteration": 900, "deep_analysis": True}
+        "quick": {"max_iterations": 5, "timeout_per_iteration": 120, "deep_analysis": False},
+        "standard": {"max_iterations": 10, "timeout_per_iteration": 300, "deep_analysis": True},
+        "thorough": {"max_iterations": 20, "timeout_per_iteration": 600, "deep_analysis": True},
+        "debug": {"max_iterations": 30, "timeout_per_iteration": 900, "deep_analysis": True}
     }
     
     def __init__(self, design_type: str = "alu", 

@@ -77,7 +77,7 @@ class TaskContext:
     conversation_history: List[Dict[str, str]] = field(default_factory=list)
     start_time: float = field(default_factory=time.time)
     iteration_count: int = 0
-    max_iterations: int = 10
+    max_iterations: int = 20
     external_testbench_path: Optional[str] = None
     quality_score: float = 0.0
     completion_status: str = "pending"
@@ -183,7 +183,7 @@ class TaskContext:
             "parameters": parameters,
             "agent_id": agent_id,
             "success": success,
-            "result": str(result)[:500] if result else None,  # 限制结果长度
+            "result": str(result)[:5000] if result else None,  # 限制结果长度
             "error": error,
             "execution_time": execution_time
         }
@@ -316,9 +316,9 @@ class TaskContext:
             "timestamp": time.time(),
             "agent_id": agent_id,
             "conversation_id": conversation_id,
-            "system_prompt": safe_system_prompt[:1000] + ("..." if len(safe_system_prompt) > 1000 else ""),  # 限制长度
-            "user_message": safe_user_message[:2000] + ("..." if len(safe_user_message) > 2000 else ""),  # 限制长度
-            "assistant_response": safe_assistant_response[:2000] + ("..." if len(safe_assistant_response) > 2000 else ""),  # 限制长度
+            "system_prompt": safe_system_prompt[:5000] + ("..." if len(safe_system_prompt) > 5000 else ""),  # 限制长度
+            "user_message": safe_user_message[:10000] + ("..." if len(safe_user_message) > 10000 else ""),  # 限制长度
+            "assistant_response": safe_assistant_response[:10000] + ("..." if len(safe_assistant_response) > 10000 else ""),  # 限制长度
             "model_name": model_name,
             "duration": duration,
             "success": success,
@@ -727,7 +727,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     async def coordinate_task(self, user_request: str, 
                             conversation_id: str = None,
-                            max_iterations: int = 10,
+                            max_iterations: int = 20,
                             external_testbench_path: str = None) -> Dict[str, Any]:
         """
         协调任务执行
@@ -837,7 +837,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             if not tools_executed:
                 self.logger.warning("⚠️ 协调智能体没有调用任何工具，强制重新执行")
-                self.logger.info(f"🔍 原始结果内容: {result[:200]}...")
+                self.logger.info(f"🔍 原始结果内容: {result[:2000]}...")
                 
                 # 强制重新执行，使用更明确的指令
                 forced_task = self._build_forced_coordination_task(user_request, task_context)
@@ -856,7 +856,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 # 再次检查是否执行了工具
                 if not self._has_executed_tools(result):
                     self.logger.error("❌ 强制重新执行后仍未调用工具，返回错误信息")
-                    self.logger.error(f"🔍 强制执行结果: {result[:200]}...")
+                    self.logger.error(f"🔍 强制执行结果: {result[:2000]}...")
                     return {
                         "success": False,
                         "error": "协调智能体无法执行工具调用，请检查系统配置",
@@ -1326,7 +1326,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             })
             
             self.logger.info(f"📤 发送任务给智能体 {agent_id}")
-            self.logger.info(f"📋 任务描述: {enhanced_task[:200]}...")
+            self.logger.info(f"📋 任务描述: {enhanced_task[:2000]}...")
             
             try:
                 # 执行任务（调用智能体的Function Calling）
@@ -4069,7 +4069,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         results_summary = []
         for agent_id, result_info in task_context.agent_results.items():
             if isinstance(result_info, dict) and 'response' in result_info:
-                results_summary.append(f"- {agent_id}: {result_info.get('response', 'Unknown')[:200]}...")
+                results_summary.append(f"- {agent_id}: {result_info.get('response', 'Unknown')[:2000]}...")
         
         results_text = "\n".join(results_summary) if results_summary else "无智能体结果"
         

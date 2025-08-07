@@ -238,7 +238,7 @@ class ToolExecutionEngine:
                     "tool_name": tool_call.tool_name,
                     "parameters": tool_call.parameters,
                     "success": True,
-                    "result": str(result)[:200] + ("..." if len(str(result)) > 200 else ""),
+                    "result": str(result)[:2000] + ("..." if len(str(result)) > 2000 else ""),
                     "status": "completed"
                 }
             )
@@ -252,7 +252,7 @@ class ToolExecutionEngine:
                     not tool_exec.get('success', True)):  # 找到未成功的记录
                     tool_exec.update({
                         'success': True,
-                        'result': str(result)[:500] if result else None,
+                        'result': str(result)[:5000] if result else None,
                         'execution_time': execution_time
                     })
                     break

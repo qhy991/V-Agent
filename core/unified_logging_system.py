@@ -142,7 +142,7 @@ class UnifiedLoggingSystem:
     """统一日志记录系统"""
     
     def __init__(self, session_id: str, enable_content_logging: bool = True, 
-                 max_content_length: int = 10000):
+                 max_content_length: int = 50000):
         self.session_id = session_id
         self.events: List[UnifiedLogEvent] = []
         self.current_task_id: Optional[str] = None
@@ -311,7 +311,7 @@ class UnifiedLoggingSystem:
             details={
                 "tool_name": tool_name,
                 "success": success,
-                "result": str(result)[:200] if result else None,
+                "result": str(result)[:2000] if result else None,
                 "error": error,
                 "duration": duration
             },

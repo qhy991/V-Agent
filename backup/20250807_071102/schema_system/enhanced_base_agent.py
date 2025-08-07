@@ -119,7 +119,7 @@ class EnhancedBaseAgent(BaseAgent):
             raise
     
     async def process_with_enhanced_validation(self, user_request: str, 
-                                             max_iterations: int = 10,
+                                             max_iterations: int = 15,
                                              conversation_history: List[Dict[str, str]] = None) -> Dict[str, Any]:
         """使用增强验证处理用户请求"""
         # 初始化对话历史

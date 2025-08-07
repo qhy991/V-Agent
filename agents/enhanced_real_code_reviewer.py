@@ -213,14 +213,25 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             # 构建兼容的返回格式
             enhanced_error = {
                 "original_error": error_message,
-                "error_classification": classification,
+                "error_classification": {
+                    "error_type": classification.get("error_type", "unknown"),
+                    "severity": classification.get("severity", "medium"),
+                    "category": classification.get("category", "general"),
+                    "fix_priority": classification.get("fix_priority", "medium"),
+                    "detailed_analysis": {
+                        "issue": classification.get("detailed_analysis", {}).get("issue", "未知错误"),
+                        "common_causes": classification.get("detailed_analysis", {}).get("common_causes", ["未知原因"]),
+                        "fix_strategy": classification.get("detailed_analysis", {}).get("fix_strategy", "需要进一步分析")
+                    }
+                },
                 "context_information": error_context or {},
-                "technical_details": classification.get("detailed_analysis", {}),
-                "recovery_suggestions": classification.get("suggested_actions", []),
+                "technical_details": simulation_result or {},
+                "recovery_suggestions": classification.get("suggested_actions", ["检查错误日志", "重试操作"]),
                 "debug_information": {
                     "severity": classification.get("severity", "medium"),
                     "category": classification.get("category", "general"),
-                    "confidence": classification.get("detailed_analysis", {}).get("confidence", 0.5)
+                    "confidence": classification.get("detailed_analysis", {}).get("confidence", 0.5),
+                    "suggested_debug_steps": ["分析错误信息", "检查代码语法", "验证文件路径"]
                 }
             }
             
@@ -236,6 +247,91 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "recovery_suggestions": ["检查错误日志", "重试操作"],
                 "debug_information": {"severity": "medium", "category": "general"}
             }
+    
+    def _generate_simulation_error_prompt(self, enhanced_error: Dict[str, Any], 
+                                        design_code: str = None, testbench_code: str = None) -> str:
+        """
+        特殊Prompt设计：针对仿真错误设计专门的prompt
+        
+        Args:
+            enhanced_error: 增强的错误信息
+            design_code: 设计代码
+            testbench_code: 测试台代码
+            
+        Returns:
+            专门针对仿真错误的prompt
+        """
+        error_class = enhanced_error["error_classification"]
+        context_info = enhanced_error["context_information"]
+        tech_details = enhanced_error["technical_details"]
+        
+        prompt = f"""
+🚨 **仿真错误诊断与修复专家模式**
+
+## 📋 错误分类信息
+- **错误类型**: {error_class.get('error_type', 'unknown')}
+- **严重程度**: {error_class.get('severity', 'medium')}
+- **错误类别**: {error_class.get('category', 'general')}
+- **修复优先级**: {error_class.get('fix_priority', 'medium')}
+
+## 🔍 错误详情
+**原始错误信息**:
+```
+{enhanced_error['original_error']}
+```
+
+**错误分析**:
+{error_class.get('detailed_analysis', {}).get('issue', '未知错误')}
+
+**常见原因**:
+{', '.join(error_class.get('detailed_analysis', {}).get('common_causes', ['未知原因']))}
+
+**修复策略**:
+{error_class.get('detailed_analysis', {}).get('fix_strategy', '需要进一步分析')}
+
+## 📊 上下文信息
+- **编译阶段**: {context_info.get('compilation_stage', 'unknown')}
+- **仿真器**: {context_info.get('simulator_info', 'unknown')}
+- **工作目录**: {context_info.get('working_directory', 'unknown')}
+- **执行命令**: {context_info.get('command_executed', 'unknown')}
+
+## 🛠️ 技术细节
+- **执行状态**: {'成功' if tech_details.get('success') else '失败'}
+- **返回码**: {tech_details.get('return_code', -1)}
+- **错误输出**: {tech_details.get('error_output', '无')}
+
+## 🎯 建议的修复行动
+{chr(10).join(f"- {action}" for action in enhanced_error.get('recovery_suggestions', ['检查错误日志']))}
+
+## 📝 调试指导
+{chr(10).join(f"- {step}" for step in enhanced_error.get('debug_information', {}).get('suggested_debug_steps', ['分析错误信息']))}
+
+## 🔧 你的任务
+作为硬件验证专家，请：
+
+1. **深入分析错误原因**：基于错误分类和上下文信息，准确识别问题的根本原因
+2. **提供具体修复方案**：给出详细的代码修改建议，包括具体的语法修正
+3. **验证修复效果**：确保修复后的代码能够通过编译和仿真
+4. **预防类似问题**：提供最佳实践建议，避免类似错误再次发生
+
+## 📋 可用工具
+- `generate_testbench`: 重新生成测试台
+- `run_simulation`: 重新运行仿真
+- `analyze_test_failures`: 分析测试失败原因
+- `write_file`: 保存修复后的代码
+
+请开始分析和修复这个仿真错误。
+"""
+        
+        # 如果有设计代码，添加到prompt中
+        if design_code:
+            prompt += f"\n## 📄 设计代码\n```verilog\n{design_code}\n```\n"
+        
+        # 如果有测试台代码，添加到prompt中
+        if testbench_code:
+            prompt += f"\n## 🧪 测试台代码\n```verilog\n{testbench_code}\n```\n"
+        
+        return prompt
     
     def _normalize_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         """参数标准化方法 - 修复向后兼容问题"""
@@ -835,6 +931,42 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         
         return provided_name or extracted_name
     
+    def _identify_top_module(self, files_to_compile: List[Path]) -> str:
+        """识别顶层模块"""
+        try:
+            # 优先查找testbench文件作为顶层模块
+            for file_path in files_to_compile:
+                file_name = file_path.name.lower()
+                if any(keyword in file_name for keyword in ['testbench', 'tb_', '_tb', 'test_']):
+                    module_name = self._extract_module_name_from_file(file_path)
+                    if module_name:
+                        self.logger.info(f"🔍 识别到顶层模块（testbench）: {module_name}")
+                        return module_name
+            
+            # 如果没有找到testbench，查找第一个有效的模块
+            for file_path in files_to_compile:
+                module_name = self._extract_module_name_from_file(file_path)
+                if module_name:
+                    self.logger.info(f"🔍 识别到顶层模块: {module_name}")
+                    return module_name
+            
+            self.logger.warning("⚠️ 无法识别顶层模块")
+            return None
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 顶层模块识别失败: {e}")
+            return None
+    
+    def _extract_module_name_from_file(self, file_path: Path) -> str:
+        """从文件中提取模块名"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                return self._extract_module_name_from_code(content)
+        except Exception as e:
+            self.logger.warning(f"⚠️ 从文件 {file_path} 提取模块名失败: {e}")
+            return None
+    
     def _build_enhanced_system_prompt(self) -> str:
         """构建增强的System Prompt（向后兼容方法）"""
         # 为向后兼容而保留，直接调用统一的构建方法
@@ -1225,7 +1357,14 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                     "simulation_time": simulation_time,
                     "coverage_enabled": coverage_options.get('enable_coverage', False)
                 },
-                "message": f"✅ 成功生成测试台: {tb_filename}" + (f" 和设计代码: {design_filename}" if design_saved else "")
+                "message": f"✅ 成功生成测试台: {tb_filename}" + (f" 和设计代码: {design_filename}" if design_saved else ""),
+                "save_reminder": f"⚠️ 重要提醒：测试台已生成完成，文件已保存到 {write_result.get('file_path')}！",
+                "save_status": {
+                    "testbench_saved": True,
+                    "design_saved": design_saved,
+                    "testbench_path": write_result.get("file_path"),
+                    "design_path": design_write_result.get("file_path") if design_saved else None
+                }
             }
             
         except Exception as e:
@@ -1722,7 +1861,12 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             output_file = self.artifacts_dir / "simulation"
             vcd_file = self.artifacts_dir / "simulation.vcd"
             
+            # 尝试从文件中识别顶层模块
+            top_module = self._identify_top_module(files_to_compile)
+            
             compile_cmd = ["iverilog", "-o", str(output_file)]
+            if top_module:
+                compile_cmd.extend(["-s", top_module])
             compile_cmd.extend([str(f) for f in files_to_compile])
             
             self.logger.info(f"🔨 编译命令: {' '.join(compile_cmd)}")
@@ -1821,7 +1965,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             if simulation_success:
                 self.logger.info(f"✅ 仿真执行成功")
                 if stdout_text:
-                    self.logger.debug(f"仿真输出: {stdout_text[:200]}...")
+                    self.logger.debug(f"仿真输出: {stdout_text[:2000]}...")
                 
                 return {
                     "success": simulation_success,
@@ -1989,7 +2133,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             if simulation_success:
                 self.logger.info(f"✅ 仿真执行成功")
                 if stdout_text:
-                    self.logger.debug(f"仿真输出: {stdout_text[:200]}...")
+                    self.logger.debug(f"仿真输出: {stdout_text[:2000]}...")
             else:
                 self.logger.error(f"❌ 仿真执行失败，返回码: {run_result.returncode}")
                 if stderr_text:
@@ -2071,7 +2215,13 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 "target_name": target_name,
                 "verilog_files": verilog_files,
                 "testbench_files": testbench_files,
-                "build_options": build_options
+                "build_options": build_options,
+                "save_reminder": f"⚠️ 重要提醒：构建脚本已生成完成，文件已保存到 {script_path}！",
+                "save_status": {
+                    "script_saved": True,
+                    "script_path": str(script_path),
+                    "executable": script_type == "bash"
+                }
             }
             
         except Exception as e:
@@ -2412,7 +2562,7 @@ endmodule
                 system_prompt="你是一位专业的Verilog测试和调试专家。请分析测试失败原因并提供修复建议。请直接返回分析结果，不要使用工具调用。"
             )
             
-            self.logger.info(f"🤖 LLM分析结果: {llm_response[:200]}...")
+            self.logger.info(f"🤖 LLM分析结果: {llm_response[:2000]}...")
             
             # 解析LLM响应
             try:

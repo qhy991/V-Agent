@@ -143,7 +143,7 @@ class ComponentLoggerManager:
                 'level': 'INFO',
                 'formatter': 'detailed',
                 'filename': str(main_file),
-                'maxBytes': 10485760,  # 10MB
+                'maxBytes': 52428800,  # 50MB
                 'backupCount': 5,
                 'encoding': 'utf-8'
             }
@@ -330,7 +330,7 @@ class ComponentLoggerManager:
                 # 添加主日志文件handler (轮转)
                 main_file = self.base_log_dir / self.component_files[component_name]
                 main_handler = logging.handlers.RotatingFileHandler(
-                    main_file, maxBytes=10485760, backupCount=5, encoding='utf-8'
+                    main_file, maxBytes=52428800, backupCount=10, encoding='utf-8'
                 )
                 main_handler.setLevel(logging.INFO)
                 main_handler.setFormatter(logging.Formatter(

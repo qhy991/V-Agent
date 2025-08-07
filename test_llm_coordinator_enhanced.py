@@ -149,9 +149,10 @@ class EnhancedLLMCoordinatorTest:
     
     # 实验配置模板
     EXPERIMENT_CONFIGS = {
-        "fast": {"max_iterations": 1, "timeout_per_iteration": 180},
-        "standard": {"max_iterations": 3, "timeout_per_iteration": 300},
-        "thorough": {"max_iterations": 5, "timeout_per_iteration": 600}
+        "fast": {"max_iterations": 5, "timeout_per_iteration": 180},
+        "standard": {"max_iterations": 15, "timeout_per_iteration": 300},
+        "thorough": {"max_iterations": 30, "timeout_per_iteration": 600},
+        "extensive": {"max_iterations": 50, "timeout_per_iteration": 900}
     }
     
     def __init__(self, 

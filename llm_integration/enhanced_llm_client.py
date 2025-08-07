@@ -498,7 +498,7 @@ class EnhancedLLMClient:
                     
                     # 记录响应内容 - 简化输出
                     self.logger.info(f"🤖 LLM响应: {len(response_content)} 字符, {duration:.2f}s")
-                    self.logger.info(f"🤖 响应内容: {response_content[:200]}{'...' if len(response_content) > 200 else ''}")
+                    self.logger.info(f"🤖 响应内容: {response_content[:2000]}{'...' if len(response_content) > 2000 else ''}")
                     self.logger.info("="*50)
                     
                     return response_content

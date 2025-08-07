@@ -293,9 +293,9 @@ class BaseAgent(ABC):
     # 🔧 Function Calling 核心方法
     # ==========================================================================
     
-    async def process_with_function_calling(self, user_request: str, max_iterations: int = 10, 
+    async def process_with_function_calling(self, user_request: str, max_iterations: int = 20, 
                                           conversation_id: str = None, preserve_context: bool = True,
-                                          enable_self_continuation: bool = True, max_self_iterations: int = 3) -> str:
+                                          enable_self_continuation: bool = True, max_self_iterations: int = 5) -> str:
         """使用Function Calling处理用户请求
         
         Args:
