@@ -70,6 +70,16 @@ class UnifiedLLMClientManager:
             assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
             is_first_call = len(assistant_messages) == 0
             
+            # 🔧 修复：安全计算对话总长度
+            safe_total_length = 0
+            for msg in conversation:
+                if msg is None:
+                    continue
+                content = msg.get('content', '')
+                if content is None:
+                    content = ''
+                safe_total_length += len(content)
+            
             # 构建调用上下文
             context = LLMCallContext(
                 conversation_id=conversation_id,
@@ -77,7 +87,7 @@ class UnifiedLLMClientManager:
                 role=self.role,
                 is_first_call=is_first_call,
                 conversation_length=len(conversation),
-                total_length=sum(len(msg.get('content', '')) for msg in conversation)
+                total_length=safe_total_length
             )
             
             self.logger.info(f"🔄 [{self.role.upper()}] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
@@ -149,8 +159,15 @@ class UnifiedLLMClientManager:
             from core.unified_logging_system import get_global_logging_system
             logging_system = get_global_logging_system()
             
-            # 计算对话总长度
-            total_length = sum(len(msg.get('content', '')) for msg in conversation)
+            # 🔧 修复：安全计算对话总长度
+            total_length = 0
+            for msg in conversation:
+                if msg is None:
+                    continue
+                content = msg.get('content', '')
+                if content is None:
+                    content = ''
+                total_length += len(content)
             
             # 记录LLM调用开始
             logging_system.log_llm_call(

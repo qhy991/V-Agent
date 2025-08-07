@@ -242,7 +242,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """使用统一的LLM通信管理器进行Function Calling调用"""
-        return await self.llm_manager.call_llm_for_function_calling(conversation)
+        return await self.llm_manager.call_llm_for_function_calling(
+            conversation, 
+            system_prompt_builder=self._build_system_prompt
+        )
     
     async def _build_system_prompt(self) -> str:
         """使用统一的System Prompt构建器"""
