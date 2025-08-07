@@ -90,7 +90,10 @@ class UnifiedLLMClientManager:
                         system_prompt = await system_prompt_builder()
                     else:
                         system_prompt = system_prompt_builder()
-                    self.logger.debug(f"📝 [{self.role.upper()}] 首次调用 - 构建System Prompt - 长度: {len(system_prompt) if system_prompt else 0}")
+                    # 安全处理system_prompt
+                    if system_prompt is None:
+                        system_prompt = ""
+                    self.logger.debug(f"📝 [{self.role.upper()}] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
                 except Exception as e:
                     self.logger.warning(f"⚠️ System Prompt构建失败: {e}")
                     system_prompt = ""
@@ -163,6 +166,9 @@ class UnifiedLLMClientManager:
                         system_prompt = await system_prompt_builder()
                     else:
                         system_prompt = system_prompt_builder()
+                    # 安全处理system_prompt
+                    if system_prompt is None:
+                        system_prompt = ""
                 except Exception as e:
                     self.logger.warning(f"⚠️ System Prompt构建失败: {e}")
                     system_prompt = ""
@@ -231,10 +237,11 @@ class UnifiedLLMClientManager:
         """构建用户消息"""
         user_message = ""
         for msg in conversation:
+            content = msg.get('content', '') or ''  # 安全处理None值
             if msg["role"] == "user":
-                user_message += f"{msg['content']}\n\n"
+                user_message += f"{content}\n\n"
             elif msg["role"] == "assistant":
-                user_message += f"Assistant: {msg['content']}\n\n"
+                user_message += f"Assistant: {content}\n\n"
         return user_message
     
     def get_performance_stats(self) -> Dict[str, Any]:

@@ -326,7 +326,7 @@ class BaseAgent(ABC):
                 # 🔧 修复：不同智能体或不同对话，创建新的对话历史
                 self.logger.info(f"🆕 创建新的对话历史（智能体独立上下文）")
                 conversation = [
-                    {"role": "system", "content": self.system_prompt},
+                    {"role": "system", "content": self.system_prompt or ""},
                     {"role": "user", "content": user_request}
                 ]
                 # 重置对话历史
@@ -338,7 +338,7 @@ class BaseAgent(ABC):
             self.logger.info(f"🆕 创建新的对话历史")
             # 构建新的对话历史
             conversation = [
-                {"role": "system", "content": self.system_prompt},
+                {"role": "system", "content": self.system_prompt or ""},
                 {"role": "user", "content": user_request}
             ]
             # 重置对话历史

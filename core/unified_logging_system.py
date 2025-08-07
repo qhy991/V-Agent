@@ -431,11 +431,15 @@ class UnifiedLoggingSystem:
                     success: Optional[bool] = None,
                     error_info: Optional[Dict[str, Any]] = None) -> str:
         """记录LLM调用 - 增强版本，支持更多参数"""
+        # 安全处理可能为None的字符串参数
+        safe_user_message = user_message or ""
+        safe_response = response or ""
+        
         # 构建详细信息
         details = {
             "model_name": model_name,
-            "user_message_length": prompt_length or len(user_message),
-            "response_length": response_length or len(response),
+            "user_message_length": prompt_length or len(safe_user_message),
+            "response_length": response_length or len(safe_response),
             "duration": duration
         }
         

@@ -3899,7 +3899,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         """调用LLM进行Function Calling"""
         try:
             # 使用统一的LLM通信模块
-            return await self.llm_manager.call_llm_for_function_calling(conversation)
+            return await self.llm_manager.call_llm_for_function_calling(
+                conversation, 
+                system_prompt_builder=self._build_enhanced_system_prompt
+            )
             
         except Exception as e:
             self.logger.error(f"❌ Function Calling调用失败: {e}")
@@ -3909,56 +3912,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         """传统LLM调用方法"""
         try:
             # 使用统一的LLM通信模块
-            return await self.llm_manager.call_llm_traditional(conversation)
+            return await self.llm_manager.call_llm_traditional(
+                conversation,
+                system_prompt_builder=self._build_enhanced_system_prompt
+            )
             
         except Exception as e:
             self.logger.error(f"❌ 传统LLM调用失败: {e}")
             return f"错误: {str(e)}"
-            
-            for msg in conversation:
-                if msg["role"] == "system":
-                    system_prompt = msg["content"]  # 覆盖默认system prompt
-                elif msg["role"] == "user":
-                    full_prompt += f"User: {msg['content']}\n\n"
-                elif msg["role"] == "assistant":
-                    full_prompt += f"Assistant: {msg['content']}\n\n"
-            
-            # 调用传统LLM客户端
-            response = await self.llm_client.send_prompt(
-                prompt=full_prompt.strip(),
-                system_prompt=system_prompt,
-                temperature=0.3,
-                max_tokens=4000
-            )
-            
-            # 记录LLM调用成功
-            duration = time.time() - llm_start_time
-            logging_system.log_llm_call(
-                agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
-                prompt_length=total_length,
-                response_length=len(response),
-                duration=duration,
-                success=True,
-                conversation_id=self.current_conversation_id
-            )
-            
-            return response
-        except Exception as e:
-            # 记录LLM调用失败
-            duration = time.time() - llm_start_time
-            logging_system.log_llm_call(
-                agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
-                prompt_length=total_length,
-                duration=duration,
-                success=False,
-                error_info={"error": str(e)},
-                conversation_id=self.current_conversation_id
-            )
-            
-            self.logger.error(f"❌ 传统LLM调用失败: {str(e)}")
-            raise
     
     def get_capabilities(self) -> Set[AgentCapability]:
         """获取智能体能力"""
@@ -4084,11 +4045,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 请返回JSON格式的分析结果。
 """
             
-            response = await self.llm_client.send_prompt(
-                prompt=analysis_prompt,
-                system_prompt="你是任务分析专家，请提供准确的任务类型识别。",
-                temperature=0.1
-            )
+            # 使用统一的LLM管理器进行调用
+            conversation = [
+                {"role": "system", "content": "你是任务分析专家，请提供准确的任务类型识别。"},
+                {"role": "user", "content": analysis_prompt}
+            ]
+            
+            response = await self.llm_manager.call_llm_for_function_calling(conversation)
             
             # 尝试解析JSON响应
             try:
