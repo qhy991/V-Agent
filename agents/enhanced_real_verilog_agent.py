@@ -527,9 +527,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": analysis_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            # 🔧 修复：使用直接LLM调用而非Function Calling，避免递归工具调用
+            response = await self.llm_manager.llm_client.send_prompt(
+                analysis_prompt,
+                system_prompt="你是一位专业的Verilog设计专家，请提供详细的需求分析。请直接返回分析结果，不要使用工具调用。"
             )
             
             return {
@@ -574,13 +575,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 4. 适当的注释
 """
             
-            conversation = [
-                {"role": "user", "content": code_prompt}
-            ]
-            
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            # 🔧 修复：使用直接LLM调用生成代码，避免递归工具调用
+            response = await self.llm_manager.llm_client.send_prompt(
+                code_prompt,
+                system_prompt="你是一位专业的Verilog设计专家。请生成完整的、可编译的Verilog代码。请直接返回代码，不要使用工具调用。"
             )
             
             return {
@@ -594,10 +592,30 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
             self.logger.error(f"❌ Verilog代码生成失败: {str(e)}")
             return {"error": str(e)}
     
-    async def _tool_analyze_code_quality(self, verilog_code: str, module_name: str = None) -> Dict[str, Any]:
-        """分析代码质量"""
+    async def _tool_analyze_code_quality(self, verilog_code: str = None, module_name: str = None, 
+                                        code: str = None, file_path: str = None, **kwargs) -> Dict[str, Any]:
+        """分析代码质量 - 支持多种参数格式"""
         try:
             self.logger.info(f"🔍 开始分析代码质量")
+            
+            # 🔧 参数标准化：支持多种参数名称
+            if code and not verilog_code:
+                verilog_code = code
+            
+            if file_path and not verilog_code:
+                # 如果提供了文件路径，尝试读取文件内容
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        verilog_code = f.read()
+                        module_name = module_name or Path(file_path).stem
+                except Exception as e:
+                    self.logger.warning(f"⚠️ 无法读取文件 {file_path}: {e}")
+                    return {"error": f"无法读取文件: {e}"}
+            
+            if not verilog_code:
+                return {"error": "缺少Verilog代码内容"}
+                
+            self.logger.info(f"📋 分析代码长度: {len(verilog_code)} 字符")
             
             analysis_prompt = f"""
 请分析以下Verilog代码的质量：
@@ -615,13 +633,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 5. 改进建议
 """
             
-            conversation = [
-                {"role": "user", "content": analysis_prompt}
-            ]
-            
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            # 🔧 修复：使用直接LLM调用分析代码质量，避免递归工具调用
+            response = await self.llm_manager.llm_client.send_prompt(
+                analysis_prompt,
+                system_prompt="你是一位专业的Verilog代码审查专家。请提供详细的代码质量分析。请直接返回分析结果，不要使用工具调用。"
             )
             
             return {
@@ -656,13 +671,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 4. 可读性提升
 """
             
-            conversation = [
-                {"role": "user", "content": optimization_prompt}
-            ]
-            
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            # 🔧 修复：使用直接LLM调用优化代码，避免递归工具调用
+            response = await self.llm_manager.llm_client.send_prompt(
+                optimization_prompt,
+                system_prompt="你是一位专业的Verilog代码优化专家。请提供优化后的代码和建议。请直接返回优化结果，不要使用工具调用。"
             )
             
             return {
@@ -697,13 +709,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 5. 常见问题和解决方案
 """
             
-            conversation = [
-                {"role": "user", "content": guide_prompt}
-            ]
-            
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            # 🔧 修复：使用直接LLM调用生成使用指南，避免递归工具调用
+            response = await self.llm_manager.llm_client.send_prompt(
+                guide_prompt,
+                system_prompt="你是一位专业的Verilog设计工具专家。请提供详细的工具使用指南。请直接返回指南内容，不要使用工具调用。"
             )
             
             return {

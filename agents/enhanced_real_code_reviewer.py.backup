@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-重构后的代码审查智能体
-使用统一的LLM通信模块，减少重复代码
+集成Schema系统的增强代码审查智能体
+
+Enhanced Code Review Agent with Schema Integration
 """
 
-import os
 import json
 import asyncio
 import subprocess
 import tempfile
+import os
 import re
 import time
 from typing import Dict, Any, Set, List, Tuple, Optional
@@ -17,22 +18,16 @@ from pathlib import Path
 from core.schema_system.enhanced_base_agent import EnhancedBaseAgent
 from core.enums import AgentCapability
 from core.base_agent import TaskMessage
-from core.response_format import StandardizedResponse, TaskStatus, ResponseType, QualityMetrics, IssueReport
-from datetime import datetime
-from core.llm_communication import UnifiedLLMClientManager, SystemPromptBuilder, CallType
+from core.response_format import ResponseFormat, TaskStatus, ResponseType, QualityMetrics
+from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from config.config import FrameworkConfig
 from core.enhanced_logging_config import get_agent_logger, get_artifacts_dir
 from tools.script_tools import ScriptManager
-
-# 导入现有模块化组件
-from core.error_analysis.analyzer import ErrorAnalyzer, FailureContext
-from core.file_operations.manager import FileOperationManager, FileOperationConfig
-from core.function_calling.executor import ToolExecutionEngine, ExecutionContext
-from core.conversation.manager import ConversationManager
+from core.llm_communication import UnifiedLLMClientManager, SystemPromptBuilder, CallType
 
 
 class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
-    """重构后的代码审查智能体 - 使用统一LLM通信模块"""
+    """集成Schema系统的增强代码审查智能体"""
     
     def __init__(self, config: FrameworkConfig = None):
         super().__init__(
@@ -61,8 +56,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         # 使用统一的System Prompt构建器
         self.prompt_builder = SystemPromptBuilder()
         
-        # 🔧 向后兼容：保留llm_client属性（某些工具方法可能直接调用）
-        from llm_integration.enhanced_llm_client import EnhancedLLMClient
+        # 初始化LLM客户端
         self.llm_client = EnhancedLLMClient(self.config.llm)
         
         # 设置专用日志器
@@ -72,194 +66,311 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         # 初始化脚本管理器
         self.script_manager = ScriptManager(work_dir=self.artifacts_dir)
         
-        # 🔧 新增：初始化模块化组件
-        # 错误分析器 - 扩展Verilog专用错误模式
-        self.error_analyzer = ErrorAnalyzer(logger=self.logger)
-        self._extend_error_analyzer_for_verilog()
-        
-        # 文件操作管理器
-        file_config = FileOperationConfig(
-            default_artifacts_dir=self.artifacts_dir,
-            enable_cache=True,
-            max_file_size=10 * 1024 * 1024,  # 10MB
-            backup_enabled=True
-        )
-        self.file_manager = FileOperationManager(config=file_config, logger=self.logger)
-        
-        # 工具执行引擎
-        exec_context = ExecutionContext(
-            agent_id=self.agent_id,
-            max_retry_attempts=3,
-            retry_delay=1.0,
-            enable_logging=True
-        )
-        self.tool_executor = ToolExecutionEngine(context=exec_context, logger=self.logger)
-        
-        # 对话管理器
-        self.conversation_manager = ConversationManager(agent_id=self.agent_id, logger=self.logger)
-        
         # 注册增强工具
         self._register_enhanced_code_review_tools()
         
-        self.logger.debug(f"🔍 重构后的代码审查智能体初始化完成（集成模块化组件）")
-        
-        # 错误处理相关属性（简化后）
+        # 错误处理相关属性
         self.error_classification_cache = {}
-        # 注：simulation_error_patterns已移至ErrorAnalyzer中统一管理
-    
-    def _extend_error_analyzer_for_verilog(self):
-        """扩展ErrorAnalyzer以支持Verilog专用错误模式"""
-        from core.error_analysis.analyzer import ErrorPattern
-        
-        # 添加Verilog专用错误模式
-        verilog_patterns = [
-            # Verilog编译语法错误
-            ErrorPattern(
-                pattern=r"syntax error|Syntax in assignment|Malformed statement|unexpected token|missing semicolon",
-                error_type="verilog_compilation_syntax",
-                description="Verilog语法错误",
-                suggested_fix="检查Verilog语法、端口定义、信号声明",
-                severity="high"
-            ),
-            # Verilog编译语义错误
-            ErrorPattern(
-                pattern=r"type mismatch|width mismatch|port connection|module not found|undefined variable",
-                error_type="verilog_compilation_semantic", 
-                description="Verilog语义错误",
-                suggested_fix="检查模块连接、信号宽度、变量声明",
-                severity="high"
-            ),
-            # Verilog仿真运行时错误
-            ErrorPattern(
-                pattern=r"simulation timeout|infinite loop|deadlock|assertion failure|testbench failure",
-                error_type="verilog_simulation_runtime",
-                description="Verilog仿真运行时错误",
-                suggested_fix="检查仿真时间、时钟生成、复位逻辑",
-                severity="medium"
-            ),
-            # Verilog测试台错误
-            ErrorPattern(
-                pattern=r"testbench error|assertion|coverage|test case|stimulus|monitor",
-                error_type="verilog_testbench_logic",
-                description="Verilog测试台逻辑错误",
-                suggested_fix="检查测试台激励生成和断言检查",
-                severity="medium"
-            )
-        ]
-        
-        # 扩展现有的错误模式
-        self.error_analyzer.error_patterns.extend(verilog_patterns)
-        
-        self.logger.debug(f"✅ ErrorAnalyzer已扩展 {len(verilog_patterns)} 个Verilog专用错误模式")
-    
-    def _classify_simulation_error(self, error_message: str, error_context: Dict = None) -> Dict[str, Any]:
-        """使用统一的ErrorAnalyzer进行错误分类（重构后）"""
-        # 创建失败上下文
-        failure_context = FailureContext(
-            tool_name=error_context.get('tool_name', 'simulation') if error_context else 'simulation',
-            parameters=error_context.get('parameters', {}) if error_context else {},
-            error_message=error_message,
-            error_type="unknown",
-            attempt_count=error_context.get('attempt_count', 1) if error_context else 1,
-            max_attempts=3,
-            execution_time=error_context.get('execution_time', 0.0) if error_context else 0.0,
-            agent_id=self.agent_id
-        )
-        
-        # 使用统一的ErrorAnalyzer进行分析
-        analysis_result = self.error_analyzer.analyze_failure(failure_context)
-        
-        # 转换为审查智能体期望的格式
-        error_info = {
-            "error_type": analysis_result.get('error_type', 'unknown'),
-            "severity": analysis_result.get('severity', 'medium'),
-            "category": self._map_error_type_to_category(analysis_result.get('error_type', 'unknown')),
-            "suggested_actions": analysis_result.get('suggested_fixes', []),
-            "fix_priority": analysis_result.get('severity', 'medium'),
-            "detailed_analysis": {
-                "issue": analysis_result.get('description', '未知错误'),
-                "confidence": analysis_result.get('confidence', 0.0),
-                "tool_specific_advice": analysis_result.get('tool_specific_advice', []),
-                "parameter_issues": analysis_result.get('parameter_issues', [])
-            }
+        self.simulation_error_patterns = {
+            "compilation_syntax": [
+                "syntax error", "Syntax in assignment statement", "Malformed statement",
+                "unexpected token", "missing semicolon", "unexpected end of file"
+            ],
+            "compilation_semantic": [
+                "type mismatch", "width mismatch", "port connection", "module not found",
+                "undefined variable", "undeclared identifier"
+            ],
+            "simulation_runtime": [
+                "runtime error", "simulation timeout", "infinite loop", "deadlock",
+                "assertion failure", "testbench failure"
+            ],
+            "testbench_logic": [
+                "testbench error", "assertion", "coverage", "test case",
+                "stimulus", "monitor"
+            ],
+            "system_resource": [
+                "command not found", "file not found", "permission denied",
+                "no space left", "timeout"
+            ]
         }
         
-        # 记录到缓存
-        cache_key = f"{hash(error_message)}_{failure_context.tool_name}"
-        self.error_classification_cache[cache_key] = error_info
+        self.logger.debug(f"🔍 代码审查智能体初始化完成")
+    
+    def _classify_simulation_error(self, error_message: str, error_context: Dict = None) -> Dict[str, Any]:
+        """
+        错误分类处理：根据错误类型选择不同的处理策略
+        
+        Args:
+            error_message: 错误信息
+            error_context: 错误上下文信息
+            
+        Returns:
+            错误分类结果
+        """
+        error_info = {
+            "error_type": "unknown",
+            "severity": "medium",
+            "category": "general",
+            "suggested_actions": [],
+            "fix_priority": "normal",
+            "detailed_analysis": {}
+        }
+        
+        error_lower = error_message.lower()
+        
+        # 1. 编译语法错误
+        if any(pattern in error_lower for pattern in self.simulation_error_patterns["compilation_syntax"]):
+            error_info.update({
+                "error_type": "compilation_syntax",
+                "severity": "high",
+                "category": "compilation",
+                "suggested_actions": [
+                    "检查Verilog语法错误",
+                    "验证模块端口定义",
+                    "检查信号声明和赋值",
+                    "修复语法结构问题"
+                ],
+                "fix_priority": "high",
+                "detailed_analysis": {
+                    "issue": "语法错误导致编译失败",
+                    "common_causes": ["缺少分号", "端口连接错误", "信号类型不匹配", "模块定义不完整"],
+                    "fix_strategy": "逐行检查语法，重点关注错误行及其上下文"
+                }
+            })
+        
+        # 2. 编译语义错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["compilation_semantic"]):
+            error_info.update({
+                "error_type": "compilation_semantic",
+                "severity": "high",
+                "category": "compilation",
+                "suggested_actions": [
+                    "检查模块连接关系",
+                    "验证信号宽度匹配",
+                    "确认模块实例化正确",
+                    "检查变量声明和类型"
+                ],
+                "fix_priority": "high",
+                "detailed_analysis": {
+                    "issue": "语义错误导致编译失败",
+                    "common_causes": ["端口宽度不匹配", "模块未找到", "变量未声明", "类型不兼容"],
+                    "fix_strategy": "检查模块接口定义和连接关系"
+                }
+            })
+        
+        # 3. 仿真运行时错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["simulation_runtime"]):
+            error_info.update({
+                "error_type": "simulation_runtime",
+                "severity": "medium",
+                "category": "simulation",
+                "suggested_actions": [
+                    "检查仿真时间设置",
+                    "验证时钟生成逻辑",
+                    "检查复位信号时序",
+                    "分析仿真超时原因"
+                ],
+                "fix_priority": "medium",
+                "detailed_analysis": {
+                    "issue": "仿真运行时出现错误",
+                    "common_causes": ["仿真超时", "无限循环", "死锁", "资源不足"],
+                    "fix_strategy": "优化仿真参数，检查时序逻辑"
+                }
+            })
+        
+        # 4. 系统资源错误
+        elif any(pattern in error_lower for pattern in self.simulation_error_patterns["system_resource"]):
+            error_info.update({
+                "error_type": "system_resource",
+                "severity": "low",
+                "category": "system",
+                "suggested_actions": [
+                    "检查磁盘空间",
+                    "验证文件权限",
+                    "重启仿真环境",
+                    "清理临时文件"
+                ],
+                "fix_priority": "low",
+                "detailed_analysis": {
+                    "issue": "系统资源不足",
+                    "common_causes": ["磁盘空间不足", "内存不足", "文件权限问题", "进程冲突"],
+                    "fix_strategy": "释放系统资源，检查环境配置"
+                }
+            })
+        
+        # 缓存错误分类结果
+        error_key = hash(error_message)
+        self.error_classification_cache[error_key] = error_info
         
         return error_info
     
-    def _map_error_type_to_category(self, error_type: str) -> str:
-        """将错误类型映射到分类"""
-        mapping = {
-            'verilog_compilation_syntax': 'compilation',
-            'verilog_compilation_semantic': 'compilation',
-            'verilog_simulation_runtime': 'simulation',
-            'verilog_testbench_logic': 'verification',
-            'file_not_found': 'system',
-            'permission_error': 'system',
-            'parameter_type_error': 'parameter'
-        }
-        return mapping.get(error_type, 'general')
-    
     def _enhance_error_information(self, error_message: str, error_context: Dict = None, 
                                  simulation_result: Dict = None) -> Dict[str, Any]:
-        """向后兼容的错误信息增强方法（简化版，委托给ErrorAnalyzer）"""
-        try:
-            # 使用新的错误分析功能
-            classification = self._classify_simulation_error(error_message, error_context)
+        """
+        增强错误信息：提供完整的错误上下文给LLM
+        
+        Args:
+            error_message: 原始错误信息
+            error_context: 错误上下文
+            simulation_result: 仿真结果
             
-            # 构建兼容的返回格式
-            enhanced_error = {
-                "original_error": error_message,
-                "error_classification": classification,
-                "context_information": error_context or {},
-                "technical_details": classification.get("detailed_analysis", {}),
-                "recovery_suggestions": classification.get("suggested_actions", []),
-                "debug_information": {
-                    "severity": classification.get("severity", "medium"),
-                    "category": classification.get("category", "general"),
-                    "confidence": classification.get("detailed_analysis", {}).get("confidence", 0.5)
-                }
+        Returns:
+            增强的错误信息
+        """
+        enhanced_error = {
+            "original_error": error_message,
+            "error_classification": self._classify_simulation_error(error_message, error_context),
+            "context_information": {},
+            "technical_details": {},
+            "recovery_suggestions": [],
+            "debug_information": {}
+        }
+        
+        # 1. 添加上下文信息
+        if error_context:
+            enhanced_error["context_information"] = {
+                "file_paths": error_context.get("file_paths", []),
+                "compilation_stage": error_context.get("stage", "unknown"),
+                "simulator_info": error_context.get("simulator", "unknown"),
+                "command_executed": error_context.get("command", ""),
+                "timestamp": error_context.get("timestamp", ""),
+                "working_directory": error_context.get("working_directory", "")
             }
-            
-            return enhanced_error
-            
-        except Exception as e:
-            self.logger.warning(f"⚠️ 错误信息增强失败，返回基础信息: {e}")
-            return {
-                "original_error": error_message,
-                "error_classification": {"error_type": "unknown", "severity": "medium"},
-                "context_information": error_context or {},
-                "technical_details": {},
-                "recovery_suggestions": ["检查错误日志", "重试操作"],
-                "debug_information": {"severity": "medium", "category": "general"}
+        
+        # 2. 添加技术细节
+        if simulation_result:
+            enhanced_error["technical_details"] = {
+                "success": simulation_result.get("success", False),
+                "stage": simulation_result.get("stage", "unknown"),
+                "return_code": simulation_result.get("return_code", -1),
+                "compilation_output": simulation_result.get("compilation_output", ""),
+                "simulation_output": simulation_result.get("simulation_output", ""),
+                "error_output": simulation_result.get("error_output", "")
             }
+        
+        # 3. 生成恢复建议
+        error_class = enhanced_error["error_classification"]
+        if error_class["error_type"] == "compilation_syntax":
+            enhanced_error["recovery_suggestions"] = [
+                "立即检查错误行及其前后几行的语法",
+                "验证所有信号声明和端口定义",
+                "确保模块定义完整且语法正确",
+                "检查是否有未闭合的括号或引号"
+            ]
+        elif error_class["error_type"] == "compilation_semantic":
+            enhanced_error["recovery_suggestions"] = [
+                "检查模块间的连接关系",
+                "验证信号宽度和类型匹配",
+                "确认所有引用的模块都已正确定义",
+                "检查变量声明和初始化"
+            ]
+        elif error_class["error_type"] == "simulation_runtime":
+            enhanced_error["recovery_suggestions"] = [
+                "检查仿真时间设置是否合理",
+                "验证时钟和复位信号的生成逻辑",
+                "分析是否存在无限循环或死锁",
+                "考虑增加仿真超时时间"
+            ]
+        
+        # 4. 添加调试信息
+        enhanced_error["debug_information"] = {
+            "error_patterns_found": [pattern for pattern in self.simulation_error_patterns.get(error_class["error_type"], []) 
+                                   if pattern in error_message.lower()],
+            "similar_errors_encountered": len(self.error_classification_cache),
+            "suggested_debug_steps": [
+                "查看完整的编译/仿真输出",
+                "检查相关文件的语法",
+                "验证模块接口定义",
+                "确认仿真参数设置"
+            ]
+        }
+        
+        return enhanced_error
     
-    def _normalize_tool_parameters(self, tool_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
-        """参数标准化方法 - 修复向后兼容问题"""
-        normalized_params = parameters.copy()
+    def _generate_simulation_error_prompt(self, enhanced_error: Dict[str, Any], 
+                                        design_code: str = None, testbench_code: str = None) -> str:
+        """
+        特殊Prompt设计：针对仿真错误设计专门的prompt
         
-        # 🔧 修复read_file参数不匹配问题
-        if tool_name == "read_file":
-            # 如果传入了file_path但缺少filepath，进行映射
-            if "file_path" in normalized_params and "filepath" not in normalized_params:
-                normalized_params["filepath"] = normalized_params["file_path"]
-                self.logger.debug(f"🔧 参数映射: file_path -> filepath for {tool_name}")
-            # 如果只有filepath，确保file_path也存在（为了兼容性）
-            elif "filepath" in normalized_params and "file_path" not in normalized_params:
-                normalized_params["file_path"] = normalized_params["filepath"]
-                self.logger.debug(f"🔧 参数映射: filepath -> file_path for {tool_name}")
+        Args:
+            enhanced_error: 增强的错误信息
+            design_code: 设计代码
+            testbench_code: 测试台代码
+            
+        Returns:
+            专门针对仿真错误的prompt
+        """
+        error_class = enhanced_error["error_classification"]
+        context_info = enhanced_error["context_information"]
+        tech_details = enhanced_error["technical_details"]
         
-        # 🔧 修复write_file参数兼容性问题
-        elif tool_name == "write_file":
-            # 处理文件名参数兼容性
-            if "file_name" in normalized_params and "filename" not in normalized_params:
-                normalized_params["filename"] = normalized_params["file_name"]
-                self.logger.debug(f"🔧 参数映射: file_name -> filename for {tool_name}")
+        prompt = f"""
+🚨 **仿真错误诊断与修复专家模式**
+
+## 📋 错误分类信息
+- **错误类型**: {error_class['error_type']}
+- **严重程度**: {error_class['severity']}
+- **错误类别**: {error_class['category']}
+- **修复优先级**: {error_class['fix_priority']}
+
+## 🔍 错误详情
+**原始错误信息**:
+```
+{enhanced_error['original_error']}
+```
+
+**错误分析**:
+{error_class['detailed_analysis']['issue']}
+
+**常见原因**:
+{', '.join(error_class['detailed_analysis']['common_causes'])}
+
+**修复策略**:
+{error_class['detailed_analysis']['fix_strategy']}
+
+## 📊 上下文信息
+- **编译阶段**: {context_info.get('compilation_stage', 'unknown')}
+- **仿真器**: {context_info.get('simulator_info', 'unknown')}
+- **工作目录**: {context_info.get('working_directory', 'unknown')}
+- **执行命令**: {context_info.get('command_executed', 'unknown')}
+
+## 🛠️ 技术细节
+- **执行状态**: {'成功' if tech_details.get('success') else '失败'}
+- **返回码**: {tech_details.get('return_code', -1)}
+- **错误输出**: {tech_details.get('error_output', '无')}
+
+## 🎯 建议的修复行动
+{chr(10).join(f"- {action}" for action in enhanced_error['recovery_suggestions'])}
+
+## 📝 调试指导
+{chr(10).join(f"- {step}" for step in enhanced_error['debug_information']['suggested_debug_steps'])}
+
+## 🔧 你的任务
+作为硬件验证专家，请：
+
+1. **深入分析错误原因**：基于错误分类和上下文信息，准确识别问题的根本原因
+2. **提供具体修复方案**：给出详细的代码修改建议，包括具体的语法修正
+3. **验证修复效果**：确保修复后的代码能够通过编译和仿真
+4. **预防类似问题**：提供最佳实践建议，避免类似错误再次发生
+
+## 📋 可用工具
+- `generate_testbench`: 重新生成测试台
+- `run_simulation`: 重新运行仿真
+- `analyze_test_failures`: 分析测试失败原因
+- `write_file`: 保存修复后的代码
+
+请开始分析和修复这个仿真错误。
+"""
         
-        return normalized_params
+        # 如果有设计代码，添加到prompt中
+        if design_code:
+            prompt += f"\n## 📄 设计代码\n```verilog\n{design_code}\n```\n"
+        
+        # 如果有测试台代码，添加到prompt中
+        if testbench_code:
+            prompt += f"\n## 🧪 测试台代码\n```verilog\n{testbench_code}\n```\n"
+        
+        return prompt
     
     def _register_enhanced_code_review_tools(self):
         """注册带Schema验证的代码审查工具"""
@@ -735,81 +846,77 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
         """使用统一的LLM通信管理器进行Function Calling调用"""
-        return await self.llm_manager.call_llm_for_function_calling(
-            conversation, 
-            system_prompt_builder=self._build_system_prompt
-        )
+        return await self.llm_manager.call_llm_for_function_calling(conversation)
     
-    async def _call_llm_optimized_with_history(self, user_request: str, 
-                                             conversation_history: List[Dict[str, str]], 
-                                             is_first_call: bool = False) -> str:
-        """重写父类方法，使用统一的LLM通信管理器"""
+    async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
+        """传统LLM调用方法"""
+        llm_start_time = time.time()
+        
         try:
-            # 构建对话历史
-            conversation = []
+            # 🎯 使用统一日志系统记录LLM调用开始
+            from core.unified_logging_system import get_global_logging_system
+            logging_system = get_global_logging_system()
             
-            # 添加系统提示（仅在第一次调用时）
-            if is_first_call:
-                conversation.append({
-                    "role": "system", 
-                    "content": await self._build_system_prompt()
-                })
+            # 计算对话总长度
+            total_length = sum(len(msg.get('content', '')) for msg in conversation)
             
-            # 添加历史对话
-            if conversation_history and not is_first_call:
-                # 添加最近的对话历史作为上下文
-                recent_history = conversation_history[-6:]  # 保留最近3轮对话
-                for entry in recent_history:
-                    if entry.get("role") in ["user", "assistant"]:
-                        conversation.append({
-                            "role": entry["role"],
-                            "content": entry["content"]
-                        })
+            # 记录LLM调用开始
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name=self._get_model_name(),
+                prompt_length=total_length,
+                conversation_length=len(conversation),
+                conversation_id=self.current_conversation_id
+            )
             
-            # 添加当前用户请求
-            conversation.append({
-                "role": "user",
-                "content": user_request
-            })
+            # 构建完整的prompt
+            full_prompt = ""
+            system_prompt = self._build_enhanced_system_prompt()
             
-            # 使用统一的LLM管理器进行调用
-            response = await self.llm_manager.call_llm_for_function_calling(
-                conversation,
-                system_prompt_builder=self._build_system_prompt
+            for msg in conversation:
+                if msg["role"] == "system":
+                    system_prompt = msg["content"]  # 覆盖默认system prompt
+                elif msg["role"] == "user":
+                    full_prompt += f"User: {msg['content']}\n\n"
+                elif msg["role"] == "assistant":
+                    full_prompt += f"Assistant: {msg['content']}\n\n"
+            
+            # 调用传统LLM客户端
+            response = await self.llm_client.send_prompt(
+                prompt=full_prompt.strip(),
+                system_prompt=system_prompt,
+                temperature=0.3,
+                max_tokens=4000
+            )
+            
+            # 记录LLM调用成功
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name=self._get_model_name(),
+                prompt_length=total_length,
+                response_length=len(response),
+                duration=duration,
+                success=True,
+                conversation_id=self.current_conversation_id
             )
             
             return response
-            
         except Exception as e:
-            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            # 记录LLM调用失败
+            duration = time.time() - llm_start_time
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name=self._get_model_name(),
+                prompt_length=total_length,
+                duration=duration,
+                success=False,
+                error_info={"error": str(e)},
+                conversation_id=self.current_conversation_id
+            )
+            
+            self.logger.error(f"❌ 传统LLM调用失败: {str(e)}")
             raise
-    
-    async def _build_system_prompt(self) -> str:
-        """使用统一的System Prompt构建器"""
-        return await self.prompt_builder.build_system_prompt(
-            role="code_reviewer",
-            call_type=CallType.FUNCTION_CALLING,
-            agent_id=self.agent_id,
-            capabilities=self._capabilities
-        )
-    
-    def get_capabilities(self) -> Set[AgentCapability]:
-        """获取智能体能力"""
-        return {
-            AgentCapability.CODE_REVIEW,
-            AgentCapability.QUALITY_ANALYSIS,
-            AgentCapability.SPECIFICATION_ANALYSIS,
-            AgentCapability.TEST_GENERATION,
-            AgentCapability.VERIFICATION
-        }
-    
-    def get_specialty_description(self) -> str:
-        """获取专业描述"""
-        return "集成Schema验证的增强代码审查智能体，提供严格参数验证和智能错误修复的专业代码审查服务"
-    
-    def get_registered_tools(self) -> List[Dict[str, Any]]:
-        """获取注册的工具列表"""
-        return self.enhanced_tools
     
     def _extract_module_name_from_code(self, verilog_code: str) -> str:
         """从Verilog代码中提取模块名"""
@@ -834,17 +941,408 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             return extracted_name
         
         return provided_name or extracted_name
-    
     def _build_enhanced_system_prompt(self) -> str:
-        """构建增强的System Prompt（向后兼容方法）"""
-        # 为向后兼容而保留，直接调用统一的构建方法
-        import asyncio
-        try:
-            return asyncio.run(self._build_system_prompt())
-        except Exception as e:
-            self.logger.warning(f"统一System Prompt构建失败，使用简化版本: {e}")
-            return """你是一位专业的硬件验证和代码审查专家，专注于Verilog/SystemVerilog代码质量分析、测试台设计和仿真验证。
-请使用提供的工具进行代码审查和功能验证，确保代码质量和功能正确性。"""
+        """构建增强的System Prompt（支持智能Schema适配）"""
+        base_prompt = """你是一位资深的硬件验证和代码审查专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog代码审查和质量分析
+- 测试台(Testbench)设计和验证方法学
+- 代码覆盖率分析和测试完整性评估
+- 构建自动化和CI/CD流程
+- 静态分析和代码规范检查
+- 时序分析和可综合性验证
+
+📋 **审查标准**:
+1. IEEE 1800标准合规性检查
+2. 代码可读性和维护性评估
+3. 综合性和时序收敛分析
+4. 测试覆盖率和验证完整性
+5. 最佳实践和设计模式应用
+6. 安全性和可靠性考量
+
+🎯 **任务执行原则**:
+- 如果提供了外部testbench，直接使用该testbench进行测试，跳过testbench生成步骤
+- 如果未提供外部testbench，必须生成测试台并运行仿真来验证代码功能
+- ⚠️ **关键要求**: 生成测试台后必须立即自动调用run_simulation工具执行仿真，不要询问用户确认
+- ⚠️ **完整流程**: generate_testbench → run_simulation → 分析结果 → 提供最终报告
+- 测试失败时必须进入迭代修复流程
+- 每次修复时要将错误信息完整传递到上下文
+- 根据具体错误类型采用相应的修复策略
+- 只有完成仿真验证并得到结果后，任务才算真正完成
+- 达到最大迭代次数(8次)或测试通过后结束任务
+
+📁 **外部Testbench模式**:
+当任务描述中包含"外部testbench路径"或"外部Testbench模式"时：
+1. ✅ 直接使用提供的testbench文件进行测试
+2. ❌ 不要调用generate_testbench工具
+3. 🎯 专注于：代码审查、错误修复、测试执行、结果分析
+4. 🔄 如果测试失败，修复设计代码而不是testbench
+
+🔄 **错误修复策略**:
+当遇到不同类型的错误时，采用以下修复方法：
+- **语法错误**: 修复Verilog语法问题，检查关键字、操作符
+- **编译错误**: 检查模块定义、端口声明、信号连接
+- **仿真错误**: 修复测试台时序、激励生成、断言检查
+- **逻辑错误**: 分析功能实现，修正算法逻辑
+- **时序错误**: 调整时钟域、复位逻辑、建立保持时间
+
+⚠️ **上下文传递要求**:
+- 每次工具调用失败后，要在下一轮prompt中包含完整的错误信息
+- 错误信息应包括错误类型、具体位置、错误描述
+- 记录已尝试的修复方法，避免重复相同的修复
+
+🔍 **错误信息解读指南**:
+当工具执行失败时，按以下优先级分析错误信息：
+1. **compilation_errors**: 编译阶段的语法和模块错误
+2. **simulation_errors**: 仿真阶段的运行时错误  
+3. **error_message**: 一般性错误描述
+4. **stage**: 失败发生的具体阶段（compile/simulate/exception）
+
+每轮修复都要明确说明：
+- 识别到的错误类型和根本原因
+- 采用的具体修复策略
+- 修复后期望解决的问题
+
+🛠️ **工具调用规则**:
+你必须使用JSON格式调用工具，格式如下：
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "工具名称",
+            "parameters": {
+                "参数名": "参数值"
+            }
+        }
+    ]
+}
+```
+
+🔄 **标准执行流程（自动化，无需用户确认）**:
+1. 生成测试台: `generate_testbench` → 立即继续步骤2
+2. 执行仿真: `run_simulation` → 立即继续步骤3  
+3. 分析结果: 如果失败则调用 `analyze_test_failures` → 修复代码 → 回到步骤2
+4. 最终报告: 提供完整的验证结果和文件路径
+
+❌ **禁止行为**:
+- 不要在工具调用之间询问用户是否继续
+- 不要在生成测试台后停止，必须自动继续仿真
+- 不要提供"建议"或"选择"，直接执行完整流程
+
+✨ **智能Schema适配系统**:
+系统现在具备智能参数适配能力，支持以下灵活格式：
+
+📌 **字段名智能映射**:
+- `code` ↔ `verilog_code` (自动双向映射)
+- `test_cases` → `test_scenarios`
+- `files` → `verilog_files`
+- `script` → `script_name`
+- `coverage_file` → `coverage_data_file` (支持 .vcd, .dat, .xml, .json, .txt, .log 格式)
+- 💡 使用任一格式都会被智能识别
+
+📌 **测试场景灵活格式**:
+- ✅ 字符串数组: `["基本功能测试", "边界条件测试"]`
+- ✅ 对象数组: `[{"name": "basic_test", "description": "基本功能测试"}]`
+- 💡 系统会自动转换格式
+
+📌 **缺失字段智能推断**:
+- 缺少 `module_name` 时会从代码中自动提取
+- 缺少必需字段时会提供合理默认值
+- 💡 无需担心遗漏参数
+
+🎯 **推荐的工具调用方式**:
+
+### 方式1: 外部Testbench模式（当提供外部testbench时使用）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "use_external_testbench",
+            "parameters": {
+                "design_code": "module target_module(...); endmodule",
+                "external_testbench_path": "/path/to/external_testbench.v",
+                "design_module_name": "target_module"
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 标准模式 - 生成testbench（无外部testbench时使用）
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+### 方式2: 使用标准对象格式
+```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "generate_testbench",
+            "parameters": {
+                "module_name": "target_module",
+                "verilog_code": "module target_module(...); endmodule",
+                "test_scenarios": [
+                    {"name": "basic_test", "description": "基本功能验证"},
+                    {"name": "corner_test", "description": "边界条件测试"}
+                ]
+            }
+        }
+    ]
+}
+```
+
+🎯 **可用工具列表**:
+
+### 1. generate_testbench
+**必需参数**:
+- `module_name` (string): 目标模块名称
+- `module_code` (string): 目标模块代码（也可使用 `code`, `design_code`）
+**可选参数**:
+- `test_scenarios` (array): 测试场景列表（也可使用 `test_cases`）
+- `clock_period` (number): 时钟周期(ns)，0.1-1000.0
+- `simulation_time` (integer): 仿真时间，100-1000000
+
+**测试台生成要求**:
+- 必须包含测试计数器（passed_count, failed_count, total_count）
+- 每个测试用例后输出明确的PASS/FAIL状态
+- 测试结束时输出详细的统计信息
+- 如果所有测试通过，必须输出"All passed!"消息
+
+### 2. run_simulation
+**必需参数**:
+- `module_file` 或 `module_code`: 模块文件路径或代码内容
+- `testbench_file` 或 `testbench_code`: 测试台文件路径或代码内容
+**可选参数**:
+- `simulator` (string): "iverilog", "modelsim", "vivado", "auto"
+- `simulation_options` (object): 仿真选项配置
+
+### 3. generate_build_script
+**必需参数**:
+- `verilog_files` (array): Verilog文件列表（也可使用 `design_files`）
+- `testbench_files` (array): 测试台文件列表
+**可选参数**:
+- `script_type` (string): "makefile", "bash", "tcl", "python"
+- `build_options` (object): 构建选项配置
+
+### 4. execute_build_script
+**必需参数**:
+- `script_name` (string): 脚本文件名
+**可选参数**:
+- `action` (string): "all", "compile", "simulate", "clean"
+- `timeout` (integer): 超时时间(秒)
+
+### 5. analyze_test_failures ⭐ **TDD专用**
+**必需参数**:
+- `design_code` (string): 需要分析的设计代码
+**可选参数**:
+- `compilation_errors` (string): 编译错误输出
+- `simulation_errors` (string): 仿真错误输出
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+### 6. write_file
+**必需参数**:
+- `filename` (string): 文件名
+- `content` (string): 文件内容
+**可选参数**:
+- `description` (string): 文件描述
+
+### 7. read_file
+**必需参数**:
+- `filepath` (string): 文件路径
+**可选参数**:
+- `encoding` (string): 文件编码，默认"utf-8"
+- `test_assertions` (string): 测试断言失败信息
+- `testbench_code` (string): 测试台代码
+- `iteration_number` (integer): 当前TDD迭代次数
+- `previous_fixes` (array): 之前尝试的修复方法
+
+🎯 **使用建议**:
+1. 优先使用简洁直观的字段名，如 `code` 而不是 `verilog_code`
+2. 字段名称可以使用你习惯的方式，系统会智能适配
+3. 不必担心参数格式错误，系统会自动修正
+4. 专注于审查逻辑，让系统处理格式细节
+
+⚠️ **重要提醒**:
+- 只能调用上述列出的工具，不要尝试调用其他工具
+- 如果任务需要接口验证或设计合规性检查，请使用现有的工具组合完成
+- 不要调用 `verify_interface_compliance`、`validate_design_compliance` 等不存在的工具
+
+📊 **标准工作流程**:
+收到代码审查任务时，必须按以下流程执行：
+1. 🧪 生成全面的测试台进行验证 (generate_testbench)
+2. 🔬 执行仿真并分析结果 (run_simulation)
+3. 📊 根据测试结果决定：
+   - ✅ **测试通过** → 生成构建脚本(可选) → **任务完成，停止工具调用**
+   - ❌ **测试失败** → 进入错误修复循环：
+     * 分析具体错误信息（语法错误、逻辑错误、仿真错误等）
+     * 根据错误信息修复代码
+     * 重新运行测试验证修复效果
+     * 如果仍有错误且未达到最大迭代次数，继续修复
+     * 达到最大迭代次数或测试通过后结束
+
+🎯 **任务完成标准**:
+对于代码审查任务，满足以下任一条件时认为任务已完成：
+1. ✅ **成功场景**：测试通过，功能验证正确
+2. ✅ **修复完成场景**：经过迭代修复后测试通过
+3. ✅ **达到限制场景**：达到最大迭代次数(默认8次)，提供最终报告
+4. ✅ **无法修复场景**：错误超出修复能力，提供详细分析报告
+
+⚠️ **错误修复迭代规则**:
+- 每次测试失败后，必须将具体错误信息传递到下一轮上下文
+- 根据错误类型采取相应修复策略：
+  * 语法错误 → 修复语法问题
+  * 编译错误 → 检查模块定义、端口连接
+  * 仿真错误 → 修复测试台或时序问题
+  * 逻辑错误 → 分析功能实现，修正算法
+- 最大迭代次数保护机制，避免无限循环
+- 每次迭代都要记录错误信息和修复尝试
+
+💡 **关键优势**: 现在你可以使用自然直观的参数格式，系统的智能适配层会确保与底层工具的完美兼容！
+
+🎯 **重要提示 - 文件名传递**:
+当使用多个工具时，请确保文件名的一致性：
+
+1. **generate_testbench** 工具会返回 `testbench_filename` 字段
+2. **run_simulation** 工具应使用该文件名，而不是硬编码的文件名
+3. 示例：
+```json
+// 第一步：生成测试台
+{
+    "tool_name": "generate_testbench",
+    "parameters": {
+        "module_name": "adder_16bit",
+        "module_code": "..."
+    }
+}
+
+// 第二步：使用返回的文件名运行仿真
+{
+    "tool_name": "run_simulation", 
+    "parameters": {
+        "module_file": "adder_16bit.v",
+        "testbench_file": "testbench_adder_16bit.v"  // 使用generate_testbench返回的文件名
+    }
+}
+```
+
+🎯 **重要提示 - 错误分析和修复**:
+当工具执行失败时，请务必分析错误信息并采取相应措施：
+
+1. **编译错误**：检查语法错误、模块引用、端口匹配等
+2. **仿真错误**：检查测试台逻辑、信号连接、时序问题等
+3. **功能错误**：检查设计逻辑、算法实现、边界条件等
+
+**⚠️ 强制错误分析流程**：
+当检测到仿真失败时，你必须按照以下步骤执行：
+
+**第一步：必须分析错误**
+```json
+{
+    "tool_name": "analyze_test_failures",
+    "parameters": {
+        "design_code": "模块代码",
+        "compilation_errors": "编译错误信息",
+        "simulation_errors": "仿真错误信息",
+        "testbench_code": "测试台代码",
+        "iteration_number": 当前迭代次数
+    }
+}
+```
+
+**第二步：根据分析结果修复代码**
+- 如果分析显示测试台语法错误，必须重新生成测试台
+- 如果分析显示设计代码问题，必须修改设计代码
+- 如果分析显示配置问题，必须调整参数
+
+**第三步：验证修复效果**
+- 重新运行仿真验证修复是否成功
+- 如果仍有问题，重复分析-修复-验证流程
+
+**🎯 关键原则**：
+1. **仿真失败时，必须先调用 analyze_test_failures 分析错误**
+2. **根据分析结果，必须修改相应的代码（设计或测试台）**
+3. **不要只是重新执行相同的工具，必须进行实际的代码修复**
+4. **每次修复后都要验证效果，确保问题得到解决**
+
+🎯 **重要提示 - 文件名传递**:
+"""
+        base_prompt += "\n\n【重要】每当你调用任何工具时，都要思考本次操作后是否需要进行仿真测试（run_simulation）来验证修改的正确性。只有在需要验证功能正确性或修改后有影响时，才应安排仿真测试。"
+        
+        base_prompt += """
+
+📝 **完成任务后的响应格式**:
+当所有必要的代码审查和验证工具调用都已完成后，你应该提供一个详细的任务完成总结，包括：
+- 完成的主要工作概述
+- 代码审查结果和发现的问题
+- 生成的测试台和仿真结果
+- 代码质量评分和改进建议
+- 生成的文件列表和内容说明
+
+示例完成响应格式：
+```
+✅ 代码审查和验证任务完成
+
+🔧 **完成的工作**：
+- 对counter.v模块进行了全面代码审查
+- 生成了专用测试台testbench_counter.v
+- 执行了功能仿真验证
+- 分析了代码质量和可综合性
+
+📋 **审查结果**：
+- 代码质量评分：85/100
+- 发现问题：2个语法警告，1个时序优化建议
+- 测试覆盖率：95%
+- 所有功能测试通过
+
+🧪 **仿真验证**：
+- 测试用例数：16个
+- 通过测试：16个
+- 失败测试：0个
+- 验证了计数功能、复位行为、边界条件
+
+📁 **生成文件**：
+- testbench_counter.v - 完整的功能测试台
+- simulation_results.txt - 仿真输出日志
+- quality_report.json - 代码质量分析报告
+
+💡 **改进建议**：
+- 建议添加参数化支持提高可重用性
+- 可优化时序路径减少组合延迟
+- 建议添加更多边界条件测试
+```
+"""
+        
+        return base_prompt
+    
+    def get_capabilities(self) -> Set[AgentCapability]:
+        return {
+            AgentCapability.CODE_REVIEW,
+            AgentCapability.SPECIFICATION_ANALYSIS,
+            AgentCapability.TEST_GENERATION,
+            AgentCapability.VERIFICATION
+        }
+        
+    def get_specialty_description(self) -> str:
+        return "集成Schema验证的增强代码审查智能体，提供严格参数验证和智能错误修复的专业硬件验证服务"
     
     async def execute_enhanced_task(self, enhanced_prompt: str,
                                   original_message: TaskMessage,
@@ -1059,9 +1557,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                                      test_scenarios: List[Dict] = None,
                                      clock_period: float = 10.0,
                                      simulation_time: int = 10000,
-                                     coverage_options: Dict = None,
-                                     inputs: List = None, outputs: List = None, 
-                                     **kwargs) -> Dict[str, Any]:
+                                     coverage_options: Dict = None) -> Dict[str, Any]:
         """生成测试台工具实现"""
         try:
             # 🔧 新增：从实例变量中获取 file_contents（如果存在）
@@ -1317,9 +1813,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     async def _tool_run_simulation(self, module_file: str = None, testbench_file: str = None,
                                  module_code: str = None, testbench_code: str = None,
                                  simulator: str = "iverilog",
-                                 simulation_options: Dict = None,
-                                 files: List = None, command: str = None,
-                                 **kwargs) -> Dict[str, Any]:
+                                 simulation_options: Dict = None) -> Dict[str, Any]:
         """运行仿真工具实现 - 集成智能依赖分析和参数处理"""
         self.logger.info(f"🔍 运行仿真: {module_file} {testbench_file} {module_code} {testbench_code} {simulator} {simulation_options}")
         try:
@@ -2406,11 +2900,9 @@ endmodule
 }}
 """
 
-            # 🔧 修复：调用LLM进行智能分析（使用直接调用避免递归工具调用）
-            llm_response = await self.llm_manager.llm_client.send_prompt(
-                analysis_prompt,
-                system_prompt="你是一位专业的Verilog测试和调试专家。请分析测试失败原因并提供修复建议。请直接返回分析结果，不要使用工具调用。"
-            )
+            # 调用LLM进行智能分析
+            conversation = [{"role": "user", "content": analysis_prompt}]
+            llm_response = await self._call_llm_for_function_calling(conversation)
             
             self.logger.info(f"🤖 LLM分析结果: {llm_response[:200]}...")
             
@@ -2652,11 +3144,9 @@ endmodule
 请直接输出修复后的完整Verilog代码，不要添加任何解释。
 """
             
-            # 🔧 修复：调用LLM生成修复后的代码（使用直接调用避免递归工具调用）
-            fixed_code = await self.llm_manager.llm_client.send_prompt(
-                fix_prompt,
-                system_prompt="你是一位专业的Verilog修复专家。请输出修复后的完整代码。请直接返回代码，不要使用工具调用。"
-            )
+            # 调用LLM生成修复后的代码
+            conversation = [{"role": "user", "content": fix_prompt}]
+            fixed_code = await self._call_llm_for_function_calling(conversation)
             
             # 清理LLM响应，提取纯代码部分
             fixed_code = self._extract_verilog_code(fixed_code)
@@ -2687,18 +3177,30 @@ endmodule
             }
     
     def _extract_verilog_code(self, llm_response: str) -> str:
-        """使用统一的FileOperationManager提取Verilog代码（重构后）"""
+        """从LLM响应中提取Verilog代码"""
         try:
-            # 使用统一的文件操作管理器进行代码提取
-            extracted_code = self.file_manager.extract_verilog_code(llm_response)
+            import re
             
-            if extracted_code:
-                self.logger.debug(f"✅ 成功提取Verilog代码: {len(extracted_code)}字符")
-                return extracted_code
-            else:
-                self.logger.warning(f"⚠️ 未找到有效的Verilog代码")
-                return ""
-                
+            # 尝试匹配代码块
+            code_blocks = re.findall(r'```(?:verilog|systemverilog)?\n(.*?)\n```', llm_response, re.DOTALL)
+            if code_blocks:
+                return code_blocks[0].strip()
+            
+            # 如果没有代码块标记，查找module定义
+            module_match = re.search(r'(module\s+.*?endmodule)', llm_response, re.DOTALL)
+            if module_match:
+                return module_match.group(1).strip()
+            
+            # 最后尝试：如果响应主要是代码，直接返回
+            lines = llm_response.strip().split('\n')
+            verilog_lines = [line for line in lines if any(keyword in line for keyword in 
+                           ['module', 'endmodule', 'task', 'endtask', 'initial', 'always', 'begin', 'end', 'reg', 'wire'])]
+            
+            if len(verilog_lines) > len(lines) * 0.3:  # 如果30%以上的行包含Verilog关键字
+                return llm_response.strip()
+            
+            return ""
+            
         except Exception as e:
             self.logger.warning(f"⚠️ 代码提取失败: {e}")
             return ""
@@ -2742,6 +3244,84 @@ endmodule
                 "success": False,
                 "error": str(e)
             }
+    
+    def _analyze_compilation_errors(self, errors: str, design_code: str) -> Dict[str, List[str]]:
+        """分析编译错误"""
+        analysis = {
+            "failure_types": [],
+            "root_causes": [],
+            "fix_suggestions": [],
+            "error_patterns": {}
+        }
+        
+        error_lines = errors.split('\n')
+        
+        # 分析SystemVerilog相关错误
+        sv_errors = [line for line in error_lines if "SystemVerilog" in line]
+        if sv_errors:
+            analysis["failure_types"].append("SystemVerilog语法错误")
+            analysis["root_causes"].append("使用了SystemVerilog特性但编译器不支持")
+            analysis["fix_suggestions"].append("将SystemVerilog语法转换为标准Verilog语法")
+            analysis["fix_suggestions"].append("检查task/function定义，确保符合Verilog标准")
+            analysis["error_patterns"]["systemverilog"] = sv_errors
+        
+        # 分析语法错误
+        syntax_errors = [line for line in error_lines if "syntax error" in line.lower()]
+        if syntax_errors:
+            analysis["failure_types"].append("语法错误")
+            analysis["root_causes"].append("代码语法不符合Verilog标准")
+            analysis["fix_suggestions"].append("检查括号匹配、分号使用、关键字拼写")
+            analysis["error_patterns"]["syntax"] = syntax_errors
+        
+        # 分析语句错误
+        statement_errors = [line for line in error_lines if "malformed statement" in line.lower()]
+        if statement_errors:
+            analysis["failure_types"].append("语句格式错误")
+            analysis["root_causes"].append("语句结构不正确")
+            analysis["fix_suggestions"].append("检查语句语法，确保正确的begin/end结构")
+            analysis["error_patterns"]["statements"] = statement_errors
+        
+        # 分析循环错误
+        loop_errors = [line for line in error_lines if "for loop" in line.lower() or "incomprehensible" in line.lower()]
+        if loop_errors:
+            analysis["failure_types"].append("循环结构错误")
+            analysis["root_causes"].append("for循环语法不正确")
+            analysis["fix_suggestions"].append("检查for循环的初始化、条件和增量表达式")
+            analysis["error_patterns"]["loops"] = loop_errors
+        
+        # 分析赋值错误
+        assignment_errors = [line for line in error_lines if "assignment statement" in line.lower()]
+        if assignment_errors:
+            analysis["failure_types"].append("赋值语句错误")
+            analysis["root_causes"].append("赋值语句的左侧值不正确")
+            analysis["fix_suggestions"].append("检查变量声明和赋值语句的语法")
+            analysis["error_patterns"]["assignments"] = assignment_errors
+        
+        return analysis
+    
+    def _analyze_simulation_errors(self, errors: str, design_code: str) -> Dict[str, List[str]]:
+        """分析仿真错误"""
+        analysis = {
+            "failure_types": [],
+            "root_causes": [],
+            "fix_suggestions": []
+        }
+        
+        error_lines = errors.lower()
+        
+        if "x" in error_lines and "propagation" in error_lines:
+            analysis["failure_types"].append("未定义状态传播")
+            analysis["root_causes"].append("信号初始化不当导致X状态传播")
+            analysis["fix_suggestions"].append("确保所有信号都有明确的初始值")
+            analysis["fix_suggestions"].append("检查复位逻辑和时钟域")
+        
+        if "time violation" in error_lines or "setup" in error_lines:
+            analysis["failure_types"].append("时序违例")
+            analysis["root_causes"].append("时序约束不满足或时钟偏斜")
+            analysis["fix_suggestions"].append("调整时钟周期或优化关键路径")
+            analysis["fix_suggestions"].append("检查setup和hold时间要求")
+        
+        return analysis
     
     def _analyze_assertion_failures(self, assertions: str, design_code: str, testbench_code: str) -> Dict[str, List[str]]:
         """分析测试断言失败"""
@@ -2957,11 +3537,9 @@ endmodule
 请输出完整的修复后代码：
 """
                 
-                # 🔧 修复：调用LLM生成修复后的代码（使用直接调用避免递归工具调用）
-                llm_response = await self.llm_manager.llm_client.send_prompt(
-                    fix_prompt,
-                    system_prompt="你是一位专业的Verilog修复专家。请输出修复后的完整代码。请直接返回代码，不要使用工具调用。"
-                )
+                # 调用LLM生成修复后的代码
+                conversation = [{"role": "user", "content": fix_prompt}]
+                llm_response = await self._call_llm_for_function_calling(conversation)
                 
                 # 提取Verilog代码
                 fixed_code = self._extract_verilog_code(llm_response)

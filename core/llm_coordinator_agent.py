@@ -819,6 +819,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 max_self_iterations=3
             )
             
+            # 🔧 新增：格式修复 - 如果LLM输出了错误格式，尝试自动修复
+            result = self._fix_tool_call_format(result)
+            
             # 🆕 记录协调器的响应到对话历史
             task_context.add_conversation_message(
                 role="assistant",
@@ -919,8 +922,47 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             if task_id in self.active_tasks:
                 del self.active_tasks[task_id]
     
+    def _fix_tool_call_format(self, result: str) -> str:
+        """修复工具调用格式 - 将错误的单工具格式转换为正确的tool_calls数组格式"""
+        if not isinstance(result, str) or not result.strip():
+            return result
+        
+        # 提取JSON内容
+        json_content = self._extract_json_from_response(result.strip())
+        if not json_content:
+            return result
+        
+        try:
+            data = json.loads(json_content)
+            
+            # 检查是否是错误的单个工具格式
+            if "tool_name" in data and "parameters" in data and "tool_calls" not in data:
+                self.logger.warning(f"🔧 检测到错误的单工具格式，自动修复为tool_calls数组格式")
+                
+                # 转换为正确的格式
+                fixed_data = {
+                    "tool_calls": [
+                        {
+                            "tool_name": data["tool_name"],
+                            "parameters": data["parameters"]
+                        }
+                    ]
+                }
+                
+                # 生成修复后的响应
+                fixed_json = json.dumps(fixed_data, ensure_ascii=False, indent=2)
+                fixed_result = f"```json\n{fixed_json}\n```"
+                
+                self.logger.info(f"✅ 已修复工具调用格式：{data['tool_name']}")
+                return fixed_result
+            
+        except json.JSONDecodeError:
+            self.logger.debug("JSON解析失败，保持原始格式")
+        
+        return result
+
     def _has_executed_tools(self, result: str) -> bool:
-        """检查LLM的回复是否是一个有效的工具调用JSON。"""
+        """检查并修复LLM的回复，确保是有效的工具调用JSON。"""
         if not isinstance(result, str) or not result.strip():
             self.logger.debug(f"🔍 工具检测失败: 结果为空或非字符串类型")
             return False
@@ -935,6 +977,25 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             data = json.loads(json_content)
             self.logger.debug(f"🔍 解析JSON成功: {list(data.keys())}")
             
+            # 🔧 修复：检查是否是错误的单个工具格式，并自动转换为正确的tool_calls格式
+            if "tool_name" in data and "parameters" in data and "tool_calls" not in data:
+                self.logger.warning(f"🔧 检测到错误的单工具格式，自动转换为tool_calls数组格式")
+                # 转换为正确的格式
+                fixed_data = {
+                    "tool_calls": [
+                        {
+                            "tool_name": data["tool_name"],
+                            "parameters": data["parameters"]
+                        }
+                    ]
+                }
+                # 更新result（用于后续处理）
+                fixed_json = json.dumps(fixed_data, ensure_ascii=False, indent=2)
+                # 这里我们不能直接修改传入的result，但可以记录问题
+                self.logger.info(f"🔧 修复后的格式: {fixed_json}")
+                return True  # 格式可以修复，认为是有效的工具调用
+            
+            # 检查正确的tool_calls格式
             if "tool_calls" in data and isinstance(data["tool_calls"], list) and len(data["tool_calls"]) > 0:
                 # 进一步检查tool_calls列表中的元素是否合法
                 call = data["tool_calls"][0]
@@ -1025,8 +1086,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "tool_name": "assign_task_to_agent",
             "parameters": {{
                 "agent_id": "enhanced_real_verilog_agent",
-                "task_description": "设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台",
-                "expected_output": "生成完整的Verilog代码文件和测试台文件",
+                "task_description": "根据用户需求设计Verilog模块，专注于模块设计和代码实现",
+                "expected_output": "生成完整的Verilog代码文件",
                 "task_type": "design",
                 "priority": "medium"
             }}
@@ -1631,30 +1692,65 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         """根据目标智能体过滤任务描述，移除不合适的要求"""
         
         if agent_id == "enhanced_real_verilog_agent":
-            # 🔧 修正1: 为Verilog设计智能体移除测试台生成相关要求
+            # 🔧 修正: 为Verilog设计智能体移除测试台生成相关要求 - 使用更直接的方法
+            original_desc = task_description
+            
+            # 🔧 方法1: 直接字符串替换，移除常见的测试台相关表述
             filtered_desc = task_description
             
-            # 移除测试台生成要求
-            testbench_patterns = [
-                r"生成.*?测试台.*?\n?",
-                r"生成.*?testbench.*?\n?", 
-                r".*?测试台.*?生成.*?\n?",
-                r".*?testbench.*?生成.*?\n?",
-                r".*?测试.*?验证.*?\n?",
-                r".*?验证.*?功能.*?\n?",
-                r".*?仿真.*?验证.*?\n?",
-                r"4\.\s*生成对应的测试台进行验证.*?\n?",
-                r".*包含.*测试台.*进行验证.*?\n?",
-                r".*生成.*对应.*测试台.*?\n?"
+            # 移除常见的测试台相关短语
+            testbench_phrases = [
+                "和测试台",
+                "、测试台", 
+                "以及测试台",
+                "还有测试台",
+                "包含测试台",
+                "生成测试台",
+                "创建测试台",
+                "编写测试台"
             ]
             
-            import re
-            for pattern in testbench_patterns:
-                filtered_desc = re.sub(pattern, "", filtered_desc, flags=re.IGNORECASE | re.MULTILINE)
+            for phrase in testbench_phrases:
+                filtered_desc = filtered_desc.replace(phrase, "")
             
-            # 添加明确的职责说明
-            if "测试台" in task_description or "testbench" in task_description.lower() or "验证" in task_description:
-                filtered_desc = filtered_desc.rstrip() + f"""
+            # 🔧 方法2: 使用正则表达式清理
+            import re
+            testbench_patterns = [
+                r"，包含完整的端口定义、功能实现和测试台",
+                r"包含完整的端口定义、功能实现和测试台",
+                r"生成.*?测试台.*?进行验证",
+                r"并.*?生成.*?测试台",
+                r"以及.*?测试台",
+                r"和.*?测试台", 
+                r"、.*?测试台"
+            ]
+            
+            for pattern in testbench_patterns:
+                filtered_desc = re.sub(pattern, "", filtered_desc, flags=re.IGNORECASE)
+            
+            # 🔧 方法3: 清理多余的标点符号
+            filtered_desc = re.sub(r"，\s*$", "", filtered_desc)  # 移除末尾逗号
+            filtered_desc = re.sub(r"、\s*$", "", filtered_desc)  # 移除末尾顿号
+            filtered_desc = re.sub(r"和\s*$", "", filtered_desc)  # 移除末尾"和"
+            filtered_desc = filtered_desc.strip()
+            
+            # 检查是否原来包含测试台要求
+            has_testbench_requirement = ("测试台" in original_desc or 
+                                       "testbench" in original_desc.lower() or 
+                                       "验证" in original_desc)
+            
+            # 如果原来包含测试台要求，添加明确的职责说明
+            if has_testbench_requirement:
+                if filtered_desc:
+                    filtered_desc += """
+
+🚨 **重要说明**: 
+- 本任务仅要求完成Verilog模块设计和代码生成
+- 测试台(testbench)生成和验证工作将由后续的代码审查智能体负责
+- 请专注于设计模块的端口定义、功能实现和代码质量"""
+                else:
+                    # 如果过滤后为空，提供默认的设计任务描述
+                    filtered_desc = """设计Verilog模块，专注于模块架构和功能实现
 
 🚨 **重要说明**: 
 - 本任务仅要求完成Verilog模块设计和代码生成
@@ -4076,13 +4172,18 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     # =============================================================================
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """调用LLM进行Function Calling"""
+        """调用LLM进行Function Calling - 包含格式修复"""
         try:
             # 使用统一的LLM通信模块
-            return await self.llm_manager.call_llm_for_function_calling(
+            result = await self.llm_manager.call_llm_for_function_calling(
                 conversation, 
                 system_prompt_builder=self._build_enhanced_system_prompt
             )
+            
+            # 🔧 应用格式修复 - 修复协调器的工具调用格式问题
+            result = self._fix_tool_call_format(result)
+            
+            return result
             
         except Exception as e:
             self.logger.error(f"❌ Function Calling调用失败: {e}")

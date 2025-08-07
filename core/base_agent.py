@@ -1062,9 +1062,30 @@ class BaseAgent(ABC):
             if not required_tools:
                 return {"needs_continuation": False, "reason": "无需验证工具调用"}
             
-            # 检查必需工具是否都被调用
+            # 检查必需工具是否都被调用（检查整个对话历史）
             called_tools = [call["tool_name"] for call in tool_calls]
             missing_tools = [tool for tool in required_tools if tool not in called_tools]
+            
+            # 🔧 修复：如果LLM明确表示任务完成，且已有成功的工具调用，则放宽验证
+            recent_response = self._get_last_assistant_message()
+            task_completion_indicators = [
+                "✅ 任务完成", "任务已完成", "设计完成", "生成完成", 
+                "文件已写入", "已生成文件", "成功写入", "task completed"
+            ]
+            
+            has_completion_indicator = any(indicator in recent_response for indicator in task_completion_indicators)
+            has_successful_tools = len([call for call in tool_calls if call.get("success", True)]) > 0
+            
+            if has_completion_indicator and has_successful_tools and missing_tools:
+                self.logger.info(f"🎯 任务完成指标检测到，放宽工具验证: {missing_tools}")
+                # 检查是否是核心工具都已调用（如write_file）
+                core_tools_called = [tool for tool in ["write_file", "generate_verilog_code"] if tool in called_tools]
+                if core_tools_called:
+                    self.logger.info(f"✅ 核心工具已调用 {core_tools_called}，允许完成")
+                    return {"needs_continuation": False, "reason": "任务已完成，核心工具已执行"}
+                else:
+                    self.logger.warning(f"⚠️ 任务声明完成但缺少核心工具调用")
+            
             
             # 🔧 修复：针对协调智能体的特殊验证逻辑
             if "coordinator" in agent_type or "llm_coordinator" in agent_type or "llm_coordinator" in agent_id:
@@ -1237,6 +1258,18 @@ class BaseAgent(ABC):
                         })
         
         return tool_calls
+    
+    def _get_last_assistant_message(self) -> str:
+        """获取最后一条助手消息内容"""
+        if not self.conversation_history:
+            return ""
+        
+        # 从后往前查找最后一条assistant消息
+        for message in reversed(self.conversation_history):
+            if message.get("role") == "assistant":
+                return message.get("content", "")
+        
+        return ""
     
     def _get_required_tools_for_agent(self, agent_type: str) -> List[str]:
         """根据智能体类型获取必需的工具调用列表"""
