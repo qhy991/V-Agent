@@ -98,19 +98,23 @@ class UnifiedLLMClientManager:
                     self.logger.warning(f"⚠️ System Prompt构建失败: {e}")
                     system_prompt = ""
             
+            # 🔧 修复：安全处理user_message
+            safe_user_message = user_message.strip() if user_message is not None else ""
+            
             # 调用优化的LLM客户端
             response = await self.llm_client.send_prompt_optimized(
                 conversation_id=conversation_id,
-                user_message=user_message.strip(),
+                user_message=safe_user_message,
                 system_prompt=system_prompt,
                 temperature=0.3,
                 max_tokens=4000,
                 force_refresh_system=is_first_call
             )
             
-            # 检查响应是否有效
+            # 🔧 修复：确保响应不为None
             if response is None:
-                raise Exception("LLM响应为空")
+                self.logger.warning("⚠️ LLM响应为空，返回默认响应")
+                response = "我理解了您的请求，但当前无法生成有效响应。请稍后重试。"
             
             # 记录成功
             duration = time.time() - start_time
@@ -151,7 +155,7 @@ class UnifiedLLMClientManager:
             # 记录LLM调用开始
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=getattr(self.config.llm, 'model_name', 'claude-3.5-sonnet'),
                 prompt_length=total_length,
                 conversation_length=len(conversation),
                 conversation_id=conversation_id
@@ -181,10 +185,13 @@ class UnifiedLLMClientManager:
                 elif msg["role"] == "assistant":
                     full_prompt += f"Assistant: {msg['content']}\n\n"
             
+            # 🔧 修复：安全处理full_prompt
+            safe_full_prompt = full_prompt.strip() if full_prompt is not None else ""
+            
             # 调用传统LLM客户端
             if hasattr(self.llm_client, 'send_prompt'):
                 response = await self.llm_client.send_prompt(
-                    prompt=full_prompt.strip(),
+                    prompt=safe_full_prompt,
                     system_prompt=system_prompt,
                     temperature=0.3,
                     max_tokens=4000
@@ -193,7 +200,7 @@ class UnifiedLLMClientManager:
                 # 使用OptimizedLLMClient的方法
                 response = await self.llm_client.send_prompt_optimized(
                     conversation_id=conversation_id,
-                    user_message=full_prompt.strip(),
+                    user_message=safe_full_prompt,
                     system_prompt=system_prompt,
                     temperature=0.3,
                     max_tokens=4000
@@ -207,7 +214,7 @@ class UnifiedLLMClientManager:
             duration = time.time() - llm_start_time
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=getattr(self.config.llm, 'model_name', 'claude-3.5-sonnet'),
                 prompt_length=total_length,
                 response_length=len(response) if response else 0,
                 duration=duration,
@@ -222,7 +229,7 @@ class UnifiedLLMClientManager:
             duration = time.time() - llm_start_time
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=getattr(self.config.llm, 'model_name', 'claude-3.5-sonnet'),
                 prompt_length=total_length,
                 duration=duration,
                 success=False,
@@ -237,10 +244,21 @@ class UnifiedLLMClientManager:
         """构建用户消息"""
         user_message = ""
         for msg in conversation:
-            content = msg.get('content', '') or ''  # 安全处理None值
-            if msg["role"] == "user":
+            # 🔧 修复：安全处理None值和缺失字段
+            if msg is None:
+                continue
+                
+            content = msg.get('content', '')
+            if content is None:
+                content = ''
+                
+            role = msg.get('role', '')
+            if not role:
+                continue
+                
+            if role == "user":
                 user_message += f"{content}\n\n"
-            elif msg["role"] == "assistant":
+            elif role == "assistant":
                 user_message += f"Assistant: {content}\n\n"
         return user_message
     

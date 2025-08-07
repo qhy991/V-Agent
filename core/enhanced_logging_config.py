@@ -117,7 +117,7 @@ class ComponentLoggerManager:
         # 控制台handler - 只显示LLM调用相关的关键信息
         handlers['console'] = {
             'class': 'logging.StreamHandler',
-            'level': 'WARNING',  # 提高控制台日志级别，减少输出
+            'level': 'INFO',  # 提高控制台日志级别，减少输出
             'formatter': 'console',
             'stream': 'ext://sys.stdout'
         }

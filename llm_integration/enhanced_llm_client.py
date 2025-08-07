@@ -343,15 +343,24 @@ class OptimizedLLMClient:
         user_prompt = ""
         
         for msg in messages:
+            # 🔧 修复：安全处理None值
+            if msg is None or "role" not in msg:
+                continue
+                
+            content = msg.get("content", "")
+            if content is None:
+                content = ""
+                
             if msg["role"] == "system":
-                system_prompt = msg["content"]
+                system_prompt = content
             elif msg["role"] == "user":
-                user_prompt += f"User: {msg['content']}\n\n"
+                user_prompt += f"User: {content}\n\n"
             elif msg["role"] == "assistant":
-                user_prompt += f"Assistant: {msg['content']}\n\n"
+                user_prompt += f"Assistant: {content}\n\n"
         
-        # 直接调用原始的send_prompt方法，避免循环引用
-        return await self._send_prompt_direct(user_prompt.strip(), system_prompt, 
+        # 🔧 修复：确保user_prompt不为None
+        user_prompt_str = user_prompt if user_prompt is not None else ""
+        return await self._send_prompt_direct(user_prompt_str.strip(), system_prompt, 
                                             temperature, max_tokens, json_mode)
     
     async def _send_prompt_direct(self, prompt: str, system_prompt: str = None,

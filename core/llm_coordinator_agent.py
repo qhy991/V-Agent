@@ -292,7 +292,7 @@ class TaskContext:
     
     def add_llm_conversation(self, agent_id: str, conversation_id: str,
                            system_prompt: str, user_message: str, 
-                           assistant_response: str, model_name: str = "claude-3.5-sonnet",
+                           assistant_response: str, model_name: str = None,
                            duration: float = 0.0, success: bool = True,
                            error_info: str = None, is_first_call: bool = False,
                            temperature: float = None, max_tokens: int = None,
@@ -820,8 +820,14 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             )
             
             # 🔍 检查是否实际调用了工具
-            if not self._has_executed_tools(result):
+            self.logger.info(f"🔍 检查工具调用: 结果长度={len(result)}, 内容预览={result[:100]}...")
+            tools_executed = self._has_executed_tools(result)
+            self.logger.info(f"🔍 工具调用检查结果: {tools_executed}")
+            
+            if not tools_executed:
                 self.logger.warning("⚠️ 协调智能体没有调用任何工具，强制重新执行")
+                self.logger.info(f"🔍 原始结果内容: {result[:200]}...")
+                
                 # 强制重新执行，使用更明确的指令
                 forced_task = self._build_forced_coordination_task(user_request, task_context)
                 self.logger.info(f"🚨 强制重新执行，任务长度: {len(forced_task)} 字符")
@@ -839,6 +845,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 # 再次检查是否执行了工具
                 if not self._has_executed_tools(result):
                     self.logger.error("❌ 强制重新执行后仍未调用工具，返回错误信息")
+                    self.logger.error(f"🔍 强制执行结果: {result[:200]}...")
                     return {
                         "success": False,
                         "error": "协调智能体无法执行工具调用，请检查系统配置",
@@ -848,6 +855,24 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                             "forced_result": result[:500],
                             "tool_detection_failed": True
                         }
+                    }
+            
+            # 🔍 新增：检查是否调用了assign_task_to_agent工具
+            self.logger.info(f"🔍 检查是否调用了assign_task_to_agent工具...")
+            assign_task_called = self._check_assign_task_called(result)
+            self.logger.info(f"🔍 assign_task_to_agent调用检查: {assign_task_called}")
+            
+            if not assign_task_called:
+                self.logger.warning("⚠️ 没有调用assign_task_to_agent工具，强制调用")
+                # 强制调用assign_task_to_agent
+                forced_assign_result = await self._force_assign_task(user_request, task_context)
+                if not forced_assign_result.get("success", False):
+                    self.logger.error("❌ 强制分配任务失败")
+                    return {
+                        "success": False,
+                        "error": "强制分配任务失败",
+                        "task_id": task_id,
+                        "debug_info": forced_assign_result
                     }
             
             # 🔄 开始持续协调循环 - 监听智能体结果并继续协调
@@ -889,22 +914,33 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     def _has_executed_tools(self, result: str) -> bool:
         """检查LLM的回复是否是一个有效的工具调用JSON。"""
         if not isinstance(result, str) or not result.strip():
+            self.logger.debug(f"🔍 工具检测失败: 结果为空或非字符串类型")
             return False
         
         # 提取JSON内容，支持markdown代码块格式
         json_content = self._extract_json_from_response(result.strip())
         if not json_content:
+            self.logger.debug(f"🔍 工具检测失败: 无法提取JSON内容")
             return False
             
         try:
             data = json.loads(json_content)
+            self.logger.debug(f"🔍 解析JSON成功: {list(data.keys())}")
+            
             if "tool_calls" in data and isinstance(data["tool_calls"], list) and len(data["tool_calls"]) > 0:
                 # 进一步检查tool_calls列表中的元素是否合法
                 call = data["tool_calls"][0]
                 if "tool_name" in call and "parameters" in call:
+                    tool_name = call["tool_name"]
+                    self.logger.info(f"✅ 检测到有效工具调用: {tool_name}")
                     return True
+                else:
+                    self.logger.debug(f"🔍 工具调用格式不完整: {call}")
+            else:
+                self.logger.debug(f"🔍 未找到有效的tool_calls: {data}")
             return False
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            self.logger.debug(f"🔍 JSON解析失败: {e}")
             return False
     
     def _extract_json_from_response(self, response: str) -> str:
@@ -966,7 +1002,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 
         return f"""
 # 🚨🚨🚨 强制指令 🚨🚨🚨
-你必须立即调用 `identify_task_type` 工具。
+你必须立即调用 `assign_task_to_agent` 工具来分配任务。
 
 **用户需求**:
 {user_request}
@@ -978,9 +1014,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 {{
     "tool_calls": [
         {{
-            "tool_name": "identify_task_type",
+            "tool_name": "assign_task_to_agent",
             "parameters": {{
-                "user_request": "{escaped_user_request}"
+                "agent_id": "enhanced_real_verilog_agent",
+                "task_description": "设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台",
+                "expected_output": "生成完整的Verilog代码文件和测试台文件",
+                "task_type": "design",
+                "priority": "medium"
             }}
         }}
     ]
@@ -988,7 +1028,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 ```
 
 # 🚨🚨🚨 严格要求 🚨🚨🚨
-- ✅ 只能调用 `identify_task_type` 工具
+- ✅ 只能调用 `assign_task_to_agent` 工具
 - ❌ 绝对禁止调用智能体名称作为工具
 - ❌ 绝对禁止使用 enhanced_real_verilog_agent 作为 tool_name
 - ❌ 绝对禁止使用 enhanced_real_code_review_agent 作为 tool_name
@@ -1078,6 +1118,15 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             agent_info = self.registered_agents[agent_id]
             agent = agent_info.agent_instance
+            
+            # 🔧 修复：添加智能体健康检查
+            if hasattr(agent_info, 'failure_count') and agent_info.failure_count >= 3:
+                return {
+                    "success": False,
+                    "error": f"智能体 {agent_id} 连续失败次数过多，已暂时禁用",
+                    "agent_status": "disabled",
+                    "failure_count": agent_info.failure_count
+                }
             
             # 检查智能体状态
             if agent_info.status == AgentStatus.BUSY:
@@ -1229,6 +1278,11 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 # 更新智能体性能指标
                 agent_info.total_execution_time += execution_time
                 agent_info.average_response_time = agent_info.total_execution_time / (agent_info.success_count + agent_info.failure_count + 1)
+                
+                # 🔧 修复：更新成功计数
+                agent_info.success_count += 1
+                if hasattr(agent_info, 'failure_count'):
+                    agent_info.failure_count = 0  # 重置失败计数
                 
                 # 🔧 检查响应质量，如果太短则请求详细总结
                 enhanced_response = agent_response
@@ -1407,6 +1461,15 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         except Exception as e:
             error_msg = f"任务分配失败: {str(e)}"
             self.logger.error(f"❌ {error_msg}")
+            
+            # 🔧 修复：更新失败计数
+            if agent_id in self.registered_agents:
+                agent_info = self.registered_agents[agent_id]
+                if not hasattr(agent_info, 'failure_count'):
+                    agent_info.failure_count = 0
+                agent_info.failure_count += 1
+                self.logger.warning(f"⚠️ 智能体 {agent_id} 失败计数: {agent_info.failure_count}")
+            
             return {
                 "success": False,
                 "error": error_msg
@@ -2004,6 +2067,17 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         try:
             self.logger.info(f"🔍 深度分析智能体 {agent_id} 的执行结果")
+            
+            # 🔧 修复：确保 result 参数是字典类型
+            if result is None:
+                result = {}
+            elif isinstance(result, str):
+                # 如果是字符串，尝试解析为字典
+                try:
+                    import json
+                    result = json.loads(result)
+                except:
+                    result = {"raw_response": result}
             
             # 更新智能体性能指标
             self._update_agent_performance(agent_id, result)
@@ -3726,6 +3800,35 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                                    conversation_id: str, max_iterations: int) -> Dict[str, Any]:
         """运行持续协调循环，监听智能体结果并继续协调"""
         self.logger.info(f"🔄 开始持续协调循环 - 任务ID: {task_context.task_id}")
+        self.logger.info(f"🔍 当前智能体结果数量: {len(task_context.agent_results)}")
+        self.logger.info(f"🔍 智能体结果键: {list(task_context.agent_results.keys())}")
+        
+        # 🔍 新增：检查是否有智能体结果，如果没有则强制分配任务
+        if not task_context.agent_results:
+            self.logger.warning("⚠️ 没有智能体结果，检查是否需要强制分配任务")
+            
+            # 检查对话历史中是否有assign_task_to_agent调用
+            assign_task_found = False
+            for msg in task_context.conversation_history:
+                if msg.get("role") == "assistant":
+                    content = msg.get("content", "")
+                    if "assign_task_to_agent" in content:
+                        assign_task_found = True
+                        break
+            
+            if not assign_task_found:
+                self.logger.warning("⚠️ 对话历史中没有找到assign_task_to_agent调用，强制分配任务")
+                forced_result = await self._force_assign_task(task_context.original_request, task_context)
+                if forced_result.get("success", False):
+                    self.logger.info("✅ 强制分配任务成功，继续协调循环")
+                else:
+                    self.logger.error("❌ 强制分配任务失败")
+                    return {
+                        "success": False,
+                        "error": "强制分配任务失败",
+                        "task_id": task_context.task_id,
+                        "debug_info": forced_result
+                    }
         
         # 等待所有分配的智能体完成
         await self._wait_for_agents_completion(task_context)
@@ -3797,13 +3900,16 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         """检查是否需要继续协调"""
         # 检查是否有智能体执行结果需要分析
         if not task_context.agent_results:
-            return False
+            self.logger.info(f"🔍 协调继续检查: 没有智能体结果，需要继续协调")
+            return True  # 🆕 修改：如果没有智能体结果，说明还没有分配任务，需要继续协调
         
         # 检查是否所有必需的阶段都完成了
         completed_agents = set(task_context.agent_results.keys())
+        self.logger.info(f"🔍 协调继续检查: 已完成智能体: {completed_agents}")
         
         # 如果只有Verilog智能体完成，还需要代码审查
         if "enhanced_real_verilog_agent" in completed_agents and "enhanced_real_code_review_agent" not in completed_agents:
+            self.logger.info(f"🔍 协调继续检查: 需要代码审查智能体")
             return True
         
         # 如果两个智能体都完成了，检查是否需要最终答案
@@ -3811,9 +3917,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             # 检查是否已经提供了最终答案
             for msg in task_context.conversation_history:
                 if msg.get("metadata", {}).get("type") == "final_answer":
+                    self.logger.info(f"🔍 协调继续检查: 已有最终答案，无需继续")
                     return False
+            self.logger.info(f"🔍 协调继续检查: 需要提供最终答案")
             return True
         
+        self.logger.info(f"🔍 协调继续检查: 所有任务已完成")
+        return False
         return False
     
     async def _build_continuation_task(self, task_context: TaskContext) -> str:
@@ -3830,8 +3940,33 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         completed_agents = set(task_context.agent_results.keys())
         workflow_stage = self._determine_workflow_stage(completed_agents)
         
-        # 根据工作流阶段生成不同的协调指导
-        if workflow_stage == "design_completed":
+        # 🔧 修复：检查是否有工具执行失败的情况
+        failed_tools = []
+        for tool_exec in task_context.tool_executions:
+            if not tool_exec.get("success", True):
+                failed_tools.append(f"- {tool_exec.get('tool_name')}: {tool_exec.get('error', 'Unknown error')}")
+        
+        failed_tools_text = "\n".join(failed_tools) if failed_tools else "无失败的工具调用"
+        
+        # 根据工作流阶段和失败情况生成不同的协调指导
+        if workflow_stage == "initial" and failed_tools:
+            # 🔧 修复：处理初始阶段工具调用失败的情况
+            coordination_guide = f"""
+**🚨 紧急修复 - 工具调用失败**:
+检测到以下工具调用失败：
+{failed_tools_text}
+
+**修复策略**:
+1. 如果 `assign_task_to_agent` 失败，必须重新调用该工具
+2. 不要调用 `analyze_agent_result`，因为没有可分析的结果
+3. 确保 `assign_task_to_agent` 参数正确：
+   - agent_id: "enhanced_real_verilog_agent"
+   - task_description: 完整的任务描述
+   - 不要包含 task_id 参数（该工具不支持此参数）
+
+**重要**: 必须先成功分配任务，然后才能分析结果"""
+        
+        elif workflow_stage == "design_completed":
             coordination_guide = """
 **🚨 强制工作流程 - 设计阶段已完成**:
 1. 首先调用 `analyze_agent_result` 分析Verilog设计智能体的结果
@@ -3867,6 +4002,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 工作流阶段: {workflow_stage}
 - 执行结果摘要:
 {results_text}
+
+**工具执行状态**:
+- 失败的工具调用:
+{failed_tools_text}
 
 **当前阶段**: 结果分析与下一步决策
 
@@ -4594,3 +4733,70 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "error": str(e),
                 "message": "生成工具使用指导时发生错误"
             }
+    
+    def _check_assign_task_called(self, result: str) -> bool:
+        """检查是否调用了assign_task_to_agent工具"""
+        if not isinstance(result, str) or not result.strip():
+            return False
+        
+        # 提取JSON内容
+        json_content = self._extract_json_from_response(result.strip())
+        if not json_content:
+            return False
+            
+        try:
+            data = json.loads(json_content)
+            
+            if "tool_calls" in data and isinstance(data["tool_calls"], list):
+                for call in data["tool_calls"]:
+                    if isinstance(call, dict) and call.get("tool_name") == "assign_task_to_agent":
+                        self.logger.info(f"✅ 检测到assign_task_to_agent调用")
+                        return True
+            
+            return False
+        except json.JSONDecodeError:
+            return False
+    
+    async def _force_assign_task(self, user_request: str, task_context: TaskContext) -> Dict[str, Any]:
+        """强制分配任务给智能体"""
+        try:
+            self.logger.info(f"🚨 强制分配任务: {user_request[:100]}...")
+            
+            # 分析任务类型
+            task_analysis = await self._tool_identify_task_type(user_request)
+            if not task_analysis.get("success", False):
+                return {"success": False, "error": "任务类型识别失败"}
+            
+            task_type = task_analysis.get("task_type", "design")
+            
+            # 推荐智能体
+            agent_recommendation = await self._tool_recommend_agent(
+                task_type=task_type,
+                task_description=user_request,
+                priority="medium"
+            )
+            
+            if not agent_recommendation.get("success", False):
+                return {"success": False, "error": "智能体推荐失败"}
+            
+            recommended_agent = agent_recommendation.get("recommended_agent", "enhanced_real_verilog_agent")
+            
+            # 强制分配任务
+            assign_result = await self._tool_assign_task_to_agent(
+                agent_id=recommended_agent,
+                task_description=user_request,
+                expected_output="生成完整的Verilog代码文件",
+                task_type=task_type,
+                priority="medium"
+            )
+            
+            if assign_result.get("success", False):
+                self.logger.info(f"✅ 强制分配任务成功: {recommended_agent}")
+                return {"success": True, "agent_id": recommended_agent, "result": assign_result}
+            else:
+                self.logger.error(f"❌ 强制分配任务失败: {assign_result.get('error', '未知错误')}")
+                return {"success": False, "error": assign_result.get("error", "分配任务失败")}
+                
+        except Exception as e:
+            self.logger.error(f"❌ 强制分配任务异常: {str(e)}")
+            return {"success": False, "error": str(e)}

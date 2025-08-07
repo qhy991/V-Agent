@@ -26,6 +26,7 @@ from tools.tool_registry import ToolRegistry, ToolPermission
 from .agent_prompts import agent_prompt_manager
 from .function_calling import ToolCall, ToolResult
 from .enhanced_logging_config import get_component_logger, get_artifacts_dir
+from config.config import FrameworkConfig
 
 # 🔧 新增：导入已分解的组件
 from .context.agent_context import AgentContext
@@ -45,6 +46,11 @@ class BaseAgent(ABC):
         self.role = role or "base_agent"
         self._capabilities = capabilities or set()
         self.status = AgentStatus.IDLE
+        
+        # 初始化配置
+        self.config = FrameworkConfig.from_env()
+        
+
         
         # 设置日志 - 使用增强日志系统
         # 特殊处理不同智能体的日志映射
@@ -124,6 +130,10 @@ class BaseAgent(ABC):
         self.system_prompt = None
         
         self.logger.debug(f"✅ {self.__class__.__name__} (Function Calling支持) 初始化完成")
+    
+    def _get_model_name(self) -> str:
+        """从配置中获取模型名称"""
+        return getattr(self.config.llm, 'model_name', 'claude-3.5-sonnet')
     
     def _register_function_calling_tools(self):
         """注册Function Calling工具 - 子类可以重写"""
@@ -479,7 +489,7 @@ class BaseAgent(ABC):
                 logging_system = get_global_logging_system()
                 logging_system.log_detailed_llm_conversation(
                     agent_id=self.agent_id,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     system_prompt=system_prompt or "",
                     user_message=user_message,
                     assistant_response=response,
@@ -495,7 +505,7 @@ class BaseAgent(ABC):
                 safe_response = response or ""
                 logging_system.log_llm_call(
                     agent_id=self.agent_id,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     user_message=user_message,
                     response=safe_response,
                     prompt_length=len(user_message),
@@ -520,7 +530,7 @@ class BaseAgent(ABC):
                 logging_system = get_global_logging_system()
                 logging_system.log_detailed_llm_conversation(
                     agent_id=self.agent_id,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     system_prompt=system_prompt or "",
                     user_message=user_message,
                     assistant_response="[调用失败]",
@@ -536,7 +546,7 @@ class BaseAgent(ABC):
                 # 保持向后兼容的日志记录
                 logging_system.log_llm_call(
                     agent_id=self.agent_id,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     user_message=user_message,
                     response="",
                     prompt_length=len(user_message),
@@ -699,6 +709,11 @@ class BaseAgent(ABC):
                 # 调用LLM
                 llm_response = await self._call_llm_for_function_calling(conversation)
                 
+                # 🔧 修复：检查LLM响应是否为None
+                if llm_response is None:
+                    self.logger.error(f"❌ LLM返回了None响应")
+                    llm_response = "LLM调用失败，未返回有效响应"
+                
                 # 计算持续时间
                 duration = time.time() - llm_start_time
                 conversation_id = getattr(self, 'current_conversation_id', f"{self.agent_id}_{int(time.time())}")
@@ -711,7 +726,7 @@ class BaseAgent(ABC):
                     logging_system = get_global_logging_system()
                     logging_system.log_detailed_llm_conversation(
                         agent_id=self.agent_id,
-                        model_name="claude-3.5-sonnet",
+                        model_name=self._get_model_name(),
                         system_prompt=system_prompt,
                         user_message=current_user_message,
                         assistant_response=llm_response,
@@ -731,7 +746,7 @@ class BaseAgent(ABC):
                         system_prompt=system_prompt,
                         user_message=current_user_message,
                         assistant_response=llm_response,
-                        model_name="claude-3.5-sonnet",
+                        model_name=self._get_model_name(),
                         duration=duration,
                         success=True,
                         is_first_call=is_first_call
@@ -745,7 +760,7 @@ class BaseAgent(ABC):
                     final_response = llm_response
                     
                     # 如果响应太短（可能只是确认消息），尝试生成更详细的总结
-                    if len(llm_response.strip()) < 100:
+                    if llm_response and len(llm_response.strip()) < 100:
                         self.logger.info(f"🔍 检测到短响应({len(llm_response)}字符)，尝试生成详细总结...")
                         try:
                             # 生成任务完成总结
@@ -805,7 +820,7 @@ class BaseAgent(ABC):
                 
                 logging_system.log_detailed_llm_conversation(
                     agent_id=self.agent_id,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     system_prompt=system_prompt,
                     user_message=current_user_message,
                     assistant_response=final_response,
@@ -825,7 +840,7 @@ class BaseAgent(ABC):
                     system_prompt=system_prompt,
                     user_message=current_user_message,
                     assistant_response=final_response,
-                    model_name="claude-3.5-sonnet",
+                    model_name=self._get_model_name(),
                     duration=duration,
                     success=True,
                     is_first_call=False
@@ -1041,6 +1056,7 @@ class BaseAgent(ABC):
             
             # 原有的工具调用验证逻辑
             agent_type = self.role.lower()
+            agent_id = getattr(self, 'agent_id', '').lower()
             required_tools = self._get_required_tools_for_agent(agent_type)
             
             if not required_tools:
@@ -1049,6 +1065,35 @@ class BaseAgent(ABC):
             # 检查必需工具是否都被调用
             called_tools = [call["tool_name"] for call in tool_calls]
             missing_tools = [tool for tool in required_tools if tool not in called_tools]
+            
+            # 🔧 修复：针对协调智能体的特殊验证逻辑
+            if "coordinator" in agent_type or "llm_coordinator" in agent_type or "llm_coordinator" in agent_id:
+                # 检查是否调用了recommend_agent但没有调用assign_task_to_agent
+                if "recommend_agent" in called_tools and "assign_task_to_agent" not in called_tools:
+                    self.logger.warning(f"⚠️ 协调智能体调用了recommend_agent但未调用assign_task_to_agent")
+                    return {
+                        "needs_continuation": True,
+                        "reason": "已推荐智能体但未分配任务，必须调用assign_task_to_agent工具",
+                        "suggested_actions": ["调用assign_task_to_agent工具分配任务给推荐的智能体"]
+                    }
+                
+                # 检查是否调用了identify_task_type但没有调用recommend_agent
+                if "identify_task_type" in called_tools and "recommend_agent" not in called_tools:
+                    self.logger.warning(f"⚠️ 协调智能体调用了identify_task_type但未调用recommend_agent")
+                    return {
+                        "needs_continuation": True,
+                        "reason": "已识别任务类型但未推荐智能体，必须调用recommend_agent工具",
+                        "suggested_actions": ["调用recommend_agent工具推荐合适的智能体"]
+                    }
+                
+                # 检查是否调用了identify_task_type和recommend_agent，但缺少assign_task_to_agent
+                if "identify_task_type" in called_tools and "recommend_agent" in called_tools and "assign_task_to_agent" not in called_tools:
+                    self.logger.warning(f"⚠️ 协调智能体完成了前两步但未调用assign_task_to_agent")
+                    return {
+                        "needs_continuation": True,
+                        "reason": "已完成任务识别和智能体推荐，但未分配任务，必须调用assign_task_to_agent工具",
+                        "suggested_actions": ["调用assign_task_to_agent工具分配任务给推荐的智能体"]
+                    }
             
             if missing_tools:
                 self.logger.warning(f"⚠️ 缺少必需的工具调用: {missing_tools}")
@@ -1131,10 +1176,12 @@ class BaseAgent(ABC):
             return tool_calls
         
         for message in self.conversation_history:
-            if message.get("role") == "user" and "工具执行结果详细报告" in message.get("content", ""):
-                content = message.get("content", "")
-                import re
-                
+            content = message.get("content", "")
+            import re
+            
+            # 🔧 修复：从多种格式中提取工具调用
+            # 1. 从工具执行结果详细报告中提取
+            if "工具执行结果详细报告" in content:
                 # 提取成功的工具调用
                 success_pattern = r"### ✅ 工具 \d+: (\w+) - 执行成功"
                 success_matches = re.findall(success_pattern, content)
@@ -1158,6 +1205,36 @@ class BaseAgent(ABC):
                         "success": False,
                         "timestamp": message.get("timestamp", time.time())
                     })
+            
+            # 2. 从LLM响应中的工具调用JSON中提取
+            if message.get("role") == "assistant":
+                # 查找工具调用JSON
+                tool_call_pattern = r'"tool_name":\s*"([^"]+)"'
+                tool_matches = re.findall(tool_call_pattern, content)
+                
+                for tool_name in tool_matches:
+                    # 检查是否已经记录过这个工具调用（基于时间戳去重）
+                    existing_tool = next((call for call in tool_calls if call["tool_name"] == tool_name and call["timestamp"] == message.get("timestamp", time.time())), None)
+                    if not existing_tool:
+                        tool_calls.append({
+                            "tool_name": tool_name,
+                            "success": True,  # 假设LLM响应中的工具调用是成功的
+                            "timestamp": message.get("timestamp", time.time())
+                        })
+            
+            # 3. 从工具执行日志中提取
+            if "工具执行" in content or "Tool execution" in content:
+                # 提取工具名称
+                tool_pattern = r"工具\s*(\w+)\s*执行"  # 中文格式
+                tool_matches = re.findall(tool_pattern, content)
+                
+                for tool_name in tool_matches:
+                    if not any(call["tool_name"] == tool_name for call in tool_calls):
+                        tool_calls.append({
+                            "tool_name": tool_name,
+                            "success": True,
+                            "timestamp": message.get("timestamp", time.time())
+                        })
         
         return tool_calls
     
@@ -1167,7 +1244,8 @@ class BaseAgent(ABC):
         required_tools_config = {
             "verilog_designer": ["generate_verilog_code", "write_file", "analyze_code_quality"],
             "code_reviewer": ["generate_testbench", "run_simulation", "write_file"],
-            "llm_coordinator": ["identify_task_type", "recommend_agent", "assign_task_to_agent", "write_file"]
+            "llm_coordinator": ["identify_task_type", "recommend_agent", "assign_task_to_agent"],
+            "coordinator": ["identify_task_type", "recommend_agent", "assign_task_to_agent"]
         }
         
         return required_tools_config.get(agent_type, [])

@@ -28,6 +28,7 @@ import codecs
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
+import logging
 
 # 设置编码环境变量
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -258,6 +259,8 @@ class EnhancedLLMCoordinatorTest:
             # 初始化框架配置
             self.config = FrameworkConfig.from_env()
             
+
+            
             print(f"   ✅ 实验目录创建: {self.output_dir}")
             print(f"   ✅ 元数据保存: {metadata_file.name}")
             
@@ -271,6 +274,8 @@ class EnhancedLLMCoordinatorTest:
         """创建LLM协调智能体"""
         try:
             print("\n🤖 创建LLM协调智能体...")
+            
+
             
             # 创建协调智能体
             self.coordinator = LLMCoordinatorAgent(self.config)
@@ -299,6 +304,13 @@ class EnhancedLLMCoordinatorTest:
         """运行实验"""
         experiment_start = time.time()
         
+        # Set up debug logger
+        logger = logging.getLogger('ExperimentDebug')
+        logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(handler)
+        
         try:
             # 1. 设置实验环境
             if not await self.setup_experiment_environment():
@@ -312,6 +324,9 @@ class EnhancedLLMCoordinatorTest:
             requirements = self.get_design_requirements()
             print(f"\n📋 设计需求:")
             print(requirements)
+            
+            # Debug log the prompt
+            logger.debug(f"User Prompt (Requirements): {requirements}")
             
             # 4. 执行协调任务
             print(f"\n🚀 开始执行协调任务...")
@@ -328,6 +343,10 @@ class EnhancedLLMCoordinatorTest:
                 max_iterations=self.max_iterations,
                 external_testbench_path=self.external_testbench_path
             )
+            
+            # Debug log the result
+            logger.debug(f"Coordination Result: {result}")
+            
             task_duration = time.time() - task_start
             
             # 5. 分析结果

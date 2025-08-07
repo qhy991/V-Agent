@@ -832,78 +832,8 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         )
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """实现LLM调用 - 使用优化的调用机制避免重复传入system prompt"""
-        # 生成对话ID（如果还没有）
-        if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
-            self.current_conversation_id = f"code_review_agent_{int(time.time())}"
-        
-        # 构建用户消息
-        user_message = ""
-        
-        # 修复：更准确的首次调用判断 - 检查是否有assistant响应
-        assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
-        is_first_call = len(assistant_messages) == 0  # 如果没有assistant响应，说明是首次调用
-        
-        self.logger.info(f"🔄 [CODE_REVIEWER] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
-        
-        # 调试：打印对话历史内容
-        for i in range(len(conversation)):
-            msg = conversation[i]
-            self.logger.debug(f"🔍 [CODE_REVIEWER] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
-            self.logger.debug(f"🔍 [CODE_REVIEWER] 内容前100字: {msg['content'][:100]}...")
-        
-        for msg in conversation:
-            if msg["role"] == "user":
-                user_message += f"{msg['content']}\n\n"
-            elif msg["role"] == "assistant":
-                user_message += f"Assistant: {msg['content']}\n\n"
-        
-        # 决定是否传入system prompt - 修复：对于新任务总是传入
-        system_prompt = None
-        if is_first_call:
-            system_prompt = self._build_enhanced_system_prompt()
-            self.logger.debug(f"📝 [CODE_REVIEWER] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
-            self.logger.debug(f"📝 [CODE_REVIEWER] System Prompt前200字: {system_prompt[:200]}...")
-            # 检查关键规则是否存在
-            has_mandatory_tools = "必须调用工具" in system_prompt
-            has_testbench = "generate_testbench" in system_prompt
-            has_simulation = "run_simulation" in system_prompt
-            self.logger.debug(f"🔍 [CODE_REVIEWER] System Prompt检查 - 强制工具: {has_mandatory_tools}, 测试台生成: {has_testbench}, 仿真执行: {has_simulation}")
-        else:
-            self.logger.debug("🔄 [CODE_REVIEWER] 后续调用 - 依赖缓存System Prompt")
-        
-        self.logger.debug(f"📤 [CODE_REVIEWER] 用户消息长度: {len(user_message)}")
-        self.logger.debug(f"📤 [CODE_REVIEWER] 用户消息前200字: {user_message[:200]}...")
-        
-        try:
-            # 使用优化的LLM调用方法
-            self.logger.info(f"🤖 [CODE_REVIEWER] 发起LLM调用 - 对话ID: {self.current_conversation_id}")
-            response = await self.llm_client.send_prompt_optimized(
-                conversation_id=self.current_conversation_id,
-                user_message=user_message.strip(),
-                system_prompt=system_prompt,
-                temperature=0.2,  # 代码审查需要更高的一致性
-                max_tokens=4000,
-                force_refresh_system=is_first_call
-            )
-            
-            # 分析响应内容
-            self.logger.info(f"🔍 [CODE_REVIEWER] LLM响应长度: {len(response)}")
-            self.logger.debug(f"🔍 [CODE_REVIEWER] 响应前200字: {response[:200]}...")
-            
-            # 检查响应是否包含工具调用
-            has_tool_calls = "tool_calls" in response
-            has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
-            has_testbench_call = "generate_testbench" in response
-            has_simulation_call = "run_simulation" in response
-            self.logger.debug(f"🔍 [CODE_REVIEWER] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 测试台生成: {has_testbench_call}, 仿真执行: {has_simulation_call}")
-            
-            return response
-        except Exception as e:
-            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
-            # 如果优化调用失败，回退到传统方式
-            self.logger.warning("⚠️ 回退到传统LLM调用方式")
-            return await self._call_llm_traditional(conversation)
+        """使用统一的LLM通信管理器进行Function Calling调用"""
+        return await self.llm_manager.call_llm_for_function_calling(conversation)
     
     async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
         """传统LLM调用方法"""
@@ -920,7 +850,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             # 记录LLM调用开始
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=self._get_model_name(),
                 prompt_length=total_length,
                 conversation_length=len(conversation),
                 conversation_id=self.current_conversation_id
@@ -950,7 +880,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             duration = time.time() - llm_start_time
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=self._get_model_name(),
                 prompt_length=total_length,
                 response_length=len(response),
                 duration=duration,
@@ -964,7 +894,7 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             duration = time.time() - llm_start_time
             logging_system.log_llm_call(
                 agent_id=self.agent_id,
-                model_name="claude-3.5-sonnet",
+                model_name=self._get_model_name(),
                 prompt_length=total_length,
                 duration=duration,
                 success=False,
