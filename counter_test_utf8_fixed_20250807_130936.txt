@@ -1,0 +1,547 @@
+13:09:36 - Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_verilog_agent (集成Schema验证的增强Verilog HDL设计智能体，提供严格参数验证和智能错误修复的专业数字电路设计服务)
+13:09:36 - Agent.llm_coordinator_agent - INFO - ✅ 注册智能体: enhanced_real_code_review_agent (集成Schema验证的增强代码审查智能体，提供严格参数验证和智能错误修复的专业硬件验证服务)
+2025-08-07 13:09:36,627 - DEBUG - User Prompt (Requirements): 
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3. 符合Verilog标准语法
+4. 生成对应的测试台进行验证
+
+**质量要求**：
+- 代码结构清晰，注释完善
+- 遵循良好的命名规范
+- 确保功能正确性
+
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🚀 开始协调任务: 
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3. 符合Verilog标准语法
+4. ...
+🧠 增强LLM协调智能体测试
+============================================================
+   设计类型: counter
+   配置档案: standard
+   最大迭代: 4
+   实验ID: llm_coordinator_counter_1754543376
+   输出目录: C:\Users\84672\Documents\Research\V-Agent\llm_experiments\llm_coordinator_counter_1754543376
+============================================================
+
+🔧 设置实验环境...
+✅ 成功加载环境配置: C:\Users\84672\Documents\Research\V-Agent\.env
+   ✅ 实验目录创建: C:\Users\84672\Documents\Research\V-Agent\llm_experiments\llm_coordinator_counter_1754543376
+   ✅ 元数据保存: experiment_metadata.json
+
+🤖 创建LLM协调智能体...
+✅ 成功加载环境配置: C:\Users\84672\Documents\Research\V-Agent\.env
+✅ 增强日志系统初始化成功
+📂 实验目录: logs\experiment_20250807_130936
+📁 工件目录: logs\experiment_20250807_130936\artifacts
+📋 主日志目录: logs
+✅ 成功加载环境配置: C:\Users\84672\Documents\Research\V-Agent\.env
+✅ 成功加载环境配置: C:\Users\84672\Documents\Research\V-Agent\.env
+   ✅ 协调智能体创建完成
+   ✅ 注册智能体: enhanced_real_verilog_agent
+   ✅ 注册智能体: enhanced_real_code_review_agent
+
+📋 设计需求:
+
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3. 符合Verilog标准语法
+4. 生成对应的测试台进行验证
+
+**质量要求**：
+- 代码结构清晰，注释完善
+- 遵循良好的命名规范
+- 确保功能正确性
+
+
+🚀 开始执行协调任务...
+   最大迭代次数: 4
+   超时时间: 300秒
+13:09:36 - core.experiment_manager - INFO - 📋 加载了 110 个实验
+13:09:36 - core.experiment_manager - INFO - 🧪 实验管理器已初始化，基础工作空间: C:\Users\84672\Documents\Research\V-Agent\experiments
+13:09:36 - core.experiment_manager - INFO - 🧪 创建实验: design_counter_20250807_130936
+13:09:36 - core.experiment_manager - INFO -    工作目录: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:36 - core.experiment_manager - INFO -    任务描述: 
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3. 符合Verilog标准语法
+4. ...
+13:09:36 - TaskContext - INFO - 📝 记录对话消息: user - user - 长度: 160
+13:09:36 - TaskContext - INFO - 📝 记录对话消息: system - llm_coordinator_agent - 长度: 4892
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🚀 开始Function Calling处理: 
+🧠 协调任务
+
+**用户需求**:
+
+请设计一个名为 counter 的Verilog模块。
+
+**基本要求**：
+1. 生成完整、可编译的Verilog代码
+2. 包含适当的端口定义和功能实现
+3...
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🔄 自主继续模式: 启用
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🔗 智能体独立对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376 (原始ID: exp_llm_coordinator_counter_1754543376)
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🆕 创建新的对话历史
+13:09:36 - Agent.llm_coordinator_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+13:09:36 - TaskContext - INFO - 📝 记录对话消息: user - llm_coordinator_agent - 长度: 4892
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/4
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:09:36 - Agent.llm_coordinator_agent - INFO - 🤖 [COORDINATOR] 发起LLM调用 - 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376
+13:09:36 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543376
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 🔄 更新system prompt: 1555 字符
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 📋 包含system prompt: 1555 字符
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 2 条消息
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=system, 长度=1555
+13:09:36 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 1: role=user, 长度=4890
+13:09:36 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:36 - LLMClient-dashscope - INFO - 📋 System Prompt: 1555 字符
+13:09:36 - LLMClient-dashscope - INFO - 👤 User Prompt: 4896 字符
+13:09:36 - LLMClient-dashscope - INFO - ==================================================
+13:09:38 - LLMClient-dashscope - INFO - 🤖 LLM响应: 239 字符, 1.99s
+13:09:38 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "identify_task_type",
+            "parameters": {
+                "user_request": "设计一个名为counter的Verilog模块",
+                "context":...
+13:09:38 - LLMClient-dashscope - INFO - ==================================================
+13:09:38 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 1610, 时间: 1.99s
+13:09:38 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 1.99秒, 响应长度: 239
+13:09:38 - Agent.llm_coordinator_agent - INFO - 🔍 [COORDINATOR] LLM响应长度: 239
+13:09:38 - UnifiedLogging_session_1754543376 - INFO - [llm_1754543378626] LLM对话 (qwen-plus): 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376, 成功
+13:09:38 - Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: identify_task_type (尝试 1/3)
+13:09:38 - Agent.llm_coordinator_agent - INFO - 🔍 识别任务类型: 设计一个名为counter的Verilog模块...
+13:09:38 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:09:38 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543378
+13:09:38 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:09:38 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:09:38 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=219
+13:09:38 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:38 - LLMClient-dashscope - INFO - 👤 User Prompt: 225 字符
+13:09:38 - LLMClient-dashscope - INFO - ==================================================
+13:09:43 - LLMClient-dashscope - INFO - 🤖 LLM响应: 380 字符, 4.62s
+13:09:43 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+  "task_type": "design",
+  "task_complexity": "medium",
+  "key_features_and_requirements": [
+    "创建一个名为 'counter' 的 Verilog 模块",
+    "需要定义模块的输入输出接口（如时钟、复位、使能、计数输出等）",
+    "需实现计数逻辑（递增、递减、模N计...
+13:09:43 - LLMClient-dashscope - INFO - ==================================================
+13:09:43 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 54, 时间: 4.62s
+13:09:43 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 4.62秒, 响应长度: 380
+13:09:43 - UnifiedLogging_session_1754543376 - INFO - [tool_1754543383249] 工具执行: identify_task_type: 成功: {'success': True, 'task_type': 'design', 'confidence': 0.7, 'priority': 'medium', 'analysis': '```js
+13:09:43 - Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 2/4
+13:09:43 - Agent.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 4, assistant消息数: 1, 是否首次调用: False
+13:09:43 - Agent.llm_coordinator_agent - INFO - 🤖 [COORDINATOR] 发起LLM调用 - 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376
+13:09:43 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 4, assistant消息数: 1, 是否首次调用: False
+13:09:43 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543383
+13:09:43 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:09:43 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:09:43 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=5654
+13:09:43 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:43 - LLMClient-dashscope - INFO - 👤 User Prompt: 5660 字符
+13:09:43 - LLMClient-dashscope - INFO - ==================================================
+13:09:44 - LLMClient-dashscope - INFO - 🤖 LLM响应: 219 字符, 1.48s
+13:09:44 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_name": "recommend_agent",
+    "parameters": {
+        "task_type": "design",
+        "task_description": "设计一个名为counter的Verilog模块",
+        "priority": "medium",
+        "constrain...
+13:09:44 - LLMClient-dashscope - INFO - ==================================================
+13:09:44 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 1413, 时间: 1.48s
+13:09:44 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 1.48秒, 响应长度: 219
+13:09:44 - Agent.llm_coordinator_agent - INFO - 🔍 [COORDINATOR] LLM响应长度: 219
+13:09:44 - UnifiedLogging_session_1754543376 - INFO - [llm_1754543384728] LLM对话 (qwen-plus): 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376, 成功
+13:09:44 - Agent.llm_coordinator_agent - INFO - ✅ 任务完成，无需调用工具。最终对话历史: 5 条消息
+13:09:44 - Agent.llm_coordinator_agent - INFO - 🧠 开始自主任务继续评估...
+13:09:44 - Agent.llm_coordinator_agent - INFO - 🔄 自主继续迭代 1/3
+13:09:44 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 6, assistant消息数: 2, 是否首次调用: False
+13:09:44 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543384
+13:09:44 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:09:44 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:09:44 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=11493
+13:09:44 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:44 - LLMClient-dashscope - INFO - 👤 User Prompt: 11499 字符
+13:09:44 - LLMClient-dashscope - INFO - ==================================================
+13:09:48 - LLMClient-dashscope - INFO - 🤖 LLM响应: 366 字符, 3.41s
+13:09:48 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_name": "assign_task_to_agent",
+    "parameters": {
+        "agent_id": "enhanced_real_verilog_agent",
+        "task_description": "设计一个名为counter的Verilog模块，包含端口定义、功能实现、测试台生成，并确保符合Ve...
+13:09:48 - LLMClient-dashscope - INFO - ==================================================
+13:09:48 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 2873, 时间: 3.41s
+13:09:48 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 3.41秒, 响应长度: 366
+13:09:48 - Agent.llm_coordinator_agent - WARNING - ⚠️ 协调智能体调用了recommend_agent但未调用assign_task_to_agent
+13:09:48 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具调用验证失败: 已推荐智能体但未分配任务，必须调用assign_task_to_agent工具
+13:09:48 - Agent.llm_coordinator_agent - INFO - 📋 自我评估结果: {'needs_continuation': True, 'reason': '已推荐智能体但未分配任务，必须调用assign_task_to_agent工具', 'suggested_actions': ['调用assign_task_to_agent工具分配任务给推荐的智能体']}
+13:09:48 - Agent.llm_coordinator_agent - INFO - 🔄 决定继续执行任务: 已推荐智能体但未分配任务，必须调用assign_task_to_agent工具
+13:09:48 - Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/4
+13:09:48 - Agent.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 8, assistant消息数: 3, 是否首次调用: True
+13:09:48 - Agent.llm_coordinator_agent - INFO - 🤖 [COORDINATOR] 发起LLM调用 - 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376
+13:09:48 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 8, assistant消息数: 3, 是否首次调用: False
+13:09:48 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543388
+13:09:48 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:09:48 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:09:48 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=12039
+13:09:48 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:48 - LLMClient-dashscope - INFO - 👤 User Prompt: 12045 字符
+13:09:48 - LLMClient-dashscope - INFO - ==================================================
+13:09:51 - LLMClient-dashscope - INFO - 🤖 LLM响应: 423 字符, 3.70s
+13:09:51 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_name": "analyze_agent_result",
+    "parameters": {
+        "agent_id": "enhanced_real_verilog_agent",
+        "result": {
+            "status": "success",
+            "generated_fi...
+13:09:51 - LLMClient-dashscope - INFO - ==================================================
+13:09:51 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 3009, 时间: 3.70s
+13:09:51 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 3.70秒, 响应长度: 423
+13:09:51 - Agent.llm_coordinator_agent - INFO - 🔍 [COORDINATOR] LLM响应长度: 423
+13:09:51 - UnifiedLogging_session_1754543376 - INFO - [llm_1754543391842] LLM对话 (qwen-plus): 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376, 成功
+13:09:51 - Agent.llm_coordinator_agent - INFO - ✅ 任务完成，无需调用工具。最终对话历史: 9 条消息
+13:09:51 - Agent.llm_coordinator_agent - INFO - 🔄 自主继续迭代 2/3
+13:09:51 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 10, assistant消息数: 4, 是否首次调用: False
+13:09:51 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543391
+13:09:51 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:09:51 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:09:51 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=18287
+13:09:51 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:51 - LLMClient-dashscope - INFO - 👤 User Prompt: 18293 字符
+13:09:51 - LLMClient-dashscope - INFO - ==================================================
+13:09:56 - LLMClient-dashscope - INFO - 🤖 LLM响应: 553 字符, 4.45s
+13:09:56 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_name": "check_task_completion",
+    "parameters": {
+        "task_id": "task_1754543376",
+        "all_results": [
+            {
+                "status": "success",
+              ...
+13:09:56 - LLMClient-dashscope - INFO - ==================================================
+13:09:56 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 4571, 时间: 4.45s
+13:09:56 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 4.45秒, 响应长度: 553
+13:09:56 - Agent.llm_coordinator_agent - INFO - 📋 自我评估结果: {'completion_rate': 100, 'quality_score': 100, 'needs_continuation': False, 'reason': '评估完成', 'suggested_actions': []}
+13:09:56 - Agent.llm_coordinator_agent - INFO - ✅ 任务评估完成，无需继续: 评估完成
+13:09:56 - TaskContext - INFO - 📝 记录对话消息: assistant - llm_coordinator_agent - 长度: 423
+13:09:56 - TaskContext - INFO - 📝 记录对话消息: assistant - llm_coordinator_agent - 长度: 423
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔍 检查工具调用: 结果长度=423, 内容预览=```json
+{
+    "tool_name": "analyze_agent_result",
+    "parameters": {
+        "agent_id": "enhanced...
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔍 工具调用检查结果: False
+13:09:56 - Agent.llm_coordinator_agent - WARNING - ⚠️ 协调智能体没有调用任何工具，强制重新执行
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔍 原始结果内容: ```json
+{
+    "tool_name": "analyze_agent_result",
+    "parameters": {
+        "agent_id": "enhanced_real_verilog_agent",
+        "result": {
+            "status": "success",
+            "generated_fi...
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🚨 强制重新执行，任务长度: 1228 字符
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🚀 开始Function Calling处理: 
+# 🚨🚨🚨 强制指令 🚨🚨🚨
+你必须立即调用 `assign_task_to_agent` 工具来分配任务。
+
+**用户需求**:
+
+请设计一个名为 counter 的Verilog模块。
+
+**基...
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔄 自主继续模式: 禁用
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔗 智能体独立对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_forced (原始ID: exp_llm_coordinator_counter_1754543376_forced)
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🆕 创建新的对话历史
+13:09:56 - Agent.llm_coordinator_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+13:09:56 - TaskContext - INFO - 📝 记录对话消息: user - llm_coordinator_agent - 长度: 1228
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/1
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:09:56 - Agent.llm_coordinator_agent - INFO - 🤖 [COORDINATOR] 发起LLM调用 - 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_forced
+13:09:56 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543396
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 🔄 更新system prompt: 1555 字符
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 📋 包含system prompt: 1555 字符
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 2 条消息
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=system, 长度=1555
+13:09:56 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 1: role=user, 长度=1226
+13:09:56 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:09:56 - LLMClient-dashscope - INFO - 📋 System Prompt: 1555 字符
+13:09:56 - LLMClient-dashscope - INFO - 👤 User Prompt: 1232 字符
+13:09:56 - LLMClient-dashscope - INFO - ==================================================
+13:09:58 - LLMClient-dashscope - INFO - 🤖 LLM响应: 430 字符, 2.54s
+13:09:58 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "assign_task_to_agent",
+            "parameters": {
+                "agent_id": "enhanced_real_verilog_agent",
+                "task_de...
+13:09:58 - LLMClient-dashscope - INFO - ==================================================
+13:09:58 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 694, 时间: 2.54s
+13:09:58 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 2.54秒, 响应长度: 430
+13:09:58 - Agent.llm_coordinator_agent - INFO - 🔍 [COORDINATOR] LLM响应长度: 430
+13:09:58 - UnifiedLogging_session_1754543376 - INFO - [llm_1754543398836] LLM对话 (qwen-plus): 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_forced, 成功
+13:09:58 - Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: assign_task_to_agent (尝试 1/3)
+13:09:58 - Agent.llm_coordinator_agent - INFO - 🎯 分配任务给智能体: enhanced_real_verilog_agent
+13:09:58 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台...
+13:09:58 - Agent.llm_coordinator_agent - INFO - 🧪 从活跃任务中获取实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:58 - Agent.llm_coordinator_agent - INFO - ✅ 设置任务实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:58 - Agent.llm_coordinator_agent - WARNING - ⚠️ 未找到之前的设计文件路径
+13:09:58 - Agent.llm_coordinator_agent - INFO - 🧪 使用任务上下文中的实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:58 - Agent.llm_coordinator_agent - INFO - 📤 发送任务给智能体 enhanced_real_verilog_agent
+13:09:58 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 
+📋 协调智能体分配的任务
+
+**任务描述**:
+设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台
+
+🚨 **重要说明**: 
+- 本任务仅要求完成Verilog模块设计和代码生成
+- 测试台(testbench)生成和验证工作将由后续的代码审查智能体负责
+- 请专注于设计模块的端口定义、功能实现和代码质量
+
+**期望输出**:
+生成完整的Verilog代码文件...
+13:09:58 - Agent.llm_coordinator_agent - ERROR - ❌ 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:58 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具内部报告失败 assign_task_to_agent: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:58 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具执行失败 assign_task_to_agent (尝试 1): 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:58 - UnifiedLogging_session_1754543376 - ERROR - [tool_1754543398838] 工具执行: assign_task_to_agent: 失败: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:58 - Agent.llm_coordinator_agent - INFO - ⏳ 等待 1 秒后重试...
+13:09:59 - Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: assign_task_to_agent (尝试 2/3)
+13:09:59 - Agent.llm_coordinator_agent - INFO - 🎯 分配任务给智能体: enhanced_real_verilog_agent
+13:09:59 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台...
+13:09:59 - Agent.llm_coordinator_agent - INFO - 🧪 从活跃任务中获取实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:59 - Agent.llm_coordinator_agent - INFO - ✅ 设置任务实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:59 - Agent.llm_coordinator_agent - WARNING - ⚠️ 未找到之前的设计文件路径
+13:09:59 - Agent.llm_coordinator_agent - INFO - 🧪 使用任务上下文中的实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:09:59 - Agent.llm_coordinator_agent - INFO - 📤 发送任务给智能体 enhanced_real_verilog_agent
+13:09:59 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 
+📋 协调智能体分配的任务
+
+**任务描述**:
+设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台
+
+🚨 **重要说明**: 
+- 本任务仅要求完成Verilog模块设计和代码生成
+- 测试台(testbench)生成和验证工作将由后续的代码审查智能体负责
+- 请专注于设计模块的端口定义、功能实现和代码质量
+
+**期望输出**:
+生成完整的Verilog代码文件...
+13:09:59 - Agent.llm_coordinator_agent - ERROR - ❌ 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:59 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具内部报告失败 assign_task_to_agent: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:59 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具执行失败 assign_task_to_agent (尝试 2): 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:59 - UnifiedLogging_session_1754543376 - ERROR - [tool_1754543399853] 工具执行: assign_task_to_agent: 失败: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:09:59 - Agent.llm_coordinator_agent - INFO - ⏳ 等待 1 秒后重试...
+13:10:00 - Agent.llm_coordinator_agent - INFO - 🔧 执行工具调用: assign_task_to_agent (尝试 3/3)
+13:10:00 - Agent.llm_coordinator_agent - INFO - 🎯 分配任务给智能体: enhanced_real_verilog_agent
+13:10:00 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台...
+13:10:00 - Agent.llm_coordinator_agent - INFO - 🧪 从活跃任务中获取实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:10:00 - Agent.llm_coordinator_agent - INFO - ✅ 设置任务实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:10:00 - Agent.llm_coordinator_agent - WARNING - ⚠️ 未找到之前的设计文件路径
+13:10:00 - Agent.llm_coordinator_agent - INFO - 🧪 使用任务上下文中的实验路径: C:\Users\84672\Documents\Research\V-Agent\experiments\design_counter_20250807_130936
+13:10:00 - Agent.llm_coordinator_agent - INFO - 📤 发送任务给智能体 enhanced_real_verilog_agent
+13:10:00 - Agent.llm_coordinator_agent - INFO - 📋 任务描述: 
+📋 协调智能体分配的任务
+
+**任务描述**:
+设计一个名为counter的Verilog模块，包含完整的端口定义、功能实现和测试台
+
+🚨 **重要说明**: 
+- 本任务仅要求完成Verilog模块设计和代码生成
+- 测试台(testbench)生成和验证工作将由后续的代码审查智能体负责
+- 请专注于设计模块的端口定义、功能实现和代码质量
+
+**期望输出**:
+生成完整的Verilog代码文件...
+13:10:00 - Agent.llm_coordinator_agent - ERROR - ❌ 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:10:00 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具内部报告失败 assign_task_to_agent: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:10:00 - Agent.llm_coordinator_agent - WARNING - ⚠️ 工具执行失败 assign_task_to_agent (尝试 3): 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:10:00 - UnifiedLogging_session_1754543376 - ERROR - [tool_1754543400856] 工具执行: assign_task_to_agent: 失败: 智能体 enhanced_real_verilog_agent 执行任务失败: object of type 'NoneType' has no len()
+13:10:00 - Agent.llm_coordinator_agent - ERROR - ❌ 工具执行最终失败: assign_task_to_agent
+13:10:00 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 4, assistant消息数: 1, 是否首次调用: False
+13:10:00 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543400
+13:10:00 - OptimizedLLMClient-dashscope - INFO - ⚡ 使用缓存的system prompt
+13:10:00 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 1 条消息
+13:10:00 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=user, 长度=2466
+13:10:00 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:10:00 - LLMClient-dashscope - INFO - 👤 User Prompt: 2472 字符
+13:10:00 - LLMClient-dashscope - INFO - ==================================================
+13:10:03 - LLMClient-dashscope - INFO - 🤖 LLM响应: 430 字符, 2.29s
+13:10:03 - LLMClient-dashscope - INFO - 🤖 响应内容: ```json
+{
+    "tool_calls": [
+        {
+            "tool_name": "assign_task_to_agent",
+            "parameters": {
+                "agent_id": "enhanced_real_verilog_agent",
+                "task_de...
+13:10:03 - LLMClient-dashscope - INFO - ==================================================
+13:10:03 - OptimizedLLMClient-dashscope - INFO - ✅ 优化请求完成 - Token: 616, 时间: 2.30s
+13:10:03 - LLMClientManager.llm_coordinator_agent - INFO - ✅ [COORDINATOR] LLM调用成功 - 耗时: 2.30秒, 响应长度: 430
+13:10:03 - UnifiedLogging_session_1754543376 - INFO - [llm_1754543403152] LLM对话 (qwen-plus): 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_forced, 成功
+13:10:03 - Agent.llm_coordinator_agent - WARNING - ⏰ 达到最大迭代次数。最终对话历史: 5 条消息
+13:10:03 - TaskContext - INFO - 📝 记录对话消息: assistant - llm_coordinator_agent - 长度: 430
+13:10:03 - Agent.llm_coordinator_agent - INFO - ✅ 检测到有效工具调用: assign_task_to_agent
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔍 检查是否调用了assign_task_to_agent工具...
+13:10:03 - Agent.llm_coordinator_agent - INFO - ✅ 检测到assign_task_to_agent调用
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔍 assign_task_to_agent调用检查: True
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔄 开始持续协调循环 - 任务ID: task_1754543376
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔍 当前智能体结果数量: 0
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔍 智能体结果键: []
+13:10:03 - Agent.llm_coordinator_agent - WARNING - ⚠️ 没有智能体结果，检查是否需要强制分配任务
+13:10:03 - Agent.llm_coordinator_agent - INFO - ✅ 所有智能体执行完成
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔍 协调继续检查: 没有智能体结果，需要继续协调
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔄 需要继续协调 - 分析智能体结果并决定下一步
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🚀 开始Function Calling处理: 🔄 协调任务继续 - 分析智能体执行结果并决定下一步
+
+**当前任务状态**:
+- 任务ID: task_1754543376
+- 已完成的智能体: []
+- 工作流阶段: initial
+- 执行结...
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔄 自主继续模式: 启用
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔗 智能体独立对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_continuation (原始ID: exp_llm_coordinator_counter_1754543376_continuation)
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🆕 创建新的对话历史（智能体独立上下文）
+13:10:03 - Agent.llm_coordinator_agent - INFO - 📊 对话统计: 总消息数=2, 对话时长=0.0秒
+13:10:03 - TaskContext - INFO - 📝 记录对话消息: user - llm_coordinator_agent - 长度: 414
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔄 Function Calling 迭代 1/4
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:10:03 - Agent.llm_coordinator_agent - INFO - 🤖 [COORDINATOR] 发起LLM调用 - 对话ID: llm_coordinator_agent_exp_llm_coordinator_counter_1754543376_continuation
+13:10:03 - LLMClientManager.llm_coordinator_agent - INFO - 🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: 2, assistant消息数: 0, 是否首次调用: True
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 🚀 优化LLM调用 - 对话ID: llm_coordinator_agent_1754543403
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 🔄 更新system prompt: 1555 字符
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 📋 包含system prompt: 1555 字符
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 最终消息结构: 2 条消息
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 0: role=system, 长度=1555
+13:10:03 - OptimizedLLMClient-dashscope - INFO - 📤 [SYSTEM_PROMPT_DEBUG] 消息 1: role=user, 长度=413
+13:10:03 - LLMClient-dashscope - INFO - 🤖 LLM调用 - 模型: qwen-plus
+13:10:03 - LLMClient-dashscope - INFO - 📋 System Prompt: 1555 字符
+13:10:03 - LLMClient-dashscope - INFO - 👤 User Prompt: 419 字符
+13:10:03 - LLMClient-dashscope - INFO - ==================================================
+Traceback (most recent call last):
+  File "C:\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "C:\Users\84672\Documents\Research\V-Agent\test_llm_coordinator_enhanced.py", line 684, in main
+    result = await experiment.run_experiment()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\test_llm_coordinator_enhanced.py", line 340, in run_experiment
+    result = await self.coordinator.coordinate_task(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\llm_coordinator_agent.py", line 879, in coordinate_task
+    final_result = await self._run_coordination_loop(task_context, result, conversation_id, max_iterations)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\llm_coordinator_agent.py", line 3849, in _run_coordination_loop
+    continuation_result = await self.process_with_function_calling(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\base_agent.py", line 372, in process_with_function_calling
+    initial_result = await self._execute_single_task_cycle(conversation, user_request, max_iterations)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\base_agent.py", line 710, in _execute_single_task_cycle
+    llm_response = await self._call_llm_for_function_calling(conversation)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\llm_coordinator_agent.py", line 4041, in _call_llm_for_function_calling
+    return await self.llm_manager.call_llm_for_function_calling(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\core\llm_communication\managers\client_manager.py", line 115, in call_llm_for_function_calling
+    response = await self.llm_client.send_prompt_optimized(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 636, in send_prompt_optimized
+    return await self.optimized_client.send_prompt_optimized(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 316, in send_prompt_optimized
+    response = await self._send_prompt_internal(messages, temperature, max_tokens, json_mode)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 363, in _send_prompt_internal
+    return await self._send_prompt_direct(user_prompt_str.strip(), system_prompt,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        temperature, max_tokens, json_mode)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 374, in _send_prompt_direct
+    return await self.parent_client.send_prompt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        prompt, system_prompt, temperature, max_tokens, json_mode
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 488, in send_prompt
+    response_content = await self._send_openai_compatible_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        session, prompt, system_prompt, temperature, max_tokens, json_mode)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\Documents\Research\V-Agent\llm_integration\enhanced_llm_client.py", line 561, in _send_openai_compatible_request
+    async with session.post(url, json=payload, headers=headers) as response:
+               ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\AppData\Roaming\Python\Python313\site-packages\aiohttp\client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\AppData\Roaming\Python\Python313\site-packages\aiohttp\client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\AppData\Roaming\Python\Python313\site-packages\aiohttp\client.py", line 748, in _connect_and_send_request
+    await resp.start(conn)
+  File "C:\Users\84672\AppData\Roaming\Python\Python313\site-packages\aiohttp\client_reqrep.py", line 532, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\84672\AppData\Roaming\Python\Python313\site-packages\aiohttp\streams.py", line 672, in read
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\84672\Documents\Research\V-Agent\test_llm_coordinator_enhanced.py", line 703, in <module>
+    exit_code = asyncio.run(main())
+  File "C:\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Python313\Lib\asyncio\runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt
+^C

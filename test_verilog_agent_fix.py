@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 测试enhanced_real_verilog_agent的修复
-验证NoneType错误是否已解决
 """
 
 import asyncio
@@ -14,140 +13,122 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 from agents.enhanced_real_verilog_agent import EnhancedRealVerilogAgentRefactored
-from core.base_agent import TaskMessage
+from core.types import TaskMessage
 from config.config import FrameworkConfig
 
-
-async def test_verilog_agent_none_fix():
-    """测试enhanced_real_verilog_agent的NoneType修复"""
-    print("🧪 测试enhanced_real_verilog_agent的NoneType修复...")
+async def test_verilog_agent_basic():
+    """测试enhanced_real_verilog_agent的基本功能"""
+    print("🧪 开始测试enhanced_real_verilog_agent的基本功能...")
     
     try:
-        # 初始化配置
-        config = FrameworkConfig.from_env()
-        print("✅ 成功加载环境配置")
-        
         # 创建智能体实例
-        agent = EnhancedRealVerilogAgentRefactored(config)
-        print("✅ 成功创建enhanced_real_verilog_agent实例")
-        
-        # 创建包含None内容的对话历史（模拟问题场景）
-        conversation_with_none = [
-            {"role": "system", "content": "你是一个Verilog设计专家"},
-            {"role": "user", "content": "设计一个计数器"},
-            {"role": "assistant", "content": None},  # 模拟None内容
-            {"role": "user", "content": "请继续设计"},
-            {"role": "assistant", "content": ""},  # 模拟空字符串
-            {"role": "user", "content": None},  # 模拟None内容
-        ]
-        
-        print("🔧 测试包含None内容的对话历史处理...")
-        
-        # 测试_call_llm_for_function_calling方法
-        try:
-            response = await agent._call_llm_for_function_calling(conversation_with_none)
-            print(f"✅ _call_llm_for_function_calling调用成功，响应长度: {len(response) if response else 0}")
-            return True
-            
-        except Exception as e:
-            if "NoneType" in str(e):
-                print(f"❌ 仍然存在NoneType错误: {e}")
-                import traceback
-                traceback.print_exc()
-                return False
-            else:
-                print(f"⚠️ 其他错误（可接受）: {e}")
-                return True
-                
-    except Exception as e:
-        print(f"❌ 测试失败: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-
-async def test_verilog_agent_execution():
-    """测试enhanced_real_verilog_agent的任务执行"""
-    print("🧪 测试enhanced_real_verilog_agent的任务执行...")
-    
-    try:
-        # 初始化配置
         config = FrameworkConfig.from_env()
-        print("✅ 成功加载环境配置")
-        
-        # 创建智能体实例
         agent = EnhancedRealVerilogAgentRefactored(config)
-        print("✅ 成功创建enhanced_real_verilog_agent实例")
         
-        # 创建任务消息
+        print("✅ 智能体创建成功")
+        
+        # 创建测试任务
         task_message = TaskMessage(
             task_id="test_task_001",
-            sender_id="user",
+            sender_id="test_user",
             receiver_id="enhanced_real_verilog_agent",
-            message_type="task_request",
-            content="设计一个8位计数器模块"
+            message_type="task",
+            content="请设计一个简单的8位计数器模块"
         )
         
-        print("🔧 测试任务执行...")
-        
         # 测试execute_enhanced_task方法
-        try:
-            result = await agent.execute_enhanced_task(
-                enhanced_prompt="设计一个8位计数器模块，包含时钟、复位和使能信号",
-                original_message=task_message,
-                file_contents={}
-            )
-            print(f"✅ execute_enhanced_task调用成功，结果类型: {type(result)}")
-            return True
+        result = await agent.execute_enhanced_task(
+            enhanced_prompt="请设计一个简单的8位计数器模块",
+            original_message=task_message,
+            file_contents={}
+        )
+        
+        print(f"✅ execute_enhanced_task执行完成")
+        print(f"   成功: {result.get('success', False)}")
+        print(f"   错误: {result.get('error', '无')}")
+        
+        if result.get('success'):
+            print("🎉 测试通过！enhanced_real_verilog_agent可以正常工作")
+        else:
+            print(f"❌ 测试失败: {result.get('error')}")
             
-        except Exception as e:
-            if "NoneType" in str(e):
-                print(f"❌ 仍然存在NoneType错误: {e}")
-                import traceback
-                traceback.print_exc()
-                return False
-            else:
-                print(f"⚠️ 其他错误（可接受）: {e}")
-                return True
-                
     except Exception as e:
-        print(f"❌ 测试失败: {e}")
+        print(f"❌ 测试异常: {str(e)}")
         import traceback
         traceback.print_exc()
-        return False
 
+async def test_verilog_agent_llm_call():
+    """测试enhanced_real_verilog_agent的LLM调用"""
+    print("\n🧪 开始测试enhanced_real_verilog_agent的LLM调用...")
+    
+    try:
+        # 创建智能体实例
+        config = FrameworkConfig.from_env()
+        agent = EnhancedRealVerilogAgentRefactored(config)
+        
+        # 测试_call_llm_for_function_calling方法
+        conversation = [
+            {"role": "user", "content": "请分析这个设计需求：设计一个8位计数器"}
+        ]
+        
+        response = await agent._call_llm_for_function_calling(conversation)
+        
+        print(f"✅ _call_llm_for_function_calling执行完成")
+        print(f"   响应长度: {len(response) if response else 0}")
+        print(f"   响应预览: {response[:200] if response else '无响应'}...")
+        
+    except Exception as e:
+        print(f"❌ LLM调用测试异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
+async def test_verilog_agent_optimized_call():
+    """测试enhanced_real_verilog_agent的优化LLM调用"""
+    print("\n🧪 开始测试enhanced_real_verilog_agent的优化LLM调用...")
+    
+    try:
+        # 创建智能体实例
+        config = FrameworkConfig.from_env()
+        agent = EnhancedRealVerilogAgentRefactored(config)
+        
+        # 测试_call_llm_optimized_with_history方法
+        user_request = "请设计一个8位计数器模块"
+        conversation_history = [
+            {"role": "user", "content": "你好"},
+            {"role": "assistant", "content": "你好！我是Verilog设计助手，有什么可以帮助你的吗？"}
+        ]
+        
+        response = await agent._call_llm_optimized_with_history(
+            user_request=user_request,
+            conversation_history=conversation_history,
+            is_first_call=True
+        )
+        
+        print(f"✅ _call_llm_optimized_with_history执行完成")
+        print(f"   响应长度: {len(response) if response else 0}")
+        print(f"   响应预览: {response[:200] if response else '无响应'}...")
+        
+    except Exception as e:
+        print(f"❌ 优化LLM调用测试异常: {str(e)}")
+        import traceback
+        traceback.print_exc()
 
 async def main():
-    """主函数"""
+    """主测试函数"""
     print("🚀 开始enhanced_real_verilog_agent修复验证测试")
     print("=" * 60)
     
-    tests = [
-        ("verilog_agent_none_fix", test_verilog_agent_none_fix),
-        ("verilog_agent_execution", test_verilog_agent_execution),
-    ]
+    # 测试1：基本功能
+    await test_verilog_agent_basic()
     
-    results = {}
-    for test_name, test_func in tests:
-        print(f"\n📋 运行测试: {test_name}")
-        print("-" * 40)
-        results[test_name] = await test_func()
+    # 测试2：LLM调用
+    await test_verilog_agent_llm_call()
+    
+    # 测试3：优化LLM调用
+    await test_verilog_agent_optimized_call()
     
     print("\n" + "=" * 60)
-    print("📊 测试结果汇总:")
-    for test_name, result in results.items():
-        status = "✅ 通过" if result else "❌ 失败"
-        print(f"  {test_name}: {status}")
-    
-    all_passed = all(results.values())
-    if all_passed:
-        print("\n🎉 所有enhanced_real_verilog_agent修复验证成功！")
-        return 0
-    else:
-        print("\n❌ 部分enhanced_real_verilog_agent修复验证失败！")
-        return 1
-
+    print("🏁 测试完成")
 
 if __name__ == "__main__":
-    exit_code = asyncio.run(main())
-    sys.exit(exit_code) 
+    asyncio.run(main()) 

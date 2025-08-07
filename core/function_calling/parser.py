@@ -87,6 +87,7 @@ class ToolCallParser:
                 data = json.loads(cleaned_response)
                 self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON解析成功 - 顶级键: {list(data.keys())}")
                 
+                # 检查是否为tool_calls数组格式
                 if 'tool_calls' in data and isinstance(data['tool_calls'], list):
                     self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到tool_calls数组 - 长度: {len(data['tool_calls'])}")
                     
@@ -102,8 +103,20 @@ class ToolCallParser:
                             self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 参数: {list(tool_call.parameters.keys())}")
                         else:
                             self.logger.warning(f"⚠️ [TOOL_CALL_DEBUG] 工具调用 {i} 格式错误: {tool_call_data}")
+                
+                # 检查是否为单工具调用格式
+                elif 'tool_name' in data and isinstance(data.get('parameters'), dict):
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 找到单工具调用格式")
+                    tool_call = ToolCall(
+                        tool_name=data['tool_name'],
+                        parameters=data.get('parameters', {}),
+                        call_id=data.get('call_id', f"call_{len(tool_calls)}")
+                    )
+                    tool_calls.append(tool_call)
+                    self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 解析到单工具调用: {tool_call.tool_name}")
+                    self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 参数: {list(tool_call.parameters.keys())}")
                 else:
-                    self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有找到有效的tool_calls数组")
+                    self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 没有找到有效的工具调用格式")
                     
             except json.JSONDecodeError as e:
                 self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON解析失败: {str(e)}")
@@ -122,8 +135,10 @@ class ToolCallParser:
         for i, match in enumerate(matches):
             try:
                 data = json.loads(match)
-                if 'tool_calls' in data:
-                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含tool_calls")
+                
+                # 检查是否为tool_calls数组格式
+                if 'tool_calls' in data and isinstance(data['tool_calls'], list):
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含tool_calls数组")
                     for tool_call_data in data['tool_calls']:
                         tool_call = ToolCall(
                             tool_name=tool_call_data['tool_name'],
@@ -132,6 +147,17 @@ class ToolCallParser:
                         )
                         tool_calls.append(tool_call)
                         self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到工具调用: {tool_call.tool_name}")
+                
+                # 检查是否为单工具调用格式
+                elif 'tool_name' in data and isinstance(data.get('parameters'), dict):
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] JSON代码块 {i} 包含单工具调用")
+                    tool_call = ToolCall(
+                        tool_name=data['tool_name'],
+                        parameters=data.get('parameters', {}),
+                        call_id=data.get('call_id', f"call_{len(tool_calls)}")
+                    )
+                    tool_calls.append(tool_call)
+                    self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到单工具调用: {tool_call.tool_name}")
             except json.JSONDecodeError as e:
                 self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON代码块 {i} 解析失败: {str(e)}")
                 continue

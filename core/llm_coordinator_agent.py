@@ -1086,13 +1086,26 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 已分配智能体: {task_context.assigned_agent or '无'}
 - 执行结果: {len(task_context.agent_results)} 个结果
 
+**🎯 强制执行的协调流程**:
+1. **第一步**: 调用 `identify_task_type` 识别任务类型
+2. **第二步**: 调用 `recommend_agent` 推荐最合适的智能体
+3. **第三步**: 调用 `assign_task_to_agent` 分配任务给推荐智能体
+4. **第四步**: 调用 `analyze_agent_result` 分析执行结果
+5. **第五步**: 根据分析结果决定是否需要继续迭代
+
+**⚠️ 重要提醒**:
+- 必须严格按照上述流程执行，不得跳过任何步骤
+- 推荐代理工具 `recommend_agent` 是必需的，不能直接调用 `assign_task_to_agent`
+- 每次任务分配前都必须先调用推荐代理工具
+
 {coordinator_tool_guide}
 
 **执行要求**:
 1. 严格按照上述工具使用指导进行操作
 2. 绝对禁止直接调用智能体名称作为工具
 3. 必须使用 assign_task_to_agent 工具来分配任务
-4. 按照推荐的协调流程执行
+4. 必须使用 recommend_agent 工具来推荐智能体
+5. 按照推荐的协调流程执行
 
 请根据用户需求和可用智能体能力，制定最优的执行策略并开始协调。
 """
@@ -3116,12 +3129,32 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         guide.append("   示例: get_tool_usage_guide('coordinator', True, True)")
         guide.append("")
         
-        guide.append("【协调流程最佳实践】")
-        guide.append("1. 任务分析: identify_task_type → recommend_agent")
-        guide.append("2. 任务分配: assign_task_to_agent")
-        guide.append("3. 结果分析: analyze_agent_result")
-        guide.append("4. 完成检查: check_task_completion")
-        guide.append("5. 最终答案: provide_final_answer")
+        guide.append("【🎯 强制执行的协调流程】")
+        guide.append("1. **第一步**: identify_task_type → 识别任务类型")
+        guide.append("2. **第二步**: recommend_agent → 推荐最合适的智能体")
+        guide.append("3. **第三步**: assign_task_to_agent → 分配任务给推荐智能体")
+        guide.append("4. **第四步**: analyze_agent_result → 分析执行结果")
+        guide.append("5. **第五步**: 根据分析结果决定是否需要继续迭代")
+        guide.append("")
+        
+        guide.append("【⚠️ 重要规则】")
+        guide.append("- **必须严格按照上述流程执行，不得跳过任何步骤**")
+        guide.append("- **推荐代理工具 recommend_agent 是必需的，不能直接调用 assign_task_to_agent**")
+        guide.append("- **每次任务分配前都必须先调用推荐代理工具**")
+        guide.append("- **分析结果后再决定下一步行动**")
+        guide.append("- **确保任务完成后再提供最终答案**")
+        guide.append("")
+        
+        guide.append("【❌ 错误示例（禁止）】")
+        guide.append("- 直接调用 assign_task_to_agent 而不先调用 recommend_agent")
+        guide.append("- 跳过 identify_task_type 直接推荐智能体")
+        guide.append("- 不分析结果就继续分配任务")
+        guide.append("")
+        
+        guide.append("【✅ 正确示例】")
+        guide.append("- identify_task_type → recommend_agent → assign_task_to_agent")
+        guide.append("- 每次分配任务前都先推荐智能体")
+        guide.append("- 分析结果后再决定下一步")
         guide.append("")
         
         guide.append("【注意事项】")
@@ -4762,12 +4795,28 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         try:
             self.logger.info(f"🚨 强制分配任务: {user_request[:100]}...")
             
+            # 记录强制分配事件
+            task_context.add_conversation_message(
+                role="system",
+                content="检测到LLM未正确调用推荐代理工具，启动强制分配机制",
+                agent_id=self.agent_id,
+                metadata={"type": "force_assignment", "reason": "missing_recommend_agent"}
+            )
+            
             # 分析任务类型
             task_analysis = await self._tool_identify_task_type(user_request)
             if not task_analysis.get("success", False):
                 return {"success": False, "error": "任务类型识别失败"}
             
             task_type = task_analysis.get("task_type", "design")
+            
+            # 记录任务类型识别结果
+            task_context.add_conversation_message(
+                role="system",
+                content=f"强制识别任务类型: {task_type}",
+                agent_id=self.agent_id,
+                metadata={"type": "task_type_identification", "task_type": task_type}
+            )
             
             # 推荐智能体
             agent_recommendation = await self._tool_recommend_agent(
@@ -4780,6 +4829,15 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 return {"success": False, "error": "智能体推荐失败"}
             
             recommended_agent = agent_recommendation.get("recommended_agent", "enhanced_real_verilog_agent")
+            recommendation_score = agent_recommendation.get("score", 0)
+            
+            # 记录智能体推荐结果
+            task_context.add_conversation_message(
+                role="system",
+                content=f"强制推荐智能体: {recommended_agent} (评分: {recommendation_score:.1f})",
+                agent_id=self.agent_id,
+                metadata={"type": "agent_recommendation", "agent_id": recommended_agent, "score": recommendation_score}
+            )
             
             # 强制分配任务
             assign_result = await self._tool_assign_task_to_agent(
@@ -4790,11 +4848,24 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 priority="medium"
             )
             
+            # 记录任务分配结果
             if assign_result.get("success", False):
                 self.logger.info(f"✅ 强制分配任务成功: {recommended_agent}")
+                task_context.add_conversation_message(
+                    role="system",
+                    content=f"强制分配任务成功: {recommended_agent}",
+                    agent_id=self.agent_id,
+                    metadata={"type": "task_assignment", "agent_id": recommended_agent, "success": True}
+                )
                 return {"success": True, "agent_id": recommended_agent, "result": assign_result}
             else:
                 self.logger.error(f"❌ 强制分配任务失败: {assign_result.get('error', '未知错误')}")
+                task_context.add_conversation_message(
+                    role="system",
+                    content=f"强制分配任务失败: {assign_result.get('error')}",
+                    agent_id=self.agent_id,
+                    metadata={"type": "task_assignment", "success": False, "error": assign_result.get('error')}
+                )
                 return {"success": False, "error": assign_result.get("error", "分配任务失败")}
                 
         except Exception as e:

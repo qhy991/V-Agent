@@ -1213,8 +1213,8 @@ class BaseAgent(ABC):
                 tool_matches = re.findall(tool_call_pattern, content)
                 
                 for tool_name in tool_matches:
-                    # 检查是否已经记录过这个工具调用（基于时间戳去重）
-                    existing_tool = next((call for call in tool_calls if call["tool_name"] == tool_name and call["timestamp"] == message.get("timestamp", time.time())), None)
+                    # 检查是否已经记录过这个工具调用（基于工具名称去重，忽略时间戳）
+                    existing_tool = next((call for call in tool_calls if call["tool_name"] == tool_name), None)
                     if not existing_tool:
                         tool_calls.append({
                             "tool_name": tool_name,

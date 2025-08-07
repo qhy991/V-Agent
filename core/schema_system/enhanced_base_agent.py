@@ -201,13 +201,13 @@ class EnhancedBaseAgent(BaseAgent):
                         tool_results.append(skipped_result)
                         continue
                     
-                                    # 执行工具调用
-                result = await self._execute_enhanced_tool_call(tool_call)
-                tool_results.append(result)
-                
-                if not result.success:
-                    all_tools_successful = False
-                    current_iteration_failed_tools.add(tool_call.tool_name)
+                    # 执行工具调用
+                    result = await self._execute_enhanced_tool_call(tool_call)
+                    tool_results.append(result)
+                    
+                    if not result.success:
+                        all_tools_successful = False
+                        current_iteration_failed_tools.add(tool_call.tool_name)
                     
                     # 🚨 新的错误处理机制：检查是否为仿真错误
                     if tool_call.tool_name == "run_simulation" and result.result:
@@ -268,8 +268,8 @@ class EnhancedBaseAgent(BaseAgent):
                                 "response": final_response,
                                 "iterations": iteration_count,
                                 "conversation_history": conversation_history,
-                                "tool_calls": [call.to_dict() for call in tool_calls],
-                                "tool_results": [result.to_dict() for result in tool_results],
+                                "tool_calls": [{"tool_name": call.tool_name, "parameters": call.parameters, "call_id": call.call_id} for call in tool_calls],
+                                "tool_results": [{"call_id": result.call_id, "success": result.success, "result": result.result, "error": result.error} for result in tool_results],
                                 "content": final_response
                             }
                     
@@ -279,8 +279,8 @@ class EnhancedBaseAgent(BaseAgent):
                         "response": llm_response,
                         "iterations": iteration_count,
                         "conversation_history": conversation_history,
-                        "tool_calls": [call.to_dict() for call in tool_calls],
-                        "tool_results": [result.to_dict() for result in tool_results],
+                        "tool_calls": [{"tool_name": call.tool_name, "parameters": call.parameters, "call_id": call.call_id} for call in tool_calls],
+                        "tool_results": [{"call_id": result.call_id, "success": result.success, "result": result.result, "error": result.error} for result in tool_results],
                         "content": llm_response
                     }
                 
@@ -388,16 +388,44 @@ class EnhancedBaseAgent(BaseAgent):
                 if context_parts:
                     full_user_message = f"对话历史:\n" + "\n".join(context_parts) + f"\n\n当前请求: {user_request}"
             
-            # 调用优化的LLM客户端
-            response = await self.llm_client.send_prompt_optimized(
-                conversation_id=conversation_id,
-                user_message=full_user_message,
-                system_prompt=system_prompt if is_first_call else None,  # 只在第一次调用时传递system prompt
-                temperature=0.3,
-                max_tokens=4000,
-                force_refresh_system=is_first_call
-            )
-            return response
+            # 🔧 修复：使用统一的LLM通信管理器而不是未初始化的llm_client
+            # 检查是否有统一的LLM管理器
+            if hasattr(self, 'llm_manager') and self.llm_manager:
+                # 使用统一的LLM管理器
+                response = await self.llm_manager.call_llm_for_function_calling(
+                    conversation_id=conversation_id,
+                    user_message=full_user_message,
+                    system_prompt_builder=self._build_enhanced_system_prompt if is_first_call else None,
+                    temperature=0.3,
+                    max_tokens=4000
+                )
+                return response
+            else:
+                # 回退到传统方式，但需要初始化llm_client
+                if not hasattr(self, 'llm_client') or self.llm_client is None:
+                    # 初始化一个基本的LLM客户端
+                    from llm_integration.enhanced_llm_client import EnhancedLLMClient
+                    from config.config import LLMConfig
+                    
+                    # 从FrameworkConfig中获取LLMConfig
+                    if hasattr(self.config, 'llm') and self.config.llm:
+                        llm_config = self.config.llm
+                    else:
+                        llm_config = LLMConfig()
+                    
+                    # 使用EnhancedLLMClient，它会自动创建OptimizedLLMClient
+                    self.llm_client = EnhancedLLMClient(config=llm_config)
+                
+                # 调用优化的LLM客户端
+                response = await self.llm_client.send_prompt_optimized(
+                    conversation_id=conversation_id,
+                    user_message=full_user_message,
+                    system_prompt=system_prompt if is_first_call else None,  # 只在第一次调用时传递system prompt
+                    temperature=0.3,
+                    max_tokens=4000,
+                    force_refresh_system=is_first_call
+                )
+                return response
         except Exception as e:
             self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
             raise

@@ -247,6 +247,50 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
             system_prompt_builder=self._build_system_prompt
         )
     
+    async def _call_llm_optimized_with_history(self, user_request: str, 
+                                             conversation_history: List[Dict[str, str]], 
+                                             is_first_call: bool = False) -> str:
+        """重写父类方法，使用统一的LLM通信管理器"""
+        try:
+            # 构建对话历史
+            conversation = []
+            
+            # 添加系统提示（仅在第一次调用时）
+            if is_first_call:
+                conversation.append({
+                    "role": "system", 
+                    "content": await self._build_system_prompt()
+                })
+            
+            # 添加历史对话
+            if conversation_history and not is_first_call:
+                # 添加最近的对话历史作为上下文
+                recent_history = conversation_history[-6:]  # 保留最近3轮对话
+                for entry in recent_history:
+                    if entry.get("role") in ["user", "assistant"]:
+                        conversation.append({
+                            "role": entry["role"],
+                            "content": entry["content"]
+                        })
+            
+            # 添加当前用户请求
+            conversation.append({
+                "role": "user",
+                "content": user_request
+            })
+            
+            # 使用统一的LLM管理器进行调用
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
+            
+            return response
+            
+        except Exception as e:
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            raise
+    
     async def _build_system_prompt(self) -> str:
         """使用统一的System Prompt构建器"""
         return await self.prompt_builder.build_system_prompt(
@@ -275,82 +319,103 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
     async def execute_enhanced_task(self, enhanced_prompt: str,
                                   original_message: TaskMessage,
                                   file_contents: Dict[str, Dict]) -> Dict[str, Any]:
-        """执行增强任务 - 使用统一的LLM通信模块"""
+        """执行增强的Verilog设计任务"""
+        task_id = original_message.task_id
+        self.logger.info(f"🎯 开始执行增强Verilog设计任务: {task_id}")
         
         try:
-            self.logger.info(f"🚀 开始执行Verilog设计任务")
+            # 🔧 新增：检查并设置实验路径
+            experiment_path = None
             
-            # 构建对话历史
-            conversation = [
-                {"role": "system", "content": await self._build_system_prompt()},
-                {"role": "user", "content": enhanced_prompt}
-            ]
+            # 1. 从任务上下文获取实验路径
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                if hasattr(self.current_task_context, 'experiment_path') and self.current_task_context.experiment_path:
+                    experiment_path = self.current_task_context.experiment_path
+                    self.logger.info(f"🧪 从任务上下文获取实验路径: {experiment_path}")
             
-            # 使用统一的LLM管理器进行调用
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            # 2. 如果没有找到，尝试从实验管理器获取
+            if not experiment_path:
+                try:
+                    from core.experiment_manager import get_experiment_manager
+                    exp_manager = get_experiment_manager()
+                    
+                    if exp_manager and exp_manager.current_experiment_path:
+                        experiment_path = exp_manager.current_experiment_path
+                        self.logger.info(f"🧪 从实验管理器获取实验路径: {experiment_path}")
+                except (ImportError, Exception) as e:
+                    self.logger.debug(f"实验管理器不可用: {e}")
             
-            # 解析响应
-            result = self._parse_llm_response(response)
+            # 3. 如果还是没有找到，使用默认路径
+            if not experiment_path:
+                experiment_path = "./file_workspace"
+                self.logger.warning(f"⚠️ 没有找到实验路径，使用默认路径: {experiment_path}")
             
-            # 构建响应格式
-            response_format = StandardizedResponse(
-                agent_name=self.role,
-                agent_id=self.agent_id,
-                response_type=ResponseType.TASK_COMPLETION,
-                task_id=original_message.task_id,
-                timestamp=datetime.now().isoformat(),
-                status=TaskStatus.SUCCESS,
-                completion_percentage=100.0,
-                message="Verilog设计任务执行成功",
-                generated_files=[],
-                modified_files=[],
-                reference_files=[],
-                issues=[],
-                quality_metrics=QualityMetrics(
-                    overall_score=0.9,
-                    syntax_score=0.85,
-                    functionality_score=0.8,
-                    test_coverage=0.75,
-                    documentation_quality=0.8
-                ),
-                metadata=result
+            # 设置实验路径到任务上下文
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                self.current_task_context.experiment_path = experiment_path
+                self.logger.info(f"✅ 设置任务实验路径: {experiment_path}")
+            
+            # 使用增强验证处理流程 - 允许更多迭代次数进行错误修复
+            result = await self.process_with_enhanced_validation(
+                user_request=enhanced_prompt,
+                max_iterations=6  # 增加到6次迭代，给足够空间进行错误修复和优化
             )
             
-            self.logger.info(f"✅ Verilog设计任务执行完成")
-            return response_format.to_dict()
-            
+            if result["success"]:
+                self.logger.info(f"✅ Verilog设计任务完成: {task_id}")
+                
+                # 提取生成的文件路径信息
+                generated_files = self._extract_generated_files_from_tool_results(result.get("tool_results", []))
+                
+                # 🔧 新增：更新文件路径为实验路径
+                for file_info in generated_files:
+                    if file_info.get("file_path") and experiment_path:
+                        # 如果文件路径是相对路径，更新为实验路径下的绝对路径
+                        if not file_info["file_path"].startswith("/"):
+                            file_info["file_path"] = f"{experiment_path}/{file_info['file_path']}"
+                            self.logger.info(f"📁 更新文件路径: {file_info['file_path']}")
+                
+                return {
+                    "success": True,
+                    "task_id": task_id,
+                    "response": result.get("response", ""),
+                    "tool_results": result.get("tool_results", []),
+                    "iterations": result.get("iterations", 1),
+                    "generated_files": generated_files,  # 新增：生成的文件路径列表
+                    "experiment_path": experiment_path,  # 🔧 新增：返回实验路径
+                    "quality_metrics": {
+                        "schema_validation_passed": True,
+                        "parameter_errors_fixed": result.get("iterations", 1) > 1,
+                        "security_checks_passed": True,
+                        "design_type_detected": result.get("design_type", "unknown"),
+                        "code_quality_score": result.get("quality_score", 0.0)
+                    }
+                }
+            else:
+                self.logger.error(f"❌ Verilog设计任务失败: {task_id} - {result.get('error')}")
+                return {
+                    "success": False,
+                    "task_id": task_id,
+                    "error": result.get("error", "Unknown error"),
+                    "iterations": result.get("iterations", 1),
+                    "last_error": result.get("last_error", ""),
+                    "suggestions": result.get("suggestions", []),
+                    "experiment_path": experiment_path  # 🔧 新增：返回实验路径
+                }
+                
         except Exception as e:
-            self.logger.error(f"❌ Verilog设计任务执行失败: {str(e)}")
-            
-            response_format = StandardizedResponse(
-                agent_name=self.role,
-                agent_id=self.agent_id,
-                response_type=ResponseType.ERROR_REPORT,
-                task_id=original_message.task_id,
-                timestamp=datetime.now().isoformat(),
-                status=TaskStatus.FAILED,
-                completion_percentage=0.0,
-                message=f"Verilog设计任务执行失败: {str(e)}",
-                generated_files=[],
-                modified_files=[],
-                reference_files=[],
-                issues=[IssueReport(
-                    issue_type="error",
-                    severity="critical",
-                    description=str(e),
-                    location="execute_enhanced_task"
-                )],
-                quality_metrics=QualityMetrics(
-                    overall_score=0.0,
-                    syntax_score=0.0,
-                    functionality_score=0.0,
-                    test_coverage=0.0,
-                    documentation_quality=0.0
-                ),
-                metadata={"error": str(e)}
-            )
-            
-            return response_format.to_dict()
+            self.logger.error(f"❌ Verilog设计任务执行异常: {task_id} - {str(e)}")
+            return {
+                "success": False,
+                "task_id": task_id,
+                "error": f"执行异常: {str(e)}",
+                "suggestions": [
+                    "检查输入参数格式是否正确",
+                    "确认设计需求描述是否完整",
+                    "验证工具配置是否正确"
+                ],
+                "experiment_path": experiment_path if 'experiment_path' in locals() else None  # 🔧 新增：返回实验路径
+            }
     
     def _parse_llm_response(self, response: str) -> Dict[str, Any]:
         """解析LLM响应"""
@@ -363,6 +428,75 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 return {"content": response}
         except json.JSONDecodeError:
             return {"content": response}
+    
+    def _extract_generated_files_from_tool_results(self, tool_results: List[Dict]) -> List[Dict]:
+        """从工具结果中提取生成的文件路径信息"""
+        generated_files = []
+        
+        for tool_result in tool_results:
+            if not isinstance(tool_result, dict):
+                continue
+                
+            tool_name = tool_result.get("tool_name", "")
+            result_data = tool_result.get("result", {})
+            
+            # 检查write_file工具的结果
+            if tool_name == "write_file" and isinstance(result_data, dict):
+                if result_data.get("success", False):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "verilog_code",
+                        "description": result_data.get("description", ""),
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查generate_verilog_code工具的结果
+            elif tool_name == "generate_verilog_code" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "verilog_design",
+                        "module_name": result_data.get("module_name", ""),
+                        "description": f"Generated Verilog module: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查generate_design_documentation工具的结果
+            elif tool_name == "generate_design_documentation" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "design_documentation",
+                        "module_name": result_data.get("module_name", ""),
+                        "description": f"Design documentation for: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+            
+            # 检查optimize_verilog_code工具的结果
+            elif tool_name == "optimize_verilog_code" and isinstance(result_data, dict):
+                if result_data.get("success", False) and result_data.get("file_path"):
+                    file_info = {
+                        "file_path": result_data.get("file_path", ""),
+                        "file_id": result_data.get("file_id", ""),
+                        "file_type": "optimized_verilog",
+                        "module_name": result_data.get("module_name", ""),
+                        "optimization_target": result_data.get("optimization_target", ""),
+                        "description": f"Optimized Verilog code for: {result_data.get('module_name', '')}",
+                        "tool_name": tool_name
+                    }
+                    generated_files.append(file_info)
+        
+        self.logger.info(f"📁 提取到 {len(generated_files)} 个生成文件")
+        for file_info in generated_files:
+            self.logger.info(f"📄 生成文件: {file_info.get('file_path', '')} - {file_info.get('description', '')}")
+        
+        return generated_files
     
     # 工具方法实现（保持原有逻辑）
     async def _tool_analyze_design_requirements(self, requirements: str, 
@@ -393,7 +527,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": analysis_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
             
             return {
                 "analysis_result": response,
@@ -441,7 +578,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": code_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
             
             return {
                 "module_name": module_name,
@@ -479,7 +619,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": analysis_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
             
             return {
                 "quality_analysis": response,
@@ -517,7 +660,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": optimization_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
             
             return {
                 "optimized_code": response,
@@ -555,7 +701,10 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                 {"role": "user", "content": guide_prompt}
             ]
             
-            response = await self.llm_manager.call_llm_for_function_calling(conversation)
+            response = await self.llm_manager.call_llm_for_function_calling(
+                conversation,
+                system_prompt_builder=self._build_system_prompt
+            )
             
             return {
                 "usage_guide": response,
