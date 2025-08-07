@@ -129,6 +129,14 @@ class BaseAgent(ABC):
         # 生成system prompt (包含工具信息) - 延迟初始化
         self.system_prompt = None
         
+        # 🧠 新增：智能体状态缓存 - 用于跨工具调用保持上下文
+        self.agent_state_cache: Dict[str, Any] = {
+            "last_read_files": {},  # 最近读取的文件内容
+            "current_task_context": {},  # 当前任务的上下文信息
+            "tool_call_results": {},  # 工具调用结果缓存
+            "conversation_context": {}  # 对话上下文缓存
+        }
+        
         self.logger.debug(f"✅ {self.__class__.__name__} (Function Calling支持) 初始化完成")
     
     def _get_model_name(self) -> str:
@@ -368,8 +376,11 @@ class BaseAgent(ABC):
                 agent_id=self.agent_id
             )
         
+        # 🧠 新增：增强用户请求，包含最近读取的文件内容
+        enhanced_user_request = self._enhance_request_with_file_context(user_request)
+        
         # 🎯 执行初始任务
-        initial_result = await self._execute_single_task_cycle(conversation, user_request, max_iterations)
+        initial_result = await self._execute_single_task_cycle(conversation, enhanced_user_request, max_iterations)
         
         # 🔄 如果启用自主继续，则进行自我评估和任务继续
         if enable_self_continuation:
@@ -784,6 +795,9 @@ class BaseAgent(ABC):
                 
                 all_tool_results = []
                 for tool_call in tool_calls:
+                    # 🧠 新增：工具调用前的上下文检查
+                    self._check_context_before_tool_call(tool_call)
+                    
                     result = await self._execute_tool_call_with_retry(tool_call)
                     all_tool_results.append(result)
                 
@@ -1029,15 +1043,64 @@ class BaseAgent(ABC):
             }
     
     def _validate_required_tool_calls(self) -> Dict[str, Any]:
-        """验证必需的工具调用 - 增强版，支持循环检测"""
+        """验证必需的工具调用 - 增强版，支持循环检测和当前轮次验证"""
         try:
             # 获取工具调用历史
             tool_calls = self._extract_tool_calls_from_history()
+            
+            # 🆕 新增：检查当前轮次的LLM响应
+            current_response = self._get_last_assistant_message()
+            if current_response:
+                # 直接从当前响应中解析工具调用
+                current_tool_calls = self._parse_tool_calls_from_response(current_response)
+                if current_tool_calls:
+                    self.logger.info(f"🔍 从当前响应中解析到 {len(current_tool_calls)} 个工具调用")
+                    # 将当前轮次的工具调用添加到历史中
+                    for tool_call in current_tool_calls:
+                        tool_calls.append({
+                            "tool_name": tool_call.tool_name,
+                            "success": True,
+                            "timestamp": time.time(),
+                            "is_current_round": True  # 标记为当前轮次
+                        })
+                else:
+                    # 🆕 新增：详细的调试信息
+                    self.logger.debug(f"🔍 当前响应解析结果为空，响应长度: {len(current_response)}")
+                    self.logger.debug(f"🔍 当前响应前200字符: {current_response[:200]}...")
+                    
+                    # 检查是否包含工具调用相关的关键词
+                    tool_keywords = ["write_file", "generate_verilog", "tool_name", "tool_calls"]
+                    found_keywords = [kw for kw in tool_keywords if kw in current_response]
+                    if found_keywords:
+                        self.logger.warning(f"⚠️ 响应包含工具调用关键词但解析失败: {found_keywords}")
+                        self.logger.debug(f"🔍 完整响应内容: {current_response}")
+            
+            # 🆕 新增：调试信息 - 显示所有工具调用
+            if tool_calls:
+                self.logger.debug(f"🔍 工具调用历史: {[call['tool_name'] for call in tool_calls]}")
+                current_round_calls = [call for call in tool_calls if call.get("is_current_round", False)]
+                if current_round_calls:
+                    self.logger.debug(f"🔍 当前轮次工具调用: {[call['tool_name'] for call in current_round_calls]}")
+            else:
+                self.logger.debug(f"🔍 没有找到任何工具调用历史")
             
             # 🆕 新增：循环检测
             loop_detection = self._detect_tool_call_loops(tool_calls)
             if loop_detection["is_loop"]:
                 self.logger.warning(f"🔄 检测到工具调用循环: {loop_detection['pattern']}")
+                
+                # 🆕 新增：紧急停止机制
+                # 如果循环长度很短（1-2次），且是当前轮次的问题，立即停止
+                if loop_detection.get("cycle_length", 0) <= 2:
+                    current_round_calls = [call for call in tool_calls if call.get("is_current_round", False)]
+                    if len(current_round_calls) >= 2:
+                        self.logger.error(f"🚨 检测到当前轮次解析循环，紧急停止执行")
+                        return {
+                            "needs_continuation": False,
+                            "reason": f"当前轮次解析循环，紧急停止: {loop_detection['pattern']}",
+                            "suggested_actions": ["停止执行，检查工具调用解析逻辑"]
+                        }
+                
                 return {
                     "needs_continuation": False,
                     "reason": f"检测到工具调用循环，强制停止: {loop_detection['pattern']}",
@@ -1140,26 +1203,71 @@ class BaseAgent(ABC):
             return {"needs_continuation": False, "reason": f"验证过程出错: {e}"}
     
     def _detect_tool_call_loops(self, tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """检测工具调用循环模式"""
-        if len(tool_calls) < 6:  # 至少需要6次调用才能形成循环
-            return {"is_loop": False, "pattern": ""}
+        """检测工具调用循环"""
+        if len(tool_calls) < 4:  # 至少需要4次调用才能形成循环
+            return {"is_loop": False, "pattern": None}
         
-        # 分析最近的工具调用序列
-        recent_calls = tool_calls[-6:]  # 分析最近6次调用
-        call_sequence = [call["tool_name"] for call in recent_calls]
+        # 提取工具调用序列
+        tool_sequence = [call["tool_name"] for call in tool_calls]
         
-        # 检测重复模式
-        patterns = [
-            ["write_file", "analyze_code_quality", "write_file", "analyze_code_quality"],
-            ["generate_verilog_code", "write_file", "analyze_code_quality"],
-            ["write_file", "write_file", "analyze_code_quality"],
+        # 🆕 新增：检测重复的验证失败模式
+        # 模式1: 连续多次缺少相同工具调用
+        if len(tool_sequence) >= 3:
+            last_three = tool_sequence[-3:]
+            if len(set(last_three)) == 1:  # 连续3次相同工具调用
+                return {
+                    "is_loop": True, 
+                    "pattern": f"重复调用同一工具: {last_three[0]}",
+                    "cycle_length": 1
+                }
+        
+        # 模式2: 检测write_file相关的循环
+        write_file_indices = [i for i, tool in enumerate(tool_sequence) if tool == "write_file"]
+        if len(write_file_indices) >= 3:
+            # 检查write_file调用是否过于频繁
+            recent_write_calls = [i for i in write_file_indices if i >= len(tool_sequence) - 5]
+            if len(recent_write_calls) >= 2:
+                return {
+                    "is_loop": True,
+                    "pattern": "write_file调用过于频繁，可能存在循环",
+                    "cycle_length": len(recent_write_calls)
+                }
+        
+        # 模式3: 检测验证-重试循环
+        validation_patterns = [
+            ["write_file", "generate_verilog_code"],  # 设计-写入循环
+            ["generate_testbench", "run_simulation"],  # 测试-仿真循环
+            ["identify_task_type", "recommend_agent", "assign_task_to_agent"]  # 协调循环
         ]
         
-        for pattern in patterns:
-            if self._sequence_contains_pattern(call_sequence, pattern):
-                return {"is_loop": True, "pattern": " -> ".join(pattern)}
+        for pattern in validation_patterns:
+            if self._sequence_contains_pattern(tool_sequence, pattern):
+                # 检查模式是否重复出现
+                pattern_count = 0
+                for i in range(len(tool_sequence) - len(pattern) + 1):
+                    if tool_sequence[i:i+len(pattern)] == pattern:
+                        pattern_count += 1
+                
+                if pattern_count >= 2:  # 模式重复出现2次以上
+                    return {
+                        "is_loop": True,
+                        "pattern": f"重复的工具调用模式: {' -> '.join(pattern)}",
+                        "cycle_length": len(pattern)
+                    }
         
-        return {"is_loop": False, "pattern": ""}
+        # 🆕 新增：检测当前轮次标记的循环
+        current_round_calls = [call for call in tool_calls if call.get("is_current_round", False)]
+        if len(current_round_calls) >= 2:
+            # 如果当前轮次有多个相同的工具调用，可能是解析错误导致的循环
+            current_tools = [call["tool_name"] for call in current_round_calls]
+            if len(set(current_tools)) == 1 and len(current_tools) >= 2:
+                return {
+                    "is_loop": True,
+                    "pattern": f"当前轮次重复解析工具调用: {current_tools[0]}",
+                    "cycle_length": 1
+                }
+        
+        return {"is_loop": False, "pattern": None}
     
     def _detect_repetitive_operations(self, tool_calls: List[Dict[str, Any]]) -> Dict[str, Any]:
         """检测重复操作"""
@@ -2382,17 +2490,21 @@ class BaseAgent(ABC):
         
         return response.format_response(format_type)
     
-    def _detect_file_type(self, file_path: str) -> str:
+    def _detect_file_type(self, filepath: str) -> str:
         """检测文件类型"""
-        if file_path.endswith('.v'):
+        if filepath.endswith('.v'):
             return 'verilog'
-        elif file_path.endswith('_tb.v') or 'testbench' in file_path.lower():
-            return 'testbench'
-        elif file_path.endswith('.json'):
-            return 'json'
-        elif file_path.endswith('.md'):
-            return 'documentation'
-        elif file_path.endswith('.txt'):
+        elif filepath.endswith('.sv'):
+            return 'systemverilog'
+        elif filepath.endswith('.py'):
+            return 'python'
+        elif filepath.endswith('.cpp') or filepath.endswith('.cc'):
+            return 'cpp'
+        elif filepath.endswith('.c'):
+            return 'c'
+        elif filepath.endswith('.md'):
+            return 'markdown'
+        elif filepath.endswith('.txt'):
             return 'text'
         else:
             return 'unknown'
@@ -2525,7 +2637,7 @@ class BaseAgent(ABC):
             return "temp"
     
     async def _tool_read_file(self, filepath: str, **kwargs) -> Dict[str, Any]:
-        """基础工具：读取文件 - 使用FileOperationManager组件"""
+        """基础工具：读取文件 - 使用FileOperationManager组件并缓存到智能体状态"""
         self.logger.info(f"📖 读取文件: {filepath}")
         
         # 使用FileOperationManager组件
@@ -2534,6 +2646,17 @@ class BaseAgent(ABC):
         )
         
         if content is not None:
+            # 🧠 新增：保存到智能体状态缓存
+            self.agent_state_cache["last_read_files"][filepath] = {
+                "content": content,
+                "encoding": "utf-8",
+                "timestamp": time.time(),
+                "file_type": self._detect_file_type(filepath)
+            }
+            
+            self.logger.info(f"✅ 成功读取文件: {filepath} ({len(content)} 字符)")
+            self.logger.info(f"🧠 已缓存文件内容到智能体状态")
+            
             return {
                 "success": True,
                 "content": content,
@@ -2772,3 +2895,109 @@ class BaseAgent(ABC):
 """
             return retry_prompt
         return "工具调用成功"
+    
+    async def _read_file(self, filepath: str, encoding: str = "utf-8", **kwargs) -> Dict[str, Any]:
+        """读取文件内容"""
+        try:
+            # 检查缓存
+            cache_key = f"{filepath}_{encoding}"
+            if cache_key in self.file_cache:
+                self.logger.info(f"📄 从缓存读取文件: {filepath}")
+                return {
+                    "success": True,
+                    "content": self.file_cache[cache_key],
+                    "filepath": filepath,
+                    "encoding": encoding,
+                    "from_cache": True
+                }
+            
+            # 读取文件
+            content = await self._read_file_content(filepath, encoding)
+            
+            if content is not None:
+                # 🧠 新增：保存到智能体状态缓存
+                self.agent_state_cache["last_read_files"][filepath] = {
+                    "content": content,
+                    "encoding": encoding,
+                    "timestamp": time.time(),
+                    "file_type": self._detect_file_type(filepath)
+                }
+                
+                # 同时保存到文件缓存
+                self.file_cache[cache_key] = content
+                
+                self.logger.info(f"✅ 成功读取文件: {filepath} ({len(content)} 字符)")
+                self.logger.info(f"🧠 已缓存文件内容到智能体状态")
+                
+                return {
+                    "success": True,
+                    "content": content,
+                    "filepath": filepath,
+                    "encoding": encoding,
+                    "from_cache": False
+                }
+            else:
+                return {"success": False, "error": f"无法读取文件: {filepath}"}
+                
+        except Exception as e:
+            self.logger.error(f"❌ 读取文件失败: {filepath} - {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    def _enhance_request_with_file_context(self, user_request: str) -> str:
+        """增强用户请求，包含最近读取的文件内容"""
+        if not self.agent_state_cache["last_read_files"]:
+            return user_request
+        
+        enhanced_request = user_request + "\n\n"
+        enhanced_request += "📁 **最近读取的文件内容** (用于上下文参考):\n\n"
+        
+        for filepath, file_info in self.agent_state_cache["last_read_files"].items():
+            content = file_info["content"]
+            file_type = file_info.get("file_type", "unknown")
+            
+            # 只包含前500字符，避免请求过长
+            preview_content = content[:500] + "..." if len(content) > 500 else content
+            
+            enhanced_request += f"**文件**: {filepath} ({file_type})\n"
+            enhanced_request += f"**内容预览**:\n```{file_type}\n{preview_content}\n```\n\n"
+        
+        self.logger.info(f"🧠 已增强用户请求，包含 {len(self.agent_state_cache['last_read_files'])} 个文件的内容")
+        return enhanced_request
+    
+    def _check_context_before_tool_call(self, tool_call: ToolCall):
+        """工具调用前的上下文检查"""
+        tool_name = tool_call.tool_name
+        parameters = tool_call.parameters
+        
+        self.logger.info(f"🧠 工具调用前的上下文检查: {tool_name}")
+        self.logger.info(f"🧠 当前参数: {list(parameters.keys())}")
+        
+        # 检查是否需要文件内容但参数中没有提供
+        if tool_name in ["generate_testbench", "run_simulation", "analyze_code_quality"]:
+            # 检查是否有必要的代码参数
+            code_params = ["module_code", "code", "verilog_code", "design_code"]
+            has_code_param = any(param in parameters and parameters[param] for param in code_params)
+            
+            self.logger.info(f"🧠 工具 {tool_name} 是否有代码参数: {has_code_param}")
+            
+            if not has_code_param:
+                # 从缓存中查找相关文件内容
+                cached_files = self.agent_state_cache.get("last_read_files", {})
+                self.logger.info(f"🧠 缓存中的文件数量: {len(cached_files)}")
+                
+                for filepath, file_info in cached_files.items():
+                    file_type = file_info.get("file_type", "unknown")
+                    self.logger.info(f"🧠 检查缓存文件: {filepath} (类型: {file_type})")
+                    
+                    if file_info.get("file_type") in ["verilog", "systemverilog"]:
+                        self.logger.info(f"🧠 检测到工具 {tool_name} 缺少代码参数，从缓存恢复: {filepath}")
+                        # 将缓存的内容添加到参数中
+                        tool_call.parameters["module_code"] = file_info["content"]
+                        self.logger.info(f"🧠 已添加模块代码到参数，长度: {len(file_info['content'])} 字符")
+                        break
+                else:
+                    self.logger.warning(f"🧠 未找到合适的缓存文件用于工具 {tool_name}")
+            else:
+                self.logger.info(f"🧠 工具 {tool_name} 已有代码参数，无需从缓存恢复")
+        else:
+            self.logger.info(f"🧠 工具 {tool_name} 不需要上下文检查")

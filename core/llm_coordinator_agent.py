@@ -830,43 +830,55 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 metadata={"type": "coordination_response", "task_stage": "initial"}
             )
             
-            # 🔍 检查是否实际调用了工具
+            # 🔍 检查是否实际调用了工具或任务已完成
             self.logger.info(f"🔍 检查工具调用: 结果长度={len(result)}, 内容预览={result[:100]}...")
             tools_executed = self._has_executed_tools(result)
             self.logger.info(f"🔍 工具调用检查结果: {tools_executed}")
             
+            # 🔧 新增：检查是否是任务完成状态
+            if tools_executed:
+                # 检查是否已经提供了最终答案
+                if self._has_final_answer_in_history(task_context):
+                    self.logger.info("✅ 检测到最终答案已提供，任务完成")
+                    return self._collect_final_result(task_context, result)
+            
             if not tools_executed:
-                self.logger.warning("⚠️ 协调智能体没有调用任何工具，强制重新执行")
+                self.logger.warning("⚠️ 协调智能体没有调用任何工具，检查是否需要强制重新执行")
                 self.logger.info(f"🔍 原始结果内容: {result[:2000]}...")
                 
-                # 强制重新执行，使用更明确的指令
-                forced_task = self._build_forced_coordination_task(user_request, task_context)
-                self.logger.info(f"🚨 强制重新执行，任务长度: {len(forced_task)} 字符")
-                
-                # 使用更严格的参数进行强制重新执行
-                result = await self.process_with_function_calling(
-                    user_request=forced_task,
-                    max_iterations=1,  # 限制为1次迭代，强制立即执行
-                    conversation_id=f"{conversation_id}_forced",
-                    preserve_context=False,  # 不保留上下文，重新开始
-                    enable_self_continuation=False,  # 禁用自主继续
-                    max_self_iterations=0  # 禁用自我继续
-                )
-                
-                # 再次检查是否执行了工具
-                if not self._has_executed_tools(result):
-                    self.logger.error("❌ 强制重新执行后仍未调用工具，返回错误信息")
-                    self.logger.error(f"🔍 强制执行结果: {result[:2000]}...")
-                    return {
-                        "success": False,
-                        "error": "协调智能体无法执行工具调用，请检查系统配置",
-                        "task_id": task_id,
-                        "debug_info": {
-                            "original_result": result[:500],
-                            "forced_result": result[:500],
-                            "tool_detection_failed": True
+                # 🔧 修改：只有在特定条件下才强制重新执行
+                if self._should_force_reexecution(task_context, result):
+                    # 强制重新执行，使用更明确的指令
+                    forced_task = self._build_forced_coordination_task(user_request, task_context)
+                    self.logger.info(f"🚨 强制重新执行，任务长度: {len(forced_task)} 字符")
+                    
+                    # 使用更严格的参数进行强制重新执行
+                    result = await self.process_with_function_calling(
+                        user_request=forced_task,
+                        max_iterations=1,  # 限制为1次迭代，强制立即执行
+                        conversation_id=f"{conversation_id}_forced",
+                        preserve_context=False,  # 不保留上下文，重新开始
+                        enable_self_continuation=False,  # 禁用自主继续
+                        max_self_iterations=0  # 禁用自我继续
+                    )
+                    
+                    # 再次检查是否执行了工具
+                    if not self._has_executed_tools(result):
+                        self.logger.error("❌ 强制重新执行后仍未调用工具，返回错误信息")
+                        self.logger.error(f"🔍 强制执行结果: {result[:2000]}...")
+                        return {
+                            "success": False,
+                            "error": "协调智能体无法执行工具调用，请检查系统配置",
+                            "task_id": task_id,
+                            "debug_info": {
+                                "original_result": result[:500],
+                                "forced_result": result[:500],
+                                "tool_detection_failed": True
+                            }
                         }
-                    }
+                else:
+                    self.logger.info("✅ 无需强制重新执行，任务可能已完成")
+                    return self._collect_final_result(task_context, result)
             
             # 🔍 新增：检查是否调用了assign_task_to_agent工具
             self.logger.info(f"🔍 检查是否调用了assign_task_to_agent工具...")
@@ -977,6 +989,11 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             data = json.loads(json_content)
             self.logger.debug(f"🔍 解析JSON成功: {list(data.keys())}")
             
+            # 🔧 新增：检查是否是任务完成评估结果
+            if self._is_task_completion_assessment(data):
+                self.logger.info(f"✅ 检测到任务完成评估结果，认为任务已完成")
+                return True
+            
             # 🔧 修复：检查是否是错误的单个工具格式，并自动转换为正确的tool_calls格式
             if "tool_name" in data and "parameters" in data and "tool_calls" not in data:
                 self.logger.warning(f"🔧 检测到错误的单工具格式，自动转换为tool_calls数组格式")
@@ -1011,6 +1028,97 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         except json.JSONDecodeError as e:
             self.logger.debug(f"🔍 JSON解析失败: {e}")
             return False
+    
+    def _is_task_completion_assessment(self, data: Dict[str, Any]) -> bool:
+        """检查是否是任务完成评估结果"""
+        # 检查是否包含任务完成相关的字段
+        completion_fields = [
+            "completion_rate", "quality_score", "needs_continuation", 
+            "task_status", "final_summary", "results_summary"
+        ]
+        
+        # 如果包含completion_rate且值为100，或者包含task_status且值为success，认为是完成评估
+        if "completion_rate" in data and data["completion_rate"] == 100:
+            return True
+        
+        if "task_status" in data and data["task_status"] == "success":
+            return True
+        
+        # 如果包含needs_continuation且值为false，也认为是完成评估
+        if "needs_continuation" in data and data["needs_continuation"] is False:
+            return True
+        
+        # 检查是否包含多个完成相关字段
+        completion_field_count = sum(1 for field in completion_fields if field in data)
+        if completion_field_count >= 2:
+            return True
+        
+        return False
+    
+    def _has_task_completion_in_history(self, task_context: TaskContext) -> bool:
+        """检查对话历史中是否有任务完成指示器"""
+        for msg in task_context.conversation_history:
+            if msg.get("role") == "assistant":
+                content = msg.get("content", "")
+                # 检查是否包含任务完成相关的关键词
+                if any(keyword in content.lower() for keyword in [
+                    "completion_rate", "quality_score", "needs_continuation", 
+                    "task_status", "final_summary", "results_summary",
+                    "任务已完全完成", "任务成功完成", "所有要求都已满足",
+                    "provide_final_answer"
+                ]):
+                    return True
+        return False
+    
+    def _has_final_answer_in_history(self, task_context: TaskContext) -> bool:
+        """检查对话历史中是否已经提供了最终答案"""
+        for msg in task_context.conversation_history:
+            if msg.get("role") == "assistant":
+                content = msg.get("content", "")
+                # 检查是否包含最终答案相关的关键词
+                if any(keyword in content.lower() for keyword in [
+                    "provide_final_answer", "final_summary", "task_status", "success"
+                ]):
+                    return True
+        return False
+    
+    def _should_force_reexecution(self, task_context: TaskContext, result: str) -> bool:
+        """判断是否需要强制重新执行"""
+        # 如果已经有智能体结果，说明任务已经开始执行，不需要强制重新执行
+        if task_context.agent_results:
+            self.logger.info("✅ 已有智能体结果，无需强制重新执行")
+            return False
+        
+        # 如果对话历史中已经有assign_task_to_agent调用，也不需要强制重新执行
+        for msg in task_context.conversation_history:
+            if msg.get("role") == "assistant":
+                content = msg.get("content", "")
+                if "assign_task_to_agent" in content:
+                    self.logger.info("✅ 已有任务分配记录，无需强制重新执行")
+                    return False
+        
+        # 检查结果是否包含任务完成相关的信息
+        if self._contains_completion_indicators(result):
+            self.logger.info("✅ 结果包含完成指示器，无需强制重新执行")
+            return False
+        
+        # 只有在没有智能体结果、没有任务分配、且结果不包含完成指示器时才强制重新执行
+        self.logger.info("⚠️ 需要强制重新执行：没有智能体结果且没有任务分配")
+        return True
+    
+    def _contains_completion_indicators(self, result: str) -> bool:
+        """检查结果是否包含任务完成指示器"""
+        completion_indicators = [
+            "completion_rate", "quality_score", "needs_continuation", 
+            "task_status", "final_summary", "results_summary",
+            "任务已完全完成", "任务成功完成", "所有要求都已满足"
+        ]
+        
+        result_lower = result.lower()
+        for indicator in completion_indicators:
+            if indicator.lower() in result_lower:
+                return True
+        return False
     
     def _extract_json_from_response(self, response: str) -> str:
         """从响应中提取JSON内容，支持markdown代码块格式"""
@@ -1161,11 +1269,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 3. **第三步**: 调用 `assign_task_to_agent` 分配任务给推荐智能体
 4. **第四步**: 调用 `analyze_agent_result` 分析执行结果
 5. **第五步**: 根据分析结果决定是否需要继续迭代
+6. **第六步**: 当任务完成时，调用 `provide_final_answer` 提供最终答案
 
 **⚠️ 重要提醒**:
 - 必须严格按照上述流程执行，不得跳过任何步骤
 - 推荐代理工具 `recommend_agent` 是必需的，不能直接调用 `assign_task_to_agent`
 - 每次任务分配前都必须先调用推荐代理工具
+- **任务完成时，必须调用 `provide_final_answer` 工具，禁止直接返回评估JSON**
 
 {coordinator_tool_guide}
 
@@ -2154,6 +2264,11 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
    }
    ```
 
+🚨 **重要任务完成规则**:
+- **当任务完成时，必须调用 `provide_final_answer` 工具**，而不是返回评估JSON
+- **禁止直接返回任务完成评估**，必须通过工具调用完成
+- **任务完成条件**: 所有智能体执行完成且结果质量满足要求
+
 ⭐ **推荐协调流程**:
 1. identify_task_type → 2. recommend_agent → 3. assign_task_to_agent 
 → 4. analyze_agent_result → 5. check_task_completion → 6. provide_final_answer
@@ -2180,49 +2295,58 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     async def _tool_analyze_agent_result(self, agent_id: str, result: Dict[str, Any],
                                        task_context: Dict[str, Any] = None,
                                        quality_threshold: float = 80.0) -> Dict[str, Any]:
-        """增强的智能体执行结果分析"""
+        """分析智能体执行结果的质量和完整性"""
         
         try:
             self.logger.info(f"🔍 深度分析智能体 {agent_id} 的执行结果")
             
-            # 🔧 修复：确保 result 参数是字典类型
-            if result is None:
-                result = {}
-            elif isinstance(result, str):
-                # 如果是字符串，尝试解析为字典
-                try:
-                    import json
-                    result = json.loads(result)
-                except:
-                    result = {"raw_response": result}
+            # 检查智能体是否存在
+            if agent_id not in self.registered_agents:
+                return {
+                    "success": False,
+                    "error": f"智能体不存在: {agent_id}"
+                }
             
-            # 更新智能体性能指标
-            self._update_agent_performance(agent_id, result)
+            # 获取任务上下文
+            task_context_obj = None
+            if task_context and "task_id" in task_context:
+                task_id = task_context["task_id"]
+                if task_id in self.active_tasks:
+                    task_context_obj = self.active_tasks[task_id]
             
-            # 深度分析结果质量
+            # 执行增强的结果质量分析
             analysis = self._enhanced_result_quality_analysis(result, task_context, quality_threshold)
             
-            # 确定下一步行动
-            next_action = self._determine_enhanced_next_action(analysis, task_context)
+            # 更新智能体性能
+            self._update_agent_performance(agent_id, result)
             
-            # 生成改进建议
-            improvement_suggestions = self._generate_improvement_suggestions(analysis, agent_id)
+            # 如果任务上下文存在，记录分析结果
+            if task_context_obj:
+                task_context_obj.agent_results[agent_id] = {
+                    "result": result,
+                    "analysis": analysis,
+                    "timestamp": time.time()
+                }
             
             return {
                 "success": True,
                 "analysis": analysis,
-                "next_action": next_action,
-                "improvement_suggestions": improvement_suggestions,
                 "agent_id": agent_id,
-                "quality_threshold": quality_threshold
+                "quality_score": analysis["quality_score"],
+                "completeness": analysis["completeness"],
+                "issues": analysis["issues"],
+                "strengths": analysis["strengths"],
+                "recommendations": analysis["recommendations"],
+                "next_action": self._determine_enhanced_next_action(analysis, task_context),
+                "detailed_metrics": analysis["detailed_metrics"],
+                "risk_assessment": analysis["risk_assessment"]
             }
             
         except Exception as e:
             self.logger.error(f"❌ 结果分析失败: {str(e)}")
             return {
                 "success": False,
-                "error": str(e),
-                "agent_id": agent_id
+                "error": str(e)
             }
     
     def _update_agent_performance(self, agent_id: str, result: Dict[str, Any]):
@@ -2270,7 +2394,18 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "code_testing_workflow": {}
         }
         
-        # 检查结果是否为空
+        # 🔧 修复：确保result参数是字典类型
+        if result is None:
+            result = {}
+        elif isinstance(result, str):
+            # 如果是字符串，尝试解析为字典
+            try:
+                import json
+                result = json.loads(result)
+            except:
+                result = {"raw_response": result}
+        
+        # 检查结果是否为空或失败
         if not result or not result.get("success", False):
             analysis["completeness"] = "failed"
             analysis["issues"].append("任务执行失败")
@@ -3285,6 +3420,20 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             task_context = self.active_tasks[task_id]
             
+            # 🔧 修复：处理all_results可能是列表的情况
+            if isinstance(all_results, list):
+                # 如果是列表，转换为字典格式
+                results_dict = {}
+                for i, result in enumerate(all_results):
+                    if isinstance(result, dict):
+                        # 尝试从结果中提取智能体ID
+                        agent_id = result.get("agent_id", f"agent_{i}")
+                        results_dict[agent_id] = result
+                    else:
+                        results_dict[f"result_{i}"] = result
+                all_results = results_dict
+                self.logger.info(f"🎯 将列表格式的all_results转换为字典格式，包含{len(all_results)}个结果")
+            
             # 分析所有结果
             completion_analysis = self._enhanced_task_completion_analysis(
                 all_results, original_requirements, task_context, completion_criteria
@@ -3406,10 +3555,21 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                     design_results.append(result)
             
             if design_results:
-                metrics["design_complete"] = any(
-                    "module" in str(result).lower() and "endmodule" in str(result).lower()
-                    for result in design_results
-                )
+                # 🔧 修复：更严格的设计完成检查
+                for result in design_results:
+                    if isinstance(result, dict):
+                        # 检查是否有成功状态
+                        if result.get("success", False):
+                            # 检查是否生成了Verilog文件
+                            generated_files = result.get("generated_files", [])
+                            if any(".v" in file for file in generated_files):
+                                metrics["design_complete"] = True
+                                break
+                            # 检查结果内容是否包含模块定义
+                            result_content = str(result.get("result", ""))
+                            if "module" in result_content.lower() and "endmodule" in result_content.lower():
+                                metrics["design_complete"] = True
+                                break
         
         # 检查验证完成情况
         if "test" in requirements or "验证" in requirements or "testbench" in requirements:
@@ -3419,10 +3579,21 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                     verification_results.append(result)
             
             if verification_results:
-                metrics["verification_complete"] = any(
-                    "testbench" in str(result).lower() or "simulation" in str(result).lower()
-                    for result in verification_results
-                )
+                # 🔧 修复：更严格的验证完成检查
+                for result in verification_results:
+                    if isinstance(result, dict):
+                        # 检查是否有成功状态
+                        if result.get("success", False):
+                            # 检查是否生成了测试台文件
+                            generated_files = result.get("generated_files", [])
+                            if any("tb" in file.lower() or "testbench" in file.lower() for file in generated_files):
+                                metrics["verification_complete"] = True
+                                break
+                            # 检查结果内容是否包含测试台
+                            result_content = str(result.get("result", ""))
+                            if "testbench" in result_content.lower() or "simulation" in result_content.lower():
+                                metrics["verification_complete"] = True
+                                break
         
         # 检查文档完成情况
         doc_results = []
@@ -3468,14 +3639,42 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         """计算完成分数"""
         score = 0.0
         
-        # 基础完成指标权重
-        weights = {
-            "design_complete": 0.35,
-            "verification_complete": 0.30,
-            "documentation_complete": 0.15,
-            "testing_complete": 0.15,
-            "quality_checks_passed": 0.05
-        }
+        # 🔧 修复：根据完成标准调整权重
+        if completion_criteria:
+            # 如果有特定的完成标准，调整权重
+            if completion_criteria.get("require_testbench", False):
+                weights = {
+                    "design_complete": 0.40,
+                    "verification_complete": 0.40,
+                    "documentation_complete": 0.10,
+                    "testing_complete": 0.05,
+                    "quality_checks_passed": 0.05
+                }
+            elif completion_criteria.get("require_verification", False):
+                weights = {
+                    "design_complete": 0.35,
+                    "verification_complete": 0.35,
+                    "documentation_complete": 0.15,
+                    "testing_complete": 0.10,
+                    "quality_checks_passed": 0.05
+                }
+            else:
+                weights = {
+                    "design_complete": 0.35,
+                    "verification_complete": 0.30,
+                    "documentation_complete": 0.15,
+                    "testing_complete": 0.15,
+                    "quality_checks_passed": 0.05
+                }
+        else:
+            # 默认权重
+            weights = {
+                "design_complete": 0.35,
+                "verification_complete": 0.30,
+                "documentation_complete": 0.15,
+                "testing_complete": 0.15,
+                "quality_checks_passed": 0.05
+            }
         
         # 应用权重
         for metric, weight in weights.items():
@@ -3489,6 +3688,13 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 perf.get("quality_score", 0) for perf in agent_performance.values()
             ) / len(agent_performance)
             score += avg_quality * 0.1  # 10%权重给质量分数
+        
+        # 🔧 修复：考虑执行时间效率
+        execution_time = detailed_analysis.get("execution_time", 0)
+        if execution_time > 0:
+            # 执行时间越短，分数越高（最多加5分）
+            time_bonus = min(5.0, 100.0 / execution_time)
+            score += time_bonus
         
         return min(100.0, score)
     
@@ -3522,18 +3728,59 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     def _determine_completion_status(self, completion_score: float,
                                    missing_requirements: List[str],
                                    completion_criteria: Dict[str, Any] = None) -> bool:
-        """确定完成状态"""
+        """确定完成状态 - 修复版本"""
+        
+        # 🔧 修复：添加详细的调试日志
+        self.logger.info(f"🔍 任务完成状态检查:")
+        self.logger.info(f"   完成分数: {completion_score}")
+        self.logger.info(f"   缺失项数量: {len(missing_requirements)}")
+        self.logger.info(f"   缺失项: {missing_requirements}")
+        self.logger.info(f"   完成标准: {completion_criteria}")
         
         # 使用自定义完成标准
         if completion_criteria:
             required_score = completion_criteria.get("required_score", 80.0)
             max_missing_items = completion_criteria.get("max_missing_items", 0)
             
-            return (completion_score >= required_score and 
-                   len(missing_requirements) <= max_missing_items)
+            # 🔧 修复：更严格的完成标准
+            if completion_criteria.get("require_testbench", False):
+                # 如果需要测试台，检查是否包含测试台相关结果
+                has_testbench = any("testbench" in req.lower() or "测试台" in req for req in missing_requirements)
+                if has_testbench:
+                    self.logger.info(f"❌ 任务未完成: 缺少测试台")
+                    return False
+            
+            if completion_criteria.get("require_verification", False):
+                # 如果需要验证，检查是否包含验证相关结果
+                has_verification = any("verification" in req.lower() or "验证" in req for req in missing_requirements)
+                if has_verification:
+                    self.logger.info(f"❌ 任务未完成: 缺少验证")
+                    return False
+            
+            is_completed = (completion_score >= required_score and 
+                          len(missing_requirements) <= max_missing_items)
+            self.logger.info(f"🔍 自定义标准检查结果: {is_completed}")
+            return is_completed
         
-        # 默认完成标准
-        return completion_score >= 80.0 and len(missing_requirements) == 0
+        # 🔧 修复：默认完成标准 - 针对Verilog设计任务的特殊逻辑
+        # 对于Verilog设计任务，必须包含设计和验证两个阶段
+        if len(missing_requirements) > 0:
+            # 检查是否是关键缺失项
+            critical_missing = [
+                "缺少Verilog模块设计",
+                "缺少测试台和验证",
+                "缺少设计文档"
+            ]
+            
+            for missing in missing_requirements:
+                if any(critical in missing for critical in critical_missing):
+                    self.logger.info(f"❌ 任务未完成: 发现关键缺失项 '{missing}'")
+                    return False
+        
+        # 🔧 修复：更严格的完成条件
+        is_completed = completion_score >= 80.0 and len(missing_requirements) == 0
+        self.logger.info(f"🔍 默认标准检查结果: {is_completed}")
+        return is_completed
     
     def _assess_overall_quality(self, detailed_analysis: Dict[str, Any],
                               completion_score: float) -> str:
@@ -3992,16 +4239,63 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 max_self_iterations=2
             )
             
-            # 记录继续协调的结果
-            task_context.add_conversation_message(
-                role="assistant",
-                content=continuation_result,
-                agent_id=self.agent_id,
-                metadata={"type": "coordination_continuation", "task_stage": "analysis"}
-            )
-            
-            # 递归调用，直到所有协调完成
-            return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
+            # 🔧 修复：检查是否执行了任务完成检查
+            if "check_task_completion" in continuation_result:
+                self.logger.info(f"🔍 检测到任务完成检查，分析结果...")
+                # 解析任务完成检查的结果
+                try:
+                    json_response = self._extract_json_from_response(continuation_result)
+                    if json_response:
+                        import json
+                        completion_data = json.loads(json_response)
+                        is_completed = completion_data.get("is_completed", False)
+                        missing_requirements = completion_data.get("missing_requirements", [])
+                        self.logger.info(f"🔍 任务完成检查结果: is_completed={is_completed}")
+                        self.logger.info(f"🔍 缺失项: {missing_requirements}")
+                        
+                        if not is_completed:
+                            self.logger.info(f"🔄 任务未完成，继续协调循环")
+                            # 记录继续协调的结果
+                            task_context.add_conversation_message(
+                                role="assistant",
+                                content=continuation_result,
+                                agent_id=self.agent_id,
+                                metadata={"type": "coordination_continuation", "task_stage": "analysis"}
+                            )
+                            
+                            # 递归调用，直到所有协调完成
+                            return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
+                        else:
+                            self.logger.info(f"✅ 任务已完成，结束协调循环")
+                            # 记录继续协调的结果
+                            task_context.add_conversation_message(
+                                role="assistant",
+                                content=continuation_result,
+                                agent_id=self.agent_id,
+                                metadata={"type": "coordination_continuation", "task_stage": "completion"}
+                            )
+                            return self._collect_final_result(task_context, continuation_result)
+                except Exception as e:
+                    self.logger.warning(f"⚠️ 解析任务完成检查结果失败: {e}")
+                    # 如果解析失败，继续协调
+                    task_context.add_conversation_message(
+                        role="assistant",
+                        content=continuation_result,
+                        agent_id=self.agent_id,
+                        metadata={"type": "coordination_continuation", "task_stage": "analysis"}
+                    )
+                    return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
+            else:
+                # 没有任务完成检查，记录继续协调的结果
+                task_context.add_conversation_message(
+                    role="assistant",
+                    content=continuation_result,
+                    agent_id=self.agent_id,
+                    metadata={"type": "coordination_continuation", "task_stage": "analysis"}
+                )
+                
+                # 递归调用，直到所有协调完成
+                return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
         else:
             self.logger.info(f"✅ 协调循环完成 - 任务ID: {task_context.task_id}")
             return self._collect_final_result(task_context, initial_result)
@@ -4034,7 +4328,12 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             self.logger.warning(f"⏰ 等待智能体完成超时")
     
     async def _check_coordination_continuation(self, task_context: TaskContext) -> bool:
-        """检查是否需要继续协调"""
+        """检查是否需要继续协调 - 修复版本"""
+        # 🔧 新增：检查对话历史中是否有任务完成指示器
+        if self._has_task_completion_in_history(task_context):
+            self.logger.info(f"🔍 协调继续检查: 对话历史中有任务完成指示器，无需继续")
+            return False
+        
         # 检查是否有智能体执行结果需要分析
         if not task_context.agent_results:
             self.logger.info(f"🔍 协调继续检查: 没有智能体结果，需要继续协调")
@@ -4044,10 +4343,29 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         completed_agents = set(task_context.agent_results.keys())
         self.logger.info(f"🔍 协调继续检查: 已完成智能体: {completed_agents}")
         
-        # 如果只有Verilog智能体完成，还需要代码审查
-        if "enhanced_real_verilog_agent" in completed_agents and "enhanced_real_code_review_agent" not in completed_agents:
-            self.logger.info(f"🔍 协调继续检查: 需要代码审查智能体")
-            return True
+        # 🔧 修复：更严格的Verilog设计任务检查
+        # 对于Verilog设计任务，必须包含设计和验证两个阶段
+        if "enhanced_real_verilog_agent" in completed_agents:
+            # 检查Verilog智能体的结果是否成功
+            verilog_result = task_context.agent_results.get("enhanced_real_verilog_agent", {})
+            if isinstance(verilog_result, dict) and verilog_result.get("success", False):
+                self.logger.info(f"🔍 协调继续检查: Verilog设计智能体已完成")
+                
+                # 检查是否需要代码审查智能体
+                if "enhanced_real_code_review_agent" not in completed_agents:
+                    self.logger.info(f"🔍 协调继续检查: 需要代码审查智能体进行验证")
+                    return True
+                else:
+                    # 检查代码审查智能体的结果
+                    review_result = task_context.agent_results.get("enhanced_real_code_review_agent", {})
+                    if isinstance(review_result, dict) and review_result.get("success", False):
+                        self.logger.info(f"🔍 协调继续检查: 代码审查智能体已完成")
+                    else:
+                        self.logger.info(f"🔍 协调继续检查: 代码审查智能体未成功完成，需要重试")
+                        return True
+            else:
+                self.logger.info(f"🔍 协调继续检查: Verilog设计智能体未成功完成，需要重试")
+                return True
         
         # 如果两个智能体都完成了，检查是否需要最终答案
         if len(completed_agents) >= 2:
@@ -4059,8 +4377,12 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             self.logger.info(f"🔍 协调继续检查: 需要提供最终答案")
             return True
         
+        # 🔧 修复：检查是否有其他需要处理的智能体
+        if len(completed_agents) == 0:
+            self.logger.info(f"🔍 协调继续检查: 没有智能体完成，需要继续协调")
+            return True
+        
         self.logger.info(f"🔍 协调继续检查: 所有任务已完成")
-        return False
         return False
     
     async def _build_continuation_task(self, task_context: TaskContext) -> str:

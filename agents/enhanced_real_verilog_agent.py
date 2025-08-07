@@ -553,6 +553,36 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
         try:
             self.logger.info(f"💻 开始生成Verilog代码: {module_name}")
             
+            # 🔧 修复：检查是否已存在代码文件，避免重复生成
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                experiment_path = self.current_task_context.experiment_path
+                if experiment_path:
+                    existing_file_path = f"{experiment_path}/designs/{module_name}.v"
+                    try:
+                        with open(existing_file_path, 'r', encoding='utf-8') as f:
+                            existing_code = f.read()
+                            if existing_code.strip():
+                                self.logger.info(f"📁 发现已存在的代码文件: {existing_file_path}")
+                                self.logger.info(f"📁 使用已存在的代码，长度: {len(existing_code)} 字符")
+                                return {
+                                    "success": True,
+                                    "module_name": module_name,
+                                    "verilog_code": existing_code,
+                                    "file_path": existing_file_path,
+                                    "file_id": f"existing_{module_name}",
+                                    "coding_style": coding_style,
+                                    "generation_time": time.time(),
+                                    "port_count": {
+                                        "inputs": len(input_ports) if input_ports else 0,
+                                        "outputs": len(output_ports) if output_ports else 0
+                                    },
+                                    "note": "使用已存在的代码文件"
+                                }
+                    except FileNotFoundError:
+                        self.logger.info(f"📁 未发现已存在的代码文件，将生成新代码")
+                    except Exception as e:
+                        self.logger.warning(f"⚠️ 检查已存在文件时出错: {e}")
+            
             # 构建代码生成提示
             code_prompt = f"""
 请生成一个名为 {module_name} 的Verilog模块。
@@ -575,30 +605,51 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 4. 适当的注释
 """
             
+            # 🔧 添加debug级别的prompt输出
+            self.logger.info(f"🔍 [DEBUG] 代码生成提示长度: {len(code_prompt)} 字符")
+            self.logger.info(f"🔍 [DEBUG] 代码生成提示预览: {code_prompt[:500]}...")
+            
             # 🔧 修复：使用直接LLM调用生成代码，避免递归工具调用
             response = await self.llm_manager.llm_client.send_prompt(
                 code_prompt,
                 system_prompt="你是一位专业的Verilog设计专家。请生成完整的、可编译的Verilog代码。请直接返回代码，不要使用工具调用。"
             )
             
+            self.logger.info(f"✅ 代码生成完成，响应长度: {len(response)} 字符")
+            self.logger.info(f"✅ 生成代码预览: {response[:300]}...")
+            
+            # 🔧 修复：自动保存生成的代码到文件
+            filename = f"{module_name}.v"
+            write_result = await self._tool_write_file(
+                filename=filename,
+                content=response,
+                description=f"生成的{module_name}模块Verilog代码"
+            )
+            
+            if not write_result.get("success", False):
+                self.logger.error(f"❌ 文件保存失败: {write_result.get('error', 'Unknown error')}")
+                return {
+                    "success": False,
+                    "error": f"文件保存失败: {write_result.get('error', 'Unknown error')}"
+                }
+            
             return {
+                "success": True,
                 "module_name": module_name,
                 "verilog_code": response,
+                "file_path": write_result.get("file_path"),
+                "file_id": write_result.get("file_id"),
                 "coding_style": coding_style,
                 "generation_time": time.time(),
-                "save_reminder": f"⚠️ 重要提醒：代码已生成完成，请立即调用 `write_file` 工具保存到 `{{实验路径}}/designs/{module_name}.v` 文件中！",
-                "file_path": f"{{实验路径}}/designs/{module_name}.v",
-                "save_instructions": {
-                    "filename": f"{module_name}.v",
-                    "content": response,
-                    "description": f"生成的{module_name}模块Verilog代码",
-                    "target_directory": "{实验路径}/designs/"
+                "port_count": {
+                    "inputs": len(input_ports) if input_ports else 0,
+                    "outputs": len(output_ports) if output_ports else 0
                 }
             }
             
         except Exception as e:
             self.logger.error(f"❌ Verilog代码生成失败: {str(e)}")
-            return {"error": str(e)}
+            return {"success": False, "error": str(e)}
     
     async def _tool_analyze_code_quality(self, verilog_code: str = None, module_name: str = None, 
                                         code: str = None, file_path: str = None, **kwargs) -> Dict[str, Any]:
@@ -609,6 +660,22 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
             # 🔧 参数标准化：支持多种参数名称
             if code and not verilog_code:
                 verilog_code = code
+                self.logger.info(f"🔄 参数映射: code -> verilog_code")
+            
+            # 🔧 修复：优先从已保存的文件中读取代码
+            if not verilog_code and not file_path:
+                # 尝试从当前实验路径读取已保存的代码文件
+                if hasattr(self, 'current_task_context') and self.current_task_context:
+                    experiment_path = self.current_task_context.experiment_path
+                    if experiment_path and module_name:
+                        default_file_path = f"{experiment_path}/designs/{module_name}.v"
+                        self.logger.info(f"🔍 尝试从默认路径读取代码: {default_file_path}")
+                        try:
+                            with open(default_file_path, 'r', encoding='utf-8') as f:
+                                verilog_code = f.read()
+                                self.logger.info(f"✅ 成功从默认路径读取代码: {len(verilog_code)} 字符")
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ 无法从默认路径读取代码: {e}")
             
             if file_path and not verilog_code:
                 # 如果提供了文件路径，尝试读取文件内容
@@ -616,14 +683,17 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
                     with open(file_path, 'r', encoding='utf-8') as f:
                         verilog_code = f.read()
                         module_name = module_name or Path(file_path).stem
+                        self.logger.info(f"✅ 成功从指定路径读取代码: {file_path}, 长度: {len(verilog_code)} 字符")
                 except Exception as e:
                     self.logger.warning(f"⚠️ 无法读取文件 {file_path}: {e}")
                     return {"error": f"无法读取文件: {e}"}
             
             if not verilog_code:
+                self.logger.error(f"❌ 缺少Verilog代码内容，无法进行分析")
                 return {"error": "缺少Verilog代码内容"}
                 
             self.logger.info(f"📋 分析代码长度: {len(verilog_code)} 字符")
+            self.logger.info(f"📋 代码预览: {verilog_code[:200]}...")
             
             analysis_prompt = f"""
 请分析以下Verilog代码的质量：
@@ -641,21 +711,29 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 5. 改进建议
 """
             
+            # 🔧 添加debug级别的prompt输出
+            self.logger.info(f"🔍 [DEBUG] 分析提示长度: {len(analysis_prompt)} 字符")
+            self.logger.info(f"🔍 [DEBUG] 分析提示预览: {analysis_prompt[:500]}...")
+            
             # 🔧 修复：使用直接LLM调用分析代码质量，避免递归工具调用
             response = await self.llm_manager.llm_client.send_prompt(
                 analysis_prompt,
                 system_prompt="你是一位专业的Verilog代码审查专家。请提供详细的代码质量分析。请直接返回分析结果，不要使用工具调用。"
             )
             
+            self.logger.info(f"✅ 代码质量分析完成，响应长度: {len(response)} 字符")
+            
             return {
+                "success": True,
                 "quality_analysis": response,
                 "module_name": module_name,
-                "code_length": len(verilog_code)
+                "code_length": len(verilog_code),
+                "analysis_timestamp": time.time()
             }
             
         except Exception as e:
             self.logger.error(f"❌ 代码质量分析失败: {str(e)}")
-            return {"error": str(e)}
+            return {"success": False, "error": str(e)}
     
     async def _tool_optimize_verilog_code(self, verilog_code: str, 
                                         optimization_target: str = "balanced",
@@ -663,6 +741,27 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
         """优化Verilog代码"""
         try:
             self.logger.info(f"⚡ 开始优化Verilog代码")
+            
+            # 🔧 修复：如果没有提供代码，尝试从已保存的文件读取
+            if not verilog_code and module_name:
+                if hasattr(self, 'current_task_context') and self.current_task_context:
+                    experiment_path = self.current_task_context.experiment_path
+                    if experiment_path:
+                        default_file_path = f"{experiment_path}/designs/{module_name}.v"
+                        self.logger.info(f"🔍 尝试从默认路径读取代码进行优化: {default_file_path}")
+                        try:
+                            with open(default_file_path, 'r', encoding='utf-8') as f:
+                                verilog_code = f.read()
+                                self.logger.info(f"✅ 成功读取代码进行优化: {len(verilog_code)} 字符")
+                        except Exception as e:
+                            self.logger.warning(f"⚠️ 无法读取代码进行优化: {e}")
+            
+            if not verilog_code:
+                self.logger.error(f"❌ 缺少Verilog代码内容，无法进行优化")
+                return {"success": False, "error": "缺少Verilog代码内容"}
+            
+            self.logger.info(f"📋 优化代码长度: {len(verilog_code)} 字符")
+            self.logger.info(f"📋 优化目标: {optimization_target}")
             
             optimization_prompt = f"""
 请优化以下Verilog代码，优化目标：{optimization_target}
@@ -679,30 +778,47 @@ class EnhancedRealVerilogAgentRefactored(EnhancedBaseAgent):
 4. 可读性提升
 """
             
+            # 🔧 添加debug级别的prompt输出
+            self.logger.info(f"🔍 [DEBUG] 优化提示长度: {len(optimization_prompt)} 字符")
+            self.logger.info(f"🔍 [DEBUG] 优化提示预览: {optimization_prompt[:500]}...")
+            
             # 🔧 修复：使用直接LLM调用优化代码，避免递归工具调用
             response = await self.llm_manager.llm_client.send_prompt(
                 optimization_prompt,
                 system_prompt="你是一位专业的Verilog代码优化专家。请提供优化后的代码和建议。请直接返回优化结果，不要使用工具调用。"
             )
             
+            self.logger.info(f"✅ 代码优化完成，响应长度: {len(response)} 字符")
+            self.logger.info(f"✅ 优化代码预览: {response[:300]}...")
+            
+            # 🔧 修复：自动保存优化后的代码到文件
+            optimized_filename = f"{module_name or 'optimized'}_optimized.v"
+            write_result = await self._tool_write_file(
+                filename=optimized_filename,
+                content=response,
+                description=f"优化后的{module_name or 'Verilog'}模块代码"
+            )
+            
+            if not write_result.get("success", False):
+                self.logger.error(f"❌ 优化代码文件保存失败: {write_result.get('error', 'Unknown error')}")
+                return {
+                    "success": False,
+                    "error": f"优化代码文件保存失败: {write_result.get('error', 'Unknown error')}"
+                }
+            
             return {
+                "success": True,
                 "optimized_code": response,
                 "optimization_target": optimization_target,
                 "module_name": module_name,
                 "optimization_time": time.time(),
-                "save_reminder": f"⚠️ 重要提醒：优化后的代码已生成完成，请立即调用 `write_file` 工具保存到 `{{实验路径}}/designs/{module_name or 'optimized'}.v` 文件中！",
-                "file_path": f"{{实验路径}}/designs/{module_name or 'optimized'}.v",
-                "save_instructions": {
-                    "filename": f"{module_name or 'optimized'}.v",
-                    "content": response,
-                    "description": f"优化后的{module_name or 'Verilog'}模块代码",
-                    "target_directory": "{实验路径}/designs/"
-                }
+                "file_path": write_result.get("file_path"),
+                "file_id": write_result.get("file_id")
             }
             
         except Exception as e:
             self.logger.error(f"❌ 代码优化失败: {str(e)}")
-            return {"error": str(e)}
+            return {"success": False, "error": str(e)}
     
     async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
                                        include_best_practices: bool = True) -> Dict[str, Any]:

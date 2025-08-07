@@ -1187,24 +1187,39 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
     # 工具实现方法
     # =============================================================================
     
-    async def _tool_generate_testbench(self, module_name: str, module_code: str = None,
+    async def _tool_generate_testbench(self, module_name: str = None, module_code: str = None, 
+                                     code: str = None, verilog_code: str = None, 
                                      test_scenarios: List[Dict] = None,
                                      clock_period: float = 10.0,
                                      simulation_time: int = 10000,
-                                     coverage_options: Dict = None,
-                                     inputs: List = None, outputs: List = None, 
-                                     **kwargs) -> Dict[str, Any]:
-        """生成测试台工具实现"""
+                                     coverage_options: Dict = None, **kwargs) -> Dict[str, Any]:
+        """生成测试台 - 增强版本，确保使用缓存的文件内容"""
+        
         try:
+            # 🧠 新增：优先使用缓存的文件内容
+            cached_files = self.agent_state_cache.get("last_read_files", {})
+            if not module_code and not code and not verilog_code:
+                # 从缓存中查找Verilog文件
+                for filepath, file_info in cached_files.items():
+                    if file_info.get("file_type") in ["verilog", "systemverilog"]:
+                        module_code = file_info["content"]
+                        self.logger.info(f"🧠 使用缓存的文件内容生成测试台: {filepath} ({len(module_code)} 字符)")
+                        break
+            
+            # 如果没有缓存内容，使用传入的参数
+            if not module_code:
+                module_code = code or verilog_code
+            
             # 🔧 新增：从实例变量中获取 file_contents（如果存在）
-            file_contents = getattr(self, '_current_file_contents', None)
-            if file_contents and "design_file" in file_contents:
-                design_file_info = file_contents["design_file"]
-                if design_file_info.get("content"):
-                    module_code = design_file_info["content"]
-                    self.logger.info(f"📁 使用传递的设计文件内容，长度: {len(module_code)} 字符")
-                else:
-                    self.logger.warning("⚠️ file_contents 中的 design_file 没有内容")
+            if not module_code:
+                file_contents = getattr(self, '_current_file_contents', None)
+                if file_contents and "design_file" in file_contents:
+                    design_file_info = file_contents["design_file"]
+                    if design_file_info.get("content"):
+                        module_code = design_file_info["content"]
+                        self.logger.info(f"📁 使用传递的设计文件内容，长度: {len(module_code)} 字符")
+                    else:
+                        self.logger.warning("⚠️ file_contents 中的 design_file 没有内容")
             
             # 如果没有模块代码，报错
             if not module_code:
@@ -1221,7 +1236,6 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             
             self.logger.info(f"🧪 生成测试台: {module_name}")
 
-            
             test_scenarios = test_scenarios or [
                 {"name": "basic_test", "description": "基础功能测试"}
             ]
@@ -1334,44 +1348,30 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             )
             
             if not write_result.get("success", False):
-                self.logger.error(f"❌ 测试台文件保存失败: {write_result.get('error', 'Unknown error')}")
                 return {
                     "success": False,
-                    "error": f"测试台文件保存失败: {write_result.get('error', 'Unknown error')}"
+                    "error": f"测试台保存失败: {write_result.get('error', 'Unknown error')}",
+                    "testbench_code": response
                 }
             
+            # 返回成功结果
             return {
                 "success": True,
+                "message": f"✅ 成功生成测试台: {tb_filename}",
                 "module_name": module_name,
-                "design_code": module_code,
-                "design_filename": design_filename if design_saved else None,
-                "design_file_path": design_write_result.get("file_path") if design_saved else None,
-                "design_file_id": design_write_result.get("file_id") if design_saved else None,
+                "file_path": str(self.artifacts_dir / tb_filename),
+                "file_id": write_result.get("file_id", ""),
                 "testbench_code": response,
-                "testbench_filename": tb_filename,  # 添加文件名信息
-                "file_path": write_result.get("file_path"),
-                "file_id": write_result.get("file_id"),
-                "test_scenarios": test_scenarios,
-                "simulation_config": {
-                    "clock_period": clock_period,
-                    "simulation_time": simulation_time,
-                    "coverage_enabled": coverage_options.get('enable_coverage', False)
-                },
-                "message": f"✅ 成功生成测试台: {tb_filename}" + (f" 和设计代码: {design_filename}" if design_saved else ""),
-                "save_reminder": f"⚠️ 重要提醒：测试台已生成完成，文件已保存到 {write_result.get('file_path')}！",
-                "save_status": {
-                    "testbench_saved": True,
-                    "design_saved": design_saved,
-                    "testbench_path": write_result.get("file_path"),
-                    "design_path": design_write_result.get("file_path") if design_saved else None
-                }
+                "design_saved": design_saved,
+                "design_file_path": str(self.artifacts_dir / design_filename) if design_saved else None
             }
             
         except Exception as e:
             self.logger.error(f"❌ 测试台生成失败: {str(e)}")
             return {
                 "success": False,
-                "error": str(e)
+                "error": f"测试台生成异常: {str(e)}",
+                "testbench_code": ""
             }
     
     async def _tool_use_external_testbench(self, design_code: str, external_testbench_path: str,

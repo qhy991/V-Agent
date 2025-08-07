@@ -462,8 +462,12 @@ class EnhancedLLMClient:
         # 只记录关键信息
         if system_prompt:
             self.logger.info(f"📋 System Prompt: {len(system_prompt)} 字符")
+            # 🔧 添加debug级别的system prompt输出
+            self.logger.info(f"🔍 [DEBUG] System Prompt内容: {system_prompt[:1000]}{'...' if len(system_prompt) > 1000 else ''}")
         
         self.logger.info(f"👤 User Prompt: {len(prompt)} 字符")
+        # 🔧 添加debug级别的user prompt输出
+        self.logger.info(f"🔍 [DEBUG] User Prompt内容: {prompt[:1000]}{'...' if len(prompt) > 1000 else ''}")
         self.logger.info("="*50)
         
         for attempt in range(max_retries):

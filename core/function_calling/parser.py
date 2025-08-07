@@ -134,7 +134,9 @@ class ToolCallParser:
         
         for i, match in enumerate(matches):
             try:
-                data = json.loads(match)
+                # 🆕 修复：处理JSON中的控制字符
+                cleaned_match = self._clean_json_string(match)
+                data = json.loads(cleaned_match)
                 
                 # 检查是否为tool_calls数组格式
                 if 'tool_calls' in data and isinstance(data['tool_calls'], list):
@@ -160,9 +162,95 @@ class ToolCallParser:
                     self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 从代码块解析到单工具调用: {tool_call.tool_name}")
             except json.JSONDecodeError as e:
                 self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] JSON代码块 {i} 解析失败: {str(e)}")
+                # 🆕 新增：尝试更宽松的解析
+                try:
+                    self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 尝试宽松解析JSON代码块 {i}")
+                    data = self._parse_json_relaxed(match)
+                    if data and 'tool_name' in data:
+                        tool_call = ToolCall(
+                            tool_name=data['tool_name'],
+                            parameters=data.get('parameters', {}),
+                            call_id=data.get('call_id', f"call_{len(tool_calls)}")
+                        )
+                        tool_calls.append(tool_call)
+                        self.logger.debug(f"🔧 [TOOL_CALL_DEBUG] 宽松解析成功: {tool_call.tool_name}")
+                except Exception as e2:
+                    self.logger.debug(f"⚠️ [TOOL_CALL_DEBUG] 宽松解析也失败: {str(e2)}")
                 continue
         
         return tool_calls
+    
+    def _clean_json_string(self, json_str: str) -> str:
+        """清理JSON字符串中的控制字符"""
+        # 处理常见的控制字符问题
+        cleaned = json_str
+        
+        # 处理换行符：将字符串中的\n替换为\\n
+        # 但只处理在字符串值中的换行符，不处理JSON结构中的换行符
+        import re
+        
+        # 匹配字符串值中的换行符
+        def replace_newlines_in_strings(match):
+            content = match.group(1)
+            # 将内容中的换行符替换为转义的换行符
+            content = content.replace('\n', '\\n')
+            content = content.replace('\r', '\\r')
+            content = content.replace('\t', '\\t')
+            return f'"{content}"'
+        
+        # 使用正则表达式找到所有字符串值并处理其中的换行符
+        pattern = r'"([^"\\]*(?:\\.[^"\\]*)*)"'
+        cleaned = re.sub(pattern, replace_newlines_in_strings, cleaned)
+        
+        return cleaned
+    
+    def _parse_json_relaxed(self, json_str: str) -> Dict[str, Any]:
+        """宽松的JSON解析，处理各种格式问题"""
+        try:
+            # 首先尝试清理后的解析
+            cleaned = self._clean_json_string(json_str)
+            return json.loads(cleaned)
+        except:
+            try:
+                # 如果还是失败，尝试更激进的清理
+                # 移除所有控制字符
+                import string
+                printable = set(string.printable)
+                cleaned = ''.join(filter(lambda x: x in printable, json_str))
+                return json.loads(cleaned)
+            except:
+                # 最后的尝试：手动解析关键字段
+                self.logger.debug(f"🔍 [TOOL_CALL_DEBUG] 尝试手动解析关键字段")
+                return self._parse_json_manually(json_str)
+    
+    def _parse_json_manually(self, json_str: str) -> Dict[str, Any]:
+        """手动解析JSON的关键字段"""
+        result = {}
+        
+        # 提取tool_name
+        tool_name_match = re.search(r'"tool_name"\s*:\s*"([^"]+)"', json_str)
+        if tool_name_match:
+            result['tool_name'] = tool_name_match.group(1)
+        
+        # 提取parameters（简化版本）
+        parameters = {}
+        # 查找file_path
+        file_path_match = re.search(r'"file_path"\s*:\s*"([^"]+)"', json_str)
+        if file_path_match:
+            parameters['file_path'] = file_path_match.group(1)
+        
+        # 查找content（处理多行内容）
+        content_match = re.search(r'"content"\s*:\s*"([^"]*(?:\\n[^"]*)*)"', json_str, re.DOTALL)
+        if content_match:
+            content = content_match.group(1)
+            # 处理转义的换行符
+            content = content.replace('\\n', '\n')
+            parameters['content'] = content
+        
+        if parameters:
+            result['parameters'] = parameters
+        
+        return result
     
     def _parse_text_patterns(self, response: str) -> List[ToolCall]:
         """方法3: 文本模式匹配备用方案"""
