@@ -82,9 +82,10 @@ async def test_verilog_agent_execution():
         # 创建任务消息
         task_message = TaskMessage(
             task_id="test_task_001",
-            content="设计一个8位计数器模块",
             sender_id="user",
-            timestamp="2025-08-07T11:45:00"
+            receiver_id="enhanced_real_verilog_agent",
+            message_type="task_request",
+            content="设计一个8位计数器模块"
         )
         
         print("🔧 测试任务执行...")
