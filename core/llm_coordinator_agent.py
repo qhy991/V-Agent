@@ -103,10 +103,18 @@ class TaskContext:
     def add_conversation_message(self, role: str, content: str, agent_id: str = None, 
                                tool_info: Dict[str, Any] = None, metadata: Dict[str, Any] = None):
         """添加对话消息到历史记录"""
+        # 🔧 安全处理content参数，确保它是字符串
+        if content is None:
+            safe_content = ""
+        elif hasattr(content, '__await__'):  # 检查是否为协程对象
+            safe_content = f"[协程对象: {type(content).__name__}]"
+        else:
+            safe_content = str(content)
+        
         message = {
             "timestamp": time.time(),
             "role": role,
-            "content": content,
+            "content": safe_content,
             "agent_id": agent_id or "unknown",
         }
         
@@ -120,7 +128,7 @@ class TaskContext:
         # 记录日志
         import logging
         logger = logging.getLogger("TaskContext")
-        logger.info(f"📝 记录对话消息: {role} - {agent_id or 'unknown'} - 长度: {len(content)}")
+        logger.info(f"📝 记录对话消息: {role} - {agent_id or 'unknown'} - 长度: {len(safe_content)}")
     
     def get_conversation_summary(self) -> Dict[str, Any]:
         """获取对话统计摘要"""

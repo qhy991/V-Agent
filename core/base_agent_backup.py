@@ -2336,7 +2336,7 @@ class BaseAgent(ABC):
             "conversation_id": self.current_conversation_id,
             "message_count": len(self.conversation_history),
             "conversation_duration": time.time() - (self.conversation_start_time or time.time()) if self.conversation_start_time else 0,
-            "system_prompt_length": len(self.system_prompt),
+            "system_prompt_length": len(self.system_prompt) if self.system_prompt else 0,
             "last_message_time": self.conversation_start_time,
             "agent_id": self.agent_id,
             "role": self.role
