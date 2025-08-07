@@ -120,11 +120,10 @@ class BaseAgent(ABC):
         # 将工具注册到执行引擎
         self.tool_execution_engine.register_tools(self.function_calling_registry)
         
-        # 生成system prompt (包含工具信息)
-        self.system_prompt = self._build_enhanced_system_prompt()
+        # 生成system prompt (包含工具信息) - 延迟初始化
+        self.system_prompt = None
         
         self.logger.debug(f"✅ {self.__class__.__name__} (Function Calling支持) 初始化完成")
-        self.logger.debug(f"📝 System prompt 长度: {len(self.system_prompt)} 字符")
     
     def _register_function_calling_tools(self):
         """注册Function Calling工具 - 子类可以重写"""
@@ -493,13 +492,14 @@ class BaseAgent(ABC):
                 )
                 
                 # 保持向后兼容的日志记录
+                safe_response = response or ""
                 logging_system.log_llm_call(
                     agent_id=self.agent_id,
                     model_name="claude-3.5-sonnet",
                     user_message=user_message,
-                    response=response,
+                    response=safe_response,
                     prompt_length=len(user_message),
-                    response_length=len(response),
+                    response_length=len(safe_response),
                     duration=duration,
                     success=True,
                     conversation_id=conversation_id

@@ -1,0 +1,133 @@
+08:15:03 - Agent.enhanced_real_verilog_agent - INFO - 🔍 开始分析设计需求
+08:15:38 - Agent.enhanced_real_verilog_agent - INFO - 💻 开始生成Verilog代码: counter_4bit
+🚀 开始重构后Verilog智能体测试...
+
+🧪 测试重构后Verilog智能体基础功能...
+✅ 成功加载环境配置: /Users/haiyan-mini/Documents/Study/V-Agent/.env
+✅ 增强日志系统初始化成功
+📂 实验目录: logs/experiment_20250807_081435
+📁 工件目录: logs/experiment_20250807_081435/artifacts
+📋 主日志目录: logs
+✅ 重构后Verilog智能体创建成功
+📊 智能体ID: enhanced_real_verilog_agent
+🎯 角色: verilog_designer
+🔧 能力: {<AgentCapability.MODULE_DESIGN: 'module_design'>, <AgentCapability.CODE_GENERATION: 'code_generation'>, <AgentCapability.SPECIFICATION_ANALYSIS: 'specification_analysis'>}
+📝 专业描述: 集成Schema验证的增强Verilog HDL设计智能体，提供严格参数验证和智能错误修复的专业数字电路设计服务
+
+🧪 测试LLM通信功能...
+✅ 成功加载环境配置: /Users/haiyan-mini/Documents/Study/V-Agent/.env
+✅ System Prompt构建成功，长度: 913 字符
+📝 Prompt预览: 你是一位资深的Verilog硬件设计专家，具备以下专业能力：
+
+🔍 **核心专长**:
+- Verilog/SystemVerilog模块设计和代码生成
+- 组合逻辑和时序逻辑设计
+- 参数化设计和可重用模块开发
+- 代码质量分析和最佳实践应用
+- 可综合性和时序收敛设计
+- 设计验证和测试策略
+
+📋 **设计标准**:
+1. IEEE 1800标准合规性
+2. 代码可读性和维护性
+3. 综合性和...
+✅ LLM调用成功，响应长度: 1997 字符
+
+🧪 测试工具注册功能...
+✅ 成功加载环境配置: /Users/haiyan-mini/Documents/Study/V-Agent/.env
+✅ 工具注册成功，注册工具数量: 5
+✅ 工具 analyze_design_requirements 注册成功
+✅ 工具 generate_verilog_code 注册成功
+✅ 工具 analyze_code_quality 注册成功
+✅ 工具 optimize_verilog_code 注册成功
+✅ 工具 get_tool_usage_guide 注册成功
+
+🧪 测试设计需求分析工具...
+✅ 成功加载环境配置: /Users/haiyan-mini/Documents/Study/V-Agent/.env
+✅ 需求分析成功
+📊 分析结果长度: 2533 字符
+🔍 设计类型: sequential
+📈 复杂度级别: medium
+
+🧪 测试Verilog代码生成工具...
+✅ 成功加载环境配置: /Users/haiyan-mini/Documents/Study/V-Agent/.env
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 719, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/test_verilog_agent_integration.py", line 327, in main
+    generation_success = await test_verilog_code_generation()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/test_verilog_agent_integration.py", line 173, in test_verilog_code_generation
+    result = await agent._tool_generate_verilog_code(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<11 lines>...
+    )
+    ^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/agents/enhanced_real_verilog_agent.py", line 441, in _tool_generate_verilog_code
+    response = await self.llm_manager.call_llm_for_function_calling(conversation)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/core/llm_communication/managers/client_manager.py", line 91, in call_llm_for_function_calling
+    response = await self.llm_client.send_prompt_optimized(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 627, in send_prompt_optimized
+    return await self.optimized_client.send_prompt_optimized(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 316, in send_prompt_optimized
+    response = await self._send_prompt_internal(messages, temperature, max_tokens, json_mode)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 354, in _send_prompt_internal
+    return await self._send_prompt_direct(user_prompt.strip(), system_prompt,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        temperature, max_tokens, json_mode)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 365, in _send_prompt_direct
+    return await self.parent_client.send_prompt(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        prompt, system_prompt, temperature, max_tokens, json_mode
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 479, in send_prompt
+    response_content = await self._send_openai_compatible_request(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        session, prompt, system_prompt, temperature, max_tokens, json_mode)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/llm_integration/enhanced_llm_client.py", line 552, in _send_openai_compatible_request
+    async with session.post(url, json=payload, headers=headers) as response:
+               ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/aiohttp/client.py", line 1482, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/aiohttp/client.py", line 770, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/aiohttp/client.py", line 748, in _connect_and_send_request
+    await resp.start(conn)
+  File "/opt/homebrew/lib/python3.13/site-packages/aiohttp/client_reqrep.py", line 532, in start
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.13/site-packages/aiohttp/streams.py", line 672, in read
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/haiyan-mini/Documents/Study/V-Agent/test_verilog_agent_integration.py", line 358, in <module>
+    success = asyncio.run(main())
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/opt/homebrew/Cellar/python@3.13/3.13.3_1/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt

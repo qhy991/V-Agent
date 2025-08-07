@@ -5,15 +5,16 @@
 
 import time
 import logging
+import asyncio
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
 
 from core.schema_system.framework_config import FrameworkConfig
-from llm_integration.enhanced_llm_client import OptimizedLLMClient
+from llm_integration.enhanced_llm_client import EnhancedLLMClient
 
 
-class LLMCallType(Enum):
+class CallType(Enum):
     """LLM调用类型"""
     FUNCTION_CALLING = "function_calling"
     TRADITIONAL = "traditional"
@@ -32,14 +33,14 @@ class LLMCallContext:
     system_prompt_hash: Optional[str] = None
 
 
-class LLMClientManager:
+class UnifiedLLMClientManager:
     """统一的LLM客户端管理器"""
     
     def __init__(self, agent_id: str, role: str, config: FrameworkConfig):
         self.agent_id = agent_id
         self.role = role
         self.config = config
-        self.llm_client = OptimizedLLMClient(config.llm)
+        self.llm_client = EnhancedLLMClient(config.llm)
         self.logger = logging.getLogger(f"LLMClientManager.{agent_id}")
         
         # 性能统计
@@ -84,8 +85,15 @@ class LLMClientManager:
             # 获取System Prompt
             system_prompt = None
             if is_first_call and system_prompt_builder:
-                system_prompt = system_prompt_builder()
-                self.logger.debug(f"📝 [{self.role.upper()}] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+                try:
+                    if asyncio.iscoroutinefunction(system_prompt_builder):
+                        system_prompt = await system_prompt_builder()
+                    else:
+                        system_prompt = system_prompt_builder()
+                    self.logger.debug(f"📝 [{self.role.upper()}] 首次调用 - 构建System Prompt - 长度: {len(system_prompt) if system_prompt else 0}")
+                except Exception as e:
+                    self.logger.warning(f"⚠️ System Prompt构建失败: {e}")
+                    system_prompt = ""
             
             # 调用优化的LLM客户端
             response = await self.llm_client.send_prompt_optimized(
@@ -97,12 +105,16 @@ class LLMClientManager:
                 force_refresh_system=is_first_call
             )
             
+            # 检查响应是否有效
+            if response is None:
+                raise Exception("LLM响应为空")
+            
             # 记录成功
             duration = time.time() - start_time
             self.stats["successful_calls"] += 1
             self.stats["total_duration"] += duration
             
-            self.logger.info(f"🔍 [{self.role.upper()}] LLM响应长度: {len(response)}")
+            self.logger.info(f"✅ [{self.role.upper()}] LLM调用成功 - 耗时: {duration:.2f}秒, 响应长度: {len(response) if response else 0}")
             
             return response
             
@@ -122,6 +134,8 @@ class LLMClientManager:
                                    system_prompt_builder=None) -> str:
         """传统LLM调用方法 - 统一实现"""
         llm_start_time = time.time()
+        total_length = 0
+        conversation_id = f"{self.agent_id}_{int(time.time())}"
         
         try:
             # 使用统一日志系统记录LLM调用开始
@@ -130,7 +144,6 @@ class LLMClientManager:
             
             # 计算对话总长度
             total_length = sum(len(msg.get('content', '')) for msg in conversation)
-            conversation_id = f"{self.agent_id}_{int(time.time())}"
             
             # 记录LLM调用开始
             logging_system.log_llm_call(
@@ -143,7 +156,16 @@ class LLMClientManager:
             
             # 构建完整的prompt
             full_prompt = ""
-            system_prompt = system_prompt_builder() if system_prompt_builder else ""
+            system_prompt = ""
+            if system_prompt_builder:
+                try:
+                    if asyncio.iscoroutinefunction(system_prompt_builder):
+                        system_prompt = await system_prompt_builder()
+                    else:
+                        system_prompt = system_prompt_builder()
+                except Exception as e:
+                    self.logger.warning(f"⚠️ System Prompt构建失败: {e}")
+                    system_prompt = ""
             
             for msg in conversation:
                 if msg["role"] == "system":
@@ -154,12 +176,26 @@ class LLMClientManager:
                     full_prompt += f"Assistant: {msg['content']}\n\n"
             
             # 调用传统LLM客户端
-            response = await self.llm_client.send_prompt(
-                prompt=full_prompt.strip(),
-                system_prompt=system_prompt,
-                temperature=0.3,
-                max_tokens=4000
-            )
+            if hasattr(self.llm_client, 'send_prompt'):
+                response = await self.llm_client.send_prompt(
+                    prompt=full_prompt.strip(),
+                    system_prompt=system_prompt,
+                    temperature=0.3,
+                    max_tokens=4000
+                )
+            else:
+                # 使用OptimizedLLMClient的方法
+                response = await self.llm_client.send_prompt_optimized(
+                    conversation_id=conversation_id,
+                    user_message=full_prompt.strip(),
+                    system_prompt=system_prompt,
+                    temperature=0.3,
+                    max_tokens=4000
+                )
+            
+            # 检查响应是否有效
+            if response is None:
+                raise Exception("LLM响应为空")
             
             # 记录LLM调用成功
             duration = time.time() - llm_start_time
@@ -167,7 +203,7 @@ class LLMClientManager:
                 agent_id=self.agent_id,
                 model_name="claude-3.5-sonnet",
                 prompt_length=total_length,
-                response_length=len(response),
+                response_length=len(response) if response else 0,
                 duration=duration,
                 success=True,
                 conversation_id=conversation_id
@@ -212,4 +248,9 @@ class LLMClientManager:
             "success_rate": self.stats["successful_calls"] / total_calls,
             "average_duration": self.stats["total_duration"] / total_calls,
             "cache_hit_rate": self.stats["cache_hits"] / max(total_calls, 1)
-        } 
+        }
+    
+    async def call_llm_traditional(self, conversation: List[Dict[str, str]], 
+                                 system_prompt_builder=None) -> str:
+        """统一的传统LLM调用方法"""
+        return await self._call_llm_traditional(conversation, system_prompt_builder)

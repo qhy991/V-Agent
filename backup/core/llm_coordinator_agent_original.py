@@ -22,7 +22,6 @@ from core.enums import AgentCapability, AgentStatus
 from config.config import FrameworkConfig
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from core.enhanced_logging_config import get_agent_logger
-from core.llm_communication import UnifiedLLMClientManager, SystemPromptBuilder, CallType
 
 
 class TaskType(Enum):
@@ -299,18 +298,13 @@ class TaskContext:
                            prompt_tokens: int = None, completion_tokens: int = None,
                            total_tokens: int = None):
         """记录LLM对话"""
-        # 安全处理可能为None的字符串参数
-        safe_system_prompt = system_prompt or ""
-        safe_user_message = user_message or ""
-        safe_assistant_response = assistant_response or ""
-        
         llm_conversation = {
             "timestamp": time.time(),
             "agent_id": agent_id,
             "conversation_id": conversation_id,
-            "system_prompt": safe_system_prompt[:1000] + ("..." if len(safe_system_prompt) > 1000 else ""),  # 限制长度
-            "user_message": safe_user_message[:2000] + ("..." if len(safe_user_message) > 2000 else ""),  # 限制长度
-            "assistant_response": safe_assistant_response[:2000] + ("..." if len(safe_assistant_response) > 2000 else ""),  # 限制长度
+            "system_prompt": system_prompt[:1000] + ("..." if len(system_prompt) > 1000 else ""),  # 限制长度
+            "user_message": user_message[:2000] + ("..." if len(user_message) > 2000 else ""),  # 限制长度
+            "assistant_response": assistant_response[:2000] + ("..." if len(assistant_response) > 2000 else ""),  # 限制长度
             "model_name": model_name,
             "duration": duration,
             "success": success,
@@ -371,13 +365,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 记录启动时间
         self.start_time = time.time()
         
-        # 初始化LLM通信模块
-        self.llm_manager = UnifiedLLMClientManager(
-            agent_id="llm_coordinator_agent",
-            role="coordinator",
-            config=self.config
-        )
-        self.prompt_builder = SystemPromptBuilder()
+        # 初始化LLM客户端
+        self.llm_client = EnhancedLLMClient(self.config.llm)
         
         # 设置专用日志器
         self.agent_logger = get_agent_logger('LLMCoordinatorAgent')
@@ -691,20 +680,280 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             }
         )
     
-    async def _build_enhanced_system_prompt(self) -> str:
+    def _build_enhanced_system_prompt(self) -> str:
         """构建支持动态决策和多智能体协作的系统提示词"""
         
-        # 使用SystemPromptBuilder构建系统提示词
-        return await self.prompt_builder.build_system_prompt(
-            role="coordinator",
-            call_type=CallType.FUNCTION_CALLING,
-            agent_id=self.agent_id,
-            capabilities=self._capabilities,
-            metadata={
-                "has_tools": hasattr(self, 'enhanced_tools') and bool(self.enhanced_tools),
-                "tools_count": len(self.enhanced_tools) if hasattr(self, 'enhanced_tools') else 0
-            }
-        )
+        # 检查工具是否已经注册
+        if not hasattr(self, 'enhanced_tools') or not self.enhanced_tools:
+            # 如果工具还没有注册，返回基本提示词
+            return """
+# 角色
+你是一个AI协调智能体，你的唯一工作是根据用户需求调用合适的工具来驱动任务流程。
+
+# 🚨🚨🚨 严禁直接调用智能体名称 🚨🚨🚨
+**绝对禁止**: enhanced_real_verilog_agent, enhanced_real_code_review_agent
+**必须使用**: assign_task_to_agent
+
+# 强制规则 (必须严格遵守)
+1.  **禁止直接回答**: 绝对禁止、严禁直接回答用户的任何问题或请求。
+2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
+3.  **遵循流程**: 严格按照 "识别任务 -> 推荐智能体 -> 分配任务 -> 分析结果 -> 检查完成" 的逻辑顺序调用工具。
+4.  **使用最终答案工具**: 当所有步骤完成，需要向用户呈现最终结果时，必须调用 `provide_final_answer` 工具。
+
+# 输出格式
+你的回复必须是严格的JSON格式，包含一个 "tool_calls" 列表。
+
+立即开始分析用户请求并调用第一个工具。
+"""
+        
+        # 核心规则：将所有工具的描述和schema直接注入到prompt中，这是最有效的方式
+        tools_json = self.get_tools_json_schema()
+
+        return f"""
+# 角色
+你是一个智能协调器，负责协调多个智能体完成复杂任务。
+
+# 🚨🚨🚨 绝对禁止事项 🚨🚨🚨
+**严禁使用以下工具名称**:
+- ❌ enhanced_real_verilog_agent
+- ❌ enhanced_real_code_review_agent
+- ❌ 任何以智能体名称命名的工具
+
+**必须使用正确工具**:
+- ✅ assign_task_to_agent (分配任务)
+- ✅ identify_task_type (识别任务)
+- ✅ analyze_agent_result (分析结果)
+
+# 🚨 强制规则 (必须严格遵守)
+1.  **禁止直接回答**: 绝对禁止直接回答用户的任何问题或请求。
+2.  **必须调用工具**: 你的所有回复都必须是JSON格式的工具调用。
+3.  **禁止生成描述性文本**: 绝对禁止生成任何解释、分析、策略描述或其他文本内容。
+4.  **禁止生成markdown格式**: 绝对禁止使用 ###、---、** 等markdown格式。
+5.  **禁止生成表格**: 绝对禁止生成任何表格或列表。
+6.  **🚨🚨🚨 禁止直接调用智能体**: 绝对禁止将智能体名称用作tool_name
+7.  **🚨🚨🚨 必须使用 assign_task_to_agent**: 分配任务给智能体时，必须且只能使用 assign_task_to_agent 工具
+
+# 🔧 正确的工具调用方式 (重要！！！)
+
+## ✅ 正确示例 1 - 任务类型识别
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "identify_task_type",
+            "parameters": {{
+                "user_request": "设计一个计数器模块",
+                "context": {{}}
+            }}
+        }}
+    ]
+}}
+```
+
+## ✅ 正确示例 2 - 分配任务给Verilog设计智能体
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "assign_task_to_agent",
+            "parameters": {{
+                "agent_id": "enhanced_real_verilog_agent",
+                "task_description": "设计一个名为counter的Verilog模块，生成完整的可编译代码",
+                "task_type": "design",
+                "priority": "medium"
+            }}
+        }}
+    ]
+}}
+```
+
+## ✅ 正确示例 3 - 分配任务给代码审查智能体
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "assign_task_to_agent",
+            "parameters": {{
+                "agent_id": "enhanced_real_code_review_agent",
+                "task_description": "审查Verilog代码并生成测试台",
+                "task_type": "verification",
+                "priority": "medium"
+            }}
+        }}
+    ]
+}}
+```
+
+## ✅ 正确示例 4 - 分析智能体执行结果
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "analyze_agent_result",
+            "parameters": {{
+                "agent_id": "enhanced_real_verilog_agent",
+                "result": {{
+                    "success": true,
+                    "generated_files": ["counter.v"],
+                    "quality_score": 85
+                }},
+                "quality_threshold": 80.0
+            }}
+        }}
+    ]
+}}
+```
+
+## ✅ 正确示例 5 - 检查任务完成状态
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "check_task_completion",
+            "parameters": {{
+                "task_id": "task_001",
+                "all_results": {{
+                    "design": {{"success": true, "files": ["counter.v"]}},
+                    "verification": {{"success": true, "files": ["counter_tb.v"]}}
+                }},
+                "original_requirements": "设计一个名为counter的Verilog模块并验证"
+            }}
+        }}
+    ]
+}}
+```
+
+## ❌❌❌ 错误示例 - 绝对禁止！！！
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "enhanced_real_verilog_agent",  // ❌ 禁止！
+            "parameters": {{...}}
+        }}
+    ]
+}}
+```
+
+# 🤖 智能体专业分工
+
+## enhanced_real_verilog_agent (Verilog设计专家)
+**专业能力**: Verilog/SystemVerilog代码设计和生成
+**使用方式**: 通过 assign_task_to_agent 调用，agent_id="enhanced_real_verilog_agent"
+**主要任务**: 设计需求分析、Verilog模块代码生成、代码质量分析、文件写入保存
+**职责边界**: ✅设计模块 ❌生成测试台
+**任务描述示例**: "设计一个名为counter的Verilog模块，生成完整的可编译代码，包含端口定义和功能实现，保存到文件"
+
+## enhanced_real_code_review_agent (代码审查和验证专家)  
+**专业能力**: 代码审查、测试台生成、仿真验证
+**使用方式**: 通过 assign_task_to_agent 调用，agent_id="enhanced_real_code_review_agent"
+**主要任务**: 代码质量审查、测试台（testbench）生成、仿真执行验证、错误修复建议
+**任务描述示例**: "审查已生成的counter.v文件，生成对应的测试台，执行仿真验证功能正确性"
+
+# 🎯 完整协调流程 (必须严格遵守)
+
+## 📋 标准工作流程
+1. **第一步**: 调用 `identify_task_type` 识别任务类型
+2. **第二步**: 调用 `recommend_agent` 推荐最合适的智能体
+3. **第三步**: 调用 `assign_task_to_agent` 分配任务给智能体
+4. **第四步**: 调用 `analyze_agent_result` 分析智能体执行结果
+5. **第五步**: 根据分析结果决定下一步行动
+6. **第六步**: 调用 `check_task_completion` 检查任务完成状态
+7. **第七步**: 调用 `provide_final_answer` 提供最终答案
+
+## 🔄 智能体协作逻辑 (关键！！！)
+
+### 🎯 设计任务协作流程
+**当用户要求设计Verilog模块时**:
+1. **第一阶段**: 分配给 `enhanced_real_verilog_agent` 进行设计
+2. **分析结果**: 调用 `analyze_agent_result` 分析设计结果
+3. **第二阶段**: 如果设计成功，必须分配给 `enhanced_real_code_review_agent` 进行验证
+4. **最终检查**: 调用 `check_task_completion` 确认设计和验证都完成
+
+### 🚨 重要协作规则
+- **不要重复任务识别**: 一旦开始执行，不要重新调用 `identify_task_type`
+- **必须分析结果**: 每个智能体执行后，必须调用 `analyze_agent_result`
+- **自动继续验证**: 如果设计完成且质量合格，必须自动分配给验证智能体
+- **完整流程**: 只有完成设计和验证两个阶段才算任务完成
+
+### 📊 结果分析决策逻辑
+**analyze_agent_result 返回结果分析后**:
+- **如果质量分数 >= 80**: 继续下一步（分配给验证智能体或完成任务）
+- **如果质量分数 < 80**: 重新分配给同一智能体进行改进
+- **如果设计完成且需要验证**: 必须分配给 `enhanced_real_code_review_agent`
+- **如果验证完成**: 调用 `check_task_completion` 检查整体完成状态
+
+### 🔄 多智能体协作模式
+- **设计阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_verilog_agent
+- **验证阶段**: 使用 assign_task_to_agent 分配给 enhanced_real_code_review_agent
+- **结果分析**: 使用 analyze_agent_result 分析每个阶段的结果
+- **完成检查**: 使用 check_task_completion 确认整体任务完成
+
+# 🚨 关键提醒
+1. **绝对不要**在 tool_name 字段中使用智能体名称
+2. **必须使用** assign_task_to_agent 工具来调用智能体
+3. **agent_id 参数**才是指定智能体的正确位置
+4. **所有工具调用**都必须是有效的JSON格式
+
+# 🎯 决策逻辑指导 (重要！！！)
+
+## 📊 智能体执行结果分析后的决策
+**当 analyze_agent_result 返回结果后，根据以下逻辑决定下一步**:
+
+### 🔍 分析结果质量分数
+- **质量分数 >= 80**: 继续下一步流程
+- **质量分数 < 80**: 重新分配给同一智能体进行改进
+
+### 🎯 具体决策规则
+1. **如果 Verilog设计智能体完成且质量 >= 80**:
+   - 必须调用 `assign_task_to_agent` 分配给 `enhanced_real_code_review_agent`
+   - 任务描述: "审查已生成的Verilog代码，生成测试台并执行仿真验证"
+
+2. **如果代码审查智能体完成且质量 >= 80**:
+   - 调用 `check_task_completion` 检查整体任务完成状态
+   - 如果完成，调用 `provide_final_answer` 提供最终答案
+
+3. **如果任何智能体质量分数 < 80**:
+   - 重新分配给同一智能体，要求改进
+   - 在任务描述中明确指出需要改进的问题
+
+4. **不要重复调用**:
+   - 不要重新调用 `identify_task_type`
+   - 不要重新调用 `recommend_agent`
+   - 专注于当前阶段的执行和结果分析
+
+## 🔄 完整流程示例
+**用户请求**: "设计一个名为counter的Verilog模块"
+1. `identify_task_type` → 识别为设计任务
+2. `recommend_agent` → 推荐 enhanced_real_verilog_agent
+3. `assign_task_to_agent` → 分配给 enhanced_real_verilog_agent
+4. `analyze_agent_result` → 分析设计结果
+5. `assign_task_to_agent` → 分配给 enhanced_real_code_review_agent (如果设计成功)
+6. `analyze_agent_result` → 分析验证结果
+7. `check_task_completion` → 检查整体完成状态
+8. `provide_final_answer` → 提供最终答案
+
+# 可用工具
+{tools_json}
+
+# 🎯 输出格式要求
+**严格要求**: 你的回复必须是有效的JSON格式，包含 "tool_calls" 数组。
+**格式模板**:
+```json
+{{
+    "tool_calls": [
+        {{
+            "tool_name": "正确的工具名称",
+            "parameters": {{
+                "参数名": "参数值"
+            }}
+        }}
+    ]
+}}
+```
+
+"""
+    
     async def register_agent(self, agent: EnhancedBaseAgent):
         """注册智能体"""
         agent_info = AgentInfo(
@@ -3712,11 +3961,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     def get_registered_agents(self) -> Dict[str, AgentInfo]:
         """获取已注册的智能体"""
-        return self.registered_agents
-    
-    def get_registered_tools(self) -> List[Dict[str, Any]]:
-        """获取已注册的工具"""
-        return self.enhanced_tools if hasattr(self, 'enhanced_tools') else [].copy()
+        return self.registered_agents.copy()
     
     def get_active_tasks(self) -> Dict[str, TaskContext]:
         """获取活跃任务"""
@@ -3896,24 +4141,103 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     # =============================================================================
     
     async def _call_llm_for_function_calling(self, conversation: List[Dict[str, str]]) -> str:
-        """调用LLM进行Function Calling"""
+        """实现LLM调用 - 参考enhanced_real_code_reviewer.py，避免每次都传递system prompt"""
+        # 生成对话ID（如果还没有）
+        if not hasattr(self, 'current_conversation_id') or not self.current_conversation_id:
+            self.current_conversation_id = f"coordinator_agent_{int(time.time())}"
+        
+        # 构建用户消息
+        user_message = ""
+        
+        # 修复：更准确的首次调用判断 - 检查是否有assistant响应
+        assistant_messages = [msg for msg in conversation if msg["role"] == "assistant"]
+        is_first_call = len(assistant_messages) == 0  # 如果没有assistant响应，说明是首次调用
+        
+        self.logger.info(f"🔄 [COORDINATOR] 准备LLM调用 - 对话历史长度: {len(conversation)}, assistant消息数: {len(assistant_messages)}, 是否首次调用: {is_first_call}")
+        
+        # 调试：打印对话历史内容
+        for i in range(len(conversation)):
+            msg = conversation[i]
+            self.logger.debug(f"🔍 [COORDINATOR] 对话历史 {i}: role={msg['role']}, 内容长度={len(msg['content'])}")
+            self.logger.debug(f"🔍 [COORDINATOR] 内容前100字: {msg['content'][:100]}...")
+        
+        for msg in conversation:
+            if msg["role"] == "user":
+                user_message += f"{msg['content']}\n\n"
+            elif msg["role"] == "assistant":
+                user_message += f"Assistant: {msg['content']}\n\n"
+        
+        # 决定是否传入system prompt - 修复：只在首次调用时传入
+        system_prompt = None
+        if is_first_call:
+            system_prompt = self._build_enhanced_system_prompt()
+            self.logger.debug(f"📝 [COORDINATOR] 首次调用 - 构建System Prompt - 长度: {len(system_prompt)}")
+            self.logger.debug(f"📝 [COORDINATOR] System Prompt前200字: {system_prompt[:200]}...")
+            # 检查关键规则是否存在
+            has_mandatory_tools = "必须调用工具" in system_prompt
+            has_task_identification = "identify_task_type" in system_prompt
+            has_agent_assignment = "assign_task_to_agent" in system_prompt
+            self.logger.debug(f"🔍 [COORDINATOR] System Prompt检查 - 强制工具: {has_mandatory_tools}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+        else:
+            self.logger.debug("🔄 [COORDINATOR] 后续调用 - 依赖缓存System Prompt")
+        
+        self.logger.debug(f"📤 [COORDINATOR] 用户消息长度: {len(user_message)}")
+        self.logger.debug(f"📤 [COORDINATOR] 用户消息前200字: {user_message[:200]}...")
+        
         try:
-            # 使用统一的LLM通信模块
-            return await self.llm_manager.call_llm_for_function_calling(conversation)
+            # 使用优化的LLM调用方法
+            self.logger.info(f"🤖 [COORDINATOR] 发起LLM调用 - 对话ID: {self.current_conversation_id}")
+            response = await self.llm_client.send_prompt_optimized(
+                conversation_id=self.current_conversation_id,
+                user_message=user_message.strip(),
+                system_prompt=system_prompt,
+                temperature=0.3,
+                max_tokens=4000,
+                force_refresh_system=is_first_call  # 只在首次调用时强制刷新
+            )
             
+            # 分析响应内容
+            self.logger.info(f"🔍 [COORDINATOR] LLM响应长度: {len(response)}")
+            self.logger.debug(f"🔍 [COORDINATOR] 响应前200字: {response[:200]}...")
+            
+            # 检查响应是否包含工具调用
+            has_tool_calls = "tool_calls" in response
+            has_json_structure = response.strip().startswith('{') and response.strip().endswith('}')
+            has_task_identification = "identify_task_type" in response
+            has_agent_assignment = "assign_task_to_agent" in response
+            self.logger.debug(f"🔍 [COORDINATOR] 响应分析 - 工具调用: {has_tool_calls}, JSON结构: {has_json_structure}, 任务识别: {has_task_identification}, 智能体分配: {has_agent_assignment}")
+            
+            return response
         except Exception as e:
-            self.logger.error(f"❌ Function Calling调用失败: {e}")
-            return f"错误: {str(e)}"
+            self.logger.error(f"❌ 优化LLM调用失败: {str(e)}")
+            # 如果优化调用失败，回退到传统方式
+            self.logger.warning("⚠️ 回退到传统LLM调用方式")
+            return await self._call_llm_traditional(conversation)
     
     async def _call_llm_traditional(self, conversation: List[Dict[str, str]]) -> str:
         """传统LLM调用方法"""
+        llm_start_time = time.time()
+        
         try:
-            # 使用统一的LLM通信模块
-            return await self.llm_manager.call_llm_traditional(conversation)
+            # 🎯 使用统一日志系统记录LLM调用开始
+            from core.unified_logging_system import get_global_logging_system
+            logging_system = get_global_logging_system()
             
-        except Exception as e:
-            self.logger.error(f"❌ 传统LLM调用失败: {e}")
-            return f"错误: {str(e)}"
+            # 计算对话总长度
+            total_length = sum(len(msg.get('content', '')) for msg in conversation)
+            
+            # 记录LLM调用开始
+            logging_system.log_llm_call(
+                agent_id=self.agent_id,
+                model_name="claude-3.5-sonnet",
+                prompt_length=total_length,
+                conversation_length=len(conversation),
+                conversation_id=self.current_conversation_id
+            )
+            
+            # 构建完整的prompt
+            full_prompt = ""
+            system_prompt = self._build_enhanced_system_prompt()
             
             for msg in conversation:
                 if msg["role"] == "system":

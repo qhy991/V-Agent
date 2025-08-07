@@ -61,7 +61,7 @@ sys.path.insert(0, str(project_root))
 
 from config.config import FrameworkConfig
 from core.llm_coordinator_agent import LLMCoordinatorAgent
-from agents.enhanced_real_verilog_agent import EnhancedRealVerilogAgent
+from agents.enhanced_real_verilog_agent import EnhancedRealVerilogAgentRefactored as EnhancedRealVerilogAgent
 from agents.enhanced_real_code_reviewer import EnhancedRealCodeReviewAgent
 from core.enhanced_logging_config import get_test_logger
 
