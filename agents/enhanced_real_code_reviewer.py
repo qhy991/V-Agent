@@ -911,14 +911,45 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         """从Verilog代码中提取模块名"""
         import re
         
-        # 匹配module声明
-        module_pattern = r'module\s+(\w+)\s*\('
-        match = re.search(module_pattern, verilog_code, re.IGNORECASE)
+        # 🔧 修复：支持参数化模块的更强大的regex模式
+        # 匹配以下格式:
+        # 1. module name(
+        # 2. module name #(parameter...)( 
+        # 3. module name #(...)(...)(  (嵌套参数)
+        module_patterns = [
+            # 模式1: 带参数的模块 module name #(...)(
+            r'module\s+(\w+)\s*#\s*\([^)]*\)\s*\(',
+            # 模式2: 不带参数的模块 module name(
+            r'module\s+(\w+)\s*\(',
+            # 模式3: 复杂参数模块 module name #(...) (多行)
+            r'module\s+(\w+)\s*#[^(]*\([^)]*\)\s*\(',
+        ]
         
-        if match:
-            return match.group(1)
+        self.logger.debug(f"🔍 开始提取模块名，代码长度: {len(verilog_code)} 字符")
         
-        # 如果没有找到，返回默认名称
+        for i, pattern in enumerate(module_patterns):
+            match = re.search(pattern, verilog_code, re.IGNORECASE | re.DOTALL)
+            if match:
+                module_name = match.group(1)
+                self.logger.info(f"✅ 使用模式 {i+1} 成功提取模块名: {module_name}")
+                return module_name
+        
+        # 🚨 如果所有模式都没有匹配，记录详细调试信息
+        self.logger.warning("⚠️ 所有模块名提取模式都未匹配，开始调试分析")
+        
+        # 调试：提取代码的前200个字符用于分析
+        code_preview = verilog_code[:200].replace('\n', '\\n')
+        self.logger.warning(f"📝 代码预览: {code_preview}")
+        
+        # 尝试找到任何module关键字
+        module_keyword_match = re.search(r'module\s+(\w+)', verilog_code, re.IGNORECASE)
+        if module_keyword_match:
+            fallback_name = module_keyword_match.group(1)
+            self.logger.warning(f"🔄 使用回退方案提取到模块名: {fallback_name}")
+            return fallback_name
+        
+        # 如果完全没有找到，返回默认名称并记录
+        self.logger.error("❌ 完全无法提取模块名，使用默认名称 'unknown_module'")
         return "unknown_module"
     
     def _validate_and_fix_module_name(self, provided_name: str, verilog_code: str) -> str:
@@ -1196,45 +1227,128 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         """生成测试台 - 增强版本，确保使用缓存的文件内容"""
         
         try:
-            # 🧠 新增：优先使用缓存的文件内容
-            cached_files = self.agent_state_cache.get("last_read_files", {})
+            # 🎯 统一上下文检索：优先级顺序
+            # 1. 统一文件上下文 (TaskFileContext) - 最高优先级
+            # 2. 传入的参数 (module_code, code, verilog_code)
+            # 3. 缓存的文件内容 (last_read_files)
+            # 4. 实例变量 (_current_file_contents)
+            
+            # 方法1：从统一文件上下文获取
             if not module_code and not code and not verilog_code:
-                # 从缓存中查找Verilog文件
+                task_file_context = self.agent_state_cache.get("task_file_context")
+                if task_file_context:
+                    # 获取主要设计文件内容
+                    primary_design_file = task_file_context.get("primary_design_file")
+                    if primary_design_file and primary_design_file in task_file_context.get("files", {}):
+                        file_info = task_file_context["files"][primary_design_file]
+                        module_code = file_info.get("content")
+                        if module_code:
+                            self.logger.info(f"🎯 使用统一文件上下文的主要设计文件: {primary_design_file} ({len(module_code)} 字符)")
+                    
+                    # 如果没有主要设计文件，查找第一个Verilog文件
+                    if not module_code:
+                        for file_path, file_info in task_file_context.get("files", {}).items():
+                            if file_info.get("file_type") in ["verilog", "systemverilog"]:
+                                module_code = file_info.get("content")
+                                if module_code:
+                                    self.logger.info(f"🎯 使用统一文件上下文的Verilog文件: {file_path} ({len(module_code)} 字符)")
+                                    break
+            
+            # 方法2：使用传入的参数
+            if not module_code:
+                module_code = code or verilog_code
+                if module_code:
+                    self.logger.info(f"📥 使用传入的模块代码参数 ({len(module_code)} 字符)")
+            
+            # 方法3：从缓存的文件内容获取（向后兼容）
+            if not module_code:
+                cached_files = self.agent_state_cache.get("last_read_files", {})
                 for filepath, file_info in cached_files.items():
                     if file_info.get("file_type") in ["verilog", "systemverilog"]:
                         module_code = file_info["content"]
-                        self.logger.info(f"🧠 使用缓存的文件内容生成测试台: {filepath} ({len(module_code)} 字符)")
+                        self.logger.info(f"📋 使用缓存的文件内容: {filepath} ({len(module_code)} 字符)")
                         break
             
-            # 如果没有缓存内容，使用传入的参数
-            if not module_code:
-                module_code = code or verilog_code
-            
-            # 🔧 新增：从实例变量中获取 file_contents（如果存在）
+            # 方法4：从实例变量获取（向后兼容）
             if not module_code:
                 file_contents = getattr(self, '_current_file_contents', None)
                 if file_contents and "design_file" in file_contents:
                     design_file_info = file_contents["design_file"]
                     if design_file_info.get("content"):
                         module_code = design_file_info["content"]
-                        self.logger.info(f"📁 使用传递的设计文件内容，长度: {len(module_code)} 字符")
+                        self.logger.info(f"📁 使用实例变量的设计文件内容 ({len(module_code)} 字符)")
                     else:
                         self.logger.warning("⚠️ file_contents 中的 design_file 没有内容")
             
-            # 如果没有模块代码，报错
+            # 如果仍然没有模块代码，报错
             if not module_code:
+                error_msg = "无法获取模块代码，已尝试所有上下文检索方法：统一文件上下文、传入参数、文件缓存、实例变量"
+                self.logger.error(f"❌ {error_msg}")
                 return {
                     "success": False,
-                    "error": "缺少模块代码，无法生成测试台"
+                    "error": error_msg,
+                    "debug_info": {
+                        "task_file_context_available": bool(self.agent_state_cache.get("task_file_context")),
+                        "cached_files_count": len(self.agent_state_cache.get("last_read_files", {})),
+                        "instance_file_contents": bool(getattr(self, '_current_file_contents', None)),
+                        "parameters_provided": {
+                            "module_code": bool(module_code),
+                            "code": bool(code),
+                            "verilog_code": bool(verilog_code)
+                        }
+                    }
                 }
             
-            # 验证并修复模块名
-            actual_module_name = self._validate_and_fix_module_name(module_name, module_code)
-            if actual_module_name != module_name:
-                self.logger.info(f"🔧 模块名已修正: {module_name} -> {actual_module_name}")
-                module_name = actual_module_name
+            # 🔧 新增：优先使用协调器提供的模块名
+            coordinator_module_name = None
+            task_file_context = self.agent_state_cache.get("task_file_context")
+            self.logger.debug(f"🔍 模块名提取调试 - task_file_context 存在: {bool(task_file_context)}")
             
-            self.logger.info(f"🧪 生成测试台: {module_name}")
+            if task_file_context:
+                primary_design_file = task_file_context.get("primary_design_file")
+                files = task_file_context.get("files", {})
+                self.logger.debug(f"🔍 模块名提取调试 - 主设计文件: {primary_design_file}, 文件总数: {len(files)}")
+                
+                if primary_design_file and primary_design_file in files:
+                    file_info = files[primary_design_file]
+                    file_metadata = file_info.get("metadata", {})
+                    coordinator_module_name = file_metadata.get("actual_module_name")
+                    self.logger.debug(f"🔍 模块名提取调试 - 文件元数据: {file_metadata}")
+                    
+                    if coordinator_module_name and coordinator_module_name != "unknown_module":
+                        self.logger.info(f"🎯 使用协调器提供的模块名: {coordinator_module_name}")
+                        module_name = coordinator_module_name
+                    else:
+                        self.logger.warning(f"⚠️ 协调器未提供有效模块名: {coordinator_module_name}")
+                else:
+                    self.logger.warning(f"⚠️ 主设计文件不存在或未在文件列表中: {primary_design_file}")
+            else:
+                self.logger.warning("⚠️ task_file_context 不存在，无法获取协调器模块名")
+            
+            # 验证并修复模块名（只在没有协调器提供名称的情况下）
+            if not coordinator_module_name:
+                actual_module_name = self._validate_and_fix_module_name(module_name, module_code)
+                if actual_module_name != module_name:
+                    self.logger.info(f"🔧 模块名已修正: {module_name} -> {actual_module_name}")
+                    module_name = actual_module_name
+            else:
+                # 即使有协调器名称，也验证一下是否与代码匹配
+                extracted_name = self._extract_module_name_from_code(module_code)
+                if extracted_name != coordinator_module_name and extracted_name != "unknown_module":
+                    self.logger.warning(f"⚠️ 协调器模块名({coordinator_module_name})与代码提取名({extracted_name})不匹配，使用协调器名称")
+            
+            # 🔧 新增：最终验证模块名
+            if module_name == "unknown_module":
+                self.logger.error("❌ 最终模块名仍为 'unknown_module'，这将导致测试台生成错误")
+                # 尝试最后一次从代码中提取
+                last_attempt_name = self._extract_module_name_from_code(module_code)
+                if last_attempt_name != "unknown_module":
+                    self.logger.info(f"🔧 最后尝试提取成功: {last_attempt_name}")
+                    module_name = last_attempt_name
+                else:
+                    self.logger.error("❌ 所有模块名提取方法都失败，将生成错误的测试台")
+            
+            self.logger.info(f"🧪 最终生成测试台: {module_name}")
 
             test_scenarios = test_scenarios or [
                 {"name": "basic_test", "description": "基础功能测试"}

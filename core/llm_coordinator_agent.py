@@ -10,6 +10,7 @@ import json
 import time
 import logging
 import re
+import hashlib
 from typing import Dict, Any, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -23,6 +24,7 @@ from config.config import FrameworkConfig
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
 from core.enhanced_logging_config import get_agent_logger
 from core.llm_communication import UnifiedLLMClientManager, SystemPromptBuilder, CallType
+from core.task_file_context import TaskFileContext, FileType, get_task_context, set_task_context
 
 
 class TaskType(Enum):
@@ -1390,16 +1392,86 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             task_context.experiment_path = current_experiment_path
             self.logger.info(f"✅ 设置任务实验路径: {current_experiment_path}")
             
-            # 🔧 新增：如果提供了 design_file_path，直接使用
+            # 🔧 创建或获取任务文件上下文
+            task_file_context = get_task_context(task_id)
+            if not task_file_context:
+                task_file_context = TaskFileContext(task_id)
+                set_task_context(task_id, task_file_context)
+                self.logger.info(f"🎯 创建新的文件上下文: {task_id}")
+                # 🧠 上下文调试日志
+                self.logger.debug(f"🧠 上下文创建 - 任务ID: {task_id}, 智能体: {agent_id}")
+            else:
+                # 🧠 上下文调试日志
+                self.logger.info(f"🎯 复用现有文件上下文: {task_id}, 包含文件: {len(task_file_context)} 个")
+                self.logger.debug(f"🧠 上下文复用 - 任务ID: {task_id}, 智能体: {agent_id}, 文件清单: {list(task_file_context.files.keys())}")
+            
+            # 🔧 新增：如果提供了 design_file_path，读取并加入上下文
             if design_file_path:
                 task_context.design_file_path = design_file_path
                 self.logger.info(f"📁 使用提供的设计文件路径: {design_file_path}")
+                # 🧠 上下文调试日志
+                self.logger.debug(f"🧠 设计文件路径分配 - 智能体: {agent_id}, 文件: {design_file_path}")
+                
+                # 读取设计文件内容并添加到上下文
+                try:
+                    if Path(design_file_path).exists():
+                        with open(design_file_path, 'r', encoding='utf-8') as f:
+                            design_content = f.read()
+                        
+                        # 🧠 上下文调试日志
+                        content_checksum = hashlib.md5(design_content.encode('utf-8')).hexdigest()[:8]
+                        self.logger.debug(f"🧠 文件内容读取 - 文件: {design_file_path}, 长度: {len(design_content)}, 校验: {content_checksum}")
+                        
+                        # 🔧 新增：提取实际模块名
+                        actual_module_name = self._extract_module_name_from_verilog(design_content)
+                        if actual_module_name and actual_module_name != "unknown_module":
+                            self.logger.info(f"🎯 提取到实际模块名: {actual_module_name}")
+                            # 将模块名添加到上下文元数据中
+                            module_metadata = {"actual_module_name": actual_module_name}
+                        else:
+                            self.logger.warning("⚠️ 未能提取到有效的模块名")
+                            module_metadata = {}
+                        
+                        task_file_context.add_file(
+                            file_path=design_file_path,
+                            content=design_content,
+                            is_primary_design=True,
+                            metadata=module_metadata
+                        )
+                        self.logger.info(f"📄 设计文件已加载到上下文: {design_file_path} ({len(design_content)} 字符), 模块名: {actual_module_name}")
+                        # 🧠 上下文调试日志
+                        self.logger.debug(f"🧠 文件加载完成 - 上下文文件总数: {len(task_file_context)}, 主设计文件: {task_file_context.primary_design_file}")
+                    else:
+                        self.logger.warning(f"⚠️ 设计文件不存在: {design_file_path}")
+                        # 🧠 上下文调试日志
+                        self.logger.debug(f"🧠 文件不存在 - 智能体: {agent_id}, 文件: {design_file_path}")
+                except Exception as e:
+                    self.logger.error(f"❌ 读取设计文件失败 {design_file_path}: {e}")
+                    # 🧠 上下文调试日志
+                    self.logger.debug(f"🧠 文件读取失败 - 智能体: {agent_id}, 文件: {design_file_path}, 错误: {str(e)}")
             else:
                 # 🔧 新增：尝试从之前的智能体结果中提取设计文件路径
                 design_file_path = self._extract_design_file_path_from_previous_results()
                 if design_file_path:
                     task_context.design_file_path = design_file_path
                     self.logger.info(f"📁 从之前结果中提取设计文件路径: {design_file_path}")
+                    
+                    # 同样读取内容并加入上下文
+                    try:
+                        if Path(design_file_path).exists():
+                            with open(design_file_path, 'r', encoding='utf-8') as f:
+                                design_content = f.read()
+                            
+                            task_file_context.add_file(
+                                file_path=design_file_path,
+                                content=design_content,
+                                is_primary_design=True
+                            )
+                            self.logger.info(f"📄 提取的设计文件已加载到上下文: {design_file_path} ({len(design_content)} 字符)")
+                        else:
+                            self.logger.warning(f"⚠️ 提取的设计文件不存在: {design_file_path}")
+                    except Exception as e:
+                        self.logger.error(f"❌ 读取提取的设计文件失败 {design_file_path}: {e}")
             
             # 检查是否是后续调用（通过对话历史判断）
             is_follow_up_call = False
@@ -1450,6 +1522,46 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 if hasattr(agent, 'set_task_context'):
                     agent.set_task_context(task_context)
                     self.logger.info(f"🔗 已设置任务上下文给智能体 {agent_id}")
+                
+                # 🎯 设置文件上下文给智能体
+                if hasattr(agent, 'set_file_context') and task_file_context:
+                    agent.set_file_context(task_file_context)
+                    self.logger.info(f"📄 已设置文件上下文给智能体 {agent_id}: {len(task_file_context)} 个文件")
+                    # 🧠 上下文调试日志
+                    context_summary = task_file_context.get_context_summary()
+                    self.logger.debug(f"🧠 文件上下文传递详情 - 智能体: {agent_id}, 摘要: {context_summary}")
+                elif task_file_context:
+                    # 如果智能体不支持 set_file_context，将文件内容设置到 agent_state_cache
+                    if hasattr(agent, 'agent_state_cache'):
+                        exported_context = task_file_context.export_for_agent()
+                        agent.agent_state_cache["task_file_context"] = exported_context
+                        self.logger.info(f"📄 文件上下文已通过缓存传递给智能体 {agent_id}")
+                        # 🧠 上下文调试日志
+                        self.logger.debug(f"🧠 缓存传递详情 - 智能体: {agent_id}, 导出文件数: {len(exported_context.get('files', {}))}")
+                    
+                    # 兼容原有的 last_read_files 缓存机制
+                    if hasattr(agent, 'agent_state_cache'):
+                        last_read_files = {}
+                        for file_path, file_content in task_file_context.files.items():
+                            file_cache_entry = {
+                                "content": file_content.content,
+                                "file_type": file_content.file_type.value,
+                                "checksum": file_content.checksum,
+                                "timestamp": file_content.timestamp
+                            }
+                            last_read_files[file_path] = file_cache_entry
+                            # 🧠 上下文调试日志 (只记录关键信息，避免日志过长)
+                            content_preview = file_content.content[:100] + "..." if len(file_content.content) > 100 else file_content.content
+                            self.logger.debug(f"🧠 文件缓存条目 - 文件: {Path(file_path).name}, 内容预览: {content_preview}")
+                        
+                        agent.agent_state_cache["last_read_files"] = last_read_files
+                        self.logger.info(f"📄 文件内容已通过last_read_files缓存传递: {len(last_read_files)} 个文件")
+                        # 🧠 上下文调试日志
+                        self.logger.debug(f"🧠 last_read_files设置完成 - 智能体: {agent_id}, 文件列表: {list(last_read_files.keys())}")
+                else:
+                    # 🧠 上下文调试日志 - 没有文件上下文的情况
+                    self.logger.warning(f"⚠️ 没有文件上下文可传递给智能体 {agent_id}")
+                    self.logger.debug(f"🧠 上下文缺失 - 智能体: {agent_id}, 任务: {task_id}")
                 
                 # 🆕 记录任务分配到对话历史
                 task_context.add_conversation_message(
@@ -1690,9 +1802,40 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
 - 工作指导: 如果你是代码审查智能体，请直接使用提供的testbench进行测试，不要生成新的testbench
 - 专注任务: 代码审查、错误修复、测试执行和结果分析"""
         
-        # 🔧 新增：构建设计文件路径信息
+        # 🔧 新增：构建设计文件上下文信息（包含实际内容）
         design_file_section = ""
-        if task_context and hasattr(task_context, 'design_file_path') and task_context.design_file_path:
+        task_file_context = get_task_context(task_context.task_id if task_context else "unknown")
+        
+        if task_file_context and len(task_file_context) > 0:
+            # 构建文件上下文信息
+            file_summary = []
+            primary_design_content = task_file_context.get_primary_design_content()
+            
+            for file_path, file_content in task_file_context.files.items():
+                file_type_display = file_content.file_type.value
+                file_size = len(file_content.content)
+                is_primary = file_path == task_file_context.primary_design_file
+                status = "🎯主要设计文件" if is_primary else f"📄{file_type_display}文件"
+                file_summary.append(f"- {status}: {file_path} ({file_size} 字符)")
+            
+            design_file_section = f"""
+
+**📄 任务文件上下文**:
+文件清单:
+{chr(10).join(file_summary)}
+
+**🎯 主要设计文件内容**:
+```verilog
+{primary_design_content[:2000] + '...' if primary_design_content and len(primary_design_content) > 2000 else primary_design_content or '未找到主要设计文件'}
+```
+
+**工作指导**:
+- 所有文件内容已预加载到上下文中，可直接使用
+- 优先使用主要设计文件: {task_file_context.primary_design_file or '未设置'}
+- 如需访问文件内容，调用相关工具时文件内容会自动提供
+- 不要重新读取文件，直接使用预加载的内容"""
+        elif task_context and hasattr(task_context, 'design_file_path') and task_context.design_file_path:
+            # 回退到旧的路径模式
             design_file_section = f"""
 
 **📁 设计文件路径**:
@@ -2430,27 +2573,35 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         execution_check = self._check_actual_execution(result_content, original_request)
         testing_workflow = self._check_code_testing_workflow(result_content, original_request, task_context)
         
+        # 🎯 新增：内容上下文验证 - 检查智能体是否使用了正确的文件内容
+        content_verification = self._verify_content_context(result_content, task_context)
+        
         analysis["file_verification"] = file_verification
         analysis["actual_execution_check"] = execution_check
         analysis["code_testing_workflow"] = testing_workflow
+        analysis["content_verification"] = content_verification
         
         # 详细质量指标分析
         detailed_metrics = self._analyze_detailed_metrics(result_content, result, file_verification, execution_check)
         analysis["detailed_metrics"] = detailed_metrics
         
-        # 计算综合质量分数（包含实际执行和测试流程权重）
-        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics, file_verification, execution_check, testing_workflow)
+        # 计算综合质量分数（包含实际执行、测试流程和内容验证权重）
+        quality_score = self._calculate_comprehensive_quality_score(detailed_metrics, file_verification, execution_check, testing_workflow, content_verification)
         analysis["quality_score"] = quality_score
         
         # 分析问题和优势
-        analysis["issues"] = self._identify_quality_issues(detailed_metrics, file_verification, execution_check, testing_workflow, original_request)
-        analysis["strengths"] = self._identify_quality_strengths(detailed_metrics, file_verification, execution_check, testing_workflow)
+        analysis["issues"] = self._identify_quality_issues(detailed_metrics, file_verification, execution_check, testing_workflow, original_request, content_verification)
+        analysis["strengths"] = self._identify_quality_strengths(detailed_metrics, file_verification, execution_check, testing_workflow, content_verification)
         
-        # 根据质量分数、实际执行情况和测试流程完整性判断完整性
+        # 根据质量分数、实际执行情况、测试流程完整性和内容验证判断完整性
         if not file_verification.get("all_required_files_generated", False):
             analysis["completeness"] = "incomplete"
             analysis["risk_assessment"] = "high"
             analysis["issues"].append("未实际生成所需文件")
+        elif not content_verification.get("correct_content_used", False) and content_verification.get("content_mismatch_detected", False):
+            analysis["completeness"] = "failed"
+            analysis["risk_assessment"] = "high"
+            analysis["issues"].append("智能体使用了错误的文件内容，可能出现幻觉问题")
         elif not execution_check.get("simulation_actually_executed", False) and "测试台" in original_request:
             analysis["completeness"] = "incomplete" 
             analysis["risk_assessment"] = "high"
@@ -2738,8 +2889,119 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         
         return testing_workflow
     
+    def _verify_content_context(self, result_content: str, task_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """验证智能体是否使用了正确的文件内容，检测幻觉问题"""
+        verification = {
+            "correct_content_used": True,
+            "content_mismatch_detected": False,
+            "content_complexity_appropriate": True,
+            "evidence_of_hallucination": False,
+            "issues": [],
+            "recommendations": []
+        }
+        
+        try:
+            # 获取任务文件上下文
+            task_id = task_context.get("task_id") if task_context else None
+            if not task_id:
+                verification["issues"].append("无法获取任务ID，无法验证内容上下文")
+                return verification
+            
+            task_file_context = get_task_context(task_id)
+            if not task_file_context or len(task_file_context) == 0:
+                verification["issues"].append("没有找到任务文件上下文")
+                return verification
+            
+            # 获取实际的设计文件内容
+            actual_design_content = task_file_context.get_primary_design_content()
+            if not actual_design_content:
+                verification["issues"].append("无法获取实际设计文件内容")
+                return verification
+            
+            # 检查结果中是否包含了实际文件的特征内容
+            # 提取实际文件中的关键特征：端口名、信号名、模块名等
+            import re
+            
+            # 提取模块名
+            actual_module_match = re.search(r'module\s+(\w+)', actual_design_content)
+            actual_module_name = actual_module_match.group(1) if actual_module_match else None
+            
+            # 提取端口声明
+            actual_ports = re.findall(r'(?:input|output|inout)\s+.*?(\w+)(?:\s*,|\s*\))', actual_design_content)
+            actual_ports = [port.strip() for port in actual_ports if port]
+            
+            # 提取信号声明
+            actual_signals = re.findall(r'(?:reg|wire)\s+.*?(\w+)', actual_design_content)
+            actual_signals = [signal.strip() for signal in actual_signals if signal]
+            
+            # 检查结果内容中是否匹配这些特征
+            if actual_module_name:
+                if actual_module_name not in result_content:
+                    verification["content_mismatch_detected"] = True
+                    verification["issues"].append(f"结果中未提及实际模块名 '{actual_module_name}'")
+            
+            # 检查端口匹配度
+            if actual_ports:
+                matched_ports = [port for port in actual_ports if port in result_content]
+                port_match_ratio = len(matched_ports) / len(actual_ports) if actual_ports else 0
+                
+                if port_match_ratio < 0.5:  # 少于50%的端口被提及
+                    verification["content_mismatch_detected"] = True
+                    verification["issues"].append(f"端口匹配度过低: {port_match_ratio:.2%}, 实际端口: {actual_ports[:5]}")
+            
+            # 检查内容复杂度是否适当
+            actual_line_count = len(actual_design_content.splitlines())
+            actual_complexity_score = len(re.findall(r'\b(?:if|case|for|while|always|assign)\b', actual_design_content))
+            
+            # 如果结果中描述的代码过于简单，可能是幻觉
+            if "简单" in result_content and actual_complexity_score > 10:
+                verification["content_complexity_appropriate"] = False
+                verification["issues"].append(f"实际代码复杂度高({actual_complexity_score}个控制结构)，但结果描述为简单")
+            
+            # 检查是否有明显的幻觉迹象
+            # 1. 结果中出现了实际文件中不存在的信号名
+            result_mentioned_signals = re.findall(r'\b(?:input|output|reg|wire)\s+.*?(\w+)', result_content)
+            result_mentioned_signals = [signal.strip() for signal in result_mentioned_signals if signal]
+            
+            if result_mentioned_signals and actual_signals:
+                fictional_signals = [sig for sig in result_mentioned_signals if sig not in actual_design_content]
+                if len(fictional_signals) > len(result_mentioned_signals) * 0.3:  # 超过30%是虚构信号
+                    verification["evidence_of_hallucination"] = True
+                    verification["issues"].append(f"检测到可能的幻觉信号: {fictional_signals[:3]}")
+            
+            # 2. 检查功能描述是否与实际代码匹配
+            if "计数器" in result_content:
+                if "count" not in actual_design_content.lower() and "cnt" not in actual_design_content.lower():
+                    verification["evidence_of_hallucination"] = True
+                    verification["issues"].append("描述为计数器但实际代码中无计数相关信号")
+            
+            # 综合评估
+            if verification["content_mismatch_detected"] or verification["evidence_of_hallucination"]:
+                verification["correct_content_used"] = False
+                verification["recommendations"].extend([
+                    "重新执行任务，确保使用正确的文件内容",
+                    "检查智能体的上下文传递机制",
+                    "验证文件读取工具的正确性"
+                ])
+            
+            # 记录验证详情
+            verification["details"] = {
+                "actual_module_name": actual_module_name,
+                "actual_ports_count": len(actual_ports),
+                "actual_signals_count": len(actual_signals),
+                "actual_complexity_score": actual_complexity_score,
+                "actual_line_count": actual_line_count
+            }
+            
+        except Exception as e:
+            self.logger.error(f"内容上下文验证失败: {e}")
+            verification["issues"].append(f"验证过程出错: {str(e)}")
+            verification["correct_content_used"] = False
+        
+        return verification
+    
     def _identify_quality_issues(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
-                               execution_check: Dict[str, Any], testing_workflow: Dict[str, Any], original_request: str) -> List[str]:
+                               execution_check: Dict[str, Any], testing_workflow: Dict[str, Any], original_request: str, content_verification: Dict[str, Any] = None) -> List[str]:
         """识别质量问题"""
         issues = []
         
@@ -2771,7 +3033,7 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         return issues
     
     def _identify_quality_strengths(self, metrics: Dict[str, Any], file_verification: Dict[str, Any], 
-                                  execution_check: Dict[str, Any], testing_workflow: Dict[str, Any]) -> List[str]:
+                                  execution_check: Dict[str, Any], testing_workflow: Dict[str, Any], content_verification: Dict[str, Any] = None) -> List[str]:
         """识别质量优势"""
         strengths = []
         
@@ -2956,7 +3218,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     def _calculate_comprehensive_quality_score(self, metrics: Dict[str, float], 
                                              file_verification: Dict[str, Any] = None,
                                              execution_check: Dict[str, Any] = None,
-                                             testing_workflow: Dict[str, Any] = None) -> float:
+                                             testing_workflow: Dict[str, Any] = None,
+                                             content_verification: Dict[str, Any] = None) -> float:
         """计算综合质量分数 - 包含文件验证、实际执行和代码测试流程权重"""
         base_weights = {
             "code_quality": 0.20,
@@ -3031,6 +3294,30 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 测试流程惩罚机制
         if testing_workflow and testing_workflow.get("workflow_completeness", 0) < 30:
             total_score *= 0.8  # 测试流程严重不完整，降低20%
+        
+        # 🎯 内容验证权重 (15%) - 最重要的修复
+        content_score = 100.0  # 默认满分
+        if content_verification:
+            if not content_verification.get("correct_content_used", True):
+                content_score = 0.0  # 使用了错误内容，严重问题
+            elif content_verification.get("content_mismatch_detected", False):
+                content_score *= 0.3  # 检测到内容不匹配，严重降分
+            elif content_verification.get("evidence_of_hallucination", False):
+                content_score *= 0.1  # 检测到幻觉，几乎零分
+            elif not content_verification.get("content_complexity_appropriate", True):
+                content_score *= 0.7  # 复杂度不匹配，中等降分
+        
+        content_weighted_score = content_score * 0.15
+        total_score += content_weighted_score
+        
+        # 严厉的内容验证惩罚机制 - 这是最关键的修复
+        if content_verification:
+            if not content_verification.get("correct_content_used", True):
+                total_score *= 0.2  # 内容错误，分数降至20%
+                self.logger.warning("⚠️ 检测到严重的内容使用错误，分数严厉惩罚")
+            elif content_verification.get("evidence_of_hallucination", False):
+                total_score *= 0.3  # 幻觉问题，分数降至30%  
+                self.logger.warning("⚠️ 检测到幻觉问题，分数重度惩罚")
         
         return min(100.0, max(0.0, total_score))
     
@@ -5173,6 +5460,40 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         except Exception as e:
             self.logger.error(f"❌ 提取设计文件路径时出错: {str(e)}")
             return None
+    
+    def _extract_module_name_from_verilog(self, verilog_code: str) -> str:
+        """从Verilog代码中提取模块名（与review agent保持一致的实现）"""
+        import re
+        
+        # 🔧 使用与review agent相同的模式，确保一致性
+        module_patterns = [
+            # 模式1: 带参数的模块 module name #(...)(
+            r'module\s+(\w+)\s*#\s*\([^)]*\)\s*\(',
+            # 模式2: 不带参数的模块 module name(
+            r'module\s+(\w+)\s*\(',
+            # 模式3: 复杂参数模块 module name #(...) (多行)
+            r'module\s+(\w+)\s*#[^(]*\([^)]*\)\s*\(',
+        ]
+        
+        self.logger.debug(f"🔍 协调器提取模块名，代码长度: {len(verilog_code)} 字符")
+        
+        for i, pattern in enumerate(module_patterns):
+            match = re.search(pattern, verilog_code, re.IGNORECASE | re.DOTALL)
+            if match:
+                module_name = match.group(1)
+                self.logger.info(f"✅ 协调器使用模式 {i+1} 成功提取模块名: {module_name}")
+                return module_name
+        
+        # 如果所有模式都没有匹配，尝试简单的回退方案
+        module_keyword_match = re.search(r'module\s+(\w+)', verilog_code, re.IGNORECASE)
+        if module_keyword_match:
+            fallback_name = module_keyword_match.group(1)
+            self.logger.warning(f"🔄 协调器使用回退方案提取到模块名: {fallback_name}")
+            return fallback_name
+        
+        # 如果完全没有找到，返回默认名称
+        self.logger.error("❌ 协调器完全无法提取模块名")
+        return "unknown_module"
     
     async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
                                        include_best_practices: bool = True) -> Dict[str, Any]:
