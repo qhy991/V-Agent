@@ -952,6 +952,103 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
         self.logger.error("❌ 完全无法提取模块名，使用默认名称 'unknown_module'")
         return "unknown_module"
     
+    def _validate_module_context_complexity(self, module_code: str, module_name: str) -> str:
+        """验证模块代码复杂性，检测是否接收到了简化版本"""
+        import re
+        
+        if not module_code:
+            return "模块代码为空"
+        
+        # 检查代码复杂性指标
+        complexity_indicators = {
+            'parameter_count': len(re.findall(r'parameter\s+\w+', module_code, re.IGNORECASE)),
+            'port_count': len(re.findall(r'(?:input|output|inout)\s+', module_code, re.IGNORECASE)),
+            'always_blocks': len(re.findall(r'always\s*@', module_code, re.IGNORECASE)),
+            'wire_signals': len(re.findall(r'\bwire\s+', module_code, re.IGNORECASE)),
+            'reg_signals': len(re.findall(r'\breg\s+', module_code, re.IGNORECASE)),
+            'code_lines': len([line.strip() for line in module_code.split('\n') if line.strip()])
+        }
+        
+        self.logger.debug(f"🔍 模块复杂性分析: {complexity_indicators}")
+        
+        # 检测可疑的简化模块
+        suspicious_indicators = []
+        
+        # 检查1: 端口数量太少（少于3个端口可能是过度简化）
+        if complexity_indicators['port_count'] < 3:
+            suspicious_indicators.append(f"端口数量异常少 ({complexity_indicators['port_count']})")
+        
+        # 检查2: 代码行数太少（少于10行可能是简化版）
+        if complexity_indicators['code_lines'] < 10:
+            suspicious_indicators.append(f"代码行数异常少 ({complexity_indicators['code_lines']})")
+        
+        # 检查3: 没有参数但模块名暗示应该有（如计数器通常有位宽参数）
+        if complexity_indicators['parameter_count'] == 0 and any(keyword in module_name.lower() 
+                                                               for keyword in ['counter', 'adder', 'alu', 'register']):
+            suspicious_indicators.append("模块类型暗示应有参数但未检测到")
+        
+        # 检查4: 检查是否包含明显的硬编码位宽
+        if '[3:0]' in module_code and '[7:0]' not in module_code and 'WIDTH' not in module_code.upper():
+            suspicious_indicators.append("检测到硬编码的4位宽度，可能是简化版本")
+        
+        # 检查5: 缺少现代Verilog特性
+        modern_features = ['parameter', 'localparam', 'generate', 'case', 'function', 'task']
+        found_features = sum(1 for feature in modern_features if feature in module_code.lower())
+        if found_features == 0:
+            suspicious_indicators.append("缺少现代Verilog特性，可能是基础模板")
+        
+        if suspicious_indicators:
+            issue_summary = "; ".join(suspicious_indicators)
+            self.logger.warning(f"⚠️ 检测到可疑的简化模块: {issue_summary}")
+            return issue_summary
+        
+        return None
+    
+    def _request_correct_design_from_coordinator(self) -> str:
+        """尝试从协调器或实验目录获取正确的设计文件内容"""
+        import os
+        import glob
+        
+        try:
+            # 方法1: 检查实验目录中的设计文件
+            if hasattr(self, 'current_experiment_path') and self.current_experiment_path:
+                designs_dir = os.path.join(self.current_experiment_path, "designs")
+                if os.path.exists(designs_dir):
+                    # 查找所有Verilog文件，优先选择optimized版本
+                    verilog_files = glob.glob(os.path.join(designs_dir, "*.v"))
+                    if verilog_files:
+                        # 优先选择包含优化关键词的文件
+                        priority_files = [f for f in verilog_files if any(keyword in os.path.basename(f).lower() 
+                                        for keyword in ['optimized', 'enhanced', 'final'])]
+                        
+                        selected_file = priority_files[0] if priority_files else verilog_files[0]
+                        self.logger.info(f"🔍 找到设计文件: {selected_file}")
+                        
+                        with open(selected_file, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                        
+                        # 验证这个文件确实更复杂
+                        if len(content) > 200 and 'parameter' in content:  # 简单的复杂性检查
+                            self.logger.info(f"✅ 从实验目录获取更完整的模块代码 ({len(content)} 字符)")
+                            return content
+            
+            # 方法2: 从智能体缓存中查找更完整的代码
+            if hasattr(self, 'agent_state_cache'):
+                cached_files = self.agent_state_cache.get("last_read_files", {})
+                for filepath, file_info in cached_files.items():
+                    if file_info.get("file_type") == "verilog" and len(file_info.get("content", "")) > 200:
+                        content = file_info["content"]
+                        if 'parameter' in content:  # 检查是否更复杂
+                            self.logger.info(f"✅ 从缓存获取更完整的模块代码: {filepath}")
+                            return content
+            
+            self.logger.warning("⚠️ 未能从协调器获取更完整的设计文件")
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ 请求正确设计文件失败: {e}")
+            return None
+    
     def _validate_and_fix_module_name(self, provided_name: str, verilog_code: str) -> str:
         """验证并修复模块名"""
         extracted_name = self._extract_module_name_from_code(verilog_code)
@@ -1336,6 +1433,17 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                 extracted_name = self._extract_module_name_from_code(module_code)
                 if extracted_name != coordinator_module_name and extracted_name != "unknown_module":
                     self.logger.warning(f"⚠️ 协调器模块名({coordinator_module_name})与代码提取名({extracted_name})不匹配，使用协调器名称")
+            
+            # 🔧 新增：模块代码复杂性验证
+            context_issue = self._validate_module_context_complexity(module_code, module_name)
+            if context_issue:
+                self.logger.warning(f"⚠️ 模块上下文可能有问题: {context_issue}")
+                # 尝试从协调器请求正确的设计文件
+                better_code = self._request_correct_design_from_coordinator()
+                if better_code:
+                    module_code = better_code
+                    module_name = self._extract_module_name_from_code(module_code)
+                    self.logger.info(f"✅ 已从协调器获取更完整的模块代码，模块名: {module_name}")
             
             # 🔧 新增：最终验证模块名
             if module_name == "unknown_module":

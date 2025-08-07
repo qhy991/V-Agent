@@ -381,6 +381,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 记录启动时间
         self.start_time = time.time()
         
+        # 🔧 新增：跨任务文件上下文管理
+        self.global_file_context = {}  # 存储全局文件上下文，key为文件路径，value为文件信息
+        self.conversation_file_history = {}  # 存储对话级别的文件历史
+        
         # 初始化LLM通信模块
         self.llm_manager = UnifiedLLMClientManager(
             agent_id="llm_coordinator_agent",
@@ -1405,73 +1409,27 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 self.logger.info(f"🎯 复用现有文件上下文: {task_id}, 包含文件: {len(task_file_context)} 个")
                 self.logger.debug(f"🧠 上下文复用 - 任务ID: {task_id}, 智能体: {agent_id}, 文件清单: {list(task_file_context.files.keys())}")
             
-            # 🔧 新增：如果提供了 design_file_path，读取并加入上下文
+            # 🔧 增强：智能文件上下文传递机制
             if design_file_path:
-                task_context.design_file_path = design_file_path
-                self.logger.info(f"📁 使用提供的设计文件路径: {design_file_path}")
-                # 🧠 上下文调试日志
-                self.logger.debug(f"🧠 设计文件路径分配 - 智能体: {agent_id}, 文件: {design_file_path}")
-                
-                # 读取设计文件内容并添加到上下文
-                try:
-                    if Path(design_file_path).exists():
-                        with open(design_file_path, 'r', encoding='utf-8') as f:
-                            design_content = f.read()
-                        
-                        # 🧠 上下文调试日志
-                        content_checksum = hashlib.md5(design_content.encode('utf-8')).hexdigest()[:8]
-                        self.logger.debug(f"🧠 文件内容读取 - 文件: {design_file_path}, 长度: {len(design_content)}, 校验: {content_checksum}")
-                        
-                        # 🔧 新增：提取实际模块名
-                        actual_module_name = self._extract_module_name_from_verilog(design_content)
-                        if actual_module_name and actual_module_name != "unknown_module":
-                            self.logger.info(f"🎯 提取到实际模块名: {actual_module_name}")
-                            # 将模块名添加到上下文元数据中
-                            module_metadata = {"actual_module_name": actual_module_name}
-                        else:
-                            self.logger.warning("⚠️ 未能提取到有效的模块名")
-                            module_metadata = {}
-                        
-                        task_file_context.add_file(
-                            file_path=design_file_path,
-                            content=design_content,
-                            is_primary_design=True,
-                            metadata=module_metadata
-                        )
-                        self.logger.info(f"📄 设计文件已加载到上下文: {design_file_path} ({len(design_content)} 字符), 模块名: {actual_module_name}")
-                        # 🧠 上下文调试日志
-                        self.logger.debug(f"🧠 文件加载完成 - 上下文文件总数: {len(task_file_context)}, 主设计文件: {task_file_context.primary_design_file}")
-                    else:
-                        self.logger.warning(f"⚠️ 设计文件不存在: {design_file_path}")
-                        # 🧠 上下文调试日志
-                        self.logger.debug(f"🧠 文件不存在 - 智能体: {agent_id}, 文件: {design_file_path}")
-                except Exception as e:
-                    self.logger.error(f"❌ 读取设计文件失败 {design_file_path}: {e}")
-                    # 🧠 上下文调试日志
-                    self.logger.debug(f"🧠 文件读取失败 - 智能体: {agent_id}, 文件: {design_file_path}, 错误: {str(e)}")
+                # 使用提供的设计文件路径
+                self._load_design_file_to_context(design_file_path, task_file_context, agent_id)
             else:
-                # 🔧 新增：尝试从之前的智能体结果中提取设计文件路径
-                design_file_path = self._extract_design_file_path_from_previous_results()
-                if design_file_path:
-                    task_context.design_file_path = design_file_path
-                    self.logger.info(f"📁 从之前结果中提取设计文件路径: {design_file_path}")
-                    
-                    # 同样读取内容并加入上下文
-                    try:
-                        if Path(design_file_path).exists():
-                            with open(design_file_path, 'r', encoding='utf-8') as f:
-                                design_content = f.read()
-                            
-                            task_file_context.add_file(
-                                file_path=design_file_path,
-                                content=design_content,
-                                is_primary_design=True
-                            )
-                            self.logger.info(f"📄 提取的设计文件已加载到上下文: {design_file_path} ({len(design_content)} 字符)")
-                        else:
-                            self.logger.warning(f"⚠️ 提取的设计文件不存在: {design_file_path}")
-                    except Exception as e:
-                        self.logger.error(f"❌ 读取提取的设计文件失败 {design_file_path}: {e}")
+                # 🔧 新增：智能从之前的智能体结果中继承文件上下文
+                self.logger.info("🔄 没有提供设计文件路径，尝试从之前的任务结果中继承")
+                inherited_files = self._inherit_file_context_from_previous_tasks(task_file_context)
+                
+                if not inherited_files:
+                    # 如果没有继承到文件，尝试提取设计文件路径
+                    design_file_path = self._extract_design_file_path_from_previous_results()
+                    if design_file_path:
+                        self.logger.info(f"📁 从智能体结果中提取设计文件路径: {design_file_path}")
+                        self._load_design_file_to_context(design_file_path, task_file_context, agent_id)
+                    else:
+                        # 🔧 新增：尝试从全局文件上下文继承
+                        self.logger.info("🔄 尝试从全局文件上下文继承设计文件")
+                        global_inherited = self._inherit_global_file_context(task_file_context)
+                        if not global_inherited:
+                            self.logger.warning("⚠️ 未能找到或继承任何设计文件")
             
             # 检查是否是后续调用（通过对话历史判断）
             is_follow_up_call = False
@@ -5404,61 +5362,99 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         }
 
     def _extract_design_file_path_from_previous_results(self) -> Optional[str]:
-        """从之前的智能体结果中提取设计文件路径"""
+        """从之前的智能体结果中提取设计文件路径（增强版本）"""
         try:
+            self.logger.debug("🔍 开始从设计智能体结果中提取文件路径")
+            found_files = []
+            
             # 遍历所有活跃任务
             for task_id, task in self.active_tasks.items():
+                self.logger.debug(f"🔍 检查任务: {task_id}")
+                
                 # 遍历任务中的智能体结果
                 for agent_id, agent_result in task.agent_results.items():
                     # 检查是否是设计智能体的结果
                     if agent_id == "enhanced_real_verilog_agent" and agent_result.get("success", False):
+                        self.logger.debug(f"🔍 找到设计智能体成功结果: {agent_id}")
+                        
                         # 方法1：直接从 agent_result 中获取 design_file_path
                         if "design_file_path" in agent_result:
-                            return agent_result["design_file_path"]
+                            path = agent_result["design_file_path"]
+                            found_files.append(path)
+                            self.logger.info(f"📁 方法1找到设计文件: {path}")
                         
-                        # 方法2：从 response 中解析 file_path
+                        # 方法2：从 response 中解析文件路径
                         response = agent_result.get("response", "")
-                        if isinstance(response, dict) and "file_path" in response:
-                            return response["file_path"]
+                        if isinstance(response, dict):
+                            if "file_path" in response:
+                                path = response["file_path"]
+                                found_files.append(path)
+                                self.logger.info(f"📁 方法2找到设计文件: {path}")
+                            
+                            # 检查 generated_files 字段
+                            if "generated_files" in response:
+                                files = response["generated_files"]
+                                if isinstance(files, list):
+                                    for file in files:
+                                        if isinstance(file, str) and file.endswith('.v'):
+                                            found_files.append(file)
+                                            self.logger.info(f"📁 从generated_files找到: {file}")
                         
-                        # 方法3：从 response 字符串中提取 file_path
+                        # 方法3：从 response 字符串中提取文件路径
                         if isinstance(response, str):
-                            # 尝试从 JSON 格式的响应中提取
                             import re
-                            import json
                             
-                            # 查找 JSON 格式的 file_path
-                            json_pattern = r'"file_path"\s*:\s*"([^"]+)"'
-                            match = re.search(json_pattern, response)
-                            if match:
-                                return match.group(1)
-                            
-                            # 查找其他可能的路径格式
+                            # 增强的文件路径提取模式
                             path_patterns = [
-                                r'file_path[:\s]+([^\s\n,}]+)',
-                                r'path[:\s]+([^\s\n,}]+\.v)',
-                                r'saved.*?([^\s\n,}]+\.v)',
-                                r'生成.*?([^\s\n,}]+\.v)'
+                                # 匹配完整的文件路径（带目录）
+                                r'(/[^"\s]+/[^"\s]*\.v)',
+                                # 匹配JSON格式的file_path
+                                r'"file_path"\s*:\s*"([^"]+\.v)"',
+                                # 匹配写入文件的日志
+                                r'写入文件:\s*([^\s\n,}]+\.v)',
+                                r'成功写入文件:\s*([^\s\n,}]+\.v)',
+                                # 匹配生成文件的描述
+                                r'生成.*?文件.*?:\s*([^\s\n,}]+\.v)',
+                                r'保存.*?文件.*?:\s*([^\s\n,}]+\.v)',
+                                # 匹配文件名模式
+                                r'([a-zA-Z0-9_]+(?:_optimized)?\.v)',
                             ]
                             
                             for pattern in path_patterns:
-                                match = re.search(pattern, response, re.IGNORECASE)
-                                if match:
-                                    path = match.group(1).strip('"\'')
-                                    if path.endswith('.v'):
-                                        return path
+                                matches = re.findall(pattern, response, re.IGNORECASE)
+                                for match in matches:
+                                    path = match.strip('"\'')
+                                    if path.endswith('.v') and path not in found_files:
+                                        found_files.append(path)
+                                        self.logger.info(f"📁 方法3找到设计文件: {path}")
             
-            # 如果没有找到，尝试从最近的对话历史中查找
+            # 方法4：从实验目录中查找最近生成的文件
+            if not found_files:
+                recent_files = self._find_recent_design_files()
+                found_files.extend(recent_files)
+            
+            # 选择最佳文件路径
+            if found_files:
+                # 优先选择optimized版本，其次选择最新的
+                best_file = self._select_best_design_file(found_files)
+                self.logger.info(f"✅ 选择最佳设计文件: {best_file}")
+                return best_file
+            
+            # 如果没有找到，尝试从任务分配中查找
             for task_id, task in self.active_tasks.items():
                 for assignment in task.agent_assignments:
                     if assignment.get("design_file_path"):
-                        return assignment["design_file_path"]
+                        path = assignment["design_file_path"]
+                        self.logger.info(f"📁 从任务分配中找到: {path}")
+                        return path
             
             self.logger.warning("⚠️ 未找到之前的设计文件路径")
             return None
             
         except Exception as e:
             self.logger.error(f"❌ 提取设计文件路径时出错: {str(e)}")
+            import traceback
+            self.logger.error(f"详细错误: {traceback.format_exc()}")
             return None
     
     def _extract_module_name_from_verilog(self, verilog_code: str) -> str:
@@ -5494,6 +5490,346 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 如果完全没有找到，返回默认名称
         self.logger.error("❌ 协调器完全无法提取模块名")
         return "unknown_module"
+    
+    def _find_recent_design_files(self) -> List[str]:
+        """从实验目录中查找最近生成的设计文件"""
+        import os
+        import glob
+        from pathlib import Path
+        
+        try:
+            design_files = []
+            
+            # 查找当前实验目录
+            for task_id, task in self.active_tasks.items():
+                if hasattr(task, 'experiment_path') and task.experiment_path:
+                    experiment_path = task.experiment_path
+                    self.logger.debug(f"🔍 搜索实验目录: {experiment_path}")
+                    
+                    # 查找designs子目录
+                    designs_dir = os.path.join(experiment_path, "designs")
+                    if os.path.exists(designs_dir):
+                        verilog_files = glob.glob(os.path.join(designs_dir, "*.v"))
+                        verilog_files.sort(key=os.path.getmtime, reverse=True)  # 按修改时间排序
+                        design_files.extend(verilog_files)
+                        self.logger.info(f"📁 从实验目录找到 {len(verilog_files)} 个Verilog文件")
+                    
+                    # 查找artifacts子目录
+                    artifacts_dir = os.path.join(experiment_path, "artifacts") 
+                    if os.path.exists(artifacts_dir):
+                        verilog_files = glob.glob(os.path.join(artifacts_dir, "*.v"))
+                        verilog_files.sort(key=os.path.getmtime, reverse=True)
+                        design_files.extend(verilog_files)
+                        self.logger.info(f"📁 从artifacts目录找到 {len(verilog_files)} 个Verilog文件")
+            
+            return design_files[:5]  # 返回最新的5个文件
+            
+        except Exception as e:
+            self.logger.error(f"❌ 查找最近设计文件失败: {e}")
+            return []
+    
+    def _select_best_design_file(self, found_files: List[str]) -> str:
+        """从找到的文件列表中选择最佳的设计文件"""
+        import os
+        
+        if not found_files:
+            return None
+        
+        # 优先级规则
+        priority_keywords = ['optimized', 'final', 'enhanced', 'improved']
+        
+        # 检查是否有优化版本
+        for keyword in priority_keywords:
+            for file in found_files:
+                if keyword in os.path.basename(file).lower():
+                    self.logger.info(f"🎯 选择优先文件（包含'{keyword}'）: {file}")
+                    return file
+        
+        # 如果没有优先文件，选择路径最完整的（包含完整目录结构）
+        complete_paths = [f for f in found_files if '/' in f and f.startswith('/')]
+        if complete_paths:
+            # 选择路径最长的（通常是最完整的）
+            best_path = max(complete_paths, key=len)
+            self.logger.info(f"🎯 选择最完整路径: {best_path}")
+            return best_path
+        
+        # 最后选择第一个文件
+        best_file = found_files[0]
+        self.logger.info(f"🎯 选择第一个文件: {best_file}")
+        return best_file
+    
+    def _load_design_file_to_context(self, design_file_path: str, task_file_context, agent_id: str):
+        """加载设计文件到任务上下文"""
+        from pathlib import Path
+        import hashlib
+        
+        try:
+            # 这里不需要设置task_context，因为我们直接将文件添加到TaskFileContext中
+            self.logger.info(f"📁 使用设计文件路径: {design_file_path}")
+            self.logger.debug(f"🧠 设计文件路径分配 - 智能体: {agent_id}, 文件: {design_file_path}")
+            
+            if Path(design_file_path).exists():
+                with open(design_file_path, 'r', encoding='utf-8') as f:
+                    design_content = f.read()
+                
+                # 上下文调试日志
+                content_checksum = hashlib.md5(design_content.encode('utf-8')).hexdigest()[:8]
+                self.logger.debug(f"🧠 文件内容读取 - 文件: {design_file_path}, 长度: {len(design_content)}, 校验: {content_checksum}")
+                
+                # 提取实际模块名
+                actual_module_name = self._extract_module_name_from_verilog(design_content)
+                if actual_module_name and actual_module_name != "unknown_module":
+                    self.logger.info(f"🎯 提取到实际模块名: {actual_module_name}")
+                    module_metadata = {"actual_module_name": actual_module_name}
+                else:
+                    self.logger.warning("⚠️ 未能提取到有效的模块名")
+                    module_metadata = {}
+                
+                task_file_context.add_file(
+                    file_path=design_file_path,
+                    content=design_content,
+                    is_primary_design=True,
+                    metadata=module_metadata
+                )
+                self.logger.info(f"📄 设计文件已加载到上下文: {design_file_path} ({len(design_content)} 字符), 模块名: {actual_module_name}")
+                self.logger.debug(f"🧠 文件加载完成 - 上下文文件总数: {len(task_file_context)}, 主设计文件: {task_file_context.primary_design_file}")
+                
+                # 🔧 新增：同时更新全局文件上下文
+                self._update_global_file_context(
+                    file_path=design_file_path,
+                    content=design_content,
+                    module_name=actual_module_name,
+                    task_id=task_file_context.task_id
+                )
+                
+                return True
+                
+            else:
+                self.logger.warning(f"⚠️ 设计文件不存在: {design_file_path}")
+                self.logger.debug(f"🧠 文件不存在 - 智能体: {agent_id}, 文件: {design_file_path}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"❌ 读取设计文件失败 {design_file_path}: {e}")
+            self.logger.debug(f"🧠 文件读取失败 - 智能体: {agent_id}, 文件: {design_file_path}, 错误: {str(e)}")
+            return False
+    
+    def _inherit_file_context_from_previous_tasks(self, current_task_context) -> int:
+        """从之前的任务中继承文件上下文"""
+        from pathlib import Path
+        
+        try:
+            inherited_count = 0
+            
+            # 遍历所有活跃任务，查找设计智能体的文件输出
+            for task_id, task in self.active_tasks.items():
+                # 跳过当前任务
+                if current_task_context.task_id == task_id:
+                    continue
+                
+                self.logger.debug(f"🔍 检查任务 {task_id} 的文件上下文")
+                
+                # 方法1：从任务的文件上下文中继承
+                if hasattr(task, 'task_file_context') and task.task_file_context:
+                    source_context = task.task_file_context
+                    for file_path, file_content in source_context.files.items():
+                        if file_content.file_type.value in ['verilog', 'systemverilog']:
+                            # 验证文件仍然存在
+                            if Path(file_path).exists():
+                                current_task_context.add_file(
+                                    file_path=file_path,
+                                    content=file_content.content,
+                                    file_type=file_content.file_type,
+                                    is_primary_design=file_content.is_primary_design,
+                                    metadata=file_content.metadata
+                                )
+                                inherited_count += 1
+                                self.logger.info(f"📄 从任务 {task_id} 继承文件: {file_path}")
+                
+                # 方法2：从智能体结果中查找文件路径并读取
+                for agent_id, agent_result in task.agent_results.items():
+                    if agent_id == "enhanced_real_verilog_agent" and agent_result.get("success", False):
+                        # 尝试提取文件路径
+                        file_paths = self._extract_file_paths_from_agent_result(agent_result)
+                        for file_path in file_paths:
+                            if Path(file_path).exists() and file_path.endswith('.v'):
+                                try:
+                                    with open(file_path, 'r', encoding='utf-8') as f:
+                                        content = f.read()
+                                    
+                                    # 提取模块名作为元数据
+                                    module_name = self._extract_module_name_from_verilog(content)
+                                    metadata = {"actual_module_name": module_name} if module_name != "unknown_module" else {}
+                                    
+                                    current_task_context.add_file(
+                                        file_path=file_path,
+                                        content=content,
+                                        is_primary_design=True,
+                                        metadata=metadata
+                                    )
+                                    inherited_count += 1
+                                    self.logger.info(f"📄 从智能体结果继承文件: {file_path}")
+                                    
+                                except Exception as e:
+                                    self.logger.error(f"❌ 读取继承文件失败 {file_path}: {e}")
+            
+            if inherited_count > 0:
+                self.logger.info(f"✅ 成功继承了 {inherited_count} 个设计文件")
+            else:
+                self.logger.warning("⚠️ 没有找到可继承的设计文件")
+            
+            return inherited_count
+            
+        except Exception as e:
+            self.logger.error(f"❌ 继承文件上下文失败: {e}")
+            return 0
+    
+    def _extract_file_paths_from_agent_result(self, agent_result: dict) -> List[str]:
+        """从智能体结果中提取所有文件路径"""
+        import re
+        
+        file_paths = []
+        
+        try:
+            # 从直接的字段中提取
+            if "file_path" in agent_result:
+                file_paths.append(agent_result["file_path"])
+            
+            if "design_file_path" in agent_result:
+                file_paths.append(agent_result["design_file_path"])
+            
+            # 从response中提取
+            response = agent_result.get("response", "")
+            if isinstance(response, str):
+                # 使用增强的路径提取模式
+                path_patterns = [
+                    r'(/[^"\s]+/[^"\s]*\.v)',
+                    r'"file_path"\s*:\s*"([^"]+\.v)"',
+                    r'写入文件:\s*([^\s\n,}]+\.v)',
+                    r'成功写入文件:\s*([^\s\n,}]+\.v)',
+                ]
+                
+                for pattern in path_patterns:
+                    matches = re.findall(pattern, response, re.IGNORECASE)
+                    file_paths.extend([match.strip('"\'') for match in matches])
+            
+            elif isinstance(response, dict):
+                if "generated_files" in response:
+                    files = response["generated_files"]
+                    if isinstance(files, list):
+                        file_paths.extend([f for f in files if isinstance(f, str) and f.endswith('.v')])
+            
+            # 去重
+            unique_paths = list(set(file_paths))
+            self.logger.debug(f"🔍 从智能体结果提取到 {len(unique_paths)} 个文件路径")
+            
+            return unique_paths
+            
+        except Exception as e:
+            self.logger.error(f"❌ 提取文件路径失败: {e}")
+            return []
+    
+    def _update_global_file_context(self, file_path: str, content: str, module_name: str = None, task_id: str = None):
+        """更新全局文件上下文"""
+        import os
+        from datetime import datetime
+        
+        try:
+            file_info = {
+                "file_path": file_path,
+                "content": content,
+                "module_name": module_name,
+                "task_id": task_id,
+                "timestamp": datetime.now().isoformat(),
+                "file_size": len(content),
+                "checksum": hashlib.md5(content.encode('utf-8')).hexdigest()[:8],
+                "file_exists": os.path.exists(file_path) if file_path else False
+            }
+            
+            self.global_file_context[file_path] = file_info
+            self.logger.debug(f"🗂️ 更新全局文件上下文: {file_path}")
+            
+            # 同时更新对话文件历史
+            if task_id:
+                if task_id not in self.conversation_file_history:
+                    self.conversation_file_history[task_id] = {}
+                self.conversation_file_history[task_id][file_path] = file_info
+                
+        except Exception as e:
+            self.logger.error(f"❌ 更新全局文件上下文失败: {e}")
+    
+    def _get_latest_design_files(self, count: int = 3) -> List[Dict]:
+        """获取最新的设计文件信息"""
+        try:
+            # 按时间戳排序，返回最新的文件
+            sorted_files = sorted(
+                self.global_file_context.values(),
+                key=lambda x: x.get("timestamp", ""),
+                reverse=True
+            )
+            
+            # 筛选Verilog设计文件
+            design_files = [
+                f for f in sorted_files 
+                if f.get("file_path", "").endswith('.v') and 
+                   f.get("module_name") and 
+                   f.get("module_name") != "unknown_module"
+            ]
+            
+            return design_files[:count]
+            
+        except Exception as e:
+            self.logger.error(f"❌ 获取最新设计文件失败: {e}")
+            return []
+    
+    def _find_file_by_module_name(self, module_name: str) -> Optional[Dict]:
+        """根据模块名查找文件"""
+        try:
+            for file_path, file_info in self.global_file_context.items():
+                if file_info.get("module_name") == module_name:
+                    self.logger.info(f"🔍 根据模块名 '{module_name}' 找到文件: {file_path}")
+                    return file_info
+            
+            self.logger.warning(f"⚠️ 未找到模块名为 '{module_name}' 的文件")
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ 根据模块名查找文件失败: {e}")
+            return None
+    
+    def _inherit_global_file_context(self, task_file_context, max_files: int = 5) -> int:
+        """将全局文件上下文继承到任务文件上下文中"""
+        try:
+            inherited_count = 0
+            latest_files = self._get_latest_design_files(max_files)
+            
+            for file_info in latest_files:
+                file_path = file_info.get("file_path")
+                content = file_info.get("content")
+                module_name = file_info.get("module_name")
+                
+                if file_path and content:
+                    # 检查文件是否已存在于任务上下文中
+                    if file_path not in task_file_context.files:
+                        metadata = {"actual_module_name": module_name} if module_name else {}
+                        
+                        task_file_context.add_file(
+                            file_path=file_path,
+                            content=content,
+                            is_primary_design=(inherited_count == 0),  # 第一个文件设为主设计文件
+                            metadata=metadata
+                        )
+                        inherited_count += 1
+                        self.logger.info(f"📄 从全局上下文继承文件: {file_path} (模块: {module_name})")
+            
+            if inherited_count > 0:
+                self.logger.info(f"✅ 从全局上下文继承了 {inherited_count} 个设计文件")
+            
+            return inherited_count
+            
+        except Exception as e:
+            self.logger.error(f"❌ 继承全局文件上下文失败: {e}")
+            return 0
     
     async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
                                        include_best_practices: bool = True) -> Dict[str, Any]:
