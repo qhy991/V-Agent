@@ -136,13 +136,19 @@ class TaskFileContext:
         return file_content
     
     def get_primary_design_content(self) -> Optional[str]:
-        """获取主要设计文件内容"""
+        """获取主要设计文件内容（增强版：包含一致性验证）"""
         if not self.primary_design_file:
             self.logger.warning("⚠️ 没有设置主要设计文件")
             return None
         
         file_content = self.get_file(self.primary_design_file)
-        return file_content.content if file_content else None
+        if not file_content or not file_content.content:
+            return None
+        
+        # 🔧 新增：验证设计文件的完整性
+        self._validate_design_file_integrity(file_content.content, self.primary_design_file)
+        
+        return file_content.content
     
     def get_primary_testbench_content(self) -> Optional[str]:
         """获取主要测试台文件内容"""
@@ -218,6 +224,74 @@ class TaskFileContext:
         
         return exported_data
     
+    def _validate_design_file_integrity(self, content: str, file_path: str):
+        """验证设计文件的完整性"""
+        try:
+            # 导入代码一致性检查器
+            from core.code_consistency_checker import get_consistency_checker
+            checker = get_consistency_checker()
+            
+            # 验证代码完整性
+            expected_features = ["parameterized", "width_parameter", "enable_input", "reset_input"]
+            validation_result = checker.validate_code_parameter(content, expected_features)
+            
+            # 记录验证结果
+            if validation_result['valid']:
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    signature = module_info.get_signature()
+                    self.logger.info(f"✅ [TaskFileContext] 设计文件完整性验证通过: {signature}")
+            else:
+                issues = validation_result.get('issues', [])
+                self.logger.warning(f"⚠️ [TaskFileContext] 设计文件完整性问题: {issues}")
+                
+                # 记录详细信息
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    self.logger.warning(f"⚠️ [TaskFileContext] 文件: {file_path}")
+                    self.logger.warning(f"⚠️ [TaskFileContext] 代码签名: {module_info.get_signature()}")
+                    self.logger.warning(f"⚠️ [TaskFileContext] 代码行数: {module_info.line_count}")
+                
+        except Exception as e:
+            self.logger.warning(f"⚠️ [TaskFileContext] 设计文件完整性验证失败: {str(e)}")
+    
+    def validate_all_files_consistency(self) -> Dict[str, Any]:
+        """验证所有文件的一致性"""
+        results = {}
+        try:
+            from core.code_consistency_checker import get_consistency_checker
+            checker = get_consistency_checker()
+            
+            verilog_files = []
+            for file_path, file_content in self.files.items():
+                if file_content.file_type in [FileType.VERILOG, FileType.SYSTEMVERILOG]:
+                    verilog_files.append((file_path, file_content.content))
+            
+            # 如果有多个Verilog文件，检查它们之间的一致性
+            if len(verilog_files) > 1:
+                for i in range(len(verilog_files)):
+                    for j in range(i + 1, len(verilog_files)):
+                        file1_path, file1_content = verilog_files[i]
+                        file2_path, file2_content = verilog_files[j]
+                        
+                        consistency_result = checker.check_consistency(file1_content, file2_content)
+                        results[f"{file1_path}_vs_{file2_path}"] = {
+                            "consistent": consistency_result.is_consistent,
+                            "confidence": consistency_result.confidence,
+                            "issues": consistency_result.issues,
+                            "recommendations": consistency_result.recommendations
+                        }
+                        
+                        if not consistency_result.is_consistent:
+                            self.logger.warning(f"⚠️ [TaskFileContext] 文件不一致: {file1_path} vs {file2_path}")
+                            self.logger.warning(f"⚠️ [TaskFileContext] 问题: {consistency_result.issues}")
+            
+            return results
+            
+        except Exception as e:
+            self.logger.error(f"❌ [TaskFileContext] 文件一致性验证失败: {str(e)}")
+            return {"error": str(e)}
+
     def merge_context(self, other_context: 'TaskFileContext', override: bool = False):
         """合并另一个上下文"""
         for file_path, file_content in other_context.files.items():

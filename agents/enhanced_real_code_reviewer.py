@@ -1049,6 +1049,113 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
             self.logger.error(f"❌ 请求正确设计文件失败: {e}")
             return None
     
+    def _validate_code_consistency(self, module_code: str, source_description: str = "未知来源"):
+        """验证代码一致性和完整性"""
+        try:
+            from core.code_consistency_checker import get_consistency_checker
+            checker = get_consistency_checker()
+            
+            # 验证代码完整性
+            expected_features = ["parameterized", "width_parameter", "enable_input", "reset_input"]
+            validation_result = checker.validate_code_parameter(module_code, expected_features)
+            
+            self.logger.info(f"🔍 [{source_description}] 代码完整性验证: {'通过' if validation_result['valid'] else '失败'}")
+            
+            if not validation_result['valid']:
+                issues = validation_result.get('issues', [])
+                self.logger.warning(f"⚠️ [{source_description}] 代码完整性问题: {issues}")
+                
+                # 记录详细的代码信息用于调试
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    signature = module_info.get_signature()
+                    self.logger.warning(f"⚠️ [{source_description}] 代码签名: {signature}")
+                    self.logger.warning(f"⚠️ [{source_description}] 代码行数: {module_info.line_count}")
+                
+                # 如果是简化版本，尝试获取完整版本
+                if any("简化版本" in issue for issue in issues):
+                    self._attempt_to_get_complete_code()
+            else:
+                # 记录成功验证的代码信息
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    signature = module_info.get_signature()
+                    self.logger.info(f"✅ [{source_description}] 代码签名验证通过: {signature}")
+                
+        except Exception as e:
+            self.logger.warning(f"⚠️ 代码一致性验证过程中发生错误: {str(e)}")
+    
+    def _attempt_to_get_complete_code(self):
+        """尝试获取完整的代码版本"""
+        try:
+            # 方法1：从任务上下文重新获取
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                primary_content = self.current_task_context.get_primary_design_content()
+                if primary_content and len(primary_content) > 500:
+                    self.logger.info("🔧 从任务上下文重新获取到完整代码")
+                    return primary_content
+            
+            # 方法2：强制重新读取最新文件
+            self.logger.info("🔧 尝试强制重新读取设计文件以获取完整代码")
+            # 这里可以添加更多获取完整代码的逻辑
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ 尝试获取完整代码失败: {str(e)}")
+        return None
+    
+    def _evaluate_code_completeness(self, code: str) -> float:
+        """评估代码完整性得分 (0-100)"""
+        try:
+            score = 0
+            
+            # 基础得分：代码长度
+            if len(code) > 1000:
+                score += 20
+            elif len(code) > 500:
+                score += 10
+            elif len(code) > 200:
+                score += 5
+            
+            # 参数化特性
+            if "parameter" in code:
+                score += 20
+                # WIDTH参数
+                if "WIDTH" in code:
+                    score += 10
+            
+            # 端口复杂性
+            input_count = code.count("input")
+            output_count = code.count("output") 
+            if input_count >= 4:  # 完整版本应该有更多输入
+                score += 15
+            elif input_count >= 2:
+                score += 8
+            
+            if output_count >= 2:  # 完整版本应该有rollover输出
+                score += 10
+            elif output_count >= 1:
+                score += 5
+            
+            # 特殊功能
+            if "load" in code:
+                score += 10
+            if "rollover" in code or "overflow" in code:
+                score += 10
+            if "data_in" in code:
+                score += 5
+            
+            # 代码结构复杂性
+            if code.count("always") >= 2:  # 多个always块表示更复杂
+                score += 10
+            elif code.count("always") >= 1:
+                score += 5
+            
+            return min(score, 100)
+            
+        except Exception as e:
+            self.logger.warning(f"代码完整性评估失败: {str(e)}")
+            return len(code) / 50  # 简单的基于长度的评分
+
     def _validate_and_fix_module_name(self, provided_name: str, verilog_code: str) -> str:
         """验证并修复模块名"""
         extracted_name = self._extract_module_name_from_code(verilog_code)
@@ -1351,20 +1458,37 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                                     self.logger.info(f"🎯 使用统一文件上下文的Verilog文件: {file_path} ({len(module_code)} 字符)")
                                     break
             
-            # 方法2：使用传入的参数
+            # 方法2：使用传入的参数（增强版：包含一致性验证）
             if not module_code:
                 module_code = code or verilog_code
                 if module_code:
                     self.logger.info(f"📥 使用传入的模块代码参数 ({len(module_code)} 字符)")
+                    # 🔧 新增：验证传入代码的完整性
+                    self._validate_code_consistency(module_code, "传入参数")
             
-            # 方法3：从缓存的文件内容获取（向后兼容）
+            # 方法3：从缓存的文件内容获取（向后兼容，增强版：优先选择完整代码）
             if not module_code:
                 cached_files = self.agent_state_cache.get("last_read_files", {})
+                # 先检查哪个文件的代码更完整
+                best_code = None
+                best_filepath = None
+                best_score = 0
+                
                 for filepath, file_info in cached_files.items():
                     if file_info.get("file_type") in ["verilog", "systemverilog"]:
-                        module_code = file_info["content"]
-                        self.logger.info(f"📋 使用缓存的文件内容: {filepath} ({len(module_code)} 字符)")
-                        break
+                        candidate_code = file_info["content"]
+                        # 评估代码完整性得分
+                        completeness_score = self._evaluate_code_completeness(candidate_code)
+                        if completeness_score > best_score:
+                            best_code = candidate_code
+                            best_filepath = filepath
+                            best_score = completeness_score
+                
+                if best_code:
+                    module_code = best_code
+                    self.logger.info(f"📋 使用最完整的缓存文件内容: {best_filepath} ({len(module_code)} 字符, 完整性得分: {best_score})")
+                    # 验证选择的代码
+                    self._validate_code_consistency(module_code, "缓存文件")
             
             # 方法4：从实例变量获取（向后兼容）
             if not module_code:

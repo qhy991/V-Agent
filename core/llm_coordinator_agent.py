@@ -1334,6 +1334,19 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                     "agent_status": agent_info.status.value
                 }
             
+            # 🔧 修复4: 能力边界验证 - 在任务分配前验证能力匹配
+            boundary_check = self._verify_task_assignment_boundary(agent_id, task_type, task_description)
+            if not boundary_check["valid"]:
+                self.logger.error(f"❌ 任务分配被阻止: {boundary_check['reason']}")
+                return {
+                    "success": False,
+                    "error": f"任务分配失败: {boundary_check['reason']}",
+                    "boundary_violation": True,
+                    "suggested_action": boundary_check.get("suggested_action", "重新分解任务"),
+                    "agent_capabilities": boundary_check.get("agent_capabilities", {}),
+                    "conflict_details": boundary_check.get("conflict_details", {})
+                }
+            
             # 创建任务上下文
             task_id = f"task_{int(time.time())}"
             
@@ -1430,6 +1443,10 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                         global_inherited = self._inherit_global_file_context(task_file_context)
                         if not global_inherited:
                             self.logger.warning("⚠️ 未能找到或继承任何设计文件")
+            
+            # 🔧 新增：验证智能体间上下文一致性
+            if task_file_context and len(task_file_context.files) > 0:
+                self._validate_inter_agent_context_consistency(task_file_context, agent_id)
             
             # 检查是否是后续调用（通过对话历史判断）
             is_follow_up_call = False
@@ -2417,6 +2434,19 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             
             # 执行增强的结果质量分析
             analysis = self._enhanced_result_quality_analysis(result, task_context, quality_threshold)
+            
+            # 🔧 修复6: 任务幻觉检测
+            hallucination_check = self._detect_task_hallucination(agent_id, result, task_context)
+            if hallucination_check["has_hallucination"]:
+                self.logger.warning(f"🚨 检测到智能体 {agent_id} 任务幻觉: {hallucination_check['hallucination_type']}")
+                analysis["hallucination_detected"] = True
+                analysis["hallucination_details"] = hallucination_check
+                analysis["quality_score"] = min(analysis.get("quality_score", 0), 30.0)  # 大幅降低质量分数
+                analysis["completeness"] = "failed"
+                analysis["issues"].append(f"任务幻觉: {hallucination_check['description']}")
+                analysis["recommendations"].append("重新分配任务，明确能力边界")
+            else:
+                analysis["hallucination_detected"] = False
             
             # 更新智能体性能
             self._update_agent_performance(agent_id, result)
@@ -3679,10 +3709,20 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 all_results = results_dict
                 self.logger.info(f"🎯 将列表格式的all_results转换为字典格式，包含{len(all_results)}个结果")
             
-            # 分析所有结果
-            completion_analysis = self._enhanced_task_completion_analysis(
-                all_results, original_requirements, task_context, completion_criteria
-            )
+            # 🆕 检查是否为复合任务，如果是则使用工作流评估
+            composite_task_analysis = self._detect_composite_task(original_requirements)
+            is_composite = composite_task_analysis[0]
+            
+            if is_composite:
+                # 复合任务使用工作流评估
+                completion_analysis = self._evaluate_composite_task_workflow(
+                    all_results, original_requirements, task_context, completion_criteria
+                )
+            else:
+                # 单一任务使用原有分析
+                completion_analysis = self._enhanced_task_completion_analysis(
+                    all_results, original_requirements, task_context, completion_criteria
+                )
             
             # 更新任务状态
             if completion_analysis["is_completed"]:
@@ -4465,6 +4505,49 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 收集智能体执行结果
         await self._collect_agent_conversations(task_context)
         
+        # 🆕 检查是否为复合任务，如果是则使用串行工作流管理
+        task_type_result = await self._tool_identify_task_type(task_context.original_request)
+        if task_type_result.get("success") and task_type_result.get("is_composite"):
+            self.logger.info("🔀 检测到复合任务，启用串行工作流管理")
+            workflow_result = self._manage_serial_workflow(task_context, task_type_result)
+            
+            # 如果工作流完成，提供最终答案
+            if workflow_result.get("workflow_complete"):
+                self.logger.info("✅ 串行工作流已完成")
+                final_answer_result = await self._tool_provide_final_answer(
+                    final_summary="复合任务已按串行工作流完成：设计→审查→验证",
+                    task_status="success",
+                    results_summary={
+                        "workflow_stages": len(task_context.workflow_stages),
+                        "agents_involved": list(task_context.agent_results.keys()),
+                        "files_generated": sum(len(result.get("generated_files", [])) for result in task_context.agent_results.values())
+                    }
+                )
+                return self._collect_final_result(task_context, str(final_answer_result))
+            
+            # 如果需要执行下一个工作流阶段
+            next_action = workflow_result.get("next_action")
+            if next_action and next_action.get("type") == "assign_task":
+                # 执行任务分配
+                assign_result = await self._tool_assign_task_to_agent(
+                    agent_id=next_action["agent_id"],
+                    task_description=next_action["description"],
+                    task_type=next_action["task_type"],
+                    priority="high"
+                )
+                
+                if assign_result.get("success"):
+                    self.logger.info(f"✅ 工作流阶段已分配给 {next_action['agent_id']}")
+                    # 递归调用工作流继续
+                    return await self._run_coordination_loop(task_context, initial_result, conversation_id, max_iterations)
+                else:
+                    self.logger.error(f"❌ 工作流阶段分配失败: {assign_result.get('error')}")
+                    return {
+                        "success": False,
+                        "error": f"工作流阶段分配失败: {assign_result.get('error')}",
+                        "task_id": task_context.task_id
+                    }
+        
         # 检查是否需要继续协调
         continuation_needed = await self._check_coordination_continuation(task_context)
         
@@ -4488,46 +4571,54 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             if "check_task_completion" in continuation_result:
                 self.logger.info(f"🔍 检测到任务完成检查，分析结果...")
                 # 解析任务完成检查的结果
-                try:
-                    json_response = self._extract_json_from_response(continuation_result)
-                    if json_response:
-                        import json
-                        completion_data = json.loads(json_response)
-                        is_completed = completion_data.get("is_completed", False)
-                        missing_requirements = completion_data.get("missing_requirements", [])
-                        self.logger.info(f"🔍 任务完成检查结果: is_completed={is_completed}")
-                        self.logger.info(f"🔍 缺失项: {missing_requirements}")
+                completion_check_result = self._parse_task_completion_check(continuation_result)
+                
+                if completion_check_result:
+                    is_completed = completion_check_result.get("is_completed", False)
+                    completion_score = completion_check_result.get("completion_score", 0.0)
+                    missing_requirements = completion_check_result.get("missing_requirements", [])
+                    
+                    self.logger.info(f"🔍 任务完成检查结果: is_completed={is_completed}, score={completion_score}")
+                    self.logger.info(f"🔍 缺失项: {missing_requirements}")
+                    
+                    # 🔧 修复5: 强制完成检查 - 禁止在任务未完成时调用provide_final_answer
+                    if not is_completed or completion_score < 60.0:
+                        self.logger.warning(f"⚠️ 任务未完成 (完成分数: {completion_score})，禁止结束任务")
                         
-                        if not is_completed:
-                            self.logger.info(f"🔄 任务未完成，继续协调循环")
-                            # 记录继续协调的结果
-                            task_context.add_conversation_message(
-                                role="assistant",
-                                content=continuation_result,
-                                agent_id=self.agent_id,
-                                metadata={"type": "coordination_continuation", "task_stage": "analysis"}
-                            )
-                            
-                            # 递归调用，直到所有协调完成
-                            return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
-                        else:
-                            self.logger.info(f"✅ 任务已完成，结束协调循环")
-                            # 记录继续协调的结果
-                            task_context.add_conversation_message(
-                                role="assistant",
-                                content=continuation_result,
-                                agent_id=self.agent_id,
-                                metadata={"type": "coordination_continuation", "task_stage": "completion"}
-                            )
-                            return self._collect_final_result(task_context, continuation_result)
-                except Exception as e:
-                    self.logger.warning(f"⚠️ 解析任务完成检查结果失败: {e}")
-                    # 如果解析失败，继续协调
+                        # 强制阻止provide_final_answer调用
+                        continuation_result = self._block_premature_completion(
+                            continuation_result, completion_check_result
+                        )
+                        
+                        self.logger.info(f"🔄 任务未完成，强制继续协调循环")
+                        # 记录继续协调的结果
+                        task_context.add_conversation_message(
+                            role="assistant",
+                            content=continuation_result,
+                            agent_id=self.agent_id,
+                            metadata={"type": "coordination_continuation", "task_stage": "incomplete_task_blocked"}
+                        )
+                        
+                        # 递归调用，直到所有协调完成
+                        return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
+                    else:
+                        self.logger.info(f"✅ 任务完成检查通过 (分数: {completion_score})，允许结束任务")
+                        # 记录继续协调的结果
+                        task_context.add_conversation_message(
+                            role="assistant",
+                            content=continuation_result,
+                            agent_id=self.agent_id,
+                            metadata={"type": "coordination_continuation", "task_stage": "completion"}
+                        )
+                        return self._collect_final_result(task_context, continuation_result)
+                else:
+                    self.logger.warning(f"⚠️ 无法解析任务完成检查结果，继续协调")
+                    # 继续协调循环
                     task_context.add_conversation_message(
                         role="assistant",
                         content=continuation_result,
                         agent_id=self.agent_id,
-                        metadata={"type": "coordination_continuation", "task_stage": "analysis"}
+                        metadata={"type": "coordination_continuation", "task_stage": "parse_error"}
                     )
                     return await self._run_coordination_loop(task_context, continuation_result, conversation_id, max_iterations)
             else:
@@ -4814,11 +4905,28 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             } 
 
     async def _tool_identify_task_type(self, user_request: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """智能识别任务类型"""
+        """增强的智能任务类型识别 - 支持复合任务分解"""
         try:
             self.logger.info(f"🔍 识别任务类型: {user_request[:100]}...")
             
-            # 使用模式匹配识别任务类型
+            # 🔧 修复1: 检测复合任务特征
+            is_composite, composite_analysis = self._detect_composite_task(user_request)
+            
+            if is_composite:
+                self.logger.info(f"🎯 检测到复合任务，分解为: {composite_analysis['subtasks']}")
+                return {
+                    "success": True,
+                    "task_type": "composite",
+                    "confidence": composite_analysis["confidence"],
+                    "priority": self._determine_task_priority(user_request, TaskType.COMPOSITE).value,
+                    "analysis": composite_analysis["analysis"],
+                    "subtasks": composite_analysis["subtasks"],
+                    "execution_order": composite_analysis["execution_order"],
+                    "keywords": composite_analysis.get("keywords", []),
+                    "requires_task_decomposition": True
+                }
+            
+            # 使用模式匹配识别单一任务类型
             task_type = self._classify_task_by_patterns(user_request)
             
             # 使用LLM进行深度分析
@@ -4838,7 +4946,8 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "priority": priority.value if isinstance(priority, TaskPriority) else priority,
                 "analysis": llm_analysis.get("analysis", ""),
                 "keywords": llm_analysis.get("keywords", []),
-                "suggested_agent": self._get_suggested_agent(final_task_type)
+                "suggested_agent": self._get_suggested_agent(final_task_type),
+                "requires_task_decomposition": False
             }
             
         except Exception as e:
@@ -4850,6 +4959,65 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "confidence": 0.0,
                 "priority": "medium"
             }
+    
+    def _detect_composite_task(self, user_request: str) -> Tuple[bool, Dict[str, Any]]:
+        """检测和分析复合任务"""
+        request_lower = user_request.lower()
+        
+        # 定义复合任务检测模式
+        composite_patterns = [
+            # 设计 + 测试模式
+            {
+                "patterns": [r"设计.*生成.*测试", r"设计.*验证", r"生成.*testbench", r"生成.*测试台"],
+                "subtasks": ["design", "verification"],
+                "analysis": "设计+验证复合任务：需要先完成Verilog模块设计，再生成测试台进行验证"
+            },
+            # 完整开发流程
+            {
+                "patterns": [r"完整.*开发", r"端到端.*设计", r"全流程.*实现"],
+                "subtasks": ["design", "verification", "analysis"],
+                "analysis": "全流程开发任务：包含设计、验证和分析的完整开发周期"
+            },
+            # 设计 + 仿真
+            {
+                "patterns": [r"设计.*仿真", r"实现.*测试", r"模块.*验证"],
+                "subtasks": ["design", "verification"],
+                "analysis": "设计+仿真任务：先设计模块，然后进行仿真验证"
+            }
+        ]
+        
+        # 🔧 核心复合任务检测：包含测试台要求的设计任务
+        testbench_keywords = ["testbench", "测试台", "验证", "仿真", "测试"]
+        design_keywords = ["设计", "生成", "实现", "创建", "模块", "代码"]
+        
+        has_testbench_req = any(keyword in request_lower for keyword in testbench_keywords)
+        has_design_req = any(keyword in request_lower for keyword in design_keywords)
+        
+        if has_design_req and has_testbench_req:
+            self.logger.info("🎯 检测到核心问题：设计任务包含测试台要求")
+            return True, {
+                "confidence": 0.95,
+                "subtasks": ["design", "verification"],
+                "execution_order": ["design", "verification"],
+                "analysis": "检测到设计+测试台复合任务。根据智能体能力边界，将自动分解为：1) 设计任务（enhanced_real_verilog_agent）2) 验证任务（enhanced_real_code_review_agent）",
+                "keywords": ["composite_task", "capability_boundary_conflict"],
+                "decomposition_reason": "能力边界冲突：设计智能体明确禁止测试台生成"
+            }
+        
+        # 检查其他复合任务模式
+        for pattern_config in composite_patterns:
+            for pattern in pattern_config["patterns"]:
+                if re.search(pattern, request_lower):
+                    return True, {
+                        "confidence": 0.8,
+                        "subtasks": pattern_config["subtasks"],
+                        "execution_order": pattern_config["subtasks"],
+                        "analysis": pattern_config["analysis"],
+                        "keywords": ["composite_task"],
+                        "decomposition_reason": "复合任务模式匹配"
+                    }
+        
+        return False, {}
     
     def _classify_task_by_patterns(self, user_request: str) -> TaskType:
         """使用模式匹配分类任务"""
@@ -4967,9 +5135,24 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
     
     async def _tool_recommend_agent(self, task_type: str, task_description: str,
                                   priority: str = "medium", constraints: Dict[str, Any] = None) -> Dict[str, Any]:
-        """推荐最合适的智能体"""
+        """增强的智能体推荐 - 支持复合任务和能力边界验证"""
         try:
             self.logger.info(f"🤖 推荐智能体: {task_type} - {priority}")
+            
+            # 🔧 修复2: 处理复合任务推荐
+            if task_type == "composite":
+                return await self._recommend_for_composite_task(task_description, priority, constraints)
+            
+            # 🔧 修复3: 能力边界验证
+            capability_check = self._verify_agent_capability_boundary(task_type, task_description)
+            if not capability_check["valid"]:
+                self.logger.warning(f"⚠️ 能力边界冲突: {capability_check['conflict_reason']}")
+                return {
+                    "success": False,
+                    "error": f"能力边界冲突: {capability_check['conflict_reason']}",
+                    "suggested_action": capability_check.get("suggested_action", "请重新分解任务"),
+                    "requires_task_decomposition": True
+                }
             
             # 获取可用智能体
             available_agents = self._get_available_agents()
@@ -5010,6 +5193,196 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 "success": False,
                 "error": str(e)
             }
+    
+    async def _recommend_for_composite_task(self, task_description: str, priority: str, constraints: Dict[str, Any]) -> Dict[str, Any]:
+        """为复合任务推荐智能体执行序列"""
+        try:
+            # 重新分析任务以获取子任务信息
+            is_composite, composite_analysis = self._detect_composite_task(task_description)
+            
+            if not is_composite:
+                return {
+                    "success": False,
+                    "error": "任务未被识别为复合任务"
+                }
+            
+            subtasks = composite_analysis.get("subtasks", [])
+            execution_order = composite_analysis.get("execution_order", subtasks)
+            
+            # 为每个子任务推荐智能体
+            agent_sequence = []
+            for i, subtask_type in enumerate(execution_order):
+                agent_recommendation = await self._tool_recommend_agent(
+                    task_type=subtask_type,
+                    task_description=f"子任务{i+1}: {subtask_type}部分 - {task_description}",
+                    priority=priority,
+                    constraints=constraints
+                )
+                
+                if agent_recommendation.get("success", False):
+                    agent_sequence.append({
+                        "subtask_type": subtask_type,
+                        "recommended_agent": agent_recommendation["recommended_agent"],
+                        "score": agent_recommendation["score"],
+                        "execution_order": i + 1
+                    })
+                else:
+                    self.logger.error(f"❌ 子任务 {subtask_type} 智能体推荐失败")
+            
+            if not agent_sequence:
+                return {
+                    "success": False,
+                    "error": "复合任务的所有子任务推荐都失败"
+                }
+            
+            # 返回第一个要执行的智能体（串行执行）
+            first_agent = agent_sequence[0]
+            
+            return {
+                "success": True,
+                "recommended_agent": first_agent["recommended_agent"],
+                "score": first_agent["score"],
+                "task_type": "composite_first_stage",
+                "agent_sequence": agent_sequence,
+                "execution_plan": {
+                    "total_stages": len(agent_sequence),
+                    "current_stage": 1,
+                    "next_stages": agent_sequence[1:] if len(agent_sequence) > 1 else []
+                },
+                "reasoning": f"复合任务分解为{len(agent_sequence)}个阶段，当前执行第1阶段：{first_agent['subtask_type']}"
+            }
+            
+        except Exception as e:
+            self.logger.error(f"❌ 复合任务推荐失败: {str(e)}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _verify_agent_capability_boundary(self, task_type: str, task_description: str) -> Dict[str, Any]:
+        """验证智能体能力边界"""
+        task_description_lower = task_description.lower()
+        
+        # 🔧 核心修复：检测设计智能体的能力边界违反
+        if task_type == "design":
+            # 检查是否包含禁止的测试台相关要求
+            testbench_forbidden_keywords = ["testbench", "测试台", "生成.*测试", "仿真验证", "生成.*验证"]
+            
+            for keyword in testbench_forbidden_keywords:
+                if re.search(keyword, task_description_lower):
+                    return {
+                        "valid": False,
+                        "conflict_reason": f"设计智能体明确禁止测试台生成，但任务包含'{keyword}'要求",
+                        "suggested_action": "将任务分解为设计任务和验证任务",
+                        "agent_capability_note": "enhanced_real_verilog_agent绝不负责测试台(testbench)生成"
+                    }
+        
+        # 检查验证智能体的能力边界
+        elif task_type == "verification":
+            # 检查是否包含设计任务要求
+            design_keywords = ["设计模块", "生成代码", "实现功能", "创建电路"]
+            
+            for keyword in design_keywords:
+                if re.search(keyword, task_description_lower):
+                    return {
+                        "valid": False,
+                        "conflict_reason": f"验证智能体不负责设计工作，但任务包含'{keyword}'要求",
+                        "suggested_action": "将设计部分分配给设计智能体",
+                        "agent_capability_note": "enhanced_real_code_review_agent专注于测试和验证"
+                    }
+        
+        # 所有检查都通过
+        return {
+            "valid": True,
+            "capability_match": "任务与智能体能力匹配"
+        }
+    
+    def _verify_task_assignment_boundary(self, agent_id: str, task_type: str, task_description: str) -> Dict[str, Any]:
+        """验证任务分配的能力边界"""
+        task_description_lower = task_description.lower()
+        
+        # 🔧 核心修复：设计智能体能力边界检查
+        if agent_id == "enhanced_real_verilog_agent":
+            # 检测设计智能体禁止的测试台相关任务
+            forbidden_patterns = [
+                (r"testbench|测试台", "明确禁止测试台生成"),
+                (r"生成.*测试", "不负责生成测试相关内容"),
+                (r"仿真.*验证", "不负责仿真验证工作"),
+                (r"验证.*功能", "不负责功能验证"),
+                (r"运行.*仿真", "不负责运行仿真"),
+                (r"测试.*用例", "不负责测试用例生成")
+            ]
+            
+            for pattern, reason in forbidden_patterns:
+                if re.search(pattern, task_description_lower):
+                    return {
+                        "valid": False,
+                        "reason": f"设计智能体能力边界冲突: {reason}",
+                        "suggested_action": "将测试验证部分分配给代码审查智能体(enhanced_real_code_review_agent)",
+                        "agent_capabilities": {
+                            "allowed": ["Verilog模块设计", "代码生成", "功能实现", "代码质量分析"],
+                            "forbidden": ["测试台生成", "仿真验证", "测试执行"]
+                        },
+                        "conflict_details": {
+                            "matched_pattern": pattern,
+                            "conflict_reason": reason,
+                            "agent_policy": "设计智能体System Prompt明确声明'绝不负责测试台(testbench)生成'"
+                        }
+                    }
+        
+        # 🔧 代码审查智能体能力边界检查
+        elif agent_id == "enhanced_real_code_review_agent":
+            # 检测审查智能体不应承担的纯设计任务
+            design_only_patterns = [
+                (r"设计.*模块", "不负责从零开始的模块设计"),
+                (r"实现.*功能", "不负责功能实现，只负责验证"),
+                (r"创建.*电路", "不负责电路创建")
+            ]
+            
+            for pattern, reason in design_only_patterns:
+                if re.search(pattern, task_description_lower) and not re.search(r"测试|验证|testbench", task_description_lower):
+                    return {
+                        "valid": False,
+                        "reason": f"代码审查智能体能力边界警告: {reason}",
+                        "suggested_action": "纯设计任务应分配给设计智能体(enhanced_real_verilog_agent)",
+                        "agent_capabilities": {
+                            "primary": ["测试台生成", "代码审查", "仿真验证", "质量分析"],
+                            "secondary": ["设计验证", "代码优化建议"]
+                        },
+                        "conflict_details": {
+                            "matched_pattern": pattern,
+                            "conflict_reason": reason,
+                            "recommendation": "先由设计智能体完成设计，再由审查智能体验证"
+                        }
+                    }
+        
+        # 通用任务类型和智能体匹配检查
+        agent_task_compatibility = {
+            "enhanced_real_verilog_agent": ["design", "analysis"],
+            "enhanced_real_code_review_agent": ["verification", "review", "test"]
+        }
+        
+        compatible_tasks = agent_task_compatibility.get(agent_id, [])
+        if task_type not in compatible_tasks and task_type != "composite":
+            return {
+                "valid": False,
+                "reason": f"任务类型 '{task_type}' 与智能体 '{agent_id}' 不兼容",
+                "suggested_action": f"请选择适合 '{task_type}' 任务的智能体",
+                "agent_capabilities": {
+                    "compatible_task_types": compatible_tasks
+                },
+                "conflict_details": {
+                    "task_type": task_type,
+                    "agent_id": agent_id,
+                    "compatibility_matrix": agent_task_compatibility
+                }
+            }
+        
+        # 所有检查都通过
+        return {
+            "valid": True,
+            "verification_passed": f"任务分配给 {agent_id} 通过能力边界检查"
+        }
     
     def _get_available_agents(self) -> List[Tuple[str, AgentInfo]]:
         """获取可用智能体列表"""
@@ -5360,6 +5733,382 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             "status": task_status,
             "results": results_summary or {}
         }
+    
+    def _parse_task_completion_check(self, continuation_result: str) -> Dict[str, Any]:
+        """解析任务完成检查结果"""
+        try:
+            json_response = self._extract_json_from_response(continuation_result)
+            if json_response:
+                import json
+                completion_data = json.loads(json_response)
+                
+                # 查找check_task_completion工具调用结果
+                if "tool_calls" in completion_data:
+                    for tool_call in completion_data["tool_calls"]:
+                        if tool_call.get("tool_name") == "check_task_completion":
+                            # 这是工具调用，不是结果
+                            continue
+                
+                # 查找工具执行结果
+                if "is_completed" in completion_data:
+                    return completion_data
+                
+                # 查找嵌套的结果结构
+                for key, value in completion_data.items():
+                    if isinstance(value, dict) and "is_completed" in value:
+                        return value
+                        
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ 解析任务完成检查结果失败: {str(e)}")
+            return None
+    
+    def _block_premature_completion(self, continuation_result: str, completion_check_result: Dict[str, Any]) -> str:
+        """阻止过早的任务完成"""
+        try:
+            # 如果包含provide_final_answer调用，删除它
+            json_response = self._extract_json_from_response(continuation_result)
+            if json_response:
+                import json
+                data = json.loads(json_response)
+                
+                if "tool_calls" in data and isinstance(data["tool_calls"], list):
+                    # 过滤掉provide_final_answer调用
+                    filtered_calls = [
+                        call for call in data["tool_calls"] 
+                        if call.get("tool_name") != "provide_final_answer"
+                    ]
+                    
+                    if len(filtered_calls) != len(data["tool_calls"]):
+                        self.logger.warning(f"🚫 已阻止过早的provide_final_answer调用")
+                        
+                        # 添加强制继续协调的指令
+                        missing_reqs = completion_check_result.get("missing_requirements", [])
+                        completion_score = completion_check_result.get("completion_score", 0)
+                        
+                        forced_continuation = {
+                            "tool_calls": [{
+                                "tool_name": "assign_task_to_agent",
+                                "parameters": {
+                                    "agent_id": "enhanced_real_code_review_agent",
+                                    "task_description": f"完成缺失的任务项: {', '.join(missing_reqs[:3])}。当前完成分数仅{completion_score}，需要生成测试台和进行验证。",
+                                    "task_type": "verification",
+                                    "priority": "high"
+                                }
+                            }]
+                        }
+                        
+                        return f"```json\n{json.dumps(forced_continuation, ensure_ascii=False, indent=2)}\n```"
+            
+            # 如果无法修改，返回原始结果但添加警告
+            return continuation_result + "\n\n⚠️ 警告：任务未完成，不允许结束。"
+            
+        except Exception as e:
+            self.logger.error(f"❌ 阻止过早完成失败: {str(e)}")
+            return continuation_result
+    
+    def _detect_task_hallucination(self, agent_id: str, result: Dict[str, Any], task_context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """检测智能体任务幻觉"""
+        hallucination_details = {
+            "has_hallucination": False,
+            "hallucination_type": "none",
+            "description": "",
+            "confidence": 0.0,
+            "evidence": [],
+            "suggested_recovery": ""
+        }
+        
+        try:
+            # 🔧 核心幻觉检测：设计智能体声称生成测试台
+            if agent_id == "enhanced_real_verilog_agent":
+                claimed_files = result.get("generated_files", [])
+                result_text = str(result).lower()
+                
+                # 检测测试台生成幻觉
+                testbench_indicators = [
+                    "testbench", "测试台", "_tb.v", "counter_tb.v", 
+                    "test_bench", "verification", "仿真验证"
+                ]
+                
+                has_testbench_claim = False
+                evidence = []
+                
+                # 检查声称的文件列表
+                for file_name in claimed_files:
+                    if any(indicator in file_name.lower() for indicator in testbench_indicators):
+                        has_testbench_claim = True
+                        evidence.append(f"声称生成文件: {file_name}")
+                
+                # 检查结果描述文本
+                for indicator in testbench_indicators:
+                    if indicator in result_text:
+                        has_testbench_claim = True
+                        evidence.append(f"描述中提及: {indicator}")
+                
+                if has_testbench_claim:
+                    hallucination_details.update({
+                        "has_hallucination": True,
+                        "hallucination_type": "capability_boundary_violation",
+                        "description": "设计智能体违反能力边界，声称生成了明确禁止的测试台文件",
+                        "confidence": 0.95,
+                        "evidence": evidence,
+                        "suggested_recovery": "重新分配测试台生成任务给代码审查智能体"
+                    })
+                    return hallucination_details
+            
+            # 检测文件存在性幻觉
+            if "generated_files" in result:
+                claimed_files = result["generated_files"]
+                if isinstance(claimed_files, list) and claimed_files:
+                    non_existent_files = []
+                    
+                    for file_path in claimed_files:
+                        if isinstance(file_path, str):
+                            # 检查文件是否真实存在
+                            from pathlib import Path
+                            if not Path(file_path).exists():
+                                # 检查是否在实验目录中
+                                experiment_paths = [
+                                    f"experiments/{file_path}",
+                                    f"logs/*/artifacts/{file_path}",
+                                    f"designs/{file_path}",
+                                    f"testbenches/{file_path}"
+                                ]
+                                
+                                file_found = False
+                                for exp_path in experiment_paths:
+                                    if any(Path(".").glob(exp_path)):
+                                        file_found = True
+                                        break
+                                
+                                if not file_found:
+                                    non_existent_files.append(file_path)
+                    
+                    if non_existent_files:
+                        hallucination_details.update({
+                            "has_hallucination": True,
+                            "hallucination_type": "file_existence_hallucination",
+                            "description": f"声称生成了不存在的文件: {', '.join(non_existent_files)}",
+                            "confidence": 0.8,
+                            "evidence": [f"文件不存在: {f}" for f in non_existent_files],
+                            "suggested_recovery": "重新执行任务，确保实际生成文件"
+                        })
+                        return hallucination_details
+            
+            # 检测功能完成度幻觉
+            claimed_status = result.get("status", "").lower()
+            claimed_quality = result.get("code_quality", "").lower()
+            
+            if claimed_status == "success" and claimed_quality in ["high", "excellent"]:
+                # 检查是否有实际的成功指标
+                success_indicators = [
+                    result.get("generated_files"),
+                    result.get("file_references"),
+                    result.get("output_files")
+                ]
+                
+                has_concrete_output = any(
+                    indicator and len(indicator) > 0 
+                    for indicator in success_indicators 
+                    if indicator is not None
+                )
+                
+                if not has_concrete_output:
+                    hallucination_details.update({
+                        "has_hallucination": True,
+                        "hallucination_type": "success_status_hallucination", 
+                        "description": "声称任务成功完成但缺乏具体的输出证据",
+                        "confidence": 0.6,
+                        "evidence": ["声称状态为success", "声称高质量", "但无具体输出文件"],
+                        "suggested_recovery": "要求智能体提供具体的成果证据"
+                    })
+                    return hallucination_details
+            
+            # 默认：无幻觉检测到
+            return hallucination_details
+            
+        except Exception as e:
+            self.logger.error(f"❌ 幻觉检测失败: {str(e)}")
+            return hallucination_details
+    
+    def _manage_serial_workflow(self, task_context: TaskContext, task_analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """管理串行工作流: 设计→审查→验证"""
+        
+        # 检查当前工作流阶段
+        current_stage = self._determine_workflow_stage(task_context, task_analysis)
+        self.logger.info(f"🔄 当前工作流阶段: {current_stage}")
+        
+        workflow_plan = {
+            "current_stage": current_stage,
+            "next_action": None,
+            "stage_completed": False,
+            "workflow_complete": False,
+            "quality_gate_passed": False
+        }
+        
+        if current_stage == "initial":
+            # 开始设计阶段
+            workflow_plan.update({
+                "next_action": {
+                    "type": "assign_task",
+                    "agent_id": "enhanced_real_verilog_agent", 
+                    "task_type": "design",
+                    "description": "执行Verilog模块设计任务（仅设计，不包括测试台）"
+                },
+                "stage_name": "design_stage",
+                "expected_outputs": ["Verilog设计文件", "设计文档"]
+            })
+            
+        elif current_stage == "design_completed":
+            # 设计完成，进入审查/验证阶段
+            # 首先检查设计质量门控
+            design_quality = self._evaluate_design_quality_gate(task_context)
+            
+            if design_quality["passed"]:
+                workflow_plan.update({
+                    "next_action": {
+                        "type": "assign_task",
+                        "agent_id": "enhanced_real_code_review_agent",
+                        "task_type": "verification", 
+                        "description": "对设计进行代码审查并生成测试台验证功能",
+                        "context_files": design_quality.get("design_files", [])
+                    },
+                    "stage_name": "verification_stage",
+                    "expected_outputs": ["测试台文件", "验证报告", "质量分析报告"],
+                    "quality_gate_passed": True
+                })
+            else:
+                # 设计质量不过关，重新设计
+                workflow_plan.update({
+                    "next_action": {
+                        "type": "retry_design",
+                        "agent_id": "enhanced_real_verilog_agent",
+                        "task_type": "design",
+                        "description": f"重新设计，解决质量问题: {', '.join(design_quality.get('issues', []))}"
+                    },
+                    "stage_name": "design_retry",
+                    "quality_gate_passed": False,
+                    "retry_reason": design_quality.get("issues", [])
+                })
+        
+        elif current_stage == "verification_completed":
+            # 验证完成，检查整体完成度
+            verification_quality = self._evaluate_verification_quality_gate(task_context)
+            
+            if verification_quality["passed"]:
+                workflow_plan.update({
+                    "next_action": {
+                        "type": "provide_final_answer",
+                        "description": "所有阶段完成，提供最终答案"
+                    },
+                    "stage_name": "completion",
+                    "workflow_complete": True,
+                    "quality_gate_passed": True
+                })
+            else:
+                # 验证不完整，重新验证
+                workflow_plan.update({
+                    "next_action": {
+                        "type": "retry_verification", 
+                        "agent_id": "enhanced_real_code_review_agent",
+                        "task_type": "verification",
+                        "description": f"重新验证，补充缺失项: {', '.join(verification_quality.get('missing_items', []))}"
+                    },
+                    "stage_name": "verification_retry",
+                    "quality_gate_passed": False,
+                    "retry_reason": verification_quality.get("missing_items", [])
+                })
+        
+        return workflow_plan
+    
+    def _determine_workflow_stage(self, task_context: TaskContext, task_analysis: Dict[str, Any]) -> str:
+        """确定当前工作流阶段"""
+        
+        # 检查智能体执行历史
+        agent_results = task_context.agent_results
+        
+        if not agent_results:
+            return "initial"
+        
+        has_design_results = "enhanced_real_verilog_agent" in agent_results
+        has_verification_results = "enhanced_real_code_review_agent" in agent_results
+        
+        if has_verification_results:
+            return "verification_completed"
+        elif has_design_results:
+            return "design_completed" 
+        else:
+            return "initial"
+    
+    def _evaluate_design_quality_gate(self, task_context: TaskContext) -> Dict[str, Any]:
+        """评估设计阶段质量门控"""
+        
+        design_results = task_context.agent_results.get("enhanced_real_verilog_agent")
+        if not design_results:
+            return {
+                "passed": False,
+                "issues": ["设计结果不存在"],
+                "design_files": []
+            }
+        
+        result = design_results.get("result", {})
+        analysis = design_results.get("analysis", {})
+        
+        # 质量门控标准
+        quality_gates = {
+            "has_generated_files": len(result.get("generated_files", [])) > 0,
+            "status_success": result.get("status") == "success",
+            "quality_acceptable": analysis.get("quality_score", 0) >= 60.0,
+            "no_hallucination": not analysis.get("hallucination_detected", False)
+        }
+        
+        issues = []
+        for gate, passed in quality_gates.items():
+            if not passed:
+                issues.append(f"质量门控失败: {gate}")
+        
+        return {
+            "passed": all(quality_gates.values()),
+            "issues": issues,
+            "design_files": result.get("generated_files", []),
+            "quality_score": analysis.get("quality_score", 0),
+            "quality_gates": quality_gates
+        }
+    
+    def _evaluate_verification_quality_gate(self, task_context: TaskContext) -> Dict[str, Any]:
+        """评估验证阶段质量门控"""
+        
+        verification_results = task_context.agent_results.get("enhanced_real_code_review_agent")
+        if not verification_results:
+            return {
+                "passed": False,
+                "missing_items": ["验证结果不存在"]
+            }
+        
+        result = verification_results.get("result", {})
+        analysis = verification_results.get("analysis", {})
+        
+        # 验证门控标准
+        verification_gates = {
+            "has_testbench": any("test" in f.lower() or "_tb" in f.lower() for f in result.get("generated_files", [])),
+            "status_success": result.get("status") == "success", 
+            "quality_acceptable": analysis.get("quality_score", 0) >= 70.0,
+            "verification_complete": result.get("verification", "") == "completed"
+        }
+        
+        missing_items = []
+        for gate, passed in verification_gates.items():
+            if not passed:
+                missing_items.append(f"验证门控失败: {gate}")
+        
+        return {
+            "passed": all(verification_gates.values()),
+            "missing_items": missing_items,
+            "verification_files": result.get("generated_files", []),
+            "quality_score": analysis.get("quality_score", 0),
+            "verification_gates": verification_gates
+        }
 
     def _extract_design_file_path_from_previous_results(self) -> Optional[str]:
         """从之前的智能体结果中提取设计文件路径（增强版本）"""
@@ -5457,6 +6206,61 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             self.logger.error(f"详细错误: {traceback.format_exc()}")
             return None
     
+    def _validate_design_file_before_distribution(self, design_content: str, file_path: str, target_agent_id: str):
+        """在分发设计文件给智能体之前验证其完整性"""
+        try:
+            from core.code_consistency_checker import get_consistency_checker
+            checker = get_consistency_checker()
+            
+            # 验证代码完整性
+            expected_features = ["parameterized", "width_parameter", "enable_input", "reset_input"]
+            validation_result = checker.validate_code_parameter(design_content, expected_features)
+            
+            # 记录验证结果
+            if validation_result['valid']:
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    signature = module_info.get_signature()
+                    self.logger.info(f"✅ [协调器→{target_agent_id}] 设计文件验证通过: {signature}")
+                    self.logger.info(f"✅ [协调器→{target_agent_id}] 文件: {file_path}")
+            else:
+                issues = validation_result.get('issues', [])
+                self.logger.error(f"❌ [协调器→{target_agent_id}] 设计文件验证失败: {issues}")
+                
+                # 记录详细信息
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    signature = module_info.get_signature()
+                    self.logger.error(f"❌ [协调器→{target_agent_id}] 文件: {file_path}")
+                    self.logger.error(f"❌ [协调器→{target_agent_id}] 代码签名: {signature}")
+                    self.logger.error(f"❌ [协调器→{target_agent_id}] 代码行数: {module_info.line_count}")
+                
+                # 🚨 重要：如果分发的代码不完整，这会导致下游智能体产生不匹配的结果
+                self.logger.error(f"🚨 [协调器] 警告：正在分发不完整的设计代码给{target_agent_id}，这可能导致上下文传递问题")
+                
+        except Exception as e:
+            self.logger.warning(f"⚠️ [协调器→{target_agent_id}] 设计文件验证过程中发生错误: {str(e)}")
+    
+    def _validate_inter_agent_context_consistency(self, task_file_context, current_agent_id: str):
+        """验证智能体间的上下文一致性"""
+        try:
+            # 检查是否有多个Verilog文件需要验证一致性
+            consistency_results = task_file_context.validate_all_files_consistency()
+            
+            if consistency_results and not consistency_results.get('error'):
+                # 有一致性检查结果
+                for comparison_key, result in consistency_results.items():
+                    if not result['consistent']:
+                        self.logger.error(f"❌ [协调器] 智能体间上下文不一致: {comparison_key}")
+                        self.logger.error(f"❌ [协调器] 不一致问题: {result['issues']}")
+                        self.logger.error(f"❌ [协调器] 修复建议: {result['recommendations']}")
+                        self.logger.error(f"🚨 [协调器] 当前智能体{current_agent_id}可能会接收到错误的上下文")
+                    else:
+                        self.logger.info(f"✅ [协调器] 智能体间上下文一致性验证通过: {comparison_key} (置信度: {result['confidence']:.2f})")
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ [协调器] 智能体间上下文一致性验证失败: {str(e)}")
+
     def _extract_module_name_from_verilog(self, verilog_code: str) -> str:
         """从Verilog代码中提取模块名（与review agent保持一致的实现）"""
         import re
@@ -5575,6 +6379,9 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                 # 上下文调试日志
                 content_checksum = hashlib.md5(design_content.encode('utf-8')).hexdigest()[:8]
                 self.logger.debug(f"🧠 文件内容读取 - 文件: {design_file_path}, 长度: {len(design_content)}, 校验: {content_checksum}")
+                
+                # 🔧 新增：验证设计文件完整性
+                self._validate_design_file_before_distribution(design_content, design_file_path, agent_id)
                 
                 # 提取实际模块名
                 actual_module_name = self._extract_module_name_from_verilog(design_content)
@@ -5830,6 +6637,99 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         except Exception as e:
             self.logger.error(f"❌ 继承全局文件上下文失败: {e}")
             return 0
+    
+    def _evaluate_composite_task_workflow(self, all_results: Dict[str, Any], 
+                                        original_requirements: str, 
+                                        task_context: TaskContext,
+                                        completion_criteria: Dict[str, Any] = None) -> Dict[str, Any]:
+        """评估复合任务的工作流完成情况，使用质量门控"""
+        
+        # 评估各个阶段的质量门控
+        design_quality = self._evaluate_design_quality_gate(task_context)
+        verification_quality = self._evaluate_verification_quality_gate(task_context)
+        
+        # 计算总体完成度
+        design_weight = 0.6  # 设计阶段权重
+        verification_weight = 0.4  # 验证阶段权重
+        
+        design_score = design_quality.get("quality_score", 0) if design_quality.get("passed") else 0
+        verification_score = verification_quality.get("quality_score", 0) if verification_quality.get("passed") else 0
+        
+        overall_quality_score = (design_score * design_weight) + (verification_score * verification_weight)
+        
+        # 检查必要的阶段是否完成
+        has_design = "enhanced_real_verilog_agent" in all_results
+        has_verification = "enhanced_real_code_review_agent" in all_results
+        
+        design_successful = has_design and all_results["enhanced_real_verilog_agent"].get("success", False)
+        verification_successful = has_verification and all_results["enhanced_real_code_review_agent"].get("success", False)
+        
+        # 决定任务是否完成
+        is_completed = design_successful and verification_successful and design_quality.get("passed") and verification_quality.get("passed")
+        completion_score = 100 if is_completed else (60 if design_successful and verification_successful else (40 if design_successful else 10))
+        
+        # 收集缺失项
+        missing_requirements = []
+        if not design_successful:
+            missing_requirements.append("设计阶段未成功完成")
+        if not verification_successful:
+            missing_requirements.append("验证阶段未成功完成")
+        if not design_quality.get("passed"):
+            missing_requirements.extend(design_quality.get("issues", []))
+        if not verification_quality.get("passed"):
+            missing_requirements.extend(verification_quality.get("missing_items", []))
+        
+        # 确定下一步行动
+        next_steps = []
+        if not design_successful:
+            next_steps.append("需要完成Verilog设计任务")
+        elif not verification_successful:
+            next_steps.append("需要完成代码审查和验证任务")
+        elif not design_quality.get("passed"):
+            next_steps.append("需要重新设计，解决质量门控问题")
+        elif not verification_quality.get("passed"):
+            next_steps.append("需要重新验证，补充缺失的验证项")
+        else:
+            next_steps.append("任务已完成，可以提供最终答案")
+        
+        # 质量评估
+        if overall_quality_score >= 80:
+            quality_assessment = "excellent"
+        elif overall_quality_score >= 60:
+            quality_assessment = "good" 
+        elif overall_quality_score >= 40:
+            quality_assessment = "fair"
+        else:
+            quality_assessment = "poor"
+        
+        return {
+            "is_completed": is_completed,
+            "completion_score": overall_quality_score,
+            "missing_requirements": missing_requirements,
+            "quality_assessment": quality_assessment,
+            "next_steps": next_steps,
+            "detailed_analysis": {
+                "workflow_type": "composite_task",
+                "design_stage": {
+                    "completed": design_successful,
+                    "quality_passed": design_quality.get("passed"),
+                    "quality_score": design_score,
+                    "issues": design_quality.get("issues", [])
+                },
+                "verification_stage": {
+                    "completed": verification_successful,
+                    "quality_passed": verification_quality.get("passed"),
+                    "quality_score": verification_score,
+                    "missing_items": verification_quality.get("missing_items", [])
+                },
+                "overall_workflow_score": overall_quality_score
+            },
+            "performance_metrics": {
+                "total_agents_used": len(all_results),
+                "workflow_stages_completed": len(task_context.workflow_stages),
+                "total_execution_time": task_context.performance_metrics.get("total_execution_time", 0)
+            }
+        }
     
     async def _tool_get_tool_usage_guide(self, include_examples: bool = True,
                                        include_best_practices: bool = True) -> Dict[str, Any]:

@@ -2965,7 +2965,7 @@ class BaseAgent(ABC):
         return enhanced_request
     
     def _check_context_before_tool_call(self, tool_call: ToolCall):
-        """工具调用前的上下文检查"""
+        """工具调用前的上下文检查 - 增强版，支持代码一致性验证"""
         tool_name = tool_call.tool_name
         parameters = tool_call.parameters
         
@@ -2998,6 +2998,106 @@ class BaseAgent(ABC):
                 else:
                     self.logger.warning(f"🧠 未找到合适的缓存文件用于工具 {tool_name}")
             else:
-                self.logger.info(f"🧠 工具 {tool_name} 已有代码参数，无需从缓存恢复")
+                # 🔧 新增：即使已有代码参数，也要验证其完整性和一致性
+                self.logger.info(f"🧠 工具 {tool_name} 已有代码参数，正在验证代码完整性...")
+                self._validate_and_fix_code_parameter(tool_call)
         else:
             self.logger.info(f"🧠 工具 {tool_name} 不需要上下文检查")
+    
+    def _validate_and_fix_code_parameter(self, tool_call: ToolCall):
+        """验证并修复代码参数的完整性"""
+        try:
+            # 导入代码一致性检查器
+            from core.code_consistency_checker import get_consistency_checker
+            checker = get_consistency_checker()
+            
+            # 获取当前代码参数
+            code_params = ["module_code", "code", "verilog_code", "design_code"]
+            current_code = None
+            code_param_name = None
+            
+            for param in code_params:
+                if param in tool_call.parameters and tool_call.parameters[param]:
+                    current_code = tool_call.parameters[param]
+                    code_param_name = param
+                    break
+            
+            if not current_code:
+                self.logger.warning("⚠️ 没有找到代码参数，跳过验证")
+                return
+            
+            # 验证代码完整性
+            expected_features = ["parameterized", "width_parameter", "enable_input", "reset_input"]
+            validation_result = checker.validate_code_parameter(current_code, expected_features)
+            
+            self.logger.info(f"🔍 代码完整性验证结果: {'通过' if validation_result['valid'] else '失败'}")
+            
+            if not validation_result['valid']:
+                self.logger.warning(f"⚠️ 代码完整性验证失败: {validation_result.get('issues', [])}")
+                
+                # 尝试从文件系统获取完整代码
+                corrected_code = self._get_complete_code_from_files()
+                if corrected_code:
+                    # 检查修正后的代码
+                    corrected_validation = checker.validate_code_parameter(corrected_code, expected_features)
+                    if corrected_validation['valid']:
+                        self.logger.info("✅ 从文件系统获取到完整代码，正在替换参数")
+                        tool_call.parameters[code_param_name] = corrected_code
+                        
+                        # 记录修复信息
+                        original_info = validation_result.get('module_info')
+                        corrected_info = corrected_validation.get('module_info')
+                        if original_info and corrected_info:
+                            self.logger.info(f"🔧 代码修复: {original_info.get_signature()} -> {corrected_info.get_signature()}")
+                    else:
+                        self.logger.warning("⚠️ 文件系统中的代码也不完整，继续使用原始代码")
+                else:
+                    self.logger.warning("⚠️ 无法从文件系统获取完整代码")
+            else:
+                # 即使验证通过，也记录代码信息用于调试
+                module_info = validation_result.get('module_info')
+                if module_info:
+                    self.logger.info(f"✅ 代码完整性验证通过: {module_info.get_signature()}")
+                    
+        except Exception as e:
+            self.logger.warning(f"⚠️ 代码参数验证过程中发生错误: {str(e)}")
+            # 验证失败不应阻塞工具执行，继续使用原始参数
+    
+    def _get_complete_code_from_files(self) -> Optional[str]:
+        """从文件系统获取完整的代码"""
+        try:
+            # 首先尝试从任务上下文获取
+            if hasattr(self, 'current_task_context') and self.current_task_context:
+                primary_content = self.current_task_context.get_primary_design_content()
+                if primary_content:
+                    self.logger.info("📄 从任务上下文获取主设计文件内容")
+                    return primary_content
+            
+            # 然后尝试从缓存获取
+            cached_files = self.agent_state_cache.get("last_read_files", {})
+            for filepath, file_info in cached_files.items():
+                if file_info.get("file_type") in ["verilog", "systemverilog"]:
+                    content = file_info.get("content", "")
+                    if content and len(content) > 500:  # 假设完整代码应该比较长
+                        self.logger.info(f"📄 从缓存获取完整代码: {filepath}")
+                        return content
+            
+            # 最后尝试从文件操作管理器获取最近的文件
+            if hasattr(self, 'file_operation_manager'):
+                recent_files = self.file_operation_manager.get_recent_files()
+                for file_path in recent_files:
+                    if file_path.endswith(('.v', '.sv')):
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                                if content and len(content) > 500:
+                                    self.logger.info(f"📄 从文件系统读取完整代码: {file_path}")
+                                    return content
+                        except Exception as e:
+                            self.logger.debug(f"读取文件失败: {file_path}, {e}")
+            
+            return None
+            
+        except Exception as e:
+            self.logger.warning(f"获取完整代码失败: {str(e)}")
+            return None
