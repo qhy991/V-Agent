@@ -1859,97 +1859,147 @@ class EnhancedRealCodeReviewAgent(EnhancedBaseAgent):
                             self.logger.warning(f"⚠️ 从文件管理器获取代码失败: {str(e)}")
             
             if use_file_paths and module_file and testbench_file:
-                mod_file = Path(module_file)
-                tb_file = Path(testbench_file)
+                # 🔧 集成统一路径管理器进行智能文件搜索
+                from core.path_manager import get_path_manager
                 
-                # 智能文件搜索和验证
-                # 首先尝试直接路径
-                if not mod_file.exists():
-                    # 搜索多个可能的路径
-                    search_paths = [
-                        Path(module_file),
-                        Path("file_workspace/designs") / module_file,
-                        Path("file_workspace") / module_file,
-                        Path.cwd() / "file_workspace/designs" / module_file,
-                        Path.cwd() / "file_workspace" / module_file,
-                    ]
-                    
-                    mod_file_found = False
-                    for path in search_paths:
-                        if path.exists():
-                            mod_file = path
-                            mod_file_found = True
-                            self.logger.info(f"📁 找到模块文件: {mod_file}")
-                            break
-                    
-                    if not mod_file_found:
-                        return {
-                            "success": False,
-                            "error": f"模块文件不存在: {module_file}，已搜索路径: {[str(p) for p in search_paths]}",
-                            "stage": "file_validation"
-                        }
+                # 获取当前实验路径上下文
+                experiment_path = getattr(self, 'current_experiment_path', None)
+                if hasattr(self, 'agent_state_cache') and self.agent_state_cache:
+                    task_file_context = self.agent_state_cache.get("task_file_context")
+                    if task_file_context and isinstance(task_file_context, dict):
+                        experiment_path = task_file_context.get("experiment_path")
                 
-                if not tb_file.exists():
-                    # 智能文件搜索 - 支持多种命名格式，优先新格式
-                    module_name = Path(module_file).stem  # 获取模块名（不含扩展名）
+                # 🔧 初始化增强路径管理器，使用实验路径作为基础工作空间和当前实验路径
+                base_workspace = Path(experiment_path) if experiment_path else Path.cwd()
+                current_experiment_path = Path(experiment_path) if experiment_path else None
+                path_manager = get_path_manager(base_workspace, current_experiment_path)
+                
+                self.logger.info(f"🔍 使用增强路径管理器搜索文件，基础工作空间: {base_workspace}，当前实验: {current_experiment_path}")
+                
+                # 🔍 解析设计文件路径，优先从当前实验目录搜索
+                module_name = Path(module_file).stem
+                design_result = path_manager.resolve_design_file(module_name, module_file)
+                
+                if not design_result.found:
+                    # 降级到传统搜索方法
+                    self.logger.warning(f"⚠️ 路径管理器未找到设计文件，降级到传统搜索方法")
+                    mod_file = Path(module_file)
                     
-                    # 生成可能的测试台文件名（按优先级排序）
-                    possible_tb_names = [
-                        f"testbench_{module_name}.v",  # 新格式：testbench_module.v（最高优先级）
-                        f"{module_name}_tb.v",  # 标准格式：module_tb.v
-                        f"{module_name}_testbench.v",  # 后缀格式：module_testbench.v
-                        f"tb_{module_name}.v",  # 短前缀格式：tb_module.v
-                        testbench_file,  # 原始文件名（最低优先级）
-                    ]
-                    
-                    # 搜索多个可能的路径
-                    search_paths = []
-                    for tb_name in possible_tb_names:
-                        search_paths.extend([
-                            Path(tb_name),
-                            Path("file_workspace/testbenches") / tb_name,
-                            Path("file_workspace") / tb_name,
-                            Path.cwd() / "file_workspace/testbenches" / tb_name,
-                            Path.cwd() / "file_workspace" / tb_name,
-                        ])
-                    
-                    tb_file_found = False
-                    for path in search_paths:
-                        if path.exists():
-                            # 验证文件语法（简单检查）
-                            if await self._validate_verilog_file(path):
-                                tb_file = path
-                                tb_file_found = True
-                                self.logger.info(f"📁 找到有效测试台文件: {tb_file}")
+                    if not mod_file.exists():
+                        # 使用传统搜索路径作为fallback
+                        fallback_search_paths = [
+                            Path(module_file),
+                            Path("file_workspace/designs") / module_file,
+                            Path("file_workspace") / module_file,
+                            Path.cwd() / "file_workspace/designs" / module_file,
+                            Path.cwd() / "file_workspace" / module_file,
+                        ]
+                        
+                        mod_file_found = False
+                        for path in fallback_search_paths:
+                            if path.exists():
+                                mod_file = path
+                                mod_file_found = True
+                                self.logger.info(f"📁 传统搜索找到模块文件: {mod_file}")
                                 break
-                            else:
-                                self.logger.warning(f"⚠️ 跳过语法错误的文件: {path}")
+                        
+                        if not mod_file_found:
+                            return {
+                                "success": False,
+                                "error": f"模块文件不存在: {module_file}",
+                                "searched_paths": [str(p) for p in design_result.searched_paths + fallback_search_paths],
+                                "stage": "file_validation",
+                                "path_manager_result": {
+                                    "found": design_result.found,
+                                    "error": design_result.error,
+                                    "searched_paths": [str(p) for p in design_result.searched_paths]
+                                }
+                            }
+                    else:
+                        self.logger.info(f"📁 直接路径找到模块文件: {mod_file}")
+                else:
+                    mod_file = design_result.path
+                    self.logger.info(f"✅ 路径管理器成功找到设计文件: {mod_file}")
+                
+                # 解析测试台文件路径
+                tb_file = Path(testbench_file)
+                testbench_result = path_manager.resolve_testbench_file(module_name, testbench_file)
+                
+                if not testbench_result.found:
+                    # 降级到传统搜索方法
+                    self.logger.warning(f"⚠️ 路径管理器未找到测试台文件，降级到传统搜索方法")
                     
-                    if not tb_file_found:
-                        # 如果找不到文件，尝试从文件管理器获取最新生成的文件
-                        try:
-                            from core.file_manager import get_file_manager
-                            file_manager = get_file_manager()
-                            testbench_files = file_manager.get_files_by_type("testbench")
-                            
-                            # 查找匹配模块名的测试台文件
-                            for file_ref in testbench_files:
-                                filename = Path(file_ref.file_path).stem
-                                if module_name.lower() in filename.lower():
-                                    if await self._validate_verilog_file(Path(file_ref.file_path)):
-                                        tb_file = Path(file_ref.file_path)
-                                        tb_file_found = True
-                                        self.logger.info(f"📁 从文件管理器找到测试台文件: {tb_file}")
-                                        break
-                        except Exception as e:
-                            self.logger.warning(f"⚠️ 从文件管理器查找文件失败: {str(e)}")
-                    
-                    if not tb_file_found:
-                        return {
-                            "success": False,
-                            "error": f"测试台文件不存在或语法错误: {testbench_file}，已搜索路径: {[str(p) for p in search_paths[:10]]}...",
-                            "stage": "file_validation"
-                        }
+                    if not tb_file.exists():
+                        # 智能文件搜索 - 支持多种命名格式，优先新格式
+                        
+                        # 生成可能的测试台文件名（按优先级排序）
+                        possible_tb_names = [
+                            f"testbench_{module_name}.v",  # 新格式：testbench_module.v（最高优先级）
+                            f"{module_name}_tb.v",  # 标准格式：module_tb.v
+                            f"{module_name}_testbench.v",  # 后缀格式：module_testbench.v
+                            f"tb_{module_name}.v",  # 短前缀格式：tb_module.v
+                            testbench_file,  # 原始文件名（最低优先级）
+                        ]
+                        
+                        # 使用传统搜索路径作为fallback
+                        fallback_tb_search_paths = []
+                        for tb_name in possible_tb_names:
+                            fallback_tb_search_paths.extend([
+                                Path(tb_name),
+                                Path("file_workspace/testbenches") / tb_name,
+                                Path("file_workspace") / tb_name,
+                                Path.cwd() / "file_workspace/testbenches" / tb_name,
+                                Path.cwd() / "file_workspace" / tb_name,
+                            ])
+                        
+                        tb_file_found = False
+                        for path in fallback_tb_search_paths:
+                            if path.exists():
+                                # 验证文件语法（简单检查）
+                                if await self._validate_verilog_file(path):
+                                    tb_file = path
+                                    tb_file_found = True
+                                    self.logger.info(f"📁 传统搜索找到有效测试台文件: {tb_file}")
+                                    break
+                                else:
+                                    self.logger.warning(f"⚠️ 跳过语法错误的文件: {path}")
+                        
+                        if not tb_file_found:
+                            # 如果找不到文件，尝试从文件管理器获取最新生成的文件
+                            try:
+                                from core.file_manager import get_file_manager
+                                file_manager = get_file_manager()
+                                testbench_files = file_manager.get_files_by_type("testbench")
+                                
+                                # 查找匹配模块名的测试台文件
+                                for file_ref in testbench_files:
+                                    filename = Path(file_ref.file_path).stem
+                                    if module_name.lower() in filename.lower():
+                                        if await self._validate_verilog_file(Path(file_ref.file_path)):
+                                            tb_file = Path(file_ref.file_path)
+                                            tb_file_found = True
+                                            self.logger.info(f"📁 从文件管理器找到测试台文件: {tb_file}")
+                                            break
+                            except Exception as e:
+                                self.logger.warning(f"⚠️ 从文件管理器查找文件失败: {str(e)}")
+                        
+                        if not tb_file_found:
+                            return {
+                                "success": False,
+                                "error": f"测试台文件不存在或语法错误: {testbench_file}",
+                                "searched_paths": [str(p) for p in testbench_result.searched_paths + fallback_tb_search_paths],
+                                "stage": "file_validation",
+                                "path_manager_result": {
+                                    "found": testbench_result.found,
+                                    "error": testbench_result.error,
+                                    "searched_paths": [str(p) for p in testbench_result.searched_paths]
+                                }
+                            }
+                    else:
+                        self.logger.info(f"📁 直接路径找到测试台文件: {tb_file}")
+                else:
+                    tb_file = testbench_result.path
+                    self.logger.info(f"✅ 路径管理器成功找到测试台文件: {tb_file}")
                 
                 # 🔍 应用智能依赖分析
                 try:

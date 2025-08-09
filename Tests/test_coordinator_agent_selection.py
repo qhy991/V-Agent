@@ -19,7 +19,7 @@ from typing import Dict, Any
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config.config import FrameworkConfig
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from agents.real_verilog_agent import RealVerilogDesignAgent
 from agents.real_code_reviewer import RealCodeReviewAgent
 from core.enhanced_logging_config import setup_enhanced_logging
@@ -33,7 +33,7 @@ async def test_coordinator_intelligence():
     # 初始化
     config = FrameworkConfig.from_env()
     log_session = setup_enhanced_logging("coordinator_test")
-    coordinator = CentralizedCoordinator(config)
+    coordinator = LLMCoordinatorAgent(config)
     
     # 初始化智能体
     verilog_agent = RealVerilogDesignAgent(config)
@@ -204,7 +204,7 @@ async def test_direct_agent_calling():
     
     # 通过协调器调用
     print("\n🧠 通过协调器调用...")
-    coordinator = CentralizedCoordinator(config)
+    coordinator = LLMCoordinatorAgent(config)
     coordinator.register_agent(verilog_agent)
     
     start_time = time.time()

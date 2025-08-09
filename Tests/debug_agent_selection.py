@@ -12,7 +12,7 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from core.base_agent import BaseAgent
 from core.enums import AgentCapability, AgentStatus
 from config.config import FrameworkConfig, CoordinatorConfig
@@ -86,7 +86,7 @@ async def test_agent_selection():
     # llm_client = EnhancedLLMClient(framework_config)
     
     # Create coordinator
-    coordinator = CentralizedCoordinator(framework_config, llm_client)
+    coordinator = LLMCoordinatorAgent(framework_config, llm_client)
     
     # Register mock agents
     verilog_agent = MockVerilogAgent()

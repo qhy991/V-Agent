@@ -21,7 +21,7 @@ from core.response_format import (
     create_success_response, create_error_response, create_progress_response
 )
 from core.response_parser import ResponseParser, ResponseParseError
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from config.config import FrameworkConfig
 
 # 设置日志
@@ -217,7 +217,7 @@ async def test_coordinator_integration():
         config = FrameworkConfig.from_env()
         
         # 创建协调者
-        coordinator = CentralizedCoordinator(config)
+        coordinator = LLMCoordinatorAgent(config)
         
         # 测试设置响应格式
         coordinator.set_preferred_response_format(ResponseFormat.JSON)

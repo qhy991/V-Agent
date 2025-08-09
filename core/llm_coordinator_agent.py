@@ -6129,16 +6129,24 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
                         # 方法1：直接从 agent_result 中获取 design_file_path
                         if "design_file_path" in agent_result:
                             path = agent_result["design_file_path"]
-                            found_files.append(path)
-                            self.logger.info(f"📁 方法1找到设计文件: {path}")
+                            # 🔧 修复：检查路径是否有效
+                            if path and isinstance(path, (str, os.PathLike)):
+                                found_files.append(path)
+                                self.logger.info(f"📁 方法1找到设计文件: {path}")
+                            else:
+                                self.logger.warning(f"⚠️ 方法1文件路径无效: {path}")
                         
                         # 方法2：从 response 中解析文件路径
                         response = agent_result.get("response", "")
                         if isinstance(response, dict):
                             if "file_path" in response:
                                 path = response["file_path"]
-                                found_files.append(path)
-                                self.logger.info(f"📁 方法2找到设计文件: {path}")
+                                # 🔧 修复：检查路径是否有效
+                                if path and isinstance(path, (str, os.PathLike)):
+                                    found_files.append(path)
+                                    self.logger.info(f"📁 方法2找到设计文件: {path}")
+                                else:
+                                    self.logger.warning(f"⚠️ 方法2文件路径无效: {path}")
                             
                             # 检查 generated_files 字段
                             if "generated_files" in response:
@@ -6345,22 +6353,29 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
         # 检查是否有优化版本
         for keyword in priority_keywords:
             for file in found_files:
-                if keyword in os.path.basename(file).lower():
+                # 🔧 修复：检查文件路径是否为None
+                if file and isinstance(file, (str, os.PathLike)) and keyword in os.path.basename(file).lower():
                     self.logger.info(f"🎯 选择优先文件（包含'{keyword}'）: {file}")
                     return file
         
         # 如果没有优先文件，选择路径最完整的（包含完整目录结构）
-        complete_paths = [f for f in found_files if '/' in f and f.startswith('/')]
+        complete_paths = [f for f in found_files if f and isinstance(f, (str, os.PathLike)) and '/' in f and f.startswith('/')]
         if complete_paths:
             # 选择路径最长的（通常是最完整的）
             best_path = max(complete_paths, key=len)
             self.logger.info(f"🎯 选择最完整路径: {best_path}")
             return best_path
         
-        # 最后选择第一个文件
-        best_file = found_files[0]
-        self.logger.info(f"🎯 选择第一个文件: {best_file}")
-        return best_file
+        # 最后选择第一个有效文件
+        valid_files = [f for f in found_files if f and isinstance(f, (str, os.PathLike))]
+        if valid_files:
+            best_file = valid_files[0]
+            self.logger.info(f"🎯 选择第一个有效文件: {best_file}")
+            return best_file
+        
+        # 如果没有找到有效文件，返回None
+        self.logger.warning("⚠️ 没有找到有效的设计文件")
+        return None
     
     def _load_design_file_to_context(self, design_file_path: str, task_file_context, agent_id: str):
         """加载设计文件到任务上下文"""
@@ -6371,6 +6386,31 @@ class LLMCoordinatorAgent(EnhancedBaseAgent):
             # 这里不需要设置task_context，因为我们直接将文件添加到TaskFileContext中
             self.logger.info(f"📁 使用设计文件路径: {design_file_path}")
             self.logger.debug(f"🧠 设计文件路径分配 - 智能体: {agent_id}, 文件: {design_file_path}")
+            
+            # 🔧 新增：提取并设置实验路径信息
+            design_path_obj = Path(design_file_path)
+            if design_path_obj.exists():
+                # 尝试从文件路径推断实验路径
+                experiment_path = None
+                for parent in design_path_obj.parents:
+                    if parent.name.startswith('design_') or parent.name.startswith('experiment_'):
+                        experiment_path = str(parent)
+                        break
+                    if 'experiments' in parent.parts:
+                        # 查找experiments目录下的直接子目录
+                        parent_parts = list(parent.parts)
+                        if 'experiments' in parent_parts:
+                            exp_index = parent_parts.index('experiments')
+                            if exp_index + 1 < len(parent_parts):
+                                experiment_path = str(Path(*parent_parts[:exp_index + 2]))
+                                break
+                
+                if experiment_path:
+                    self.logger.info(f"🧪 从设计文件路径推断实验路径: {experiment_path}")
+                    # 将实验路径信息添加到任务文件上下文
+                    if hasattr(task_file_context, '__dict__'):
+                        task_file_context.experiment_path = experiment_path
+                        self.logger.info(f"✅ 实验路径已设置到任务文件上下文: {experiment_path}")
             
             if Path(design_file_path).exists():
                 with open(design_file_path, 'r', encoding='utf-8') as f:

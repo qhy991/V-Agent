@@ -28,8 +28,10 @@ class PathSearchResult:
 class UnifiedPathManager:
     """统一路径管理器"""
     
-    def __init__(self, base_workspace: Union[str, Path] = None):
+    def __init__(self, base_workspace: Union[str, Path] = None, current_experiment_path: Optional[Union[str, Path]] = None):
         self.base_workspace = Path(base_workspace) if base_workspace else Path.cwd()
+        # 🔧 新增：当前实验路径，用于优先级搜索
+        self.current_experiment_path = Path(current_experiment_path) if current_experiment_path else None
         self.logger = logger
         
         # 标准目录结构
@@ -149,52 +151,105 @@ class UnifiedPathManager:
         return names
     
     def _generate_search_directories(self, file_type: str) -> List[Path]:
-        """生成搜索目录列表"""
+        """生成搜索目录列表，优先搜索当前实验目录"""
         search_dirs = []
         
-        # 基础搜索路径
+        # 🎯 优先级 1：当前实验目录（最高优先级）
+        if self.current_experiment_path and self.current_experiment_path.exists():
+            self.logger.info(f"🎯 优先搜索当前实验目录: {self.current_experiment_path}")
+            # 直接在当前实验目录中搜索
+            search_dirs.append(self.current_experiment_path)
+            # 根据文件类型搜索相应子目录
+            if file_type == "design":
+                search_dirs.append(self.current_experiment_path / "designs")
+            elif file_type == "testbench":
+                search_dirs.append(self.current_experiment_path / "testbenches")
+        
+        # 基础搜索路径（优先级较低）
         base_paths = [
             self.base_workspace,
             Path.cwd(),
             self.base_workspace.parent if self.base_workspace.parent else Path.cwd()
         ]
         
+        # 根据文件类型选择子目录
+        if file_type == "design":
+            subdirs = self.standard_dirs["designs"]
+        elif file_type == "testbench":
+            subdirs = self.standard_dirs["testbenches"]
+        else:
+            subdirs = []
+        
         # 为每个基础路径添加子目录
         for base_path in base_paths:
-            search_dirs.append(base_path)  # 直接在基础目录中搜索
+            # 1. 直接在基础目录中搜索
+            search_dirs.append(base_path)
             
-            # 根据文件类型选择子目录
-            if file_type == "design":
-                subdirs = self.standard_dirs["designs"]
-            elif file_type == "testbench":
-                subdirs = self.standard_dirs["testbenches"]
-            else:
-                subdirs = []
-            
-            # 添加类型特定的子目录
+            # 2. 搜索标准子目录
             for subdir in subdirs:
                 search_dirs.append(base_path / subdir)
             
-            # 添加实验目录
-            for exp_dir in self.standard_dirs["experiments"]:
-                exp_path = base_path / exp_dir
-                if exp_path.exists():
-                    # 搜索实验目录下的所有子目录
-                    try:
-                        for item in exp_path.iterdir():
-                            if item.is_dir():
-                                search_dirs.append(item)
-                                # 搜索实验子目录下的designs等文件夹
-                                for subdir in subdirs:
-                                    search_dirs.append(item / subdir)
-                    except PermissionError:
-                        continue
+            # 3. 🔧 智能搜索实验目录结构 (experiments/design_*/designs)，按时间戳排序
+            experiments_dir = base_path / "experiments"
+            if experiments_dir.exists():
+                try:
+                    # 获取所有实验目录并按时间戳排序（最新的优先）
+                    exp_dirs = []
+                    for exp_item in experiments_dir.iterdir():
+                        if exp_item.is_dir() and (exp_item.name.startswith('design_') or exp_item.name.startswith('experiment_')):
+                            exp_dirs.append(exp_item)
+                    
+                    # 按修改时间排序（最新的优先）
+                    exp_dirs.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    
+                    # 如果存在当前实验路径，确保它排在最前面
+                    if self.current_experiment_path and self.current_experiment_path in exp_dirs:
+                        exp_dirs.remove(self.current_experiment_path)
+                        exp_dirs.insert(0, self.current_experiment_path)
+                        self.logger.info(f"🎯 当前实验目录优先: {self.current_experiment_path}")
+                    
+                    # 添加排序后的实验目录到搜索路径
+                    for exp_item in exp_dirs:
+                        # 跳过当前实验（已在优先级1处理）
+                        if self.current_experiment_path and exp_item == self.current_experiment_path:
+                            continue
+                        
+                        # 直接搜索实验目录
+                        search_dirs.append(exp_item)
+                        # 搜索实验目录下的特定子目录
+                        for subdir in subdirs:
+                            search_dirs.append(exp_item / subdir)
+                        # 添加其他标准目录
+                        search_dirs.append(exp_item / "testbenches")
+                        search_dirs.append(exp_item / "reports")
+                        search_dirs.append(exp_item / "temp")
+                        
+                except PermissionError:
+                    continue
+            
+            # 4. 搜索传统file_workspace目录
+            file_workspace = base_path / "file_workspace"
+            if file_workspace.exists():
+                search_dirs.append(file_workspace)
+                for subdir in subdirs:
+                    search_dirs.append(file_workspace / subdir)
+                search_dirs.append(file_workspace / "testbenches")
+            
+            # 5. 搜索logs目录结构 (向后兼容)
+            logs_dir = base_path / "logs"
+            if logs_dir.exists():
+                try:
+                    for log_item in logs_dir.iterdir():
+                        if log_item.is_dir():
+                            search_dirs.append(log_item / "artifacts")
+                except PermissionError:
+                    continue
         
         # 去重并返回存在的目录
         unique_dirs = []
         seen = set()
         for dir_path in search_dirs:
-            if dir_path not in seen:
+            if dir_path not in seen and dir_path.exists():
                 seen.add(dir_path)
                 unique_dirs.append(dir_path)
         
@@ -253,11 +308,14 @@ class UnifiedPathManager:
 # 全局实例
 _path_manager_instance = None
 
-def get_path_manager(base_workspace: Union[str, Path] = None) -> UnifiedPathManager:
+def get_path_manager(base_workspace: Union[str, Path] = None, current_experiment_path: Optional[Union[str, Path]] = None) -> UnifiedPathManager:
     """获取路径管理器实例"""
     global _path_manager_instance
     if _path_manager_instance is None:
-        _path_manager_instance = UnifiedPathManager(base_workspace)
+        _path_manager_instance = UnifiedPathManager(base_workspace, current_experiment_path)
+    elif current_experiment_path is not None:
+        # 如果提供了新的当前实验路径，更新实例
+        _path_manager_instance.current_experiment_path = Path(current_experiment_path) if current_experiment_path else None
     return _path_manager_instance
 
 def reset_path_manager():

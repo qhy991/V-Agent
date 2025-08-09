@@ -12,7 +12,7 @@ from pathlib import Path
 # 添加项目根目录到路径
 sys.path.insert(0, str(Path(__file__).parent))
 
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from agents.real_code_reviewer import RealCodeReviewAgent
 from agents.real_verilog_agent import RealVerilogDesignAgent
 from config.config import FrameworkConfig

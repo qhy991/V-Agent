@@ -163,6 +163,15 @@ class ExperimentManager:
         self.current_experiment_path = workspace_path
         self.current_experiment_id = experiment_id
         
+        # 🔧 新增：集成日志系统到实验目录
+        try:
+            from core.enhanced_logging_config import setup_enhanced_logging
+            # 为当前实验设置日志配置，使用实验工作空间
+            setup_enhanced_logging(experiment_workspace=workspace_path)
+            self.logger.info(f"✅ 已集成日志系统到实验目录: {workspace_path}")
+        except Exception as e:
+            self.logger.warning(f"⚠️ 日志系统集成失败: {str(e)}")
+        
         self.logger.info(f"🧪 创建实验: {experiment_id}")
         self.logger.info(f"   工作目录: {workspace_path}")
         self.logger.info(f"   任务描述: {task_description[:100]}...")

@@ -12,7 +12,7 @@ import logging.handlers
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 from datetime import datetime
 import json
 
@@ -26,29 +26,45 @@ except ImportError:
 class ComponentLoggerManager:
     """管理不同组件的专用日志记录器"""
     
-    def __init__(self, base_log_dir: Optional[str] = None):
+    def __init__(self, base_log_dir: Optional[str] = None, experiment_workspace: Optional[Union[str, Path]] = None):
         """
         初始化组件日志管理器
         
         Args:
             base_log_dir: 基础日志目录，如果为None则使用默认的./logs目录
+            experiment_workspace: 🔧 新增：实验工作空间路径，如果提供则将日志和artifacts放在实验目录中
         """
-        if base_log_dir is None:
-            self.base_log_dir = Path("./logs")
+        # 🔧 统一目录结构：优先使用实验工作空间
+        if experiment_workspace is not None:
+            # 使用实验目录结构
+            self.experiment_workspace = Path(experiment_workspace)
+            self.session_log_dir = self.experiment_workspace / "logs"
+            self.artifacts_dir = self.experiment_workspace / "temp"  # 使用temp目录存储临时artifacts
+            
+            # 保持兼容性：设置base_log_dir指向实验目录的logs
+            self.base_log_dir = self.session_log_dir.parent
+            self.session_id = self.experiment_workspace.name.split('_')[-1] if '_' in self.experiment_workspace.name else datetime.now().strftime("%Y%m%d_%H%M%S")
+            
         else:
-            self.base_log_dir = Path(base_log_dir)
+            # 使用传统logs目录结构（向后兼容）
+            if base_log_dir is None:
+                self.base_log_dir = Path("./logs")
+            else:
+                self.base_log_dir = Path(base_log_dir)
+                
+            # 创建会话特定的子目录（以时间命名）
+            self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+            self.session_log_dir = self.base_log_dir / f"experiment_{self.session_id}"
+            
+            # 创建artifacts子目录
+            self.artifacts_dir = self.session_log_dir / "artifacts"
+            self.experiment_workspace = None
         
-        # 确保日志目录存在
-        self.base_log_dir.mkdir(parents=True, exist_ok=True)
-        
-        # 创建会话特定的子目录（以时间命名）
-        self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.session_log_dir = self.base_log_dir / f"experiment_{self.session_id}"
-        self.session_log_dir.mkdir(exist_ok=True)
-        
-        # 创建artifacts子目录用于存储生成的代码
-        self.artifacts_dir = self.session_log_dir / "artifacts"
-        self.artifacts_dir.mkdir(exist_ok=True)
+        # 确保目录存在
+        if hasattr(self, 'base_log_dir'):
+            self.base_log_dir.mkdir(parents=True, exist_ok=True)
+        self.session_log_dir.mkdir(parents=True, exist_ok=True)
+        self.artifacts_dir.mkdir(parents=True, exist_ok=True)
         
         # 组件日志文件映射 - 针对CentralizedAgentFramework
         self.component_files = {
@@ -517,19 +533,20 @@ class ComponentLoggerManager:
 _logger_manager: Optional[ComponentLoggerManager] = None
 
 
-def setup_enhanced_logging(base_log_dir: Optional[str] = None) -> ComponentLoggerManager:
+def setup_enhanced_logging(base_log_dir: Optional[str] = None, experiment_workspace: Optional[Union[str, Path]] = None) -> ComponentLoggerManager:
     """
     设置增强日志系统
     
     Args:
         base_log_dir: 日志基础目录
+        experiment_workspace: 🔧 新增：实验工作空间路径
         
     Returns:
         日志管理器实例
     """
     global _logger_manager
     if _logger_manager is None:
-        _logger_manager = ComponentLoggerManager(base_log_dir)
+        _logger_manager = ComponentLoggerManager(base_log_dir, experiment_workspace)
         
     return _logger_manager
 

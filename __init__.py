@@ -12,7 +12,7 @@ __description__ = "中心化智能体协调框架，用于Verilog设计任务的
 
 # 核心组件导入
 from config.config import FrameworkConfig, LLMConfig, CoordinatorConfig, AgentConfig
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from core.base_agent import BaseAgent
 from core.types import TaskMessage, FileReference
 from core.enums import AgentCapability, AgentStatus, ConversationState
@@ -40,7 +40,7 @@ __all__ = [
     "AgentConfig",
     
     # 核心组件
-    "CentralizedCoordinator",
+    "LLMCoordinatorAgent",
     "BaseAgent",
     "TaskMessage",
     "FileReference",
@@ -71,7 +71,7 @@ def get_framework_info():
         "description": __description__,
         "author": __author__,
         "components": {
-            "coordinator": "CentralizedCoordinator - 中心化协调智能体",
+            "coordinator": "LLMCoordinatorAgent - LLM驱动的协调智能体",
             "agents": [
                 "RealVerilogDesignAgent - 真实LLM驱动的Verilog设计智能体", 
                 "RealCodeReviewAgent - 真实LLM驱动的代码审查智能体"
@@ -110,7 +110,7 @@ def create_framework(llm_provider: str = "dashscope",
         llm_client = EnhancedLLMClient(llm_config)
     
     # 创建协调者
-    coordinator = CentralizedCoordinator(config, llm_client)
+    coordinator = LLMCoordinatorAgent(config)
     
     # 创建智能体
     agents = [

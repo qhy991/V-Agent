@@ -16,7 +16,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.config import FrameworkConfig
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from agents.real_verilog_agent import RealVerilogDesignAgent
 from agents.real_code_reviewer import RealCodeReviewAgent
 
@@ -117,7 +117,7 @@ async def test_enhanced_design_workflow():
             print("⚠️ 未配置API密钥，将使用离线模式")
         
         # 4. 创建协调者和智能体
-        coordinator = CentralizedCoordinator(config, llm_client)
+        coordinator = LLMCoordinatorAgent(config, llm_client)
         
         design_agent = VerilogDesignAgent(llm_client)
         test_agent = VerilogTestAgent(llm_client)

@@ -16,7 +16,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from config.config import FrameworkConfig
-from core.centralized_coordinator import CentralizedCoordinator
+from core.llm_coordinator_agent import LLMCoordinatorAgent
 from agents.real_verilog_agent import RealVerilogDesignAgent
 from agents.real_code_reviewer import RealCodeReviewAgent
 from llm_integration.enhanced_llm_client import EnhancedLLMClient
@@ -46,7 +46,7 @@ async def main():
             print("⚠️ 未配置API密钥，将使用离线模式")
         
         # 3. 创建协调者
-        coordinator = CentralizedCoordinator(config, llm_client)
+        coordinator = LLMCoordinatorAgent(config, llm_client)
         print("✅ 中心化协调者创建完成")
         
         # 4. 创建专业智能体
