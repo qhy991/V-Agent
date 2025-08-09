@@ -202,7 +202,7 @@ class ComponentLoggerManager:
             
             # 协调器 - 添加实际使用的logger名称
             'core.centralized_coordinator': 'coordinator',
-            'CentralizedCoordinator': 'coordinator',
+            'LLMCoordinatorAgent': 'coordinator',
             'Coordinator': 'coordinator',
             'centralized_coordinator': 'coordinator',
             
